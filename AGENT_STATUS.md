@@ -39,3 +39,14 @@ Aider may have shown a proposed patch without applying it, or the interaction mo
 ## Recommended next action
 
 Retry one bounded Aider edit with clearer instruction to apply the change to disk, then verify with `git status` before exiting the evaluation.
+
+## Retry result
+
+Aider was retried with explicit instructions to write changes to disk.
+
+- DECISIONS.md and AGENT_STATUS.md were changed
+- git status and git diff still need to be checked by the user outside Aider
+- no scripts, services, routing, or automation were changed
+- recommended next action is user review of the Git diff
+
+Files have been edited on disk.
