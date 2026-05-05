@@ -2,22 +2,36 @@
 
 ## Current status
 
-Aider has been eliminated from the homelab workflow. The next slice is to recenter the workflow on OpenCode through Homelab LiteLLM.
+Slice 6 documentation recentering is complete. The workflow docs now center on OpenCode through Homelab LiteLLM.
 
 ## Current slice
 
 Slice 6: recenter workflow on OpenCode through LiteLLM.
 
-## Files changed in current uncommitted work
+## Completed work
 
-- `CURRENT_SLICE.md`
-- `PROJECT_PLAN.md`
+- `WORKFLOW.md` no longer presents Aider as an active candidate or fallback.
+- `ROADMAP.md` records that Aider was evaluated and eliminated.
+- OpenCode through LiteLLM is now the active coder path.
+- The two-surface workflow remains: web UI advisor, OpenCode coder, `advisor-packet`, markdown state files, and Git review.
+
+## Files changed
+
+- `WORKFLOW.md`
+- `ROADMAP.md`
 - `AGENT_STATUS.md`
+
+## Checks run
+
+- `grep -n "Aider\|aider" WORKFLOW.md ROADMAP.md`
+- `git diff --stat`
+- `git diff`
+- `git status`
 
 ## Risks or blockers
 
-The docs may still mention Aider as a candidate path. Those references need to be removed or reframed as historical evaluation results.
+OpenCode still needs to be tested directly against the two-surface workflow after the Aider elimination.
 
 ## Recommended next action
 
-Review and commit this Slice 6 transition, then update `WORKFLOW.md` and `ROADMAP.md` to remove Aider from the active workflow path.
+Commit this status update, then set the next slice to test OpenCode with one small documentation-only task.
