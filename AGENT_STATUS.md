@@ -2,21 +2,20 @@
 
 ## Current status
 
-Slice 2 is complete. Initial `scripts/advisor-packet` is implemented and committed.
+Slice 3 is complete. `AGENTS.md` now contains stronger handoff, approval brief, architecture-change, and completion rules.
 
 ## Current slice
 
 Slice 3: strengthen `AGENTS.md` coder status and approval brief rules.
 
-## Files changed in current uncommitted work
+## Files changed
 
-- `PROJECT_PLAN.md`
-- `CURRENT_SLICE.md`
-- `AGENT_STATUS.md`
+- `AGENTS.md`
 
 ## Checks run
 
-- `./scripts/advisor-packet`
+- `git diff -- AGENTS.md`
+- `grep -n "Approval brief requirements\|Architecture-change rule\|Completion rule" AGENTS.md`
 
 ## Risks or blockers
 
@@ -24,4 +23,4 @@ None known.
 
 ## Recommended next action
 
-Update `AGENTS.md` with stronger handoff and approval-brief rules.
+Prepare Slice 4: test the full two-surface loop on one small real task.
