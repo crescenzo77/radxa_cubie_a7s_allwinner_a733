@@ -20,8 +20,11 @@ Create a stable workflow where:
 - No autonomous supervision loop.
 - No MCP failure-supervision system for this workflow.
 
+## Completed stages
+
+- Slice 1: Canonical homelab repo initialized on Strix.
+- Slice 2: Initial `scripts/advisor-packet` created and committed.
+
 ## Current build stage
 
-We have initialized the canonical homelab repo on Strix.
-
-Next stage: build `advisor-packet`.
+Slice 3: strengthen `AGENTS.md` coder status and approval brief rules.

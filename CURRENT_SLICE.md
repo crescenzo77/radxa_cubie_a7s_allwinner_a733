@@ -1,50 +1,43 @@
 # Current Slice
 
-## Slice 2: Build `advisor-packet`
+## Slice 3: Strengthen `AGENTS.md` coder status and approval brief rules
 
-Create a small local script named `advisor-packet`.
+Update `AGENTS.md` so any self-hosted coding agent working in this repo knows how to produce useful handoff/status briefs.
 
 ## Purpose
 
-The script should create a compact markdown packet for the web UI advisor so the user does not have to manually copy raw terminal output, diffs, and status into chat.
+The agent should not leave the user with raw technical approval questions or unexplained changes. It should update `AGENT_STATUS.md` with a concise plain-English brief before handoff.
 
 ## Requirements
 
-The script should:
+`AGENTS.md` should require the coding agent to:
 
-- Run from a project working tree.
-- Write markdown to `/tmp/advisor-packet.md` by default.
-- Accept an optional output path as the first argument.
-- Include timestamp and current directory.
-- Include these files if present:
-  - `PROJECT_PLAN.md`
-  - `CURRENT_SLICE.md`
-  - `DECISIONS.md`
-  - `AGENT_STATUS.md`
-  - `AGENTS.md`
-- Include Git information if available:
-  - `git status --short`
-  - `git diff --stat`
-  - bounded `git diff` excerpt
-- Include bounded recent coder log if `.agent/session.log` exists.
-- Copy output to clipboard if `wl-copy` or `xclip` exists.
-- Continue gracefully if optional files, Git, or clipboard tools are unavailable.
+- Work only on `CURRENT_SLICE.md`.
+- Keep changes narrow and reviewable.
+- Update `AGENT_STATUS.md` before handoff.
+- Explain what changed.
+- List files changed.
+- List checks run.
+- Identify risks or blockers.
+- State whether approval is needed.
+- If approval is needed, explain:
+  - the decision being requested
+  - the available options
+  - which option best matches `CURRENT_SLICE.md`
+  - the recommended next action
+- Stop instead of improvising if the decision could broaden scope or change architecture.
 
 ## Constraints
 
-- No network calls.
+- No automation.
+- No daemon.
+- No watcher.
+- No MCP supervision.
 - No model API calls.
-- No Codex automation.
-- No autonomous approval behavior.
-- No watcher or daemon behavior.
-- No MCP integration.
-- Local shell script only.
+- No Codex infrastructure.
 
 ## Acceptance Criteria
 
-- Running `scripts/advisor-packet` from `/srv/projects/homelab` creates `/tmp/advisor-packet.md`.
-- The output is readable markdown.
-- The output is bounded by default.
-- The script does not fail if optional files are missing.
-- The script does not fail if not inside a Git repo.
-- The script is committed to Git.
+- `AGENTS.md` contains clear handoff and approval-brief rules.
+- `AGENT_STATUS.md` is updated to show Slice 3 was completed or is ready for review.
+- Changes are committed to Git.

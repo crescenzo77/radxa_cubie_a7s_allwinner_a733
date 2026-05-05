@@ -2,18 +2,21 @@
 
 ## Current status
 
-Implemented initial `scripts/advisor-packet`.
+Slice 2 is complete. Initial `scripts/advisor-packet` is implemented and committed.
 
-## Files changed
+## Current slice
 
-- `scripts/advisor-packet`
+Slice 3: strengthen `AGENTS.md` coder status and approval brief rules.
+
+## Files changed in current uncommitted work
+
+- `PROJECT_PLAN.md`
+- `CURRENT_SLICE.md`
 - `AGENT_STATUS.md`
 
 ## Checks run
 
 - `./scripts/advisor-packet`
-- `ls -lah /tmp/advisor-packet.md`
-- `head -n 40 /tmp/advisor-packet.md`
 
 ## Risks or blockers
 
@@ -21,4 +24,4 @@ None known.
 
 ## Recommended next action
 
-Review the generated packet output, then commit if acceptable.
+Update `AGENTS.md` with stronger handoff and approval-brief rules.
