@@ -2,7 +2,7 @@
 
 ## Current status
 
-Slice 5 is active. Aider evaluation has been selected as the next workflow test.
+Aider is installed on Strix for Slice 5 evaluation.
 
 ## Current slice
 
@@ -10,19 +10,29 @@ Slice 5: evaluate Aider as the preferred steady-state coder.
 
 ## Files changed in current uncommitted work
 
-- AIDER_EVALUATION_PLAN.md
 - AGENT_STATUS.md
 
-## Checks to run
+## Install result
 
-- git diff --stat
-- git diff
-- ./scripts/advisor-packet
+Aider was installed with `uv tool install --force --python python3.12 --with pip aider-chat@latest`.
+
+Installed executable:
+
+- `/home/enzo/.local/bin/aider`
+
+Installed version:
+
+- `aider 0.86.2`
+
+## Checks run
+
+- `command -v aider`
+- `aider --version`
 
 ## Risks or blockers
 
-Need to verify the cleanest install method and LiteLLM-compatible configuration before installing Aider.
+Aider is installed, but it has not yet been configured or tested against Homelab LiteLLM.
 
 ## Recommended next action
 
-Review and commit AIDER_EVALUATION_PLAN.md, then plan the actual Aider install command.
+Configure an explicit Aider test command for the Homelab LiteLLM endpoint before running Aider against the repo.
