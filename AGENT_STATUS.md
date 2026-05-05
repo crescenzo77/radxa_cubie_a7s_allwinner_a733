@@ -2,51 +2,47 @@
 
 ## Current status
 
-Aider connectivity to Homelab LiteLLM succeeded, but the first bounded edit test did not produce a working-tree change.
+Aider has passed the initial Slice 5 bounded edit test after one unclear first attempt and one successful retry.
 
 ## Current slice
 
 Slice 5: evaluate Aider as the preferred steady-state coder.
 
-## Test result
+## Evaluation result
 
-Aider was launched against:
+Aider is a qualified pass as the preferred first candidate.
 
-- `DECISIONS.md`
+What worked:
+
+- Installed cleanly on Strix with `uv` and Python 3.12.
+- Reached Homelab LiteLLM.
+- Used the primary local coder model.
+- Produced a bounded documentation-only edit.
+- Left a reviewable Git diff.
+- Did not use paid-provider automation.
+- Did not create daemons, watchers, wrappers, or background jobs.
+
+Caution:
+
+- The first bounded edit attempt displayed a proposed patch but did not leave a working-tree change.
+- The retry succeeded only after explicit instruction to apply changes to disk.
+
+## Files changed in current uncommitted work
+
 - `AGENT_STATUS.md`
-
-The requested task was to add a Slice 5 decision entry to `DECISIONS.md` and update `AGENT_STATUS.md`.
-
-Aider displayed a proposed edit, but after exiting:
-
-- `git status` reported a clean working tree.
-- `git diff` showed no changes.
-- `DECISIONS.md` did not contain the new Slice 5 decision entry.
 
 ## Checks run
 
 - `git status`
 - `git diff --stat`
-- `git diff -- DECISIONS.md AGENT_STATUS.md`
-- `git log --oneline -5`
-- `grep -n "Aider as preferred\|steady-state coder" DECISIONS.md`
-- `grep -n "bounded edit\|Aider" AGENT_STATUS.md`
+- `git diff`
+- Aider bounded edit test
+- Aider retry test
 
 ## Risks or blockers
 
-Aider may have shown a proposed patch without applying it, or the interaction mode may need adjustment.
+Aider should be treated as the preferred candidate, not the final default, until it succeeds on at least one more real bounded task.
 
 ## Recommended next action
 
-Retry one bounded Aider edit with clearer instruction to apply the change to disk, then verify with `git status` before exiting the evaluation.
-
-## Retry result
-
-Aider was retried with explicit instructions to write changes to disk.
-
-- DECISIONS.md and AGENT_STATUS.md were changed
-- git status and git diff still need to be checked by the user outside Aider
-- no scripts, services, routing, or automation were changed
-- recommended next action is user review of the Git diff
-
-Files have been edited on disk.
+Commit this evaluation status, then decide whether to run one more Aider task before promoting it to the steady-state default.
