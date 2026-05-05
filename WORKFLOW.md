@@ -112,13 +112,7 @@ Run it on AMD or in the relevant project host directory, using Homelab LiteLLM:
 Endpoint: http://192.168.50.225:4000/v1
 ```
 
-Aider remains a candidate for bounded multi-file edits:
-
-```bash
-aider <files>
-```
-
-Target state: Aider should also route through LiteLLM where possible.
+Aider was evaluated and eliminated from the homelab steady-state workflow after unsafe file-handling behavior during a simple documentation task. Do not use Aider as the default or fallback coder for this workflow.
 
 The coder prompt should include:
 
@@ -162,7 +156,6 @@ Commit only after the user has reviewed the changes.
 | Plan a task | Open WebUI advisor | Browser |
 | Summarize state for advisor | `advisor-packet` | Project working tree |
 | Implement a bounded task | OpenCode through LiteLLM | AMD/project host terminal |
-| Implement a small file-scoped edit | Aider through LiteLLM where possible | Project host terminal |
 | Review a diff | VS Code Remote-SSH and git | Project host |
 | Ask about a specific code chunk | Continue.dev highlight-and-ask | VS Code |
 | Make final decision | User | Always |

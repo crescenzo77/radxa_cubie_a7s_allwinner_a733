@@ -22,7 +22,7 @@ The normal loop is:
 Open WebUI advisor
   <- compact advisor-packet markdown
   -> user decision
-  -> OpenCode or Aider on the project host through LiteLLM
+  -> OpenCode on the project host through LiteLLM
   -> git diff and shared markdown status
   -> advisor-packet again when needed
 ```
@@ -89,7 +89,7 @@ Definition of done:
 
 ## Slice 3: Add `AGENTS.md` Rules for Coder Status and Approval Briefs
 
-Create clear project-local instructions for OpenCode/Aider.
+Create clear project-local instructions for OpenCode.
 
 `AGENTS.md` should require the coder to:
 
@@ -117,7 +117,7 @@ Run the complete loop:
 2. Run `advisor-packet`.
 3. Paste the packet into Open WebUI.
 4. Generate a coder prompt.
-5. Run OpenCode or Aider on the project host.
+5. Run OpenCode on the project host.
 6. Review the diff.
 7. Update `DECISIONS.md` if needed.
 8. Commit.
@@ -129,9 +129,9 @@ Definition of done:
 - Pain points are written down in `DECISIONS.md` or `PROJECT_PLAN.md`.
 - No automation is added beyond the packet script.
 
-## Slice 5: Decide Whether Aider or OpenCode Is the Preferred Steady-State Coder
+## Slice 5: Aider Evaluation and Elimination
 
-Compare the tools on real homelab tasks.
+Aider was evaluated as a possible steady-state coder and eliminated after unsafe file-handling behavior during a simple documentation task.
 
 Evaluation criteria:
 
@@ -144,9 +144,9 @@ Evaluation criteria:
 
 Definition of done:
 
-- `DECISIONS.md` records the preferred steady-state coder and why.
-- The workflow docs name the default coder.
-- The other tool can remain available as a manual fallback.
+- `DECISIONS.md` records that Aider is eliminated from the homelab workflow.
+- The workflow docs no longer present Aider as an active default or fallback path.
+- OpenCode remains the coder path to recenter around.
 
 ## Slice 6: Optional Later Improvements
 
@@ -185,4 +185,4 @@ These remain valid but are not the immediate two-surface build:
 - MCP Ledger should eventually become a Pattern A service on Strix if it remains part of the stack.
 - Git mirror topology should converge on Strix canonical, ThinkCentre tier-1, Mac Mini tier-2.
 - iMessage relay and family dashboard documentation should be captured in the homelab repo.
-- Aider should migrate toward the project host and LiteLLM routing if selected.
+- Aider was evaluated and eliminated from the homelab workflow; do not migrate or integrate it.
