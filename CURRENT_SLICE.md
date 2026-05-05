@@ -1,39 +1,39 @@
 # Current Slice
 
-## Slice 5: Evaluate Aider as the preferred steady-state coder
+## Slice 6: Recenter workflow on OpenCode through LiteLLM
 
-Evaluate Aider as the first preferred coding agent candidate for the two-surface workflow.
+Recenter the homelab two-surface workflow around OpenCode as the coding agent.
 
 ## Purpose
 
-Aider is the conservative first candidate because it is Git-centered, terminal-based, and better suited to bounded edits than more autonomous coding agents.
+Aider was evaluated and eliminated from the homelab workflow after it failed a simple bounded documentation task in an unacceptable way.
 
-The goal is not to permanently reject OpenCode. The goal is to test whether Aider gives lower-friction, more reviewable, less confusing handoffs for this workflow.
+The two-surface workflow remains valid, but the coder surface should now be OpenCode through Homelab LiteLLM.
 
 ## Requirements
 
-Evaluate Aider against these criteria:
+Update the homelab docs so they clearly state:
 
-- Can be installed cleanly without polluting system Python.
-- Can run from the project host.
-- Can point at the Homelab LiteLLM OpenAI-compatible endpoint.
-- Can use local/self-hosted model labels where possible.
-- Works inside a Git repo.
-- Produces reviewable diffs.
-- Respects `CURRENT_SLICE.md` and `AGENTS.md`.
-- Does not require Codex, Claude Code, paid API automation, wrappers, daemons, or scheduled jobs.
+- OpenCode through LiteLLM is the preferred coding agent path.
+- Aider was evaluated and eliminated from the homelab workflow.
+- Aider should not be used as default or fallback for this workflow.
+- `advisor-packet` remains the bridge between coder state and the web UI advisor.
+- The user remains the final approver.
+- No autonomous supervisor, daemon, watcher, MCP failure-supervision, or paid API automation should be added.
 
 ## Constraints
 
-- Do not install Aider until the install plan is reviewed.
-- Do not add API keys for paid providers.
-- Do not use OpenRouter paid models.
-- Do not create automation around Aider.
-- Do not make Aider the final default until it is tested on a real small task.
+- Documentation only.
+- No scripts.
+- No service changes.
+- No model routing changes.
+- No uninstall yet.
+- No new tools.
 
 ## Acceptance Criteria
 
-- The install/config plan for Aider is written and reviewed.
-- Aider is tested against the homelab repo or another small safe repo.
-- `DECISIONS.md` records whether Aider becomes the preferred steady-state coder.
-- OpenCode remains available as a fallback unless explicitly removed later.
+- `PROJECT_PLAN.md` says the current stage is recentering on OpenCode.
+- `WORKFLOW.md` no longer presents Aider as a candidate path.
+- `ROADMAP.md` reflects that Aider was eliminated and OpenCode is the path forward.
+- `AGENT_STATUS.md` is updated with a concise handoff.
+- Changes are committed to Git.
