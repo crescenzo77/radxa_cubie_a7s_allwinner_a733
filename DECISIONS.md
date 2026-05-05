@@ -34,3 +34,20 @@ Consequences:
 - OpenCode remains available as a fallback.
 - No automation or background processes are created around Aider.
 - The final default will be determined after reviewing this bounded edit test.
+
+## 2026-05-06 — Aider eliminated from homelab workflow
+
+Decision:
+Aider will not be used in the homelab steady-state workflow.
+
+Rationale:
+Aider installed cleanly and reached Homelab LiteLLM, but it failed a simple bounded documentation task in an unacceptable way. It created bogus files using prompt text as filenames and emptied `AGENT_STATUS.md`, one of the repo's control files. The repo had to be manually recovered.
+
+This failure happened on a simple task, so simpler scope is not a sufficient safety control.
+
+Consequences:
+- Aider is not the default coder.
+- Aider is not a fallback coder for the homelab workflow.
+- Do not build wrappers, scripts, automation, or process steps around Aider.
+- OpenCode through LiteLLM becomes the next coder path to evaluate and recenter around.
+- The two-surface workflow remains valid: web UI advisor, OpenCode coder, `advisor-packet`, markdown state files, and Git review.

@@ -2,7 +2,7 @@
 
 ## Current status
 
-Aider has passed the initial Slice 5 bounded edit test after one unclear first attempt and one successful retry.
+Aider is eliminated from the homelab steady-state workflow.
 
 ## Current slice
 
@@ -10,39 +10,43 @@ Slice 5: evaluate Aider as the preferred steady-state coder.
 
 ## Evaluation result
 
-Aider is a qualified pass as the preferred first candidate.
+Aider failed evaluation and should not be used in the homelab workflow.
 
 What worked:
 
-- Installed cleanly on Strix with `uv` and Python 3.12.
+- Installed on Strix with `uv` and Python 3.12.
 - Reached Homelab LiteLLM.
-- Used the primary local coder model.
-- Produced a bounded documentation-only edit.
-- Left a reviewable Git diff.
-- Did not use paid-provider automation.
-- Did not create daemons, watchers, wrappers, or background jobs.
+- Passed a simple connectivity test.
+- Completed one bounded documentation edit after a retry.
 
-Caution:
+What failed:
 
-- The first bounded edit attempt displayed a proposed patch but did not leave a working-tree change.
-- The retry succeeded only after explicit instruction to apply changes to disk.
+- The first bounded edit attempt showed a proposed patch but did not leave disk changes.
+- The second bounded edit test mis-handled prompt text.
+- Aider created bogus files using prompt text as filenames.
+- Aider emptied `AGENT_STATUS.md`.
+- The bad changes had to be manually cleaned up.
 
-## Files changed in current uncommitted work
+## Decision
 
-- `AGENT_STATUS.md`
+Aider is disqualified for this homelab workflow.
 
-## Checks run
+The failure occurred during a simple documentation task, so reducing task complexity does not remove the risk. A tool that damages project control files or creates bogus files from prompt text is not acceptable as part of the steady-state workflow.
 
-- `git status`
-- `git diff --stat`
-- `git diff`
-- Aider bounded edit test
-- Aider retry test
+## Recovery performed
+
+The bad Aider changes were discarded with:
+
+- `git restore --staged -- .`
+- `git restore -- AGENT_STATUS.md`
+- manual removal of bogus prompt-text filenames
+
+The repo returned to a clean state.
 
 ## Risks or blockers
 
-Aider should be treated as the preferred candidate, not the final default, until it succeeds on at least one more real bounded task.
+Aider is installed on Strix but should not be used for this homelab workflow.
 
 ## Recommended next action
 
-Commit this evaluation status, then decide whether to run one more Aider task before promoting it to the steady-state default.
+Record the elimination decision in `DECISIONS.md`, then set the next slice to recenter the workflow on OpenCode through LiteLLM.
