@@ -1,43 +1,45 @@
 # Current Slice
 
-## Slice 3: Strengthen `AGENTS.md` coder status and approval brief rules
+## Slice 4: Test the two-surface loop on one small real task
 
-Update `AGENTS.md` so any self-hosted coding agent working in this repo knows how to produce useful handoff/status briefs.
+Use the current homelab repo to test the actual workflow:
 
-## Purpose
+1. Update project state.
+2. Run `advisor-packet`.
+3. Use the web UI advisor to review the packet.
+4. Generate a bounded coder prompt.
+5. Apply one small documentation improvement.
+6. Review the diff.
+7. Commit if acceptable.
 
-The agent should not leave the user with raw technical approval questions or unexplained changes. It should update `AGENT_STATUS.md` with a concise plain-English brief before handoff.
+## Test task
+
+Make one small documentation improvement: add a short "How to use this repo" section to `PROJECT_PLAN.md`.
 
 ## Requirements
 
-`AGENTS.md` should require the coding agent to:
+The new section should explain:
 
-- Work only on `CURRENT_SLICE.md`.
-- Keep changes narrow and reviewable.
-- Update `AGENT_STATUS.md` before handoff.
-- Explain what changed.
-- List files changed.
-- List checks run.
-- Identify risks or blockers.
-- State whether approval is needed.
-- If approval is needed, explain:
-  - the decision being requested
-  - the available options
-  - which option best matches `CURRENT_SLICE.md`
-  - the recommended next action
-- Stop instead of improvising if the decision could broaden scope or change architecture.
+- `PROJECT_PLAN.md` stores the broad goal and current stage.
+- `CURRENT_SLICE.md` stores the active task.
+- `AGENT_STATUS.md` stores the current handoff/status.
+- `DECISIONS.md` stores durable decisions.
+- `AGENTS.md` stores coder rules.
+- `scripts/advisor-packet` creates the compact advisor packet.
 
 ## Constraints
 
+- Documentation only.
+- No scripts.
+- No service changes.
 - No automation.
-- No daemon.
-- No watcher.
-- No MCP supervision.
 - No model API calls.
-- No Codex infrastructure.
+- No new tools.
+- Keep the change small and reviewable.
 
 ## Acceptance Criteria
 
-- `AGENTS.md` contains clear handoff and approval-brief rules.
-- `AGENT_STATUS.md` is updated to show Slice 3 was completed or is ready for review.
-- Changes are committed to Git.
+- `PROJECT_PLAN.md` has a concise "How to use this repo" section.
+- `AGENT_STATUS.md` is updated after the change.
+- `advisor-packet` is run at least once during the test.
+- The final diff is reviewed before commit.

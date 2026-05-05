@@ -2,20 +2,23 @@
 
 ## Current status
 
-Slice 3 is complete. `AGENTS.md` now contains stronger handoff, approval brief, architecture-change, and completion rules.
+Slice 3 is complete. The repo is ready to test the full two-surface loop.
 
 ## Current slice
 
-Slice 3: strengthen `AGENTS.md` coder status and approval brief rules.
+Slice 4: test the two-surface loop on one small real task.
 
-## Files changed
+## Files expected to change
 
-- `AGENTS.md`
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `PROJECT_PLAN.md`
 
-## Checks run
+## Checks to run
 
-- `git diff -- AGENTS.md`
-- `grep -n "Approval brief requirements\|Architecture-change rule\|Completion rule" AGENTS.md`
+- `./scripts/advisor-packet`
+- `git diff --stat`
+- `git diff`
 
 ## Risks or blockers
 
@@ -23,4 +26,4 @@ None known.
 
 ## Recommended next action
 
-Prepare Slice 4: test the full two-surface loop on one small real task.
+Run `advisor-packet`, paste the packet into the web UI advisor, and ask for the bounded prompt for the documentation-only test task.
