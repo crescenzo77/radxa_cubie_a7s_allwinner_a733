@@ -24,10 +24,12 @@ Create a stable workflow where:
 
 - Slice 1: Canonical homelab repo initialized on Strix.
 - Slice 2: Initial `scripts/advisor-packet` created and committed.
+- Slice 3: `AGENTS.md` strengthened with handoff and approval-brief rules.
+- Slice 4: Two-surface loop tested on one documentation-only repo task.
 
 ## Current build stage
 
-Slice 4: test the full two-surface loop on one small documentation task.
+Slice 5: evaluate Aider as the preferred steady-state coder.
 
 ## How to use this repo
 
