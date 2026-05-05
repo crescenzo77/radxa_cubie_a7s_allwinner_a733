@@ -2,7 +2,7 @@
 
 ## Current status
 
-Slice 4 is complete. The two-surface loop was tested with a small documentation-only task.
+Slice 5 is active. Aider evaluation has been selected as the next workflow test.
 
 ## Current slice
 
@@ -10,20 +10,19 @@ Slice 5: evaluate Aider as the preferred steady-state coder.
 
 ## Files changed in current uncommitted work
 
-- `PROJECT_PLAN.md`
-- `CURRENT_SLICE.md`
-- `AGENT_STATUS.md`
+- AIDER_EVALUATION_PLAN.md
+- AGENT_STATUS.md
 
-## Checks run
+## Checks to run
 
-- `./scripts/advisor-packet`
-- `git diff --stat`
-- `git diff`
+- git diff --stat
+- git diff
+- ./scripts/advisor-packet
 
 ## Risks or blockers
 
-Need to verify the cleanest Aider install and LiteLLM-compatible configuration before installing or testing.
+Need to verify the cleanest install method and LiteLLM-compatible configuration before installing Aider.
 
 ## Recommended next action
 
-Review and commit this Slice 5 transition, then plan the Aider install/config test.
+Review and commit AIDER_EVALUATION_PLAN.md, then plan the actual Aider install command.
