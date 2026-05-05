@@ -2,37 +2,43 @@
 
 ## Current status
 
-Aider is installed on Strix for Slice 5 evaluation.
+Aider connectivity to Homelab LiteLLM succeeded.
 
 ## Current slice
 
 Slice 5: evaluate Aider as the preferred steady-state coder.
 
-## Files changed in current uncommitted work
+## Test result
 
-- AGENT_STATUS.md
+Aider was launched on Strix with the Homelab LiteLLM endpoint and the primary local coder model.
 
-## Install result
+Model used:
 
-Aider was installed with `uv tool install --force --python python3.12 --with pip aider-chat@latest`.
+- `openai/local-coder | AMD RTX 3090 | Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
 
-Installed executable:
+Prompt:
 
-- `/home/enzo/.local/bin/aider`
+- Connectivity test only. Do not edit files. Reply exactly: `aider-litellm-ok`
 
-Installed version:
+Result:
 
-- `aider 0.86.2`
+- Aider replied: `aider-litellm-ok`
+
+## Side effects
+
+Aider uses `.aider*` local files. `.gitignore` contains `.aider*`.
 
 ## Checks run
 
-- `command -v aider`
 - `aider --version`
+- Aider LiteLLM connectivity test
+- `git status`
+- `cat .gitignore`
 
 ## Risks or blockers
 
-Aider is installed, but it has not yet been configured or tested against Homelab LiteLLM.
+Aider can reach LiteLLM, but it has not yet been tested on a real bounded edit.
 
 ## Recommended next action
 
-Configure an explicit Aider test command for the Homelab LiteLLM endpoint before running Aider against the repo.
+Commit this status update, then run one small Aider edit test against `DECISIONS.md`.
