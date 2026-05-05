@@ -2,7 +2,7 @@
 
 ## Current status
 
-Aider connectivity to Homelab LiteLLM succeeded.
+Aider connectivity to Homelab LiteLLM succeeded, but the first bounded edit test did not produce a working-tree change.
 
 ## Current slice
 
@@ -10,35 +10,32 @@ Slice 5: evaluate Aider as the preferred steady-state coder.
 
 ## Test result
 
-Aider was launched on Strix with the Homelab LiteLLM endpoint and the primary local coder model.
+Aider was launched against:
 
-Model used:
+- `DECISIONS.md`
+- `AGENT_STATUS.md`
 
-- `openai/local-coder | AMD RTX 3090 | Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+The requested task was to add a Slice 5 decision entry to `DECISIONS.md` and update `AGENT_STATUS.md`.
 
-Prompt:
+Aider displayed a proposed edit, but after exiting:
 
-- Connectivity test only. Do not edit files. Reply exactly: `aider-litellm-ok`
-
-Result:
-
-- Aider replied: `aider-litellm-ok`
-
-## Side effects
-
-Aider uses `.aider*` local files. `.gitignore` contains `.aider*`.
+- `git status` reported a clean working tree.
+- `git diff` showed no changes.
+- `DECISIONS.md` did not contain the new Slice 5 decision entry.
 
 ## Checks run
 
-- `aider --version`
-- Aider LiteLLM connectivity test
 - `git status`
-- `cat .gitignore`
+- `git diff --stat`
+- `git diff -- DECISIONS.md AGENT_STATUS.md`
+- `git log --oneline -5`
+- `grep -n "Aider as preferred\|steady-state coder" DECISIONS.md`
+- `grep -n "bounded edit\|Aider" AGENT_STATUS.md`
 
 ## Risks or blockers
 
-Aider can reach LiteLLM, but it has not yet been tested on a real bounded edit.
+Aider may have shown a proposed patch without applying it, or the interaction mode may need adjustment.
 
 ## Recommended next action
 
-Commit this status update, then run one small Aider edit test against `DECISIONS.md`.
+Retry one bounded Aider edit with clearer instruction to apply the change to disk, then verify with `git status` before exiting the evaluation.
