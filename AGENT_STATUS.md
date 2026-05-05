@@ -2,16 +2,23 @@
 
 ## Current status
 
-Canonical homelab repo initialized on Strix.
+Implemented initial `scripts/advisor-packet`.
 
-## Current slice
+## Files changed
 
-Build `advisor-packet`.
+- `scripts/advisor-packet`
+- `AGENT_STATUS.md`
 
-## Blockers
+## Checks run
 
-None yet.
+- `./scripts/advisor-packet`
+- `ls -lah /tmp/advisor-packet.md`
+- `head -n 40 /tmp/advisor-packet.md`
 
-## Next action
+## Risks or blockers
 
-Implement `scripts/advisor-packet` according to `CURRENT_SLICE.md`.
+None known.
+
+## Recommended next action
+
+Review the generated packet output, then commit if acceptable.

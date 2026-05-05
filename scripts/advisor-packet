@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+set -u
+
+OUT="${1:-/tmp/advisor-packet.md}"
+MAX_FILE_LINES="${MAX_FILE_LINES:-220}"
+MAX_DIFF_LINES="${MAX_DIFF_LINES:-500}"
+MAX_LOG_LINES="${MAX_LOG_LINES:-160}"
+LOG_FILE="${AGENT_LOG:-.agent/session.log}"
+
+write_section_file() {
+  local title="$1"
+  local file="$2"
+  local max_lines="$3"
+
+  if [ -f "$file" ]; then
+    {
+      echo "## $title"
+      echo
+      echo '```markdown'
+      sed -n "1,${max_lines}p" "$file"
+      local total_lines
+      total_lines="$(wc -l < "$file" 2>/dev/null || echo 0)"
+      if [ "$total_lines" -gt "$max_lines" ]; then
+        echo
+        echo "[truncated: showing first ${max_lines} of ${total_lines} lines]"
+      fi
+      echo '```'
+      echo
+    }
+  fi
+}
+
+write_command_section() {
+  local title="$1"
+  shift
+
+  echo "## $title"
+  echo
+  echo '```text'
+  "$@" 2>&1 || true
+  echo '```'
+  echo
+}
+
+{
+  echo "# Advisor Packet"
+  echo
+  echo "Generated: $(date -Is)"
+  echo "Directory: $(pwd)"
+  echo
+  echo "## Request to advisor"
+  echo
+  echo "Review this packet and help decide the safest next instruction for the coding agent."
+  echo
+  echo "Return:"
+  echo
+  echo "1. APPROVE / REJECT / REVISE / STOP"
+  echo "2. Plain-English reason"
+  echo "3. Exact next prompt to give the coding agent"
+  echo "4. Any project file that should be updated"
+  echo
+  echo "---"
+  echo
+
+  write_section_file "PROJECT_PLAN.md" "PROJECT_PLAN.md" "$MAX_FILE_LINES"
+  write_section_file "CURRENT_SLICE.md" "CURRENT_SLICE.md" "$MAX_FILE_LINES"
+  write_section_file "DECISIONS.md" "DECISIONS.md" "$MAX_FILE_LINES"
+  write_section_file "AGENT_STATUS.md" "AGENT_STATUS.md" "$MAX_FILE_LINES"
+  write_section_file "AGENTS.md" "AGENTS.md" "$MAX_FILE_LINES"
+
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    write_command_section "Git status" git status --short
+    write_command_section "Git diff stat" git diff --stat
+
+    echo "## Git diff excerpt"
+    echo
+    echo '```diff'
+    git diff --find-renames --find-copies --minimal --unified=3 2>/dev/null | sed -n "1,${MAX_DIFF_LINES}p" || true
+    echo '```'
+    echo
+  else
+    echo "## Git"
+    echo
+    echo "Not inside a Git working tree, or Git metadata is unavailable."
+    echo
+  fi
+
+  if [ -f "$LOG_FILE" ]; then
+    echo "## Recent coder log"
+    echo
+    echo '```text'
+    tail -n "$MAX_LOG_LINES" "$LOG_FILE" 2>/dev/null || true
+    echo '```'
+    echo
+  fi
+} > "$OUT"
+
+echo "Wrote $OUT"
+
+if command -v wl-copy >/dev/null 2>&1; then
+  wl-copy < "$OUT" && echo "Copied to clipboard with wl-copy"
+elif command -v xclip >/dev/null 2>&1; then
+  xclip -selection clipboard < "$OUT" && echo "Copied to clipboard with xclip"
+fi
