@@ -2,19 +2,18 @@
 
 ## Current status
 
-Slice 3 is complete. The repo is ready to test the full two-surface loop.
+Slice 4 documentation update is ready for review.
 
 ## Current slice
 
 Slice 4: test the two-surface loop on one small real task.
 
-## Files expected to change
+## Files changed
 
-- `CURRENT_SLICE.md`
-- `AGENT_STATUS.md`
 - `PROJECT_PLAN.md`
+- `AGENT_STATUS.md`
 
-## Checks to run
+## Checks run
 
 - `./scripts/advisor-packet`
 - `git diff --stat`
@@ -22,8 +21,8 @@ Slice 4: test the two-surface loop on one small real task.
 
 ## Risks or blockers
 
-None known.
+None known. This is a documentation-only change.
 
 ## Recommended next action
 
-Run `advisor-packet`, paste the packet into the web UI advisor, and ask for the bounded prompt for the documentation-only test task.
+Review the diff. If acceptable, commit the Slice 4 documentation update.

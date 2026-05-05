@@ -27,4 +27,15 @@ Create a stable workflow where:
 
 ## Current build stage
 
-Slice 3: strengthen `AGENTS.md` coder status and approval brief rules.
+Slice 4: test the full two-surface loop on one small documentation task.
+
+## How to use this repo
+
+Use this repo as the canonical source for homelab workflow state.
+
+- `PROJECT_PLAN.md` stores the broad goal, completed stages, and current build stage.
+- `CURRENT_SLICE.md` stores the active task and its acceptance criteria.
+- `AGENT_STATUS.md` stores the current handoff/status summary.
+- `DECISIONS.md` stores durable decisions and rationale.
+- `AGENTS.md` stores rules for coding agents working in this repo.
+- `scripts/advisor-packet` creates a compact advisor packet for the web UI.
