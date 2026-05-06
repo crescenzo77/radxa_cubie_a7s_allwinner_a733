@@ -10,7 +10,7 @@ Draft the OpenCode provider migration before making any live OpenCode, Open WebU
 
 Target draft shape:
 
-- Direct local provider for AMD `local-coder`.
+- Direct local provider for AMD local-coder.
 - Generated `homelab-openrouter-free` provider for manual OpenRouter free-only use.
 
 ## Scope
@@ -23,8 +23,8 @@ Drafting and read-only inspection only:
 - Document rollback path.
 - Do not edit `/home/enzo/.config/opencode/opencode.json`.
 - Do not change OpenCode live provider settings.
-- Do not alter LiteLLM or Open WebUI.
 - Do not call any OpenRouter model.
+- Do not alter LiteLLM or Open WebUI.
 - Do not make live service changes.
 
 ## Constraints

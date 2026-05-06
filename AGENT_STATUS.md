@@ -2,15 +2,7 @@
 
 ## Current status
 
-Slice 10 is complete for syntax validity.
-
-OpenCode supports this generated provider API key placeholder:
-
-```json
-"apiKey": "{env:OPENROUTER_API_KEY}"
-```
-
-Official OpenCode config documentation confirms `{env:VARIABLE_NAME}` substitution in config files, including provider `options.apiKey`. If the environment variable is unset, OpenCode substitutes an empty string.
+Slice 12 has a non-live OpenCode direct-provider migration draft based on fresh manual read-only inspection.
 
 ## Current slice
 
@@ -20,10 +12,9 @@ Slice 12: draft OpenCode direct-provider migration.
 
 Updated repo state docs only:
 
-- `CURRENT_SLICE.md`
 - `AGENT_STATUS.md`
 
-Slice 12 is now the active next slice.
+No live config was edited.
 
 ## What did not change
 
@@ -38,80 +29,136 @@ Not changed:
 - Docker Compose services
 - systemd services or timers
 - OpenRouter model access
+- remote host files
 
 No OpenRouter model calls were made.
 
-## Slice 12 task
-
-Prepare a non-live draft migration from the current OpenCode LiteLLM-only configuration to:
-
-- direct local provider for AMD `local-coder`
-- generated `homelab-openrouter-free` provider for manual OpenRouter free-only use
-
-Allowed work:
-
-- inspect current AMD OpenCode config read-only using the normal SSH alias
-- inspect `/srv/openrouter-free/opencode.generated.json` read-only using the normal SSH alias
-- design a proposed `opencode.json` shape
-- document rollback path
-
-Not allowed:
-
-- editing `/home/enzo/.config/opencode/opencode.json`
-- changing OpenCode live provider settings
-- altering LiteLLM or Open WebUI
-- calling any OpenRouter model
-- making live service changes
-- printing secrets
+No service restarts were run.
 
 ## Checks run
 
-Documentation reads for this slice setup:
+Manual read-only inspection from `strix`:
 
-- `AGENTS.md`
-- `CODEX_CONTEXT.md`
-- `CURRENT_SLICE.md`
-- `AGENT_STATUS.md`
-- `ROADMAP.md`
-- `WORKFLOW.md`
-- `HOMELAB_LAYOUT.md`
-- `DECISIONS.md`
-
-No remote inspection was run during this slice-creation step.
+- `ssh amd` inspected OpenCode version and redacted config.
+- `ssh thinkcentre` inspected `/srv/openrouter-free/opencode.generated.json` with API key redacted.
 
 ## Results of checks
 
-The repo docs support Slice 12 as the next narrow step in the router transition:
+AMD OpenCode:
 
-- AMD is the current OpenCode execution host.
-- The target OpenCode path is direct local-coder on AMD.
-- OpenRouter remains allowed only as generated free-only manual fallback.
-- LiteLLM remains temporary rollback and must not be altered during this draft.
+- Hostname: `AMD`
+- OpenCode version: `1.14.39`
+- Current enabled provider: `homelab`
+- Current provider path: Homelab LiteLLM at `http://192.168.50.225:4000/v1`
+- Current default model: `homelab/local-coder | AMD RTX 3090 | Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+- Current small model: `homelab/local-coder-backup | AMD RX 7900 XT | Gemma 4 26B A4B Q4_K_M.gguf`
+
+Generated OpenRouter-free provider:
+
+- Hostname: `thinkcentre`
+- Path: `/srv/openrouter-free/opencode.generated.json`
+- Provider name: `homelab-openrouter-free`
+- Base URL: `https://openrouter.ai/api/v1`
+- API key syntax: `{env:OPENROUTER_API_KEY}`
+- Verified free model entries: 25
+
+## Proposed non-live migration shape
+
+Draft only. Do not apply without a later approval brief and live-config backup.
+
+The first live migration should be intentionally narrow:
+
+- Add direct `homelab-local` provider for AMD 3090 local-coder.
+- Add generated `homelab-openrouter-free` provider for manual OpenRouter free-only use.
+- Keep OpenRouter manual-only.
+- Do not add automatic OpenRouter fallback.
+- Do not remove LiteLLM from Open WebUI.
+- Do not delete LiteLLM.
+- Do not set `small_model` to the 3090 model.
+
+Important correction:
+
+- The draft must not set `small_model` to the same AMD 3090 model as `model`.
+- Until a direct backup provider is added, either keep the existing LiteLLM-backed `small_model` during transition or omit `small_model` in the direct-provider draft.
+- A later slice can add a direct AMD 7900 XT backup provider if desired.
+
+## Draft provider direction
+
+Target direct local provider:
+
+```json
+{
+  "homelab-local": {
+    "npm": "@ai-sdk/openai-compatible",
+    "name": "Homelab Local",
+    "options": {
+      "baseURL": "http://192.168.50.252:8083/v1",
+      "apiKey": "dummy"
+    },
+    "models": {
+      "Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf": {
+        "name": "local-coder | AMD RTX 3090 | Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf"
+      }
+    }
+  }
+}
+```
+
+Target generated OpenRouter-free provider should be copied from:
+
+```text
+/srv/openrouter-free/opencode.generated.json
+```
+
+Current generated model count:
+
+```text
+25
+```
+
+## Rollback path
+
+Before any future live migration:
+
+1. Back up `/home/enzo/.config/opencode/opencode.json` on AMD without printing secrets.
+2. Apply the approved migration only to `/home/enzo/.config/opencode/opencode.json`.
+3. Validate OpenCode against AMD local endpoint only.
+4. If validation fails, restore the previous OpenCode config that uses provider `homelab` and LiteLLM base URL `http://192.168.50.225:4000/v1`.
+
+Rollback target:
+
+- provider: `homelab`
+- base URL: `http://192.168.50.225:4000/v1`
+- default model: `homelab/local-coder | AMD RTX 3090 | Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+- small model: `homelab/local-coder-backup | AMD RX 7900 XT | Gemma 4 26B A4B Q4_K_M.gguf`
+
+Do not stop or delete LiteLLM during rollback preparation.
 
 ## Known risks or blockers
 
-- Normal SSH from the Codex environment previously failed on the system SSH client config permission error, even though user-run diagnostics reportedly worked with normal aliases.
-- The migration draft depends on read-only inspection of the AMD OpenCode config and generated OpenRouter-free artifact.
-- Any live OpenCode config change remains out of scope until a later approval brief.
+- `OPENROUTER_API_KEY` must be present in the OpenCode runtime environment before manual OpenRouter-free use; otherwise OpenCode substitutes an empty string.
+- `enabled_providers` should be checked against the installed OpenCode version before applying live.
+- The first live test should validate only the direct AMD local provider before any OpenRouter provider is used.
+- Direct backup provider for AMD 7900 XT is not included in the first narrow migration draft.
 
 ## User approval needed
 
-No approval is needed for the repo-doc update already made.
+Approval is required before:
 
-Approval will be needed before:
-
-- editing live OpenCode config
+- editing `/home/enzo/.config/opencode/opencode.json`
 - changing OpenCode provider settings
 - altering LiteLLM or Open WebUI
 - calling any OpenRouter model
-- making live service changes
+- restarting services
 - mutating any remote host
 
 ## Recommended next action
 
-Run Slice 12 as a read-only draft:
+Prepare a live-change approval brief for a narrow AMD OpenCode config migration:
 
-1. Inspect AMD OpenCode config with the normal SSH alias.
-2. Inspect `/srv/openrouter-free/opencode.generated.json` with the normal SSH alias.
-3. Draft the proposed `opencode.json` shape and rollback path in `AGENT_STATUS.md`.
-4. Stop before any live config edit.
+1. Backup current AMD OpenCode config.
+2. Write a candidate config file beside the live config.
+3. Validate candidate JSON.
+4. Switch OpenCode to direct AMD local provider only.
+5. Test local-only OpenCode.
+6. Add generated OpenRouter-free provider only after local direct provider is proven.
