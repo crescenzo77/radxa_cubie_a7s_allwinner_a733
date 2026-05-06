@@ -106,3 +106,26 @@ Approval will be needed before:
 ## Recommended next action
 
 Review the Slice 11 diff. If accepted, commit it, then run only the read-only diagnostic command block from `CURRENT_SLICE.md`.
+
+## Slice 11 diagnostic result
+
+Read-only SSH diagnostics were run manually from `strix`.
+
+Results:
+
+- `ssh amd 'hostname'` works using the user SSH alias.
+- `ssh thinkcentre 'hostname'` works using the user SSH alias.
+- Passwordless SSH works for both `amd` and `thinkcentre`.
+- LAN SSH aliases in `~/.ssh/config` are the correct agent path.
+- `ssh -F /dev/null` should not be used for normal agent inspection because it bypasses `~/.ssh/config`.
+- The earlier system SSH config permission error was not reproducible in the normal shell.
+
+Recommended agent rule:
+
+- Codex may use normal read-only SSH commands through configured aliases such as `ssh amd '...'` and `ssh thinkcentre '...'`.
+- Codex must not use `ssh -F /dev/null` unless explicitly troubleshooting SSH config behavior.
+- Codex must still stop for approval before any remote mutation.
+
+Recommended next action:
+
+Resume Slice 10 OpenCode config verification using normal SSH aliases.
