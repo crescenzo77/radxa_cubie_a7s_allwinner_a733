@@ -2,7 +2,7 @@
 
 ## Current status
 
-Slice 8 routing inventory is complete. The next step is to plan neutral OpenRouter-free artifact generation.
+OpenCode config format has been inspected and the neutral OpenRouter-free artifact plan has been written.
 
 ## Current slice
 
@@ -10,13 +10,25 @@ Slice 9: create neutral OpenRouter-free artifact generator.
 
 ## Files changed in current uncommitted work
 
-- `CURRENT_SLICE.md`
+- `OPENROUTER_FREE_ARTIFACT_PLAN.md`
 - `AGENT_STATUS.md`
+
+## Key findings
+
+OpenCode accepts provider config using:
+
+- `provider.<name>.npm`
+- `provider.<name>.name`
+- `provider.<name>.options.baseURL`
+- `provider.<name>.options.apiKey`
+- `provider.<name>.models`
+
+Current AMD OpenCode still points at Homelab LiteLLM. The target is to add a direct local provider and a generated free-only OpenRouter provider later.
 
 ## Risks or blockers
 
-OpenCode config format must be inspected before generating OpenCode config artifacts. Do not modify live OpenCode, Open WebUI, LiteLLM, or systemd units yet.
+OpenCode API key interpolation for generated provider config still needs verification before live use.
 
 ## Recommended next action
 
-Commit this Slice 9 setup, then inspect OpenCode config/schema and create an artifact-generation plan in the repo.
+Review and commit the artifact plan, then create the neutral artifact generator on ThinkCentre without changing any live service configs.
