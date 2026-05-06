@@ -2,30 +2,19 @@
 
 ## Current status
 
-Slice 10 OpenCode environment-variable interpolation verification is complete for syntax validity.
+Slice 10 is complete for syntax validity.
 
-## Current slice
-
-Slice 10: verify OpenCode environment-variable interpolation without live config changes.
-
-## Finding
-
-The generated OpenCode provider API key placeholder is valid OpenCode config syntax:
+OpenCode supports this generated provider API key placeholder:
 
 ```json
 "apiKey": "{env:OPENROUTER_API_KEY}"
 ```
 
-Official OpenCode config documentation says config files support variable substitution with `{env:VARIABLE_NAME}`. Its provider example places an environment variable placeholder directly in `provider.*.options.apiKey`.
+Official OpenCode config documentation confirms `{env:VARIABLE_NAME}` substitution in config files, including provider `options.apiKey`. If the environment variable is unset, OpenCode substitutes an empty string.
 
-Source:
+## Current slice
 
-- https://opencode.ai/docs/config/
-
-Important behavior:
-
-- If the environment variable is set, OpenCode substitutes its value.
-- If the environment variable is not set, OpenCode replaces the placeholder with an empty string.
+Slice 12: draft OpenCode direct-provider migration.
 
 ## What changed
 
@@ -33,6 +22,8 @@ Updated repo state docs only:
 
 - `CURRENT_SLICE.md`
 - `AGENT_STATUS.md`
+
+Slice 12 is now the active next slice.
 
 ## What did not change
 
@@ -48,77 +39,79 @@ Not changed:
 - systemd services or timers
 - OpenRouter model access
 
-No paid OpenRouter model calls were made.
+No OpenRouter model calls were made.
+
+## Slice 12 task
+
+Prepare a non-live draft migration from the current OpenCode LiteLLM-only configuration to:
+
+- direct local provider for AMD `local-coder`
+- generated `homelab-openrouter-free` provider for manual OpenRouter free-only use
+
+Allowed work:
+
+- inspect current AMD OpenCode config read-only using the normal SSH alias
+- inspect `/srv/openrouter-free/opencode.generated.json` read-only using the normal SSH alias
+- design a proposed `opencode.json` shape
+- document rollback path
+
+Not allowed:
+
+- editing `/home/enzo/.config/opencode/opencode.json`
+- changing OpenCode live provider settings
+- altering LiteLLM or Open WebUI
+- calling any OpenRouter model
+- making live service changes
+- printing secrets
 
 ## Checks run
 
-Read required repo context:
+Documentation reads for this slice setup:
 
 - `AGENTS.md`
 - `CODEX_CONTEXT.md`
 - `CURRENT_SLICE.md`
 - `AGENT_STATUS.md`
-- `PROJECT_PLAN.md`
+- `ROADMAP.md`
+- `WORKFLOW.md`
+- `HOMELAB_LAYOUT.md`
 - `DECISIONS.md`
 
-Attempted read-only remote inspection using normal SSH aliases:
-
-- `ssh thinkcentre 'hostname; test -f /srv/openrouter-free/opencode.generated.json && sed -n "1,220p" /srv/openrouter-free/opencode.generated.json'`
-- `ssh amd 'hostname; command -v opencode || true; /home/enzo/.opencode/bin/opencode --version 2>/dev/null || true; ... redacted config inspection ...'`
-
-Consulted official OpenCode config documentation:
-
-- https://opencode.ai/docs/config/
+No remote inspection was run during this slice-creation step.
 
 ## Results of checks
 
-Documentation result:
+The repo docs support Slice 12 as the next narrow step in the router transition:
 
-- `{env:VARIABLE_NAME}` is valid OpenCode variable substitution syntax.
-- `provider.*.options.apiKey` may use `{env:...}`.
-- An unset environment variable is substituted as an empty string.
-
-Remote inspection result:
-
-- Both normal SSH alias commands failed before reaching remote hosts with:
-
-```text
-Bad owner or permissions on /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
-```
-
-- Per user instruction, `ssh -F /dev/null` was not used.
-- `/srv/openrouter-free/opencode.generated.json` was not inspected during this run because normal SSH failed.
-- AMD OpenCode config was not inspected during this run because normal SSH failed.
+- AMD is the current OpenCode execution host.
+- The target OpenCode path is direct local-coder on AMD.
+- OpenRouter remains allowed only as generated free-only manual fallback.
+- LiteLLM remains temporary rollback and must not be altered during this draft.
 
 ## Known risks or blockers
 
-- Syntax is verified, but remote generated artifact contents were not rechecked in this run.
-- Syntax is verified, but AMD live OpenCode config was not inspected in this run.
-- If `OPENROUTER_API_KEY` is not present in the OpenCode runtime environment, OpenCode will substitute an empty string.
-- Normal SSH from this Codex environment still needs the local SSH client config issue resolved for predictable remote inspection.
+- Normal SSH from the Codex environment previously failed on the system SSH client config permission error, even though user-run diagnostics reportedly worked with normal aliases.
+- The migration draft depends on read-only inspection of the AMD OpenCode config and generated OpenRouter-free artifact.
+- Any live OpenCode config change remains out of scope until a later approval brief.
 
 ## User approval needed
 
-No approval is needed for the documentation-only update already made.
+No approval is needed for the repo-doc update already made.
 
-Approval is still needed before:
+Approval will be needed before:
 
 - editing live OpenCode config
 - changing OpenCode provider settings
-- changing Open WebUI or LiteLLM
-- generating or installing SSH keys
-- editing SSH config
-- making any remote mutation
-- executing any networked throwaway OpenCode test
+- altering LiteLLM or Open WebUI
+- calling any OpenRouter model
+- making live service changes
+- mutating any remote host
 
 ## Recommended next action
 
-Do not wire the generated OpenRouter-free provider into live OpenCode config yet.
+Run Slice 12 as a read-only draft:
 
-First, fix or bypass the Codex SSH environment problem through an approved SSH-readiness slice, then inspect:
-
-- `/srv/openrouter-free/opencode.generated.json`
-- AMD OpenCode version and config shape
-- whether `OPENROUTER_API_KEY` is available to the intended OpenCode runtime
-
-After those read-only checks, prepare a separate approval brief before any live OpenCode config change.
+1. Inspect AMD OpenCode config with the normal SSH alias.
+2. Inspect `/srv/openrouter-free/opencode.generated.json` with the normal SSH alias.
+3. Draft the proposed `opencode.json` shape and rollback path in `AGENT_STATUS.md`.
+4. Stop before any live config edit.
