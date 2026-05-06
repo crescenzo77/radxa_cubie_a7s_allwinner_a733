@@ -2,7 +2,7 @@
 
 This is the architectural reference for the practical two-surface homelab workflow. It answers what runs where, which machines own which responsibilities, and what must not become infrastructure.
 
-Last updated: 2026-05-05.
+Last updated: 2026-05-06.
 
 ## Operating Model
 
@@ -23,7 +23,7 @@ Codex may be used manually during setup documentation work, but it is not part o
 | `framework` | — | yes | Thin client: browser, SSH, VS Code Remote-SSH |
 | `amd` | `192.168.50.252` | `100.107.201.16` | Current coding execution host; OpenCode installed; primary RTX 3090 coder model and RX 7900 XT backup |
 | `strix` | `192.168.50.11` | `100.105.138.41` | Target canonical project/source host; reasoning/testbed inference |
-| `thinkcentre` | `192.168.50.225` | `100.127.113.105` | Services hub: Open WebUI, SearXNG, AdGuard, dashboard, proxies; LiteLLM retained temporarily for rollback during router transition |
+| `thinkcentre` | `192.168.50.225` | `100.127.113.105` | Services hub: Open WebUI, SearXNG, AdGuard, dashboard, proxies; LiteLLM active for Open WebUI and retained for OpenCode rollback |
 | `mac mini` | `192.168.50.164` | yes | iMessage relay backend; future tier-2 git mirror |
 | `minipc` | `192.168.50.76` | yes | LAN backup target |
 | `oracle` | cloud | yes | Off-site backup, headscale host |
@@ -36,7 +36,7 @@ Open WebUI on ThinkCentre is the browser-based advisor/planner:
 
 ```text
 URL: http://192.168.50.225:3000
-Target model access: Open WebUI -> direct local model endpoints; optional OpenRouter access remains free-only and explicit
+Current model access: Open WebUI -> LiteLLM; target model access remains direct local model endpoints with optional free-only explicit OpenRouter access
 ```
 
 Use the advisor for:
@@ -65,9 +65,12 @@ Current practical default:
 Host: amd
 Tool: OpenCode
 Binary: /home/enzo/.opencode/bin/opencode
-Version: 1.14.38
-Current provider: Homelab LiteLLM during transition
-Transition target: direct local-coder provider on AMD
+Version: 1.14.39
+Default provider: homelab-local
+Default base URL: http://192.168.50.252:8083/v1
+Default path: OpenCode on AMD -> direct AMD local-coder
+Manual provider: homelab-openrouter-free
+Manual provider model count: 25 verified free OpenRouter models
 Rollback endpoint: http://192.168.50.225:4000/v1
 ```
 
@@ -75,7 +78,7 @@ Preferred steady-state coder:
 
 - **OpenCode** using the direct local-coder path.
 
-Aider was evaluated and eliminated from the homelab workflow. LiteLLM is being phased out of the active OpenCode path. OpenRouter should remain available only as a generated free-only manual fallback, not as an automatic hidden route.
+Aider was evaluated and eliminated from the homelab workflow. LiteLLM is no longer in the default OpenCode path, but remains active for Open WebUI and available for OpenCode rollback. OpenRouter is available only through the generated `homelab-openrouter-free` provider when selected manually, not as an automatic hidden route.
 
 Codex/Claude-style hosted tools must not be wired into API automation, wrappers, scheduled tasks, or background jobs. If used at all during setup or emergency manual work, they remain manually invoked tools.
 
@@ -126,20 +129,25 @@ Each active project should keep human-readable operating files in the repository
 
 These files are the shared state between the user, advisor, and coder. They are deliberately simple markdown plus git.
 
-## Router transition: LiteLLM to direct local endpoints
+## Routing State: OpenCode Direct, LiteLLM Retained
 
-LiteLLM on ThinkCentre is the current live router but is no longer the target long-term active path.
+AMD OpenCode now defaults directly to the local AMD coder endpoint. LiteLLM on ThinkCentre is still live for Open WebUI and retained as the OpenCode rollback path.
 
 ```text
-OpenCode
-  -> direct local-coder on AMD
+OpenCode on AMD
+  -> homelab-local
+  -> http://192.168.50.252:8083/v1
 
-OpenCode manual fallback
-  -> generated homelab-openrouter-free provider
-  -> verified free OpenRouter models only
+OpenCode manual free cloud provider
+  -> homelab-openrouter-free
+  -> 25 verified free OpenRouter models only
 
 Open WebUI
-  -> direct local model endpoints on AMD and Strix
+  -> LiteLLM on ThinkCentre
+
+OpenCode rollback
+  -> LiteLLM on ThinkCentre
+  -> http://192.168.50.225:4000/v1
 ```
 
 Host details:
@@ -152,22 +160,22 @@ Endpoint: http://192.168.50.225:4000/v1
 Container: litellm
 ```
 
-OpenRouter remains allowed only as free-model access. The target is to preserve the existing free-model discovery/filtering mechanism while moving generated artifacts to neutral config under `/srv/openrouter-free/`:
+OpenRouter remains allowed only as free-model access. The existing free-model discovery/filtering mechanism now generates neutral artifacts under `/srv/openrouter-free/`:
 
 - `openrouter/openrouter/free`
 - Generated model entries ending in `:free`
 
 No paid OpenRouter fallback is allowed. If free models cannot be verified, they must not be exposed.
 
-## Model Role Assignments During Transition
+## Model Role Assignments
 
 | Role | Model label / target | Endpoint | Use |
 |---|---|---|---|
 | Primary local coding | `local-coder | AMD RTX 3090 | Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf` | `amd:8083` | OpenCode coding work |
-| 3090-off backup | `local-coder-backup | AMD RX 7900 XT | Gemma 4 26B A4B Q4_K_M.gguf` | `amd:8084` | Direct/manual backup target after transition |
+| 3090-off backup | `local-coder-backup | AMD RX 7900 XT | Gemma 4 26B A4B Q4_K_M.gguf` | `amd:8084` | Optional future direct/manual backup target |
 | Planning/reasoning | `local-reasoning | Strix | Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf` | `strix:8081` | Advisor/planning |
 | Strix coder testbed | `local-coder-testbed | Strix | Qwen3-Coder-Next-UD-Q4_K_XL.gguf` | `strix:8082` | Manual coder testbed |
-| Cloud fallback | generated `homelab-openrouter-free` entries | OpenRouter API | Free-only manual fallback, generated from verified allowlist |
+| Manual free cloud provider | generated `homelab-openrouter-free` entries | OpenRouter API | Free-only manual use, generated from verified allowlist |
 
 ## Project Source Convention
 

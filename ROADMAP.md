@@ -2,12 +2,14 @@
 
 This roadmap describes the path from the current setup to a practical two-surface workflow.
 
-Last updated: 2026-05-05.
+Last updated: 2026-05-06.
 
 ## Current Facts To Preserve
 
 - AMD is the current OpenCode and coding execution host.
-- ThinkCentre hosts Open WebUI and related services. LiteLLM is retained temporarily during transition as rollback, not the long-term active router.
+- AMD OpenCode now defaults directly to `homelab-local` at `http://192.168.50.252:8083/v1`.
+- AMD OpenCode exposes `homelab-openrouter-free` as a manual-only provider with 25 verified free OpenRouter models.
+- ThinkCentre hosts Open WebUI and related services. LiteLLM is still active for Open WebUI and retained for OpenCode rollback, but it is no longer the default OpenCode router.
 - Strix is the target canonical project/source host.
 - Framework laptop remains a thin client.
 - OpenRouter must remain free-only and fail-closed; target is generated free-only config under `/srv/openrouter-free/`, not LiteLLM as active router.
@@ -152,20 +154,29 @@ Definition of done:
 
 LiteLLM is no longer the target long-term active routing layer for OpenCode or Open WebUI.
 
-Target:
-- OpenCode uses direct local-coder by default.
-- OpenCode exposes OpenRouter only through generated free-only manual provider entries.
-- Open WebUI moves back to direct local model endpoints.
+Completed for OpenCode:
+- OpenCode uses `homelab-local` direct local-coder by default.
+- OpenCode exposes OpenRouter only through generated `homelab-openrouter-free` free-only manual provider entries.
 - OpenRouter free-model discovery and filtering is preserved.
-- Generated free-model artifacts move toward `/srv/openrouter-free/`.
-- LiteLLM remains available temporarily for rollback, then leaves the active path after testing.
+- Generated free-model artifacts exist under `/srv/openrouter-free/`.
+
+Still pending:
+- Open WebUI still routes through LiteLLM.
+- LiteLLM remains active for Open WebUI and retained for OpenCode rollback.
+- Later stability review can decide whether LiteLLM should be removed from OpenCode entirely.
 
 Definition of done:
 - Docs describe LiteLLM as transitional/rollback, not the long-term router.
 - OpenCode direct local-coder path is tested.
 - OpenRouter free-only generated provider is tested manually.
-- Open WebUI direct endpoints are tested.
+- Open WebUI direct endpoints are tested in a later slice.
 - LiteLLM rollback path is documented.
+
+## Future Routing Work
+
+- Add an optional direct AMD backup provider for the RX 7900 XT endpoint.
+- After a stability period, decide whether to remove LiteLLM from OpenCode entirely while preserving rollback notes.
+- Reevaluate Open WebUI routing later; do not claim it has migrated until the live Open WebUI config changes.
 
 ## Optional Later Improvements
 

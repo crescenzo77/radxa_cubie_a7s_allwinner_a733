@@ -4,7 +4,7 @@ Date: 2026-05-06
 
 ## Purpose
 
-Capture the current live routing state before changing OpenCode, Open WebUI, LiteLLM, or OpenRouter configuration.
+Capture the current live routing state for OpenCode, Open WebUI, LiteLLM, and OpenRouter configuration.
 
 This is a read-only inventory. No service or config changes were made.
 
@@ -16,15 +16,19 @@ Observed:
 
 - Version: `1.14.39`
 - Config path: `/home/enzo/.config/opencode/opencode.json`
-- Current provider: `homelab`
-- Current provider name: `Homelab LiteLLM`
-- Current base URL: `http://192.168.50.225:4000/v1`
-- Current default model: `homelab/local-coder | AMD RTX 3090 | Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
-- Current small model: `homelab/local-coder-backup | AMD RX 7900 XT | Gemma 4 26B A4B Q4_K_M.gguf`
+- Default provider: `homelab-local`
+- Default provider name: `Homelab Local`
+- Default base URL: `http://192.168.50.252:8083/v1`
+- Default model: `homelab-local/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+- Manual provider: `homelab-openrouter-free`
+- Manual provider model count: 25 verified free OpenRouter models
+- OpenRouter default usage: disabled/manual-only
+- LiteLLM rollback provider: `homelab`
+- LiteLLM rollback base URL: `http://192.168.50.225:4000/v1`
 
 Conclusion:
 
-OpenCode currently still routes through LiteLLM.
+AMD OpenCode no longer defaults through LiteLLM. The default path is direct AMD local-coder through `homelab-local`. OpenRouter is available only through `homelab-openrouter-free` when selected manually.
 
 ## ThinkCentre Open WebUI
 
@@ -61,7 +65,13 @@ Container:
 
 Security note:
 
-Using `main-latest` is not ideal for a security-sensitive routing service. Since the target is to remove LiteLLM from the active path, this is recorded as a transition risk rather than fixed immediately.
+Using `main-latest` is not ideal for a security-sensitive routing service. Since LiteLLM is no longer the default OpenCode path and Open WebUI routing will be reevaluated later, this is recorded as a transition risk rather than fixed immediately.
+
+Current role:
+
+- Still active for Open WebUI.
+- Retained for OpenCode rollback.
+- Not the default OpenCode path anymore.
 
 ## OpenRouter free-model refresh
 
@@ -124,16 +134,11 @@ All direct local model endpoints responded successfully.
 
 Conclusion:
 
-The direct-local endpoint target is viable. OpenCode and Open WebUI can be migrated away from LiteLLM after config generation and rollback steps are documented.
+The AMD direct-local endpoint is now the default OpenCode path through `homelab-local`. Open WebUI still uses LiteLLM and can be reevaluated in a later slice.
 
-## Next recommended slice
-
-Create `/srv/openrouter-free/` on ThinkCentre and migrate the free-model discovery output to neutral artifacts:
-
-- `free-models.raw.json`
-- `free-models.allowlist.json`
-- `opencode.generated.json`
-- `openwebui.generated.env`
+## Current recommended next actions
 
 Do not stop LiteLLM yet.
-Do not change OpenCode or Open WebUI config yet.
+Do not claim Open WebUI has migrated until its live config changes.
+Keep OpenRouter manual-only in OpenCode.
+Optional later work can add a direct AMD backup provider for `http://192.168.50.252:8084`.

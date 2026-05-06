@@ -2,68 +2,89 @@
 
 ## Current status
 
-Slice 16 is ready to synchronize homelab architecture docs with the new live OpenCode routing state.
+Slice 16 documentation edits are complete and ready for review.
 
 ## Current slice
 
 Slice 16: synchronize architecture docs with live OpenCode state.
 
-## Why this is needed
+## What changed
 
-The deployed OpenCode routing path changed during Slices 14 and 15.
+Updated stale architecture and workflow documentation so the repo now reflects the deployed routing state:
 
-The repo must now be updated so:
+- AMD OpenCode defaults to `homelab-local`.
+- AMD OpenCode uses the direct local endpoint `http://192.168.50.252:8083/v1`.
+- `homelab-openrouter-free` is documented as a manual-only provider.
+- `homelab-openrouter-free` is documented as exposing 25 verified free OpenRouter models.
+- LiteLLM is documented as still active for Open WebUI and retained for OpenCode rollback.
+- Open WebUI is documented as not migrated yet.
+- No automatic OpenRouter fallback is documented.
 
-```text
-repo docs == actual deployed state
-```
+## What did not change
 
-Without this update:
+No live services or configs were changed.
 
-- agents receive stale routing assumptions
-- future migrations become harder to reason about
-- rollback paths become less trustworthy
-- architecture docs drift from reality
+No:
 
-## Current live state
+- OpenCode live config edits
+- Open WebUI live config edits
+- LiteLLM changes
+- service restarts
+- OpenRouter calls
+- remote mutations
+- commits
 
-AMD OpenCode:
-
-- default provider: `homelab-local`
-- default execution path: direct AMD local 3090
-- manual provider: `homelab-openrouter-free`
-- OpenRouter usage: manual-only
-- automatic cloud fallback: disabled
-
-LiteLLM:
-
-- still active
-- still used by Open WebUI
-- retained for rollback
-- no longer default OpenCode path
-
-## Files that require updates
+## Files changed
 
 - `HOMELAB_LAYOUT.md`
 - `WORKFLOW.md`
 - `ROADMAP.md`
 - `OPENROUTER_FREE_ARTIFACT_PLAN.md`
 - `ROUTING_INVENTORY.md`
+- `AGENT_STATUS.md`
 
-## Constraints
+## Checks run
 
-This slice is documentation-only.
+- Read required context files:
+  - `AGENTS.md`
+  - `CODEX_CONTEXT.md`
+  - `PROJECT_PLAN.md`
+  - `CURRENT_SLICE.md`
+  - `DECISIONS.md`
+  - `AGENT_STATUS.md`
+  - `HOMELAB_LAYOUT.md`
+  - `WORKFLOW.md`
+  - `ROADMAP.md`
+  - `OPENROUTER_FREE_ARTIFACT_PLAN.md`
+  - `ROUTING_INVENTORY.md`
+- Ran `rg` scans for stale OpenCode-through-LiteLLM wording.
+- Ran `rg` scans for current routing assertions.
+- Ran `git diff --stat`.
+- Ran `git status --short`.
 
-No:
+## Results of checks
 
-- live config edits
-- service restarts
-- OpenRouter calls
-- OpenCode changes
-- LiteLLM changes
-- Open WebUI changes
-- remote mutation
+- No remaining stale OpenCode-through-LiteLLM default-path wording was found in the slice docs.
+- Current routing docs now include:
+  - `homelab-local`
+  - `homelab-openrouter-free`
+  - 25 verified free OpenRouter models
+  - Open WebUI still using LiteLLM
+  - LiteLLM retained for OpenCode rollback
+  - OpenRouter manual-only behavior
+
+## Known risks or blockers
+
+No blockers.
+
+Residual risk: this was a documentation-only synchronization against the live state provided in the task. No live config was inspected or changed during this slice.
+
+## User approval needed
+
+No approval is needed for the completed documentation edits.
+
+Approval is still required before any future live service or config change.
 
 ## Recommended next action
 
-Transfer these files into `strix:/srv/projects/homelab/`, commit the slice transition, then perform documentation edits only.
+Review the git diff, then commit Slice 16 if the documentation matches the intended live state.

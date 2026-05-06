@@ -20,9 +20,9 @@ Useful behavior to preserve:
 - Exclude anything that cannot be verified as free.
 - Fail closed instead of exposing paid models.
 
-## Target directory
+## Artifact directory
 
-Create a neutral directory on ThinkCentre:
+Neutral directory on ThinkCentre:
 
 - `/srv/openrouter-free/`
 
@@ -33,9 +33,9 @@ Create a neutral directory on ThinkCentre:
 - `opencode.generated.json`: OpenCode-compatible provider fragment.
 - `openwebui.generated.env`: future helper artifact for Open WebUI direct/free-only config.
 
-## OpenCode provider target
+## OpenCode provider status
 
-Target provider name:
+Live manual provider name:
 
 - `homelab-openrouter-free`
 
@@ -58,9 +58,9 @@ Safety rules:
 - Do not configure automatic fallback to OpenRouter.
 - OpenRouter use must be manual.
 
-## Local OpenCode provider target
+## Local OpenCode provider status
 
-OpenCode should eventually get a direct local provider:
+OpenCode now uses a direct local provider by default:
 
 - Provider name: `homelab-local`
 - Base URL: `http://192.168.50.252:8083/v1`
@@ -87,22 +87,20 @@ Do not delete LiteLLM.
 
 Rollback remains:
 
-- Restore OpenCode config to the current `homelab` provider using `http://192.168.50.225:4000/v1`.
+- Restore OpenCode config to the rollback `homelab` provider using `http://192.168.50.225:4000/v1`.
 - Restore Open WebUI `OPENAI_API_BASE_URLS` to `http://192.168.50.225:4000/v1`.
-- Keep `/srv/litellm/` intact until direct OpenCode and Open WebUI paths are proven.
+- Keep `/srv/litellm/` intact because Open WebUI still uses it and OpenCode rollback depends on it.
 
-## Next implementation slice
+## Implementation status
 
-Create `/srv/openrouter-free/` on ThinkCentre and write a new generator that produces neutral artifacts.
+Direct local OpenCode and manual OpenRouter-free provider integration are live on AMD OpenCode. OpenRouter remains manual-only, and there is no automatic cloud fallback.
 
-Do not change:
+Do not change as part of this documentation slice:
 
 - OpenCode live config.
 - Open WebUI live config.
 - LiteLLM service.
 - systemd timers.
-
-First implementation should only generate and inspect artifacts.
 
 ## Implementation note: 2026-05-06
 
@@ -120,9 +118,12 @@ Generated artifacts were produced successfully:
 Result:
 
 - 25 verified free OpenRouter models generated.
-- No live LiteLLM, OpenCode, Open WebUI, Docker, or systemd configuration changed.
+- Generated provider is now live on AMD OpenCode as `homelab-openrouter-free`.
+- Direct local provider is now live on AMD OpenCode as `homelab-local`.
+- OpenRouter remains manual-only.
+- No automatic cloud fallback exists.
+- Open WebUI still routes through LiteLLM.
 
-Open issue:
+Resolved issue:
 
-- OpenCode environment-variable interpolation for generated provider API keys still needs verification before live integration.
-
+- OpenCode provider integration was verified during the later live migration slice.

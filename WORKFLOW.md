@@ -2,7 +2,7 @@
 
 This describes the normal working loop for homelab coding projects.
 
-Last updated: 2026-05-05.
+Last updated: 2026-05-06.
 
 ## Summary
 
@@ -82,11 +82,11 @@ Use the advisor to:
 - Check whether the coder’s proposed direction is still aligned with the current slice.
 - Turn the next action into a prompt for the coding agent.
 
-For planning, use the Strix reasoning model through Open WebUI. During the transition, Open WebUI may still reach models through LiteLLM, but the target is direct local model endpoints.
+For planning, use the Strix reasoning model through Open WebUI. Open WebUI currently still reaches models through LiteLLM, but the target is direct local model endpoints.
 
 For coding-oriented discussion, use the AMD local-coder model if useful.
 
-OpenRouter remains free-only, explicit, and non-primary. The target is generated free-only provider configuration, not broad OpenRouter access and not automatic paid fallback.
+OpenRouter remains free-only, explicit, and non-primary. OpenCode exposes it through the generated `homelab-openrouter-free` provider for manual use only, not through broad OpenRouter access and not as automatic paid fallback.
 
 ### 4. Hand a Bounded Prompt to the Coder
 
@@ -100,7 +100,7 @@ opencode
 
 Run it on AMD or in the relevant project host directory.
 
-Current live configuration may still use Homelab LiteLLM during the transition. Target state is a direct local-coder provider for OpenCode, with generated OpenRouter-free models available only as manual fallback.
+Current live AMD OpenCode defaults to the direct `homelab-local` provider at `http://192.168.50.252:8083/v1`. Generated OpenRouter-free models are available through `homelab-openrouter-free` only when selected manually. LiteLLM is no longer in the default OpenCode execution path, but remains active for Open WebUI and available as rollback.
 
 Aider was evaluated and eliminated from the homelab steady-state workflow after unsafe file-handling behavior during a simple documentation task. Do not use Aider as the default or fallback coder for this workflow.
 
