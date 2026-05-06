@@ -88,3 +88,48 @@ Approval is still required before any future live service or config change.
 ## Recommended next action
 
 Review the git diff, then commit Slice 16 if the documentation matches the intended live state.
+## AMD 7900 XT backup provider result
+
+Executed successfully on 2026-05-06.
+
+Backup created on AMD:
+
+```text
+/home/enzo/.config/opencode/opencode.json.bak.20260506-185651.before-7900xt-backup
+```
+
+Live AMD OpenCode config now includes:
+
+- primary provider: `homelab-local`
+- primary model: `homelab-local/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+- backup provider: `homelab-local-backup`
+- small model: `homelab-local-backup/google_gemma-4-26B-A4B-it-Q4_K_M.gguf`
+- manual provider: `homelab-openrouter-free`
+
+Validation output:
+
+```text
+build · Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf
+
+opencode-direct-local-ok
+```
+
+Backup endpoint verified:
+
+```text
+http://192.168.50.252:8084/v1
+google_gemma-4-26B-A4B-it-Q4_K_M.gguf
+```
+
+Result:
+
+- OpenCode default remains AMD 3090 direct local.
+- OpenCode `small_model` now points to AMD 7900 XT direct backup.
+- OpenRouter-free remains manual-only.
+- No OpenRouter call was made.
+- LiteLLM unchanged.
+- Open WebUI unchanged.
+
+Recommended next action:
+
+Update `HOMELAB_LAYOUT.md`, `WORKFLOW.md`, `ROADMAP.md`, and `ROUTING_INVENTORY.md` to reflect that AMD OpenCode now has a direct local backup provider for the RX 7900 XT endpoint.
