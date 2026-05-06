@@ -2,36 +2,25 @@
 
 ## Current status
 
-Slice 6 documentation recentering is complete. The workflow docs now center on OpenCode through Homelab LiteLLM.
+The OpenCode-through-LiteLLM test is paused because the latest transition proposal changes the target architecture.
 
 ## Current slice
 
-Slice 6: recenter workflow on OpenCode through LiteLLM.
+Slice 7: transition OpenCode and Open WebUI away from LiteLLM active path.
 
-## Completed work
+## Reason for change
 
-- `WORKFLOW.md` no longer presents Aider as an active candidate or fallback.
-- `ROADMAP.md` records that Aider was evaluated and eliminated.
-- OpenCode through LiteLLM is now the active coder path.
-- The two-surface workflow remains: web UI advisor, OpenCode coder, `advisor-packet`, markdown state files, and Git review.
+The latest proposal recommends removing LiteLLM from the active OpenCode/OpenWebUI routing path while preserving the OpenRouter free-model discovery and free-only filtering mechanism.
 
-## Files changed
+## Files changed in current uncommitted work
 
-- `WORKFLOW.md`
-- `ROADMAP.md`
+- `CURRENT_SLICE.md`
 - `AGENT_STATUS.md`
-
-## Checks run
-
-- `grep -n "Aider\|aider" WORKFLOW.md ROADMAP.md`
-- `git diff --stat`
-- `git diff`
-- `git status`
 
 ## Risks or blockers
 
-OpenCode still needs to be tested directly against the two-surface workflow after the Aider elimination.
+The docs currently still describe LiteLLM as the active model router in several places. Those references need to be updated carefully without deleting rollback information.
 
 ## Recommended next action
 
-Commit this status update, then set the next slice to test OpenCode with one small documentation-only task.
+Commit this slice reset, then update the architecture docs to reflect the LiteLLM transition plan.
