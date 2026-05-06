@@ -2,30 +2,21 @@
 
 ## Current status
 
-Slice 8 inventory is complete. Current OpenCode, Open WebUI, LiteLLM, OpenRouter refresh, and direct local endpoint state has been captured.
+Slice 8 routing inventory is complete. The next step is to plan neutral OpenRouter-free artifact generation.
 
 ## Current slice
 
-Slice 8: inventory current OpenCode, Open WebUI, and LiteLLM configuration.
+Slice 9: create neutral OpenRouter-free artifact generator.
 
 ## Files changed in current uncommitted work
 
-- `ROUTING_INVENTORY.md`
+- `CURRENT_SLICE.md`
 - `AGENT_STATUS.md`
-
-## Key findings
-
-- OpenCode currently still routes through LiteLLM.
-- Open WebUI currently still routes through LiteLLM.
-- LiteLLM is running on ThinkCentre using `ghcr.io/berriai/litellm:main-latest`.
-- OpenRouter free-model refresh is active and working.
-- The useful free-model filtering logic lives in `/srv/litellm/render-config.py`.
-- All direct local endpoints on AMD and Strix are healthy.
 
 ## Risks or blockers
 
-LiteLLM is still live and should not be stopped yet. The next slice should migrate free-model discovery output to neutral `/srv/openrouter-free/` artifacts before touching OpenCode or Open WebUI config.
+OpenCode config format must be inspected before generating OpenCode config artifacts. Do not modify live OpenCode, Open WebUI, LiteLLM, or systemd units yet.
 
 ## Recommended next action
 
-Review and commit the routing inventory, then plan the neutral OpenRouter-free artifact generation slice.
+Commit this Slice 9 setup, then inspect OpenCode config/schema and create an artifact-generation plan in the repo.
