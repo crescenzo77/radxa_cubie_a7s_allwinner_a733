@@ -74,3 +74,46 @@ Not executed yet.
 ## Recommended next action
 
 Transfer these files into `strix:/srv/projects/homelab/`, commit the slice, then execute the Slice 14 command blocks from `CURRENT_SLICE.md`.
+## Slice 14 execution result
+
+Executed successfully on 2026-05-06.
+
+Backup created on AMD:
+
+```text
+/home/enzo/.config/opencode/opencode.json.bak.20260506-165737
+```
+
+Live AMD OpenCode config was switched to direct local provider only:
+
+- provider: `homelab-local`
+- base URL: `http://192.168.50.252:8083/v1`
+- model: `Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+- OpenRouter provider: not added
+- LiteLLM: unchanged
+- Open WebUI: unchanged
+
+Validation command run directly on AMD:
+
+```bash
+timeout 180 /home/enzo/.opencode/bin/opencode run "Reply with exactly: opencode-direct-local-ok"
+```
+
+Validation output:
+
+```text
+build · Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf
+
+opencode-direct-local-ok
+```
+
+Result:
+
+- Direct local OpenCode path works.
+- No OpenRouter call was made.
+- LiteLLM remains available as rollback.
+- Open WebUI remains unchanged.
+
+Recommended next action:
+
+Create a separate slice to add the generated `homelab-openrouter-free` provider as a manual-only provider, after preserving the direct local provider as default.
