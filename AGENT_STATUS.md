@@ -2,87 +2,75 @@
 
 ## Current status
 
-Slice 13 approval brief has been prepared as downloadable Markdown for transfer into the homelab repo.
+Slice 14 is ready to execute the first controlled live OpenCode migration on AMD.
 
 ## Current slice
 
-Slice 13: prepare AMD OpenCode direct-local live-change approval brief.
+Slice 14: execute AMD OpenCode direct-local migration.
 
-## What changed
+## Why this is next
 
-Prepared documentation only:
+Slice 13 produced the approval brief for a narrow direct-local migration.
 
-- `CURRENT_SLICE.md`
-- `AGENT_STATUS.md`
+The next logical step is to execute only that narrow change:
 
-No live config was edited.
-
-## What did not change
-
-Not changed:
-
-- `/home/enzo/.config/opencode/opencode.json`
-- OpenCode provider settings
-- Open WebUI config
-- LiteLLM config or service
-- Docker Compose services
-- systemd services or timers
-- OpenRouter model access
-- remote host files
-
-No OpenRouter model calls were made.
-
-No service restarts were run.
-
-## Slice 13 decision
-
-The first live OpenCode migration should be narrower than the full target architecture.
-
-Approved draft direction for the next live-change brief:
-
-- direct AMD local provider only
+- direct AMD local-coder provider
 - no OpenRouter provider yet
-- no OpenRouter calls
 - no LiteLLM removal
 - no Open WebUI changes
-- no automatic fallback
-- no `small_model` set to the AMD 3090 model
 
-Reason:
+## Safety posture
 
-The direct local provider should be validated independently before introducing the generated OpenRouter-free manual provider.
+This is a live OpenCode config change on AMD.
 
-## Prepared approval brief
+The rollback path is documented before execution.
 
-The approval brief in `CURRENT_SLICE.md` includes:
+The migration intentionally does not:
 
-1. AMD backup command.
-2. Candidate config path.
-3. Direct-local candidate config.
-4. Candidate JSON validation command.
-5. Live switch command.
-6. Local-only OpenCode validation command.
-7. Rollback command.
+- add OpenRouter
+- call OpenRouter
+- alter LiteLLM
+- alter Open WebUI
+- restart Docker services
+- delete old config
+- set `small_model` to the AMD 3090 model
 
-## Known risks or blockers
+## Commands to run
 
-- OpenCode candidate config may need adjustment if `enabled_providers` or model naming behaves differently than expected.
-- The first live test should validate AMD direct local provider only.
-- Direct AMD 7900 XT backup provider is intentionally not included in this first live change.
-- Generated `homelab-openrouter-free` provider is intentionally not included in this first live change.
+Use the commands in `CURRENT_SLICE.md`.
 
-## User approval needed
+Run in this order:
 
-Approval is required before running any command that:
+1. backup current live config
+2. create candidate direct-local config
+3. validate candidate JSON
+4. switch live config
+5. inspect live config redacted
+6. run local-only OpenCode validation
 
-- writes `/home/enzo/.config/opencode/opencode.json`
-- changes OpenCode provider settings
-- calls OpenCode against any provider
-- calls OpenRouter
-- changes LiteLLM or Open WebUI
-- restarts services
-- mutates a remote host
+## Expected success result
+
+OpenCode should respond exactly:
+
+```text
+opencode-direct-local-ok
+```
+
+## Rollback trigger
+
+Rollback immediately if:
+
+- candidate JSON validation fails
+- live JSON validation fails
+- OpenCode cannot start
+- OpenCode cannot reach the AMD 3090 endpoint
+- OpenCode response is clearly not from the direct local provider
+- any unexpected OpenRouter call appears likely
+
+## Result
+
+Not executed yet.
 
 ## Recommended next action
 
-Transfer these Markdown files into `strix:/srv/projects/homelab/`, commit them, then review the approval brief before running any live-change command.
+Transfer these files into `strix:/srv/projects/homelab/`, commit the slice, then execute the Slice 14 command blocks from `CURRENT_SLICE.md`.

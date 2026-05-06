@@ -1,80 +1,55 @@
 # Current Slice
 
-## Slice 13: Prepare AMD OpenCode direct-local live-change approval brief
+## Slice 14: Execute AMD OpenCode direct-local migration
 
-Prepare exact, reviewable commands to migrate AMD OpenCode from LiteLLM-only to a direct AMD local provider only.
+Execute the approved narrow live change for AMD OpenCode: migrate from LiteLLM-only to a direct AMD local-coder provider only.
 
 ## Purpose
 
-Move OpenCode one step closer to the safer target architecture without changing live config yet.
+Validate that OpenCode can use the AMD 3090 local-coder endpoint directly without LiteLLM in the OpenCode path.
 
-This slice prepares the approval brief only. The first live migration must validate direct AMD local-coder access before adding any OpenRouter-free provider.
+This slice intentionally does not add OpenRouter. OpenRouter-free provider integration remains a later slice after direct-local operation is proven.
 
 ## Scope
 
-Planning and approval-brief preparation only:
+Live change on AMD only:
 
-- Document backup command for AMD OpenCode config.
-- Document candidate config path.
-- Document direct-local candidate `opencode.json` shape.
-- Document JSON validation command.
-- Document local-only OpenCode validation command.
-- Document rollback command.
-- Do not edit `/home/enzo/.config/opencode/opencode.json`.
-- Do not add `homelab-openrouter-free` yet.
-- Do not call OpenRouter.
-- Do not alter LiteLLM.
-- Do not alter Open WebUI.
-- Do not restart services.
+- Back up current AMD OpenCode config.
+- Write candidate direct-local config beside the live config.
+- Validate candidate JSON.
+- Replace live OpenCode config with candidate.
+- Validate live JSON.
+- Run one local-only OpenCode test.
+- Roll back immediately if validation fails.
 
 ## Constraints
 
-- No live config edits in this slice.
-- No remote mutation in this slice.
-- No OpenRouter provider in the first live change.
-- No OpenRouter model calls.
-- No LiteLLM changes.
-- No Open WebUI changes.
+- Do not add `homelab-openrouter-free`.
+- Do not call OpenRouter.
+- Do not alter LiteLLM.
+- Do not alter Open WebUI.
+- Do not restart Docker services.
+- Do not delete old config.
 - Do not set `small_model` to the AMD 3090 model.
-- Keep rollback simple: restore the previous OpenCode config.
+- Keep rollback available before switching live config.
+- Stop after the local-only OpenCode test and record the result.
 
-## Approval Brief
+## Live Change Commands
 
-### Target host
-
-```text
-amd
-```
-
-### Live config path
-
-```text
-/home/enzo/.config/opencode/opencode.json
-```
-
-### Candidate config path
-
-```text
-/home/enzo/.config/opencode/opencode.direct-local.candidate.json
-```
-
-### Backup command
+### 1. Backup current live config
 
 ```bash
 ssh amd 'set -e
 cd /home/enzo/.config/opencode
-cp opencode.json "opencode.json.bak.$(date +%Y%m%d-%H%M%S)"
-ls -lh opencode.json opencode.json.bak.*
+backup="opencode.json.bak.$(date +%Y%m%d-%H%M%S)"
+cp opencode.json "$backup"
+echo "$backup"
+python3 -m json.tool "$backup" >/tmp/opencode.backup.validated.json
+echo "backup-json-ok"
 '
 ```
 
-### Candidate config creation
-
-This candidate intentionally configures only the direct AMD 3090 local-coder provider.
-
-It does not add OpenRouter.
-
-It omits `small_model` for the first direct-local validation because a direct backup provider is not part of this slice.
+### 2. Create candidate direct-local config
 
 ```bash
 ssh amd 'cat > /home/enzo/.config/opencode/opencode.direct-local.candidate.json <<'"'"'EOF'"'"'
@@ -105,17 +80,15 @@ ssh amd 'cat > /home/enzo/.config/opencode/opencode.direct-local.candidate.json 
 EOF'
 ```
 
-### Candidate JSON validation
+### 3. Validate candidate JSON
 
 ```bash
 ssh amd 'python3 -m json.tool /home/enzo/.config/opencode/opencode.direct-local.candidate.json >/tmp/opencode.direct-local.validated.json && echo "candidate-json-ok"'
 ```
 
-### Live switch command
+### 4. Switch live config to direct-local
 
-High-impact action: this replaces AMD OpenCode's live config.
-
-Only run after reviewing the candidate and confirming rollback is available.
+This is the live config change.
 
 ```bash
 ssh amd 'set -e
@@ -126,12 +99,34 @@ echo "live-config-switched-to-direct-local"
 '
 ```
 
-### Local-only validation command
-
-This test must use only the AMD local provider. It must not call OpenRouter.
+### 5. Inspect live config without secrets
 
 ```bash
-ssh amd 'cd /srv/projects/homelab 2>/dev/null || cd ~
+ssh amd 'python3 - <<'"'"'PY'"'"'
+import json
+from pathlib import Path
+
+p = Path("/home/enzo/.config/opencode/opencode.json")
+data = json.loads(p.read_text())
+
+def redact(x):
+    if isinstance(x, dict):
+        return {
+            k: ("<redacted>" if any(s in k.lower() for s in ["key", "token", "secret", "password"]) else redact(v))
+            for k, v in x.items()
+        }
+    if isinstance(x, list):
+        return [redact(v) for v in x]
+    return x
+
+print(json.dumps(redact(data), indent=2))
+PY'
+```
+
+### 6. Run local-only OpenCode validation
+
+```bash
+ssh amd 'cd /tmp
 /home/enzo/.opencode/bin/opencode run "Reply with exactly: opencode-direct-local-ok"
 '
 ```
@@ -142,20 +137,17 @@ Expected response:
 opencode-direct-local-ok
 ```
 
-### Rollback command
+## Rollback Commands
 
-Use this if OpenCode does not work after the live switch.
-
-Replace `BACKUP_FILE` with the newest backup created by the backup command.
+### 1. List backups
 
 ```bash
-ssh amd 'set -e
-cd /home/enzo/.config/opencode
-ls -1t opencode.json.bak.* | head -5
-'
+ssh amd 'cd /home/enzo/.config/opencode && ls -1t opencode.json.bak.* | head -10'
 ```
 
-Then:
+### 2. Restore newest backup
+
+Review the listed backup name first. Then replace `BACKUP_FILE` with the selected backup.
 
 ```bash
 ssh amd 'set -e
@@ -166,13 +158,28 @@ echo "rollback-restored"
 '
 ```
 
+### 3. Validate rollback path
+
+```bash
+ssh amd 'cd /tmp
+/home/enzo/.opencode/bin/opencode run "Reply with exactly: opencode-router-ok"
+'
+```
+
+Expected response after rollback:
+
+```text
+opencode-router-ok
+```
+
 ## Acceptance Criteria
 
-- Approval brief is documented.
-- Commands are copy-paste ready.
-- Rollback is explicit.
-- No live files are changed in this slice.
-- No OpenRouter provider is added.
-- No OpenRouter calls are made.
-- Git diff is shown for review.
-- Stop before commit.
+- Current OpenCode config is backed up.
+- Candidate config validates as JSON.
+- Live config validates as JSON after switch.
+- OpenCode responds exactly `opencode-direct-local-ok`.
+- No OpenRouter call is made.
+- LiteLLM remains running and unchanged.
+- Open WebUI remains unchanged.
+- Result is documented in `AGENT_STATUS.md`.
+- Commit records the outcome.
