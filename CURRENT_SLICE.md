@@ -1,63 +1,39 @@
 # Current Slice
 
-## Slice 7: Transition OpenCode and Open WebUI away from LiteLLM active path
+## Slice 8: Inventory current OpenCode, Open WebUI, and LiteLLM configuration
 
-Update the homelab documentation to reflect the planned transition away from LiteLLM as the active routing layer.
+Collect the current live configuration before making any service or config changes.
 
 ## Purpose
 
-LiteLLM is no longer the target active routing layer for OpenCode or Open WebUI.
+The docs now describe the target transition away from LiteLLM as the active routing layer. Before changing OpenCode, Open WebUI, or LiteLLM, capture the current state so rollback is clear.
 
-The useful part of the current setup is the OpenRouter free-model discovery and free-only filtering. That mechanism should be preserved, but the generated output should target OpenCode-safe provider config instead of LiteLLM config.
+## Scope
 
-## Target direction
+Inventory only:
 
-OpenCode should use:
-
-- direct local-coder by default
-- generated OpenRouter-free provider only as manual fallback
-- no broad paid OpenRouter catalog
-- no automatic cloud fallback
-- no direct paid-provider API automation
-
-Open WebUI should use:
-
-- direct local model endpoints
-- no required LiteLLM routing layer
-
-LiteLLM should be:
-
-- removed from the active path after testing
-- kept temporarily for rollback
-- not deleted immediately
-
-## Requirements
-
-Update documentation so it clearly says:
-
-- LiteLLM is being phased out of the active OpenCode/OpenWebUI path.
-- OpenRouter free-model discovery remains valuable and should be preserved.
-- The free-model refresh output should move toward neutral artifacts under `/srv/openrouter-free/`.
-- OpenCode should default to local-coder directly.
-- OpenRouter fallback in OpenCode should be manual and generated free-only.
-- Open WebUI should move back to direct local endpoints.
-- LiteLLM should remain available temporarily for rollback only.
+- OpenCode config on AMD
+- Open WebUI config on ThinkCentre
+- LiteLLM config and generated free-model artifacts on ThinkCentre
+- OpenRouter free-model refresh timer/service on ThinkCentre
+- Direct local model endpoints on AMD and Strix
 
 ## Constraints
 
-- Documentation only.
-- No service changes yet.
-- No config changes yet.
-- No OpenCode config edits yet.
-- No Open WebUI config edits yet.
-- Do not stop or delete LiteLLM yet.
-- Do not remove OpenRouter fallback.
-- Do not create a custom router.
+- Do not edit configs.
+- Do not restart services.
+- Do not stop LiteLLM.
+- Do not change OpenCode.
+- Do not change Open WebUI.
+- Do not change OpenRouter config.
+- Do not uninstall Aider yet.
+- Read-only commands only.
 
 ## Acceptance Criteria
 
-- `PROJECT_PLAN.md` reflects the new transition away from LiteLLM active path.
-- `DECISIONS.md` records the transition decision.
-- `HOMELAB_LAYOUT.md`, `WORKFLOW.md`, and `ROADMAP.md` no longer describe LiteLLM as the long-term required routing layer.
-- `AGENT_STATUS.md` summarizes the current state and next action.
-- Changes are committed to Git.
+- Current OpenCode config is captured.
+- Current Open WebUI config is captured.
+- Current LiteLLM config paths are captured.
+- OpenRouter free-model refresh timer/service status is captured.
+- Direct local model endpoints are checked.
+- Findings are written into a repo note before any implementation changes.
