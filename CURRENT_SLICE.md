@@ -1,60 +1,69 @@
 # Current Slice
 
-## Slice 11: Prepare Codex SSH readiness
+## Slice 10: Verify OpenCode environment-variable interpolation
 
-Prepare Codex SSH readiness without changing remote hosts, live services, SSH configuration, or keys.
+Verify OpenCode environment-variable interpolation without changing live OpenCode, Open WebUI, or LiteLLM configuration.
 
 ## Purpose
 
-Make Codex useful without repeated copy/paste by ensuring `strix` can inspect `amd` and `thinkcentre` over SSH predictably.
+Slice 9 created neutral OpenRouter-free generated artifacts under `/srv/openrouter-free/`.
 
-Slice 10 is paused until SSH readiness is understood. The immediate blocker observed during Slice 10 was:
+Before any generated OpenCode artifact can be wired into live config, OpenCode must be verified to support the generated API key placeholder:
 
-    Bad owner or permissions on /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+```json
+"apiKey": "{env:OPENROUTER_API_KEY}"
+```
 
 ## Scope
 
-Diagnostics planning only:
+Verification only:
 
-- Diagnose the local SSH client config problem shown above.
-- Verify hostname resolution for `amd` and `thinkcentre`.
-- Verify whether passwordless SSH already works.
-- Propose safe SSH key setup if needed.
-- Document that agents may inspect remote hosts read-only by SSH.
-- Require explicit approval before remote mutation.
+- Inspect OpenCode documentation or local installed package behavior.
+- Inspect generated `/srv/openrouter-free/opencode.generated.json` if reachable.
+- Inspect AMD OpenCode config over read-only SSH if reachable.
+- Create a throwaway local test config if needed, but stop before executing anything networked.
+- Do not alter `/home/enzo/.config/opencode/opencode.json`.
+- Do not change OpenCode live provider settings.
+- Do not call paid OpenRouter models.
+- Do not alter LiteLLM or Open WebUI.
 
 ## Constraints
 
-- Do not run `sudo`.
-- Do not modify remote hosts.
-- Do not change live services.
-- Do not edit SSH config yet.
-- Do not create SSH keys yet.
-- Do not print secrets.
-- Do not capture passwords.
-- Do not edit remote files.
-- Do not generate SSH keys until explicitly approved.
+- Do not edit live OpenCode config.
+- Do not edit Open WebUI config.
+- Do not alter LiteLLM.
+- Do not change OpenCode provider settings.
+- Do not call paid OpenRouter models.
+- Do not make live service changes.
+- Use read-only inspection only.
 - Do not make live production changes based on network responses without explicit approval.
 
-## Read-Only Diagnostic Command Block
+## Result
 
-The next execution step should be limited to read-only diagnostics:
+OpenCode documentation confirms that `{env:VARIABLE_NAME}` is valid variable substitution syntax in config files, including provider `options.apiKey`.
 
-    hostname
-    id
-    ls -ld /etc/ssh /etc/ssh/ssh_config.d /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
-    stat -c '%U:%G %a %n' /etc/ssh /etc/ssh/ssh_config.d /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
-    getent hosts amd thinkcentre
-    ssh -F /dev/null -o BatchMode=yes -o PasswordAuthentication=no -o ConnectTimeout=5 amd 'hostname'
-    ssh -F /dev/null -o BatchMode=yes -o PasswordAuthentication=no -o ConnectTimeout=5 thinkcentre 'hostname'
+Therefore, this placeholder is valid OpenCode syntax:
 
-If the diagnostic output shows SSH keys or host aliases are missing, stop and write an approval brief before generating keys, editing SSH config, or changing remote `authorized_keys`.
+```json
+"apiKey": "{env:OPENROUTER_API_KEY}"
+```
+
+If `OPENROUTER_API_KEY` is unset, OpenCode replaces the placeholder with an empty string.
+
+## Current Limitation
+
+Normal SSH aliases still failed inside this Codex execution environment before remote inspection could run:
+
+```text
+Bad owner or permissions on /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+```
+
+Because of that, this slice verified syntax from official OpenCode documentation but did not inspect the remote generated artifact or AMD live OpenCode config in this run.
 
 ## Acceptance Criteria
 
-- Repo docs explain what must be checked.
-- The next command block is limited to read-only diagnostics.
-- No remote hosts are modified.
-- No live services are changed.
+- Determine whether `"apiKey": "{env:OPENROUTER_API_KEY}"` is valid for OpenCode.
+- Document the result and next action.
+- No live services or configs are changed.
 - Git diff is shown for review.
 - Stop before commit.

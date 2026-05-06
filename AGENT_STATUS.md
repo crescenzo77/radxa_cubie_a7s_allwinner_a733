@@ -2,13 +2,30 @@
 
 ## Current status
 
-Slice 10 is paused.
-
-Slice 11 has been started to prepare Codex SSH readiness from `strix` to `amd` and `thinkcentre`.
+Slice 10 OpenCode environment-variable interpolation verification is complete for syntax validity.
 
 ## Current slice
 
-Slice 11: prepare Codex SSH readiness.
+Slice 10: verify OpenCode environment-variable interpolation without live config changes.
+
+## Finding
+
+The generated OpenCode provider API key placeholder is valid OpenCode config syntax:
+
+```json
+"apiKey": "{env:OPENROUTER_API_KEY}"
+```
+
+Official OpenCode config documentation says config files support variable substitution with `{env:VARIABLE_NAME}`. Its provider example places an environment variable placeholder directly in `provider.*.options.apiKey`.
+
+Source:
+
+- https://opencode.ai/docs/config/
+
+Important behavior:
+
+- If the environment variable is set, OpenCode substitutes its value.
+- If the environment variable is not set, OpenCode replaces the placeholder with an empty string.
 
 ## What changed
 
@@ -17,115 +34,91 @@ Updated repo state docs only:
 - `CURRENT_SLICE.md`
 - `AGENT_STATUS.md`
 
-The new slice documents the SSH readiness checks needed before resuming Slice 10.
-
 ## What did not change
 
-No remote hosts were modified.
+No live service or client config was changed.
 
 Not changed:
 
-- SSH config
-- SSH keys
-- remote files
-- LiteLLM
-- OpenCode config
+- `/home/enzo/.config/opencode/opencode.json`
+- OpenCode provider settings
 - Open WebUI config
+- LiteLLM config or service
 - Docker Compose services
 - systemd services or timers
+- OpenRouter model access
 
-No `sudo` was run.
-
-## Relevant finding
-
-During the paused Slice 10 attempt, SSH from `strix` failed before reaching remote hosts because the local SSH client reported:
-
-```text
-Bad owner or permissions on /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
-```
-
-Using `ssh -F /dev/null` bypassed that config file, but hostname resolution then failed for `amd` and `thinkcentre` in the sandboxed command environment. Direct LAN IP SSH attempts were blocked by sandbox network restrictions before user approval completed.
-
-## Safety state
-
-Agents may inspect remote hosts read-only by SSH when the current slice allows it.
-
-Agents must stop for explicit approval before any remote mutation, including:
-
-- editing SSH config
-- generating or installing SSH keys
-- editing remote `authorized_keys`
-- changing live service config
-- restarting services
-- altering LiteLLM, OpenCode, or Open WebUI
-
-Agents must not print secrets, capture passwords, or ask the user to paste private keys into chat.
+No paid OpenRouter model calls were made.
 
 ## Checks run
 
-Documentation reads:
+Read required repo context:
 
 - `AGENTS.md`
 - `CODEX_CONTEXT.md`
 - `CURRENT_SLICE.md`
 - `AGENT_STATUS.md`
-- `HOMELAB_LAYOUT.md`
-- `WORKFLOW.md`
-- `ROADMAP.md`
 - `PROJECT_PLAN.md`
 - `DECISIONS.md`
 
-No SSH diagnostics for Slice 11 were run yet.
+Attempted read-only remote inspection using normal SSH aliases:
+
+- `ssh thinkcentre 'hostname; test -f /srv/openrouter-free/opencode.generated.json && sed -n "1,220p" /srv/openrouter-free/opencode.generated.json'`
+- `ssh amd 'hostname; command -v opencode || true; /home/enzo/.opencode/bin/opencode --version 2>/dev/null || true; ... redacted config inspection ...'`
+
+Consulted official OpenCode config documentation:
+
+- https://opencode.ai/docs/config/
 
 ## Results of checks
 
-The repo docs support a narrow readiness slice because `strix` is the canonical project host, while `amd` owns OpenCode execution and `thinkcentre` owns Open WebUI/LiteLLM services.
+Documentation result:
 
-Reliable read-only SSH inspection from `strix` to `amd` and `thinkcentre` is useful for reducing copy/paste, but any mutation still requires explicit operator approval.
+- `{env:VARIABLE_NAME}` is valid OpenCode variable substitution syntax.
+- `provider.*.options.apiKey` may use `{env:...}`.
+- An unset environment variable is substituted as an empty string.
+
+Remote inspection result:
+
+- Both normal SSH alias commands failed before reaching remote hosts with:
+
+```text
+Bad owner or permissions on /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
+```
+
+- Per user instruction, `ssh -F /dev/null` was not used.
+- `/srv/openrouter-free/opencode.generated.json` was not inspected during this run because normal SSH failed.
+- AMD OpenCode config was not inspected during this run because normal SSH failed.
 
 ## Known risks or blockers
 
-- The local SSH client config problem may require a later approved `sudo` fix.
-- Hostname resolution for `amd` and `thinkcentre` may require local hosts, DNS, Tailscale, or SSH config inspection.
-- Passwordless SSH may not be set up yet.
-- Key generation or remote `authorized_keys` changes are out of scope until explicitly approved.
+- Syntax is verified, but remote generated artifact contents were not rechecked in this run.
+- Syntax is verified, but AMD live OpenCode config was not inspected in this run.
+- If `OPENROUTER_API_KEY` is not present in the OpenCode runtime environment, OpenCode will substitute an empty string.
+- Normal SSH from this Codex environment still needs the local SSH client config issue resolved for predictable remote inspection.
 
 ## User approval needed
 
-No approval is needed for the repo-doc update already made.
+No approval is needed for the documentation-only update already made.
 
-Approval will be needed before:
+Approval is still needed before:
 
-- running commands that require sandbox network escalation
-- running `sudo`
+- editing live OpenCode config
+- changing OpenCode provider settings
+- changing Open WebUI or LiteLLM
+- generating or installing SSH keys
 - editing SSH config
-- generating SSH keys
-- installing public keys on remote hosts
-- mutating any remote host or live service
+- making any remote mutation
+- executing any networked throwaway OpenCode test
 
 ## Recommended next action
 
-Review the Slice 11 diff. If accepted, commit it, then run only the read-only diagnostic command block from `CURRENT_SLICE.md`.
+Do not wire the generated OpenRouter-free provider into live OpenCode config yet.
 
-## Slice 11 diagnostic result
+First, fix or bypass the Codex SSH environment problem through an approved SSH-readiness slice, then inspect:
 
-Read-only SSH diagnostics were run manually from `strix`.
+- `/srv/openrouter-free/opencode.generated.json`
+- AMD OpenCode version and config shape
+- whether `OPENROUTER_API_KEY` is available to the intended OpenCode runtime
 
-Results:
-
-- `ssh amd 'hostname'` works using the user SSH alias.
-- `ssh thinkcentre 'hostname'` works using the user SSH alias.
-- Passwordless SSH works for both `amd` and `thinkcentre`.
-- LAN SSH aliases in `~/.ssh/config` are the correct agent path.
-- `ssh -F /dev/null` should not be used for normal agent inspection because it bypasses `~/.ssh/config`.
-- The earlier system SSH config permission error was not reproducible in the normal shell.
-
-Recommended agent rule:
-
-- Codex may use normal read-only SSH commands through configured aliases such as `ssh amd '...'` and `ssh thinkcentre '...'`.
-- Codex must not use `ssh -F /dev/null` unless explicitly troubleshooting SSH config behavior.
-- Codex must still stop for approval before any remote mutation.
-
-Recommended next action:
-
-Resume Slice 10 OpenCode config verification using normal SSH aliases.
+After those read-only checks, prepare a separate approval brief before any live OpenCode config change.
