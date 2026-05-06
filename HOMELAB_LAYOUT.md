@@ -23,7 +23,7 @@ Codex may be used manually during setup documentation work, but it is not part o
 | `framework` | — | yes | Thin client: browser, SSH, VS Code Remote-SSH |
 | `amd` | `192.168.50.252` | `100.107.201.16` | Current coding execution host; OpenCode installed; primary RTX 3090 coder model and RX 7900 XT backup |
 | `strix` | `192.168.50.11` | `100.105.138.41` | Target canonical project/source host; reasoning/testbed inference |
-| `thinkcentre` | `192.168.50.225` | `100.127.113.105` | Services hub: LiteLLM, Open WebUI, SearXNG, AdGuard, dashboard, proxies |
+| `thinkcentre` | `192.168.50.225` | `100.127.113.105` | Services hub: Open WebUI, SearXNG, AdGuard, dashboard, proxies; LiteLLM retained temporarily for rollback during router transition |
 | `mac mini` | `192.168.50.164` | yes | iMessage relay backend; future tier-2 git mirror |
 | `minipc` | `192.168.50.76` | yes | LAN backup target |
 | `oracle` | cloud | yes | Off-site backup, headscale host |
@@ -36,7 +36,7 @@ Open WebUI on ThinkCentre is the browser-based advisor/planner:
 
 ```text
 URL: http://192.168.50.225:3000
-Model access: Open WebUI -> LiteLLM -> local models -> OpenRouter free-only -> fail
+Target model access: Open WebUI -> direct local model endpoints; optional OpenRouter access remains free-only and explicit
 ```
 
 Use the advisor for:
@@ -47,13 +47,13 @@ Use the advisor for:
 - Generating the next prompt for the coding agent.
 - Reviewing a compact project-state packet instead of raw terminal dumps.
 
-Open WebUI points only at LiteLLM:
+Current live Open WebUI still uses LiteLLM during the transition window:
 
 ```yaml
 OPENAI_API_BASE_URLS: "http://192.168.50.225:4000/v1"
 ```
 
-Open WebUI should not talk directly to AMD, Strix, or OpenRouter. LiteLLM owns routing, model names, fallback behavior, and OpenRouter policy.
+Target state: Open WebUI should move back to direct local model endpoints for AMD and Strix. LiteLLM should remain available temporarily only as a rollback path until the direct endpoint configuration is tested.
 
 ## Surface 2: Self-Hosted Coding Agent
 
@@ -66,16 +66,16 @@ Host: amd
 Tool: OpenCode
 Binary: /home/enzo/.opencode/bin/opencode
 Version: 1.14.38
-Provider: Homelab LiteLLM
-Endpoint: http://192.168.50.225:4000/v1
+Current provider: Homelab LiteLLM during transition
+Transition target: direct local-coder provider on AMD
+Rollback endpoint: http://192.168.50.225:4000/v1
 ```
 
-Preferred steady-state coder candidates:
+Preferred steady-state coder:
 
-- **OpenCode** through Homelab LiteLLM.
-- **Aider** through local/self-hosted LiteLLM where possible.
+- **OpenCode** using the direct local-coder path.
 
-The decision between OpenCode and Aider should be based on hands-on use against real tasks. Both should prefer LiteLLM routing rather than direct model endpoints.
+Aider was evaluated and eliminated from the homelab workflow. LiteLLM is being phased out of the active OpenCode path. OpenRouter should remain available only as a generated free-only manual fallback, not as an automatic hidden route.
 
 Codex/Claude-style hosted tools must not be wired into API automation, wrappers, scheduled tasks, or background jobs. If used at all during setup or emergency manual work, they remain manually invoked tools.
 
@@ -126,16 +126,20 @@ Each active project should keep human-readable operating files in the repository
 
 These files are the shared state between the user, advisor, and coder. They are deliberately simple markdown plus git.
 
-## LiteLLM Routing
+## Router transition: LiteLLM to direct local endpoints
 
-LiteLLM on ThinkCentre remains the single model-routing endpoint:
+LiteLLM on ThinkCentre is the current live router but is no longer the target long-term active path.
 
 ```text
-Open WebUI / OpenCode / Aider / future local tools
-  -> LiteLLM on thinkcentre
-  -> local models
-  -> OpenRouter free-only
-  -> fail
+OpenCode
+  -> direct local-coder on AMD
+
+OpenCode manual fallback
+  -> generated homelab-openrouter-free provider
+  -> verified free OpenRouter models only
+
+Open WebUI
+  -> direct local model endpoints on AMD and Strix
 ```
 
 Host details:
@@ -148,22 +152,22 @@ Endpoint: http://192.168.50.225:4000/v1
 Container: litellm
 ```
 
-OpenRouter is allowed only through LiteLLM, and only for free models:
+OpenRouter remains allowed only as free-model access. The target is to preserve the existing free-model discovery/filtering mechanism while moving generated artifacts to neutral config under `/srv/openrouter-free/`:
 
 - `openrouter/openrouter/free`
 - Generated model entries ending in `:free`
 
-No paid OpenRouter fallback is allowed.
+No paid OpenRouter fallback is allowed. If free models cannot be verified, they must not be exposed.
 
-## Model Role Assignments
+## Model Role Assignments During Transition
 
-| Role | LiteLLM model name | Endpoint | Use |
+| Role | Model label / target | Endpoint | Use |
 |---|---|---|---|
-| Primary local coding | `local-coder | AMD RTX 3090 | Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf` | `amd:8083` | OpenCode/Aider coding work |
-| 3090-off backup | `local-coder-backup | AMD RX 7900 XT | Gemma 4 26B A4B Q4_K_M.gguf` | `amd:8084` | LiteLLM fallback when 3090 is off |
+| Primary local coding | `local-coder | AMD RTX 3090 | Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf` | `amd:8083` | OpenCode coding work |
+| 3090-off backup | `local-coder-backup | AMD RX 7900 XT | Gemma 4 26B A4B Q4_K_M.gguf` | `amd:8084` | Direct/manual backup target after transition |
 | Planning/reasoning | `local-reasoning | Strix | Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf` | `strix:8081` | Advisor/planning |
 | Strix coder testbed | `local-coder-testbed | Strix | Qwen3-Coder-Next-UD-Q4_K_XL.gguf` | `strix:8082` | Manual coder testbed |
-| Cloud fallback | `openrouter-free` plus generated `:free` entries | OpenRouter via LiteLLM | Free-only fallback |
+| Cloud fallback | generated `homelab-openrouter-free` entries | OpenRouter API | Free-only manual fallback, generated from verified allowlist |
 
 ## Project Source Convention
 

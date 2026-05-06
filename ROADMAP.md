@@ -7,10 +7,10 @@ Last updated: 2026-05-05.
 ## Current Facts To Preserve
 
 - AMD is the current OpenCode and coding execution host.
-- ThinkCentre hosts LiteLLM and Open WebUI.
+- ThinkCentre hosts Open WebUI and related services. LiteLLM is retained temporarily during transition as rollback, not the long-term active router.
 - Strix is the target canonical project/source host.
 - Framework laptop remains a thin client.
-- OpenRouter must remain free-only through LiteLLM.
+- OpenRouter must remain free-only and fail-closed; target is generated free-only config under `/srv/openrouter-free/`, not LiteLLM as active router.
 - Codex/Claude-style tools must not be wired into API automation.
 - The workflow should favor stable, practical, proven OSS with minimal bespoke glue.
 
@@ -22,7 +22,7 @@ The normal loop is:
 Open WebUI advisor
   <- compact advisor-packet markdown
   -> user decision
-  -> OpenCode on the project host through LiteLLM
+  -> OpenCode on the project host through direct local-coder path
   -> git diff and shared markdown status
   -> advisor-packet again when needed
 ```
@@ -135,7 +135,7 @@ Aider was evaluated as a possible steady-state coder and eliminated after unsafe
 
 Evaluation criteria:
 
-- Works through local/self-hosted LiteLLM where possible.
+- Works through local/self-hosted direct endpoints where possible.
 - Produces reviewable diffs.
 - Handles project instructions from `AGENTS.md`.
 - Leaves useful `AGENT_STATUS.md` handoffs.
@@ -148,13 +148,32 @@ Definition of done:
 - The workflow docs no longer present Aider as an active default or fallback path.
 - OpenCode remains the coder path to recenter around.
 
-## Slice 6: Optional Later Improvements
+## Slice 7: Transition Away From LiteLLM Active Routing
+
+LiteLLM is no longer the target long-term active routing layer for OpenCode or Open WebUI.
+
+Target:
+- OpenCode uses direct local-coder by default.
+- OpenCode exposes OpenRouter only through generated free-only manual provider entries.
+- Open WebUI moves back to direct local model endpoints.
+- OpenRouter free-model discovery and filtering is preserved.
+- Generated free-model artifacts move toward `/srv/openrouter-free/`.
+- LiteLLM remains available temporarily for rollback, then leaves the active path after testing.
+
+Definition of done:
+- Docs describe LiteLLM as transitional/rollback, not the long-term router.
+- OpenCode direct local-coder path is tested.
+- OpenRouter free-only generated provider is tested manually.
+- Open WebUI direct endpoints are tested.
+- LiteLLM rollback path is documented.
+
+## Optional Later Improvements
 
 Only consider these after the basic loop works:
 
 - tmux logging for coder sessions.
 - Better known-location coder log capture for `advisor-packet`.
-- Continue.dev review through LiteLLM labels.
+- Continue.dev review through direct/local model configuration after router transition.
 - Small shell completions or local install convenience for `advisor-packet`.
 
 These remain optional. Do not build them before the simple markdown-plus-git loop proves useful.
@@ -181,7 +200,7 @@ Definition of done:
 
 These remain valid but are not the immediate two-surface build:
 
-- Continue.dev should eventually use LiteLLM labels and remove stale endpoints.
+- Continue.dev should eventually remove stale endpoints and align with the post-LiteLLM direct/local model configuration.
 - MCP Ledger should eventually become a Pattern A service on Strix if it remains part of the stack.
 - Git mirror topology should converge on Strix canonical, ThinkCentre tier-1, Mac Mini tier-2.
 - iMessage relay and family dashboard documentation should be captured in the homelab repo.

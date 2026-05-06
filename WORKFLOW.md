@@ -82,19 +82,11 @@ Use the advisor to:
 - Check whether the coder’s proposed direction is still aligned with the current slice.
 - Turn the next action into a prompt for the coding agent.
 
-For planning, prefer the LiteLLM label for Strix reasoning:
+For planning, use the Strix reasoning model through Open WebUI. During the transition, Open WebUI may still reach models through LiteLLM, but the target is direct local model endpoints.
 
-```text
-local-reasoning | Strix | Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf
-```
+For coding-oriented discussion, use the AMD local-coder model if useful.
 
-For coding-oriented discussion, use the current local coder label if useful:
-
-```text
-local-coder | AMD RTX 3090 | Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf
-```
-
-OpenRouter remains free-only through LiteLLM and should be treated as fallback or occasional use, not the primary path.
+OpenRouter remains free-only, explicit, and non-primary. The target is generated free-only provider configuration, not broad OpenRouter access and not automatic paid fallback.
 
 ### 4. Hand a Bounded Prompt to the Coder
 
@@ -106,11 +98,9 @@ Current default:
 opencode
 ```
 
-Run it on AMD or in the relevant project host directory, using Homelab LiteLLM:
+Run it on AMD or in the relevant project host directory.
 
-```text
-Endpoint: http://192.168.50.225:4000/v1
-```
+Current live configuration may still use Homelab LiteLLM during the transition. Target state is a direct local-coder provider for OpenCode, with generated OpenRouter-free models available only as manual fallback.
 
 Aider was evaluated and eliminated from the homelab steady-state workflow after unsafe file-handling behavior during a simple documentation task. Do not use Aider as the default or fallback coder for this workflow.
 
@@ -155,7 +145,7 @@ Commit only after the user has reviewed the changes.
 |---|---|---|
 | Plan a task | Open WebUI advisor | Browser |
 | Summarize state for advisor | `advisor-packet` | Project working tree |
-| Implement a bounded task | OpenCode through LiteLLM | AMD/project host terminal |
+| Implement a bounded task | OpenCode direct local-coder path | AMD/project host terminal |
 | Review a diff | VS Code Remote-SSH and git | Project host |
 | Ask about a specific code chunk | Continue.dev highlight-and-ask | VS Code |
 | Make final decision | User | Always |
