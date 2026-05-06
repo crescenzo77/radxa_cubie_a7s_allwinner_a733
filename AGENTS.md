@@ -102,3 +102,11 @@ A task is complete only when:
 - `AGENT_STATUS.md` is updated.
 - Relevant checks were run or explicitly marked unavailable.
 - Git diff is ready for user review.
+## Codex/OpenCode context contract
+
+Before making changes, agents must read `CODEX_CONTEXT.md` in addition to this file.
+
+Any change to plan, scope, architecture, acceptance criteria, risks, rollback path, current slice, or next action must be reflected in the relevant repo docs in the same diff.
+
+If a change affects live services or production config, the agent must stop after proposing the exact command block and wait for operator approval.
+
