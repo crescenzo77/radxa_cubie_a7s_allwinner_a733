@@ -2,26 +2,34 @@
 
 ## Current status
 
-Slice 7 is active. The homelab docs are being updated to reflect the planned transition away from LiteLLM as the active routing layer.
+Slice 7 documentation updates are complete. The homelab docs now describe LiteLLM as transitional/rollback rather than the long-term active router.
 
 ## Current slice
 
 Slice 7: transition OpenCode and Open WebUI away from LiteLLM active path.
 
-## Files changed in current uncommitted work
+## Completed work
+
+- `PROJECT_PLAN.md` records the LiteLLM transition decision.
+- `DECISIONS.md` records the transition away from LiteLLM active routing.
+- `HOMELAB_LAYOUT.md` now describes LiteLLM as transitional/rollback.
+- `WORKFLOW.md` now targets OpenCode direct local-coder path.
+- `ROADMAP.md` adds Slice 7 for LiteLLM active-path transition.
+
+## Files changed
 
 - `PROJECT_PLAN.md`
 - `DECISIONS.md`
 - `AGENT_STATUS.md`
-
-## Decision being recorded
-
-LiteLLM should be phased out of the active OpenCode/OpenWebUI path. The OpenRouter free-model discovery and free-only filtering mechanism should be preserved and moved toward neutral generated artifacts under `/srv/openrouter-free/`.
+- `CURRENT_SLICE.md`
+- `HOMELAB_LAYOUT.md`
+- `WORKFLOW.md`
+- `ROADMAP.md`
 
 ## Risks or blockers
 
-The layout, workflow, and roadmap docs still need to be updated after this decision is committed.
+No implementation changes have been made yet. OpenCode, Open WebUI, and LiteLLM may still be configured in the old live routing shape.
 
 ## Recommended next action
 
-Review and commit this decision-state update, then update `HOMELAB_LAYOUT.md`, `WORKFLOW.md`, and `ROADMAP.md`.
+Start an implementation-prep slice that inventories current OpenCode, Open WebUI, and LiteLLM configuration before changing any service or config.
