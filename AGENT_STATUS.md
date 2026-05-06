@@ -2,68 +2,107 @@
 
 ## Current status
 
-Slice 9 artifact-generator work has been committed.
+Slice 10 is paused.
 
-Known commits:
-
-- `f76ec18` — artifact-generator slice
-- `fcea997` — `CODEX_CONTEXT.md`
+Slice 11 has been started to prepare Codex SSH readiness from `strix` to `amd` and `thinkcentre`.
 
 ## Current slice
 
-Slice 10: verify OpenCode environment-variable interpolation without live config changes.
+Slice 11: prepare Codex SSH readiness.
 
-## Completed
+## What changed
 
-Slice 9 created the neutral OpenRouter-free workspace on ThinkCentre:
+Updated repo state docs only:
 
-- `/srv/openrouter-free/README.md`
-- `/srv/openrouter-free/generate.py`
-- `/srv/openrouter-free/free-models.raw.json`
-- `/srv/openrouter-free/free-models.allowlist.json`
-- `/srv/openrouter-free/opencode.generated.json`
-- `/srv/openrouter-free/openwebui.generated.env`
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
 
-The generator successfully produced 25 verified free OpenRouter models.
+The new slice documents the SSH readiness checks needed before resuming Slice 10.
 
-## Safety state
+## What did not change
 
-No live service or client config should be changed during Slice 10.
+No remote hosts were modified.
 
-Do not change:
+Not changed:
 
-- LiteLLM service
-- LiteLLM systemd timer/service
+- SSH config
+- SSH keys
+- remote files
+- LiteLLM
 - OpenCode config
 - Open WebUI config
 - Docker Compose services
-- `/home/enzo/.config/opencode/opencode.json`
-- OpenCode live provider settings
+- systemd services or timers
 
-Do not call paid OpenRouter models.
+No `sudo` was run.
 
-## Slice 10 task
+## Relevant finding
 
-Verify whether OpenCode supports this generated API key placeholder:
+During the paused Slice 10 attempt, SSH from `strix` failed before reaching remote hosts because the local SSH client reported:
 
-```json
-"apiKey": "{env:OPENROUTER_API_KEY}"
+```text
+Bad owner or permissions on /etc/ssh/ssh_config.d/20-systemd-ssh-proxy.conf
 ```
 
-Allowed inspection:
+Using `ssh -F /dev/null` bypassed that config file, but hostname resolution then failed for `amd` and `thinkcentre` in the sandboxed command environment. Direct LAN IP SSH attempts were blocked by sandbox network restrictions before user approval completed.
 
-- OpenCode documentation or local installed package behavior
-- `/srv/openrouter-free/opencode.generated.json`
-- AMD OpenCode config
-- throwaway test config if needed
+## Safety state
 
-Not allowed:
+Agents may inspect remote hosts read-only by SSH when the current slice allows it.
 
-- altering `/home/enzo/.config/opencode/opencode.json`
-- changing live OpenCode provider settings
-- altering LiteLLM or Open WebUI
-- calling paid OpenRouter models
+Agents must stop for explicit approval before any remote mutation, including:
+
+- editing SSH config
+- generating or installing SSH keys
+- editing remote `authorized_keys`
+- changing live service config
+- restarting services
+- altering LiteLLM, OpenCode, or Open WebUI
+
+Agents must not print secrets, capture passwords, or ask the user to paste private keys into chat.
+
+## Checks run
+
+Documentation reads:
+
+- `AGENTS.md`
+- `CODEX_CONTEXT.md`
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `HOMELAB_LAYOUT.md`
+- `WORKFLOW.md`
+- `ROADMAP.md`
+- `PROJECT_PLAN.md`
+- `DECISIONS.md`
+
+No SSH diagnostics for Slice 11 were run yet.
+
+## Results of checks
+
+The repo docs support a narrow readiness slice because `strix` is the canonical project host, while `amd` owns OpenCode execution and `thinkcentre` owns Open WebUI/LiteLLM services.
+
+Reliable read-only SSH inspection from `strix` to `amd` and `thinkcentre` is useful for reducing copy/paste, but any mutation still requires explicit operator approval.
+
+## Known risks or blockers
+
+- The local SSH client config problem may require a later approved `sudo` fix.
+- Hostname resolution for `amd` and `thinkcentre` may require local hosts, DNS, Tailscale, or SSH config inspection.
+- Passwordless SSH may not be set up yet.
+- Key generation or remote `authorized_keys` changes are out of scope until explicitly approved.
+
+## User approval needed
+
+No approval is needed for the repo-doc update already made.
+
+Approval will be needed before:
+
+- running commands that require sandbox network escalation
+- running `sudo`
+- editing SSH config
+- generating SSH keys
+- installing public keys on remote hosts
+- mutating any remote host or live service
 
 ## Recommended next action
 
-Inspect the generated OpenCode artifact and AMD OpenCode config, then verify environment-variable interpolation through documentation or a throwaway local test. Document the result and next action, show git diff only, and stop before commit.
+Review the Slice 11 diff. If accepted, commit it, then run only the read-only diagnostic command block from `CURRENT_SLICE.md`.
