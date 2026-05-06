@@ -103,3 +103,26 @@ Do not change:
 - systemd timers.
 
 First implementation should only generate and inspect artifacts.
+
+## Implementation note: 2026-05-06
+
+Initial neutral artifact generator created on ThinkCentre at:
+
+- `/srv/openrouter-free/generate.py`
+
+Generated artifacts were produced successfully:
+
+- `/srv/openrouter-free/free-models.raw.json`
+- `/srv/openrouter-free/free-models.allowlist.json`
+- `/srv/openrouter-free/opencode.generated.json`
+- `/srv/openrouter-free/openwebui.generated.env`
+
+Result:
+
+- 25 verified free OpenRouter models generated.
+- No live LiteLLM, OpenCode, Open WebUI, Docker, or systemd configuration changed.
+
+Open issue:
+
+- OpenCode environment-variable interpolation for generated provider API keys still needs verification before live integration.
+

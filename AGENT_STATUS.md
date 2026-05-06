@@ -2,33 +2,54 @@
 
 ## Current status
 
-OpenCode config format has been inspected and the neutral OpenRouter-free artifact plan has been written.
+Neutral OpenRouter-free artifact generation workspace has been created on ThinkCentre.
 
 ## Current slice
 
 Slice 9: create neutral OpenRouter-free artifact generator.
 
-## Files changed in current uncommitted work
+## Completed
 
-- `OPENROUTER_FREE_ARTIFACT_PLAN.md`
-- `AGENT_STATUS.md`
+Created on ThinkCentre:
+
+- `/srv/openrouter-free/README.md`
+- `/srv/openrouter-free/generate.py`
+- `/srv/openrouter-free/free-models.raw.json`
+- `/srv/openrouter-free/free-models.allowlist.json`
+- `/srv/openrouter-free/opencode.generated.json`
+- `/srv/openrouter-free/openwebui.generated.env`
+
+The generator successfully produced 25 verified free OpenRouter models.
+
+## Safety state
+
+No live service or client config was changed.
+
+Not changed:
+
+- LiteLLM service
+- LiteLLM systemd timer/service
+- OpenCode config
+- Open WebUI config
+- Docker Compose services
 
 ## Key findings
 
-OpenCode accepts provider config using:
+The generator preserves the important fail-closed behavior:
 
-- `provider.<name>.npm`
-- `provider.<name>.name`
-- `provider.<name>.options.baseURL`
-- `provider.<name>.options.apiKey`
-- `provider.<name>.models`
+- requires model ID to end in `:free`
+- requires prompt price to be zero
+- requires completion price to be zero
+- excludes models that cannot be verified as free
 
-Current AMD OpenCode still points at Homelab LiteLLM. The target is to add a direct local provider and a generated free-only OpenRouter provider later.
+## Blockers before live OpenCode use
 
-## Risks or blockers
+OpenCode environment interpolation still needs verification for:
 
-OpenCode API key interpolation for generated provider config still needs verification before live use.
+    "apiKey": "{env:OPENROUTER_API_KEY}"
+
+Do not wire `opencode.generated.json` into live OpenCode until that is confirmed.
 
 ## Recommended next action
 
-Review and commit the artifact plan, then create the neutral artifact generator on ThinkCentre without changing any live service configs.
+Commit the completed artifact-generator slice, then start a separate OpenCode config verification slice.
