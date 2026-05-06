@@ -76,3 +76,61 @@ Not executed yet.
 ## Recommended next action
 
 Transfer these files into `strix:/srv/projects/homelab/`, commit the slice, then execute the Slice 15 command blocks from `CURRENT_SLICE.md`.
+## Slice 15 execution result
+
+Executed successfully on 2026-05-06.
+
+Backup created on AMD:
+
+```text
+/home/enzo/.config/opencode/opencode.json.bak.20260506-182939.direct-local
+```
+
+Generated OpenRouter-free provider was copied from ThinkCentre to AMD:
+
+```text
+/srv/openrouter-free/opencode.generated.json
+```
+
+Candidate config was created and validated:
+
+```text
+/home/enzo/.config/opencode/opencode.with-openrouter-free.candidate.json
+candidate-json-ok
+```
+
+Live AMD OpenCode config was switched to include:
+
+- provider: `homelab-local`
+- provider: `homelab-openrouter-free`
+- default model: `homelab-local/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+- `small_model`: absent
+- OpenRouter-free model count: 25
+
+Validation output:
+
+```text
+build · Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf
+
+opencode-direct-local-ok
+```
+
+Result:
+
+- OpenCode still defaults to AMD direct local provider.
+- `homelab-openrouter-free` is available as a manual provider.
+- No OpenRouter model call was made.
+- No automatic OpenRouter fallback was added.
+- LiteLLM was unchanged.
+- Open WebUI was unchanged.
+- No services were restarted.
+
+Rollback backup:
+
+```text
+/home/enzo/.config/opencode/opencode.json.bak.20260506-182939.direct-local
+```
+
+Recommended next action:
+
+Update `HOMELAB_LAYOUT.md`, `WORKFLOW.md`, `ROADMAP.md`, and `OPENROUTER_FREE_ARTIFACT_PLAN.md` to reflect that AMD OpenCode no longer uses LiteLLM as its default path and now has a manual generated OpenRouter-free provider.
