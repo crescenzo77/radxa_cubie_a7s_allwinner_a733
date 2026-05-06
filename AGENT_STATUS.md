@@ -2,15 +2,20 @@
 
 ## Current status
 
-Neutral OpenRouter-free artifact generation workspace has been created on ThinkCentre.
+Slice 9 artifact-generator work has been committed.
+
+Known commits:
+
+- `f76ec18` — artifact-generator slice
+- `fcea997` — `CODEX_CONTEXT.md`
 
 ## Current slice
 
-Slice 9: create neutral OpenRouter-free artifact generator.
+Slice 10: verify OpenCode environment-variable interpolation without live config changes.
 
 ## Completed
 
-Created on ThinkCentre:
+Slice 9 created the neutral OpenRouter-free workspace on ThinkCentre:
 
 - `/srv/openrouter-free/README.md`
 - `/srv/openrouter-free/generate.py`
@@ -23,33 +28,42 @@ The generator successfully produced 25 verified free OpenRouter models.
 
 ## Safety state
 
-No live service or client config was changed.
+No live service or client config should be changed during Slice 10.
 
-Not changed:
+Do not change:
 
 - LiteLLM service
 - LiteLLM systemd timer/service
 - OpenCode config
 - Open WebUI config
 - Docker Compose services
+- `/home/enzo/.config/opencode/opencode.json`
+- OpenCode live provider settings
 
-## Key findings
+Do not call paid OpenRouter models.
 
-The generator preserves the important fail-closed behavior:
+## Slice 10 task
 
-- requires model ID to end in `:free`
-- requires prompt price to be zero
-- requires completion price to be zero
-- excludes models that cannot be verified as free
+Verify whether OpenCode supports this generated API key placeholder:
 
-## Blockers before live OpenCode use
+```json
+"apiKey": "{env:OPENROUTER_API_KEY}"
+```
 
-OpenCode environment interpolation still needs verification for:
+Allowed inspection:
 
-    "apiKey": "{env:OPENROUTER_API_KEY}"
+- OpenCode documentation or local installed package behavior
+- `/srv/openrouter-free/opencode.generated.json`
+- AMD OpenCode config
+- throwaway test config if needed
 
-Do not wire `opencode.generated.json` into live OpenCode until that is confirmed.
+Not allowed:
+
+- altering `/home/enzo/.config/opencode/opencode.json`
+- changing live OpenCode provider settings
+- altering LiteLLM or Open WebUI
+- calling paid OpenRouter models
 
 ## Recommended next action
 
-Commit the completed artifact-generator slice, then start a separate OpenCode config verification slice.
+Inspect the generated OpenCode artifact and AMD OpenCode config, then verify environment-variable interpolation through documentation or a throwaway local test. Document the result and next action, show git diff only, and stop before commit.

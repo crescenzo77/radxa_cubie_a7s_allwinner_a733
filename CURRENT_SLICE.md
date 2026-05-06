@@ -1,44 +1,48 @@
 # Current Slice
 
-## Slice 9: Create neutral OpenRouter-free artifact generator
+## Slice 10: Verify OpenCode environment-variable interpolation
 
-Create a neutral OpenRouter-free artifact generation plan before changing any live OpenCode, Open WebUI, or LiteLLM configuration.
+Verify OpenCode environment-variable interpolation without changing live OpenCode, Open WebUI, or LiteLLM configuration.
 
 ## Purpose
 
-The routing inventory showed that the useful part of the LiteLLM setup is the OpenRouter free-model discovery and zero-price filtering logic in `/srv/litellm/render-config.py`.
+Slice 9 created neutral OpenRouter-free generated artifacts under `/srv/openrouter-free/`.
 
-The target is to preserve that safety logic while moving generated output toward neutral artifacts under `/srv/openrouter-free/`.
+Before any generated OpenCode artifact can be wired into live config, OpenCode must be verified to support the generated API key placeholder:
+
+```json
+"apiKey": "{env:OPENROUTER_API_KEY}"
+```
 
 ## Scope
 
-Planning and safe implementation prep only:
+Verification only:
 
-- Inspect OpenCode config format.
-- Define neutral artifact paths under `/srv/openrouter-free/`.
-- Define generated files:
-  - `free-models.raw.json`
-  - `free-models.allowlist.json`
-  - `opencode.generated.json`
-  - `openwebui.generated.env`
-- Preserve zero-price filtering.
-- Preserve fail-closed behavior.
-- Do not alter live OpenCode or Open WebUI config yet.
+- Inspect OpenCode documentation or local installed package behavior.
+- Inspect generated `/srv/openrouter-free/opencode.generated.json`.
+- Inspect AMD OpenCode config.
+- Create a throwaway test config if needed.
+- Do not alter `/home/enzo/.config/opencode/opencode.json`.
+- Do not change OpenCode live provider settings.
+- Do not call paid OpenRouter models.
+- Do not alter LiteLLM or Open WebUI.
 
 ## Constraints
 
 - Do not stop LiteLLM.
-- Do not edit OpenCode config yet.
-- Do not edit Open WebUI config yet.
-- Do not alter systemd timers yet.
+- Do not edit live OpenCode config.
+- Do not edit live Open WebUI config.
+- Do not alter systemd timers.
 - Do not remove OpenRouter fallback.
 - Do not expose paid OpenRouter models.
 - Do not build a general router.
 - Do not create a daemon or watcher.
+- Do not make live production changes based on network responses without explicit approval.
 
 ## Acceptance Criteria
 
-- A clear artifact-generation plan exists in the repo.
-- The plan explains source inputs, generated outputs, and safety rules.
+- Determine whether `"apiKey": "{env:OPENROUTER_API_KEY}"` is valid for OpenCode.
+- Document the result and next action.
 - No live services or configs are changed.
-- Next implementation step is clearly defined.
+- Git diff is shown for review.
+- Stop before commit.
