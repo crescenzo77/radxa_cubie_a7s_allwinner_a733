@@ -2,38 +2,36 @@
 
 ## Current status
 
-Slice 14 is ready to execute the first controlled live OpenCode migration on AMD.
+Slice 15 is ready to add the generated OpenRouter-free provider to AMD OpenCode as manual-only.
 
 ## Current slice
 
-Slice 14: execute AMD OpenCode direct-local migration.
+Slice 15: add OpenRouter-free provider to OpenCode as manual-only.
 
 ## Why this is next
 
-Slice 13 produced the approval brief for a narrow direct-local migration.
+Slice 14 proved that AMD OpenCode works through the direct local provider:
 
-The next logical step is to execute only that narrow change:
+```text
+opencode-direct-local-ok
+```
 
-- direct AMD local-coder provider
-- no OpenRouter provider yet
-- no LiteLLM removal
-- no Open WebUI changes
+The next narrow step is to add the generated OpenRouter-free provider without changing the default local model.
 
 ## Safety posture
 
 This is a live OpenCode config change on AMD.
 
-The rollback path is documented before execution.
+The slice intentionally does not:
 
-The migration intentionally does not:
-
-- add OpenRouter
 - call OpenRouter
+- set OpenRouter as default
+- add automatic fallback
 - alter LiteLLM
 - alter Open WebUI
-- restart Docker services
-- delete old config
-- set `small_model` to the AMD 3090 model
+- restart services
+- remove rollback files
+- use the broad built-in OpenRouter provider
 
 ## Commands to run
 
@@ -41,20 +39,24 @@ Use the commands in `CURRENT_SLICE.md`.
 
 Run in this order:
 
-1. backup current live config
-2. create candidate direct-local config
-3. validate candidate JSON
-4. switch live config
-5. inspect live config redacted
-6. run local-only OpenCode validation
+1. confirm direct-local config still works
+2. back up current direct-local config
+3. copy generated provider from ThinkCentre to AMD
+4. build candidate config
+5. validate candidate JSON
+6. inspect candidate redacted
+7. switch live config
+8. validate default still uses direct local provider
 
 ## Expected success result
 
-OpenCode should respond exactly:
+OpenCode should still respond exactly:
 
 ```text
 opencode-direct-local-ok
 ```
+
+The output should show the AMD local model, not OpenRouter.
 
 ## Rollback trigger
 
@@ -62,10 +64,10 @@ Rollback immediately if:
 
 - candidate JSON validation fails
 - live JSON validation fails
+- OpenCode no longer defaults to AMD direct local provider
+- OpenCode attempts to use OpenRouter during the local validation
 - OpenCode cannot start
-- OpenCode cannot reach the AMD 3090 endpoint
-- OpenCode response is clearly not from the direct local provider
-- any unexpected OpenRouter call appears likely
+- any unexpected config shape appears
 
 ## Result
 
@@ -73,47 +75,4 @@ Not executed yet.
 
 ## Recommended next action
 
-Transfer these files into `strix:/srv/projects/homelab/`, commit the slice, then execute the Slice 14 command blocks from `CURRENT_SLICE.md`.
-## Slice 14 execution result
-
-Executed successfully on 2026-05-06.
-
-Backup created on AMD:
-
-```text
-/home/enzo/.config/opencode/opencode.json.bak.20260506-165737
-```
-
-Live AMD OpenCode config was switched to direct local provider only:
-
-- provider: `homelab-local`
-- base URL: `http://192.168.50.252:8083/v1`
-- model: `Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
-- OpenRouter provider: not added
-- LiteLLM: unchanged
-- Open WebUI: unchanged
-
-Validation command run directly on AMD:
-
-```bash
-timeout 180 /home/enzo/.opencode/bin/opencode run "Reply with exactly: opencode-direct-local-ok"
-```
-
-Validation output:
-
-```text
-build · Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf
-
-opencode-direct-local-ok
-```
-
-Result:
-
-- Direct local OpenCode path works.
-- No OpenRouter call was made.
-- LiteLLM remains available as rollback.
-- Open WebUI remains unchanged.
-
-Recommended next action:
-
-Create a separate slice to add the generated `homelab-openrouter-free` provider as a manual-only provider, after preserving the direct local provider as default.
+Transfer these files into `strix:/srv/projects/homelab/`, commit the slice, then execute the Slice 15 command blocks from `CURRENT_SLICE.md`.
