@@ -51,3 +51,24 @@ Consequences:
 - Do not build wrappers, scripts, automation, or process steps around Aider.
 - OpenCode through LiteLLM becomes the next coder path to evaluate and recenter around.
 - The two-surface workflow remains valid: web UI advisor, OpenCode coder, `advisor-packet`, markdown state files, and Git review.
+
+## 2026-05-06 — Transition away from LiteLLM active routing
+
+Decision:
+LiteLLM will be phased out of the active OpenCode and Open WebUI routing path.
+
+Rationale:
+The useful part of the current setup is the OpenRouter free-model discovery and free-only filtering, not LiteLLM itself. LiteLLM adds a large credential-bearing routing layer. The safer target is to preserve the free-model allowlist mechanism while generating OpenCode-safe provider config directly.
+
+Target:
+- OpenCode uses direct local-coder by default.
+- OpenRouter is available only as a generated free-only manual fallback.
+- Open WebUI moves back to direct local model endpoints.
+- LiteLLM is kept temporarily for rollback, then removed from the active path after testing.
+
+Consequences:
+- Do not delete or stop LiteLLM yet.
+- Do not remove OpenRouter fallback.
+- Do not expose the broad OpenRouter paid catalog to OpenCode.
+- Do not build a custom router or LiteLLM clone.
+- Move free-model artifacts toward `/srv/openrouter-free/`.
