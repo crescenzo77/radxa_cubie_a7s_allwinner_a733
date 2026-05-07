@@ -8,6 +8,16 @@ Capture the current live routing state for OpenCode, Open WebUI, LiteLLM, and Op
 
 This is a read-only inventory. No service or config changes were made.
 
+## Routing health check
+
+Run from the homelab repo on `strix`:
+
+```bash
+scripts/routing-health
+```
+
+This checks the model-list endpoints for LiteLLM, AMD 3090 local coder, AMD 7900 XT backup, Strix reasoning, and Strix coder testbed. It is read-only and does not change routing state.
+
 ## AMD OpenCode
 
 OpenCode is installed on AMD.
