@@ -185,7 +185,7 @@ Only consider these after the basic loop works:
 
 - tmux logging for coder sessions.
 - Better known-location coder log capture for `advisor-packet`.
-- Continue.dev review through direct/local model configuration after router transition.
+- Continue.dev validated against LiteLLM routing using current verbose LiteLLM model IDs.
 - Small shell completions or local install convenience for `advisor-packet`.
 
 These remain optional. Do not build them before the simple markdown-plus-git loop proves useful.
@@ -212,7 +212,7 @@ Definition of done:
 
 These remain valid but are not the immediate two-surface build:
 
-- Continue.dev should eventually remove stale endpoints and align with the post-LiteLLM direct/local model configuration.
+- Continue.dev remains intentionally LiteLLM-routed for shared editor-side model access and stable review semantics.
 - MCP Ledger should eventually become a Pattern A service on Strix if it remains part of the stack.
 - Git mirror topology should converge on Strix canonical, ThinkCentre tier-1, Mac Mini tier-2.
 - iMessage relay and family dashboard documentation should be captured in the homelab repo.

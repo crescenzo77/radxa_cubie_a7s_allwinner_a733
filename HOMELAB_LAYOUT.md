@@ -137,6 +137,8 @@ These files are the shared state between the user, advisor, and coder. They are 
 
 AMD OpenCode now defaults directly to the local AMD RTX 3090 coder endpoint and has a direct AMD RX 7900 XT backup provider for `small_model`. LiteLLM on ThinkCentre is still live for Open WebUI and retained as the OpenCode rollback path only.
 
+Continue.dev on framework intentionally routes through LiteLLM using the verbose exposed model IDs returned by `/v1/models`. Continue is treated as an editor-side shared routing client, unlike OpenCode which now defaults direct-local on AMD.
+
 ```text
 OpenCode on AMD
   -> homelab-local

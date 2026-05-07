@@ -130,6 +130,8 @@ git diff
 
 Use VS Code Remote-SSH for visual diff review. Continue.dev highlight-and-ask can help explain a specific code chunk, but it is optional and should remain a review aid, not an autonomous reviewer.
 
+Continue.dev uses LiteLLM-routed model IDs from thinkcentre:4000 rather than direct inference endpoints. This keeps editor-side review behavior aligned across models and avoids duplicating endpoint definitions on client devices.
+
 If the coder output is confusing, rerun `advisor-packet`, paste the packet into Open WebUI, and ask the advisor to interpret the state and draft the next bounded prompt.
 
 ### 6. Decide, Commit, or Iterate
