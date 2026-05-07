@@ -8,6 +8,7 @@ Last updated: 2026-05-06.
 
 - AMD is the current OpenCode and coding execution host.
 - AMD OpenCode now defaults directly to `homelab-local` at `http://192.168.50.252:8083/v1`.
+- AMD OpenCode uses `homelab-local-backup` at `http://192.168.50.252:8084/v1` as the direct RX 7900 XT backup provider for `small_model`.
 - AMD OpenCode exposes `homelab-openrouter-free` as a manual-only provider with 25 verified free OpenRouter models.
 - ThinkCentre hosts Open WebUI and related services. LiteLLM is still active for Open WebUI and retained for OpenCode rollback, but it is no longer the default OpenCode router.
 - Strix is the target canonical project/source host.
@@ -156,6 +157,7 @@ LiteLLM is no longer the target long-term active routing layer for OpenCode or O
 
 Completed for OpenCode:
 - OpenCode uses `homelab-local` direct local-coder by default.
+- OpenCode uses `homelab-local-backup` direct AMD RX 7900 XT endpoint for `small_model`.
 - OpenCode exposes OpenRouter only through generated `homelab-openrouter-free` free-only manual provider entries.
 - OpenRouter free-model discovery and filtering is preserved.
 - Generated free-model artifacts exist under `/srv/openrouter-free/`.
@@ -174,7 +176,6 @@ Definition of done:
 
 ## Future Routing Work
 
-- Add an optional direct AMD backup provider for the RX 7900 XT endpoint.
 - After a stability period, decide whether to remove LiteLLM from OpenCode entirely while preserving rollback notes.
 - Reevaluate Open WebUI routing later; do not claim it has migrated until the live Open WebUI config changes.
 

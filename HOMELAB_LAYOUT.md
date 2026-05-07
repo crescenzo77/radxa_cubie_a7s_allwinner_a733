@@ -68,6 +68,10 @@ Binary: /home/enzo/.opencode/bin/opencode
 Version: 1.14.39
 Default provider: homelab-local
 Default base URL: http://192.168.50.252:8083/v1
+Default model: homelab-local/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf
+Backup provider: homelab-local-backup
+Backup base URL: http://192.168.50.252:8084/v1
+Small model: homelab-local-backup/google_gemma-4-26B-A4B-it-Q4_K_M.gguf
 Default path: OpenCode on AMD -> direct AMD local-coder
 Manual provider: homelab-openrouter-free
 Manual provider model count: 25 verified free OpenRouter models
@@ -131,12 +135,18 @@ These files are the shared state between the user, advisor, and coder. They are 
 
 ## Routing State: OpenCode Direct, LiteLLM Retained
 
-AMD OpenCode now defaults directly to the local AMD coder endpoint. LiteLLM on ThinkCentre is still live for Open WebUI and retained as the OpenCode rollback path.
+AMD OpenCode now defaults directly to the local AMD RTX 3090 coder endpoint and has a direct AMD RX 7900 XT backup provider for `small_model`. LiteLLM on ThinkCentre is still live for Open WebUI and retained as the OpenCode rollback path only.
 
 ```text
 OpenCode on AMD
   -> homelab-local
   -> http://192.168.50.252:8083/v1
+  -> homelab-local/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf
+
+OpenCode small_model backup on AMD
+  -> homelab-local-backup
+  -> http://192.168.50.252:8084/v1
+  -> homelab-local-backup/google_gemma-4-26B-A4B-it-Q4_K_M.gguf
 
 OpenCode manual free cloud provider
   -> homelab-openrouter-free
@@ -171,8 +181,8 @@ No paid OpenRouter fallback is allowed. If free models cannot be verified, they 
 
 | Role | Model label / target | Endpoint | Use |
 |---|---|---|---|
-| Primary local coding | `local-coder | AMD RTX 3090 | Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf` | `amd:8083` | OpenCode coding work |
-| 3090-off backup | `local-coder-backup | AMD RX 7900 XT | Gemma 4 26B A4B Q4_K_M.gguf` | `amd:8084` | Optional future direct/manual backup target |
+| Primary local coding | `homelab-local/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf` | `amd:8083` | OpenCode default coding work |
+| OpenCode small model backup | `homelab-local-backup/google_gemma-4-26B-A4B-it-Q4_K_M.gguf` | `amd:8084` | Direct AMD RX 7900 XT backup provider |
 | Planning/reasoning | `local-reasoning | Strix | Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf` | `strix:8081` | Advisor/planning |
 | Strix coder testbed | `local-coder-testbed | Strix | Qwen3-Coder-Next-UD-Q4_K_XL.gguf` | `strix:8082` | Manual coder testbed |
 | Manual free cloud provider | generated `homelab-openrouter-free` entries | OpenRouter API | Free-only manual use, generated from verified allowlist |

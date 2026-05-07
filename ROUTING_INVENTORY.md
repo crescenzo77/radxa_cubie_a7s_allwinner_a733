@@ -20,15 +20,21 @@ Observed:
 - Default provider name: `Homelab Local`
 - Default base URL: `http://192.168.50.252:8083/v1`
 - Default model: `homelab-local/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+- Backup provider: `homelab-local-backup`
+- Backup provider name: `Homelab Local Backup`
+- Backup base URL: `http://192.168.50.252:8084/v1`
+- Backup endpoint model: `google_gemma-4-26B-A4B-it-Q4_K_M.gguf`
+- Small model: `homelab-local-backup/google_gemma-4-26B-A4B-it-Q4_K_M.gguf`
 - Manual provider: `homelab-openrouter-free`
 - Manual provider model count: 25 verified free OpenRouter models
 - OpenRouter default usage: disabled/manual-only
+- Automatic OpenRouter fallback: none
 - LiteLLM rollback provider: `homelab`
 - LiteLLM rollback base URL: `http://192.168.50.225:4000/v1`
 
 Conclusion:
 
-AMD OpenCode no longer defaults through LiteLLM. The default path is direct AMD local-coder through `homelab-local`. OpenRouter is available only through `homelab-openrouter-free` when selected manually.
+AMD OpenCode no longer defaults through LiteLLM. The default path is direct AMD local-coder through `homelab-local`. The `small_model` path is the direct AMD RX 7900 XT backup provider through `homelab-local-backup`. OpenRouter is available only through `homelab-openrouter-free` when selected manually, with no automatic OpenRouter fallback.
 
 ## ThinkCentre Open WebUI
 
@@ -134,11 +140,11 @@ All direct local model endpoints responded successfully.
 
 Conclusion:
 
-The AMD direct-local endpoint is now the default OpenCode path through `homelab-local`. Open WebUI still uses LiteLLM and can be reevaluated in a later slice.
+The AMD `8083` direct-local endpoint is now the default OpenCode path through `homelab-local`. The AMD `8084` direct-local endpoint is now the OpenCode backup `small_model` path through `homelab-local-backup`. Open WebUI still uses LiteLLM and can be reevaluated in a later slice.
 
 ## Current recommended next actions
 
 Do not stop LiteLLM yet.
 Do not claim Open WebUI has migrated until its live config changes.
 Keep OpenRouter manual-only in OpenCode.
-Optional later work can add a direct AMD backup provider for `http://192.168.50.252:8084`.
+Keep the direct AMD RX 7900 XT backup provider documented as the OpenCode `small_model` path.

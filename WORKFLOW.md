@@ -100,7 +100,11 @@ opencode
 
 Run it on AMD or in the relevant project host directory.
 
-Current live AMD OpenCode defaults to the direct `homelab-local` provider at `http://192.168.50.252:8083/v1`. Generated OpenRouter-free models are available through `homelab-openrouter-free` only when selected manually. LiteLLM is no longer in the default OpenCode execution path, but remains active for Open WebUI and available as rollback.
+Current live AMD OpenCode defaults to the direct `homelab-local` provider at `http://192.168.50.252:8083/v1` with model `homelab-local/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`.
+
+OpenCode `small_model` points to the direct AMD RX 7900 XT backup provider `homelab-local-backup` at `http://192.168.50.252:8084/v1` with model `homelab-local-backup/google_gemma-4-26B-A4B-it-Q4_K_M.gguf`.
+
+Generated OpenRouter-free models are available through `homelab-openrouter-free` only when selected manually. OpenRouter remains manual-only and is not an automatic fallback. LiteLLM is outside the default OpenCode execution path, but remains active for Open WebUI and available as rollback.
 
 Aider was evaluated and eliminated from the homelab steady-state workflow after unsafe file-handling behavior during a simple documentation task. Do not use Aider as the default or fallback coder for this workflow.
 
