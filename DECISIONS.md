@@ -72,3 +72,28 @@ Consequences:
 - Do not expose the broad OpenRouter paid catalog to OpenCode.
 - Do not build a custom router or LiteLLM clone.
 - Move free-model artifacts toward `/srv/openrouter-free/`.
+
+## 2026-05-11 — Open WebUI model-dispatch compatibility layer
+
+Decision:
+Open WebUI uses `model-dispatch` on ThinkCentre as its active OpenAI-compatible model endpoint.
+
+Live endpoint:
+
+- `http://192.168.50.225:4010/v1`
+- Service: `model-dispatch.service`
+- Path: `/srv/model-dispatch`
+- Host: `thinkcentre`
+
+Rationale:
+Open WebUI needs a stable OpenAI-compatible `/v1/models` and `/v1/chat/completions` surface that can present local-first routes, explicit local models, and verified OpenRouter-free choices without exposing the broad paid OpenRouter catalog or keeping LiteLLM in the active path.
+
+Consequences:
+- Open WebUI no longer actively routes through LiteLLM.
+- LiteLLM remains rollback/history unless explicitly reactivated.
+- The dispatcher exposes local auto routes: `auto-local`, `auto-coding-local`, `auto-reasoning-local`, and `auto-small-local`.
+- The dispatcher exposes explicit local models for Strix reasoning, Strix coder, AMD coder, and AMD Gemma backup.
+- The dispatcher exposes `openrouter-free/openrouter/auto-free-router` before specific verified free models.
+- OpenRouter remains free-only, explicit/manual, and fail-closed.
+- OpenCode remains direct-local on AMD and keeps its generated OpenRouter-free provider behavior separate from Open WebUI.
+- Follow-up decisions remain: token-estimation improvements, LiteLLM rollback retention, whether `model-dispatch` should get its own repo, and the future Continue.dev path.

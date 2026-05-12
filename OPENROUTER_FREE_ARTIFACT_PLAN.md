@@ -4,7 +4,7 @@
 
 Preserve the useful part of the current LiteLLM setup: OpenRouter free-model discovery and zero-price filtering.
 
-Move generated outputs away from LiteLLM-specific config and toward neutral artifacts that can be consumed by OpenCode and later Open WebUI.
+Move generated outputs away from LiteLLM-specific config and toward neutral artifacts consumed by OpenCode and model-dispatch for Open WebUI.
 
 ## Source of truth
 
@@ -31,7 +31,7 @@ Neutral directory on ThinkCentre:
 - `free-models.raw.json`: raw OpenRouter model response for audit/debugging.
 - `free-models.allowlist.json`: filtered verified-free model list.
 - `opencode.generated.json`: OpenCode-compatible provider fragment.
-- `openwebui.generated.env`: future helper artifact for Open WebUI direct/free-only config.
+- `openwebui.generated.env`: helper artifact for Open WebUI direct/free-only config.
 
 ## OpenCode provider status
 
@@ -69,6 +69,29 @@ OpenCode now uses a direct local provider by default:
 
 Optional direct providers can be added later for AMD backup and Strix models. Do not overpack the first migration.
 
+## Open WebUI model-dispatch status
+
+Open WebUI now points to model-dispatch:
+
+- Endpoint: `http://192.168.50.225:4010/v1`
+- Service: `model-dispatch.service`
+- Path: `/srv/model-dispatch`
+- Host: `thinkcentre`
+
+model-dispatch consumes `/srv/openrouter-free/free-models.allowlist.json` for Open WebUI OpenRouter-free exposure.
+
+Visible OpenRouter-free entries include:
+
+- `openrouter-free/openrouter/auto-free-router`
+- `openrouter-free/<verified-model>:free`
+
+Safety rules:
+
+- Keep OpenRouter choices explicit/manual in Open WebUI.
+- Expose only verified free models from `free-models.allowlist.json`.
+- Keep the paid OpenRouter catalog hidden.
+- Fail closed if the allowlist is missing, stale, malformed, or contains unverifiable pricing.
+
 ## Fail-closed rules
 
 The generator must:
@@ -89,16 +112,17 @@ Rollback remains:
 
 - Restore OpenCode config to the rollback `homelab` provider using `http://192.168.50.225:4000/v1`.
 - Restore Open WebUI `OPENAI_API_BASE_URLS` to `http://192.168.50.225:4000/v1`.
-- Keep `/srv/litellm/` intact because Open WebUI still uses it and OpenCode rollback depends on it.
+- Keep `/srv/litellm/` intact because Open WebUI and OpenCode rollback may depend on it if LiteLLM is explicitly reactivated.
 
 ## Implementation status
 
-Direct local OpenCode and manual OpenRouter-free provider integration are live on AMD OpenCode. OpenRouter remains manual-only, and there is no automatic cloud fallback.
+Direct local OpenCode and manual OpenRouter-free provider integration are live on AMD OpenCode. Open WebUI now consumes the free-model allowlist through model-dispatch. OpenRouter remains manual-only, and there is no automatic cloud fallback.
 
 Do not change as part of this documentation slice:
 
 - OpenCode live config.
 - Open WebUI live config.
+- model-dispatch code or service.
 - LiteLLM service.
 - systemd timers.
 
@@ -122,7 +146,7 @@ Result:
 - Direct local provider is now live on AMD OpenCode as `homelab-local`.
 - OpenRouter remains manual-only.
 - No automatic cloud fallback exists.
-- Open WebUI still routes through LiteLLM.
+- Open WebUI now routes through model-dispatch, which consumes `free-models.allowlist.json` and exposes `openrouter-free/openrouter/auto-free-router` plus verified free model entries.
 
 Resolved issue:
 

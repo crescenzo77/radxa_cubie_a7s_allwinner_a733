@@ -2,7 +2,7 @@
 
 This describes the normal working loop for homelab coding projects.
 
-Last updated: 2026-05-06.
+Last updated: 2026-05-11.
 
 ## Summary
 
@@ -82,11 +82,22 @@ Use the advisor to:
 - Check whether the coder’s proposed direction is still aligned with the current slice.
 - Turn the next action into a prompt for the coding agent.
 
-For planning, use the Strix reasoning model through Open WebUI. Open WebUI currently still reaches models through LiteLLM, but the target is direct local model endpoints.
+Open WebUI now reaches models through `model-dispatch` on ThinkCentre:
 
-For coding-oriented discussion, use the AMD local-coder model if useful.
+```text
+http://192.168.50.225:4010/v1
+```
 
-OpenRouter remains free-only, explicit, and non-primary. OpenCode exposes it through the generated `homelab-openrouter-free` provider for manual use only, not through broad OpenRouter access and not as automatic paid fallback.
+Recommended Open WebUI choices:
+
+- Use `auto-local` for normal advisor/planning prompts.
+- Use `auto-reasoning-local` for long planning, architecture review, or decision-heavy prompts.
+- Use `auto-coding-local` for coding chat and code-oriented explanations.
+- Use `auto-small-local` only for short, lightweight prompts.
+
+Direct `amd-backup-gemma4-26b-8k` should not be used for long pasted logs or large advisor packets. Its context window is too small for that use; validated routing showed `auto-small-local` skipped the AMD Gemma 8k endpoint when the estimated total was about 18k tokens and routed to AMD Qwen 32k instead.
+
+OpenRouter remains free-only, explicit, and non-primary. In Open WebUI, choose `openrouter-free/openrouter/auto-free-router` or a specific `openrouter-free/<verified-model>:free` model only when you intentionally want a free cloud model. The OpenRouter paid catalog must remain hidden, and OpenRouter must not become an automatic fallback.
 
 ### 4. Hand a Bounded Prompt to the Coder
 
@@ -104,7 +115,7 @@ Current live AMD OpenCode defaults to the direct `homelab-local` provider at `ht
 
 OpenCode `small_model` points to the direct AMD RX 7900 XT backup provider `homelab-local-backup` at `http://192.168.50.252:8084/v1` with model `homelab-local-backup/google_gemma-4-26B-A4B-it-Q4_K_M.gguf`.
 
-Generated OpenRouter-free models are available through `homelab-openrouter-free` only when selected manually. OpenRouter remains manual-only and is not an automatic fallback. LiteLLM is outside the default OpenCode execution path, but remains active for Open WebUI and available as rollback.
+Generated OpenRouter-free models are available through `homelab-openrouter-free` only when selected manually. OpenRouter remains manual-only and is not an automatic fallback. LiteLLM is outside the default OpenCode execution path and outside the active Open WebUI path; it remains available as rollback/history.
 
 Aider was evaluated and eliminated from the homelab steady-state workflow after unsafe file-handling behavior during a simple documentation task. Do not use Aider as the default or fallback coder for this workflow.
 

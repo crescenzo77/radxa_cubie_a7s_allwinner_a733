@@ -1,10 +1,10 @@
 # Routing Inventory
 
-Date: 2026-05-06
+Date: 2026-05-11
 
 ## Purpose
 
-Capture the current live routing state for OpenCode, Open WebUI, LiteLLM, and OpenRouter configuration.
+Capture the current live routing state for OpenCode, Open WebUI, model-dispatch, LiteLLM, and OpenRouter configuration.
 
 This is a read-only inventory. No service or config changes were made.
 
@@ -16,7 +16,7 @@ Run from the homelab repo on `strix`:
 scripts/routing-health
 ```
 
-This checks the model-list endpoints for LiteLLM, AMD 3090 local coder, AMD 7900 XT backup, Strix reasoning, and Strix coder testbed. It is read-only and does not change routing state.
+This checks the model-list endpoints for LiteLLM rollback, AMD 3090 local coder, AMD 7900 XT backup, Strix reasoning, and Strix coder testbed. It is read-only and does not change routing state.
 
 ## AMD OpenCode
 
@@ -54,15 +54,53 @@ Open WebUI compose path:
 
 Current live setting:
 
-- `OPENAI_API_BASE_URLS: "http://192.168.50.225:4000/v1"`
+- `OPENAI_API_BASE_URLS: "http://192.168.50.225:4010/v1"`
 
 Conclusion:
 
-Open WebUI currently still routes through LiteLLM.
+Open WebUI currently routes through `model-dispatch`, not LiteLLM.
 
 Older direct-endpoint examples exist in backup/commented files under `/srv/openwebui/`.
 
-## ThinkCentre LiteLLM
+## ThinkCentre model-dispatch
+
+Service details:
+
+- Host: `thinkcentre`
+- Path: `/srv/model-dispatch`
+- Service: `model-dispatch.service`
+- Port: `4010`
+- Endpoint: `http://192.168.50.225:4010/v1`
+
+Open WebUI visible model IDs:
+
+- `auto-local`
+- `auto-coding-local`
+- `auto-reasoning-local`
+- `auto-small-local`
+- `strix-reasoning-qwen3.6-65k`
+- `strix-coder-qwen3-coder-next-65k`
+- `amd-coder-qwen3-coder-30b-32k`
+- `amd-backup-gemma4-26b-8k`
+- `openrouter-free/openrouter/auto-free-router`
+- `openrouter-free/<verified-model>:free` entries
+
+Validated behavior:
+
+- `auto-local` selected AMD Qwen 32k for a normal prompt.
+- `auto-small-local` skipped AMD Gemma 8k when estimated total tokens were about 18k and routed to AMD Qwen 32k.
+- 25 verified OpenRouter free model entries were exposed.
+- `openrouter-free/openrouter/auto-free-router` appears before specific free models.
+
+Current role:
+
+- Active Open WebUI OpenAI-compatible endpoint.
+- Local-first model dispatch.
+- Explicit local model selection.
+- Explicit/manual OpenRouter-free exposure.
+- Fail-closed free-model filtering through the verified allowlist.
+
+## ThinkCentre LiteLLM Rollback/History
 
 LiteLLM files:
 
@@ -81,13 +119,13 @@ Container:
 
 Security note:
 
-Using `main-latest` is not ideal for a security-sensitive routing service. Since LiteLLM is no longer the default OpenCode path and Open WebUI routing will be reevaluated later, this is recorded as a transition risk rather than fixed immediately.
+Using `main-latest` is not ideal for a security-sensitive routing service. Since LiteLLM is no longer the default OpenCode path and no longer the active Open WebUI path, this is recorded as a rollback/history risk rather than fixed immediately.
 
 Current role:
 
-- Still active for Open WebUI.
 - Retained for OpenCode rollback.
 - Not the default OpenCode path anymore.
+- Retained for Open WebUI rollback/history unless explicitly reactivated.
 
 ## OpenRouter free-model refresh
 
@@ -122,7 +160,7 @@ Current behavior:
 
 Conclusion:
 
-The useful logic is the free-model discovery and zero-price filtering. The generated target should move from LiteLLM config to neutral/OpenCode-safe artifacts under `/srv/openrouter-free/`.
+The useful logic is the free-model discovery and zero-price filtering. Neutral artifacts under `/srv/openrouter-free/` now feed direct OpenCode provider generation and model-dispatch Open WebUI exposure.
 
 ## Direct local endpoints
 
@@ -150,11 +188,13 @@ All direct local model endpoints responded successfully.
 
 Conclusion:
 
-The AMD `8083` direct-local endpoint is now the default OpenCode path through `homelab-local`. The AMD `8084` direct-local endpoint is now the OpenCode backup `small_model` path through `homelab-local-backup`. Open WebUI still uses LiteLLM and can be reevaluated in a later slice.
+The AMD `8083` direct-local endpoint is now the default OpenCode path through `homelab-local`. The AMD `8084` direct-local endpoint is now the OpenCode backup `small_model` path through `homelab-local-backup`. Open WebUI uses model-dispatch at `http://192.168.50.225:4010/v1`.
 
 ## Current recommended next actions
 
 Do not stop LiteLLM yet.
-Do not claim Open WebUI has migrated until its live config changes.
+Keep LiteLLM documented as rollback/history only unless explicitly reactivated.
 Keep OpenRouter manual-only in OpenCode.
+Keep OpenRouter free choices explicit/manual in Open WebUI.
 Keep the direct AMD RX 7900 XT backup provider documented as the OpenCode `small_model` path.
+Improve model-dispatch token estimation in a later slice.

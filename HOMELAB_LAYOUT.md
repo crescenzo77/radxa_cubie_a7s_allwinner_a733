@@ -2,7 +2,7 @@
 
 This is the architectural reference for the practical two-surface homelab workflow. It answers what runs where, which machines own which responsibilities, and what must not become infrastructure.
 
-Last updated: 2026-05-06.
+Last updated: 2026-05-11.
 
 ## Operating Model
 
@@ -23,7 +23,7 @@ Codex may be used manually during setup documentation work, but it is not part o
 | `framework` | — | yes | Thin client: browser, SSH, VS Code Remote-SSH |
 | `amd` | `192.168.50.252` | `100.107.201.16` | Current coding execution host; OpenCode installed; primary RTX 3090 coder model and RX 7900 XT backup |
 | `strix` | `192.168.50.11` | `100.105.138.41` | Target canonical project/source host; reasoning/testbed inference |
-| `thinkcentre` | `192.168.50.225` | `100.127.113.105` | Services hub: Open WebUI, SearXNG, AdGuard, dashboard, proxies; LiteLLM active for Open WebUI and retained for OpenCode rollback |
+| `thinkcentre` | `192.168.50.225` | `100.127.113.105` | Services hub: Open WebUI, model-dispatch, SearXNG, AdGuard, dashboard, proxies; LiteLLM retained for rollback/history |
 | `mac mini` | `192.168.50.164` | yes | iMessage relay backend; future tier-2 git mirror |
 | `minipc` | `192.168.50.76` | yes | LAN backup target |
 | `oracle` | cloud | yes | Off-site backup, headscale host |
@@ -36,7 +36,7 @@ Open WebUI on ThinkCentre is the browser-based advisor/planner:
 
 ```text
 URL: http://192.168.50.225:3000
-Current model access: Open WebUI -> LiteLLM; target model access remains direct local model endpoints with optional free-only explicit OpenRouter access
+Current model access: Open WebUI -> model-dispatch -> local endpoints or explicit OpenRouter-free choices
 ```
 
 Use the advisor for:
@@ -47,13 +47,29 @@ Use the advisor for:
 - Generating the next prompt for the coding agent.
 - Reviewing a compact project-state packet instead of raw terminal dumps.
 
-Current live Open WebUI still uses LiteLLM during the transition window:
+Current live Open WebUI model API target:
 
-```yaml
-OPENAI_API_BASE_URLS: "http://192.168.50.225:4000/v1"
+```text
+OPENAI_API_BASE_URLS: http://192.168.50.225:4010/v1
 ```
 
-Target state: Open WebUI should move back to direct local model endpoints for AMD and Strix. LiteLLM should remain available temporarily only as a rollback path until the direct endpoint configuration is tested.
+ThinkCentre dispatcher details:
+
+```text
+Host: thinkcentre
+Service: model-dispatch.service
+Path: /srv/model-dispatch
+Port: 4010
+Endpoint: http://192.168.50.225:4010/v1
+```
+
+The dispatcher exposes OpenAI-compatible `/v1/models` and `/v1/chat/completions` for Open WebUI. It keeps Open WebUI local-first while allowing explicit, verified OpenRouter-free choices. LiteLLM is not the active Open WebUI model endpoint anymore; it remains rollback/history unless explicitly reactivated.
+
+Open WebUI visible model categories:
+
+- Auto local routes: `auto-local`, `auto-coding-local`, `auto-reasoning-local`, `auto-small-local`.
+- Explicit local models: `strix-reasoning-qwen3.6-65k`, `strix-coder-qwen3-coder-next-65k`, `amd-coder-qwen3-coder-30b-32k`, `amd-backup-gemma4-26b-8k`.
+- OpenRouter-free choices: `openrouter-free/openrouter/auto-free-router` and `openrouter-free/<verified-model>:free` entries.
 
 ## Surface 2: Self-Hosted Coding Agent
 
@@ -82,7 +98,7 @@ Preferred steady-state coder:
 
 - **OpenCode** using the direct local-coder path.
 
-Aider was evaluated and eliminated from the homelab workflow. LiteLLM is no longer in the default OpenCode path, but remains active for Open WebUI and available for OpenCode rollback. OpenRouter is available only through the generated `homelab-openrouter-free` provider when selected manually, not as an automatic hidden route.
+Aider was evaluated and eliminated from the homelab workflow. LiteLLM is no longer in the default OpenCode path and no longer active for Open WebUI, but remains available as rollback/history. OpenRouter is available only through generated free-only entries when selected manually, not as an automatic hidden route.
 
 Codex/Claude-style hosted tools must not be wired into API automation, wrappers, scheduled tasks, or background jobs. If used at all during setup or emergency manual work, they remain manually invoked tools.
 
@@ -133,9 +149,9 @@ Each active project should keep human-readable operating files in the repository
 
 These files are the shared state between the user, advisor, and coder. They are deliberately simple markdown plus git.
 
-## Routing State: OpenCode Direct, LiteLLM Retained
+## Routing State: OpenCode Direct, Open WebUI Dispatch
 
-AMD OpenCode now defaults directly to the local AMD RTX 3090 coder endpoint and has a direct AMD RX 7900 XT backup provider for `small_model`. LiteLLM on ThinkCentre is still live for Open WebUI and retained as the OpenCode rollback path only.
+AMD OpenCode now defaults directly to the local AMD RTX 3090 coder endpoint and has a direct AMD RX 7900 XT backup provider for `small_model`. Open WebUI now points to `model-dispatch` on ThinkCentre at `http://192.168.50.225:4010/v1`. LiteLLM on ThinkCentre is retained as rollback/history only.
 
 Continue.dev on framework intentionally routes through LiteLLM using the verbose exposed model IDs returned by `/v1/models`. Continue is treated as an editor-side shared routing client, unlike OpenCode which now defaults direct-local on AMD.
 
@@ -155,14 +171,26 @@ OpenCode manual free cloud provider
   -> 25 verified free OpenRouter models only
 
 Open WebUI
-  -> LiteLLM on ThinkCentre
+  -> model-dispatch on ThinkCentre
+  -> http://192.168.50.225:4010/v1
+  -> local-first dispatch plus explicit OpenRouter-free choices
 
 OpenCode rollback
   -> LiteLLM on ThinkCentre
   -> http://192.168.50.225:4000/v1
 ```
 
-Host details:
+Active Open WebUI dispatcher details:
+
+```text
+Host: thinkcentre
+Path: /srv/model-dispatch
+Service: model-dispatch.service
+Port: 4010
+Endpoint: http://192.168.50.225:4010/v1
+```
+
+LiteLLM rollback/history details:
 
 ```text
 Host: thinkcentre
@@ -172,9 +200,10 @@ Endpoint: http://192.168.50.225:4000/v1
 Container: litellm
 ```
 
-OpenRouter remains allowed only as free-model access. The existing free-model discovery/filtering mechanism now generates neutral artifacts under `/srv/openrouter-free/`:
+OpenRouter remains allowed only as free-model access. The existing free-model discovery/filtering mechanism now generates neutral artifacts under `/srv/openrouter-free/` and model-dispatch consumes the verified allowlist for Open WebUI:
 
 - `openrouter/openrouter/free`
+- `openrouter-free/openrouter/auto-free-router`
 - Generated model entries ending in `:free`
 
 No paid OpenRouter fallback is allowed. If free models cannot be verified, they must not be exposed.
@@ -188,6 +217,8 @@ No paid OpenRouter fallback is allowed. If free models cannot be verified, they 
 | Planning/reasoning | `local-reasoning | Strix | Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf` | `strix:8081` | Advisor/planning |
 | Strix coder testbed | `local-coder-testbed | Strix | Qwen3-Coder-Next-UD-Q4_K_XL.gguf` | `strix:8082` | Manual coder testbed |
 | Manual free cloud provider | generated `homelab-openrouter-free` entries | OpenRouter API | Free-only manual use, generated from verified allowlist |
+| Open WebUI auto local | `auto-local`, `auto-coding-local`, `auto-reasoning-local`, `auto-small-local` | `thinkcentre:4010` | Local-first model-dispatch routes |
+| Open WebUI manual free cloud | `openrouter-free/openrouter/auto-free-router`, `openrouter-free/<verified-model>:free` | `thinkcentre:4010` | Explicit free-only OpenRouter choices |
 
 ## Project Source Convention
 

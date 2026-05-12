@@ -2,7 +2,7 @@
 
 This roadmap describes the path from the current setup to a practical two-surface workflow.
 
-Last updated: 2026-05-06.
+Last updated: 2026-05-11.
 
 ## Current Facts To Preserve
 
@@ -10,7 +10,8 @@ Last updated: 2026-05-06.
 - AMD OpenCode now defaults directly to `homelab-local` at `http://192.168.50.252:8083/v1`.
 - AMD OpenCode uses `homelab-local-backup` at `http://192.168.50.252:8084/v1` as the direct RX 7900 XT backup provider for `small_model`.
 - AMD OpenCode exposes `homelab-openrouter-free` as a manual-only provider with 25 verified free OpenRouter models.
-- ThinkCentre hosts Open WebUI and related services. LiteLLM is still active for Open WebUI and retained for OpenCode rollback, but it is no longer the default OpenCode router.
+- ThinkCentre hosts Open WebUI, model-dispatch, and related services. Open WebUI now points to `model-dispatch` at `http://192.168.50.225:4010/v1`.
+- LiteLLM is retained for rollback/history, but it is no longer the active Open WebUI endpoint or the default OpenCode router.
 - Strix is the target canonical project/source host.
 - Framework laptop remains a thin client.
 - OpenRouter must remain free-only and fail-closed; target is generated free-only config under `/srv/openrouter-free/`, not LiteLLM as active router.
@@ -162,22 +163,31 @@ Completed for OpenCode:
 - OpenRouter free-model discovery and filtering is preserved.
 - Generated free-model artifacts exist under `/srv/openrouter-free/`.
 
+Completed for Open WebUI:
+- Open WebUI points to `model-dispatch` on ThinkCentre at `http://192.168.50.225:4010/v1`.
+- `model-dispatch.service` runs from `/srv/model-dispatch`.
+- Open WebUI exposes local auto routes, explicit local models, `openrouter-free/openrouter/auto-free-router`, and verified `openrouter-free/<verified-model>:free` entries.
+- OpenRouter paid catalog remains hidden.
+
 Still pending:
-- Open WebUI still routes through LiteLLM.
-- LiteLLM remains active for Open WebUI and retained for OpenCode rollback.
-- Later stability review can decide whether LiteLLM should be removed from OpenCode entirely.
+- Improve model-dispatch token estimation.
+- Decide how long to retain LiteLLM rollback/history.
+- Decide whether `model-dispatch` should get its own repo.
+- Decide the future Continue.dev path.
 
 Definition of done:
 - Docs describe LiteLLM as transitional/rollback, not the long-term router.
 - OpenCode direct local-coder path is tested.
 - OpenRouter free-only generated provider is tested manually.
-- Open WebUI direct endpoints are tested in a later slice.
+- Open WebUI model-dispatch migration is documented as complete.
 - LiteLLM rollback path is documented.
 
 ## Future Routing Work
 
-- After a stability period, decide whether to remove LiteLLM from OpenCode entirely while preserving rollback notes.
-- Reevaluate Open WebUI routing later; do not claim it has migrated until the live Open WebUI config changes.
+- Improve model-dispatch token estimation, especially for long pasted logs and advisor packets.
+- After a stability period, decide whether to keep or retire LiteLLM rollback/history.
+- Decide whether `/srv/model-dispatch` should become its own repo.
+- Decide whether Continue.dev should remain LiteLLM-routed, move to model-dispatch, or use another explicit local path.
 
 ## Optional Later Improvements
 
