@@ -33,3 +33,4 @@ Validated behavior:
 - OpenCode MCP adapter is not connected yet.
 - AMD CLI indexing works for `lora-corpus-pipeline-journal`.
 - AMD `.cgcignore` was reviewed and committed.
+- Codex MCP adapter was manually connected and validated on AMD.
