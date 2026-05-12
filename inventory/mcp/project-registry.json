@@ -1,0 +1,53 @@
+{
+  "policy": {
+    "default_canonical_host": "strix",
+    "gpu_data_heavy_host": "amd",
+    "service_mirror_host": "thinkcentre",
+    "cubie_role": "runtime-only",
+    "mcp_rule": "Run MCP on the canonical active project host, not on Cubies.",
+    "sync_rule": "Use Git for source movement. Do not use bidirectional filesystem sync."
+  },
+  "projects": {
+    "homelab": {
+      "canonical_host": "strix",
+      "canonical_path": "/srv/projects/homelab",
+      "reason": "Normal homelab documentation/source project.",
+      "mcp_execution": "local_on_canonical_host",
+      "mirror": {
+        "host": "thinkcentre",
+        "path": "/srv/git/homelab.git"
+      }
+    },
+    "cubie-camera-node": {
+      "canonical_host": "strix",
+      "canonical_path": "/srv/projects/cubie-camera-node",
+      "reason": "Cubies are runtime-only deployment targets.",
+      "mcp_execution": "local_on_canonical_host",
+      "mirror": {
+        "host": "thinkcentre",
+        "path": "/srv/git/cubie-camera-node.git"
+      },
+      "deploy_targets": {
+        "cubie-camera-01": {
+          "runtime_path": "/opt/cubie-camera-node",
+          "config_path": "/etc/cubie-camera-node",
+          "data_path": "/var/lib/cubie-camera-node",
+          "log_path": "/var/log/cubie-camera-node"
+        }
+      }
+    },
+    "lora-corpus-pipeline-journal": {
+      "canonical_host": "amd",
+      "canonical_path": "/home/enzo/crucial/lora-corpus-pipeline-journal",
+      "reason": "Git-tracked control/journal repo for GPU/data-heavy frame extraction and LoRA workflow.",
+      "mcp_execution": "local_on_canonical_host",
+      "mirror": {
+        "host": "thinkcentre",
+        "path": "/srv/git/lora-corpus-pipeline-journal.git"
+      },
+      "related_runtime_paths": {
+        "tara_project": "/home/enzo/tara_project"
+      }
+    }
+  }
+}
