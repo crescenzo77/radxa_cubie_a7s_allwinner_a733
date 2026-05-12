@@ -29,7 +29,7 @@ Validated behavior:
 ## Current status
 
 - CLI indexing works on Strix.
-- Codex MCP adapter is not connected yet.
+- Codex MCP adapter was manually connected and validated on Strix.
 - OpenCode MCP adapter is not connected yet.
 - AMD CLI indexing works for `lora-corpus-pipeline-journal`.
 - AMD `.cgcignore` was reviewed and committed.
