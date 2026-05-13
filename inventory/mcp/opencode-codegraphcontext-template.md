@@ -46,16 +46,24 @@ Equivalent command:
 
 This is a documentation template, not a live config.
 
-Before using this, verify the current OpenCode MCP schema with the installed OpenCode version.
+Before using this, verify the current OpenCode MCP schema with the installed OpenCode version. Current OpenCode documentation shows local MCP `command` as an array and supports `enabled: false` for temporary disablement.
 
     {
+      "$schema": "https://opencode.ai/config.json",
       "mcp": {
         "codegraphcontext": {
           "type": "local",
-          "command": "/srv/mcp/servers/codegraphcontext-venv/bin/codegraphcontext",
-          "args": ["mcp", "start"],
-          "enabled": true
+          "command": [
+            "/srv/mcp/servers/codegraphcontext-venv/bin/codegraphcontext",
+            "mcp",
+            "start"
+          ],
+          "enabled": false,
+          "timeout": 20000
         }
+      },
+      "permission": {
+        "codegraphcontext_*": "ask"
       }
     }
 
@@ -85,7 +93,7 @@ Then inspect OpenCode's current config and help output without changing anything
       -type f \
       -print
 
-Do not edit live OpenCode config until the exact MCP schema is confirmed.
+Do not edit live OpenCode config until the exact MCP schema is confirmed. Keep the template disabled first, and require approval for CodeGraphContext tools with the `codegraphcontext_*` permission guard.
 
 ## First OpenCode MCP validation prompt
 
