@@ -1,80 +1,42 @@
 # Current Slice
 
-## Slice 19: Document Open WebUI model-dispatch migration
+## Slice 20: Document OpenCode MCP adapter template and Codex rollback
 
-Update homelab documentation so the repo reflects the current live Open WebUI routing state.
+Create documentation-only MCP adapter material for CodeGraphContext so the OpenCode transition path is real without changing live OpenCode configuration.
 
 ## Purpose
 
-Open WebUI no longer uses LiteLLM as its active model endpoint.
+Codex has already been manually validated with CodeGraphContext on Strix and AMD. OpenCode remains the intended OSS/local steady-state coding client, but its MCP adapter has not been connected or validated yet.
 
-Current live path:
+This slice prepares the OpenCode side carefully by documenting:
 
-- Open WebUI endpoint: `http://192.168.50.225:3000`
-- Open WebUI model API target: `http://192.168.50.225:4010/v1`
-- ThinkCentre dispatcher path: `/srv/model-dispatch`
-- ThinkCentre dispatcher service: `model-dispatch.service`
-- Dispatcher port: `4010`
-
-The dispatcher provides:
-
-- OpenAI-compatible `/v1/models`
-- OpenAI-compatible `/v1/chat/completions`
-- context-window-aware local routing
-- local-first dispatch
-- explicit local model selection
-- verified OpenRouter free-only model exposure
-- OpenRouter free auto-router exposure
-- fail-closed free-model filtering
-
-## Current visible Open WebUI model classes
-
-Auto local routes:
-
-- `auto-local`
-- `auto-coding-local`
-- `auto-reasoning-local`
-- `auto-small-local`
-
-Explicit local models:
-
-- `strix-reasoning-qwen3.6-65k`
-- `strix-coder-qwen3-coder-next-65k`
-- `amd-coder-qwen3-coder-30b-32k`
-- `amd-backup-gemma4-26b-8k`
-
-OpenRouter free choices:
-
-- `openrouter-free/openrouter/auto-free-router`
-- `openrouter-free/<verified-model>:free`
+- the intended OpenCode MCP adapter shape
+- what must be verified before enabling it
+- safety rules for CodeGraphContext MCP tools
+- a Codex MCP disable/rollback procedure
 
 ## Scope
 
-Documentation-only updates:
+Documentation-only changes:
 
-- `HOMELAB_LAYOUT.md`
-- `WORKFLOW.md`
-- `ROADMAP.md`
-- `ROUTING_INVENTORY.md`
-- `OPENROUTER_FREE_ARTIFACT_PLAN.md`
-- `DECISIONS.md`
-- `CURRENT_SLICE.md`
+- create `inventory/mcp/opencode-codegraphcontext-template.md`
+- create `inventory/mcp/codex-codegraphcontext-rollback.md`
+- update `inventory/mcp/codegraphcontext.md` with links/status notes if appropriate
 
 ## Constraints
 
-- No live service changes.
-- No Open WebUI config changes.
-- No model-dispatch code changes.
-- No LiteLLM changes.
-- No OpenRouter calls.
-- No Framework-local canonical state.
+- Do not change live OpenCode config.
+- Do not change live Codex config.
+- Do not run `codegraphcontext mcp setup`.
+- Do not install MCP tooling on Cubies.
+- Do not grant persistent MCP tool permissions.
+- Do not enable mutation-capable tools by default.
+- Do not commit until the diff is reviewed.
 
 ## Acceptance Criteria
 
-- Docs no longer claim Open WebUI actively routes through LiteLLM.
-- Docs identify LiteLLM as rollback/history, not active Open WebUI path.
-- Docs list `model-dispatch` path, service, port, and endpoint.
-- Docs list current dispatcher model IDs.
-- Docs include `openrouter-free/openrouter/auto-free-router`.
-- Docs preserve OpenRouter paid-catalog exclusion.
-- Git diff is reviewed before commit.
+- OpenCode MCP adapter path is documented as template-only.
+- The template clearly says it is not yet live.
+- The template preserves canonical-host execution.
+- Codex rollback/disable procedure is documented.
+- The diff is reviewed before commit.

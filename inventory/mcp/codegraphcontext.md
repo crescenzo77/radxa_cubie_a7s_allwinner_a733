@@ -34,3 +34,22 @@ Validated behavior:
 - AMD CLI indexing works for `lora-corpus-pipeline-journal`.
 - AMD `.cgcignore` was reviewed and committed.
 - Codex MCP adapter was manually connected and validated on AMD.
+
+## OpenCode adapter template status
+
+A documentation-only OpenCode adapter template now exists at:
+
+    inventory/mcp/opencode-codegraphcontext-template.md
+
+This does not enable CodeGraphContext in OpenCode. It records the intended manual adapter direction, safety rules, validation prompt, and first read-only tool allowlist.
+
+OpenCode MCP remains not yet connected and not yet validated.
+
+## Codex rollback status
+
+A Codex disable and rollback note now exists at:
+
+    inventory/mcp/codex-codegraphcontext-rollback.md
+
+Codex remains manual-only and must not become homelab infrastructure.
+
