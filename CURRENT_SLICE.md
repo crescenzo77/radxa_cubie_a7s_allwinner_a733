@@ -1,57 +1,47 @@
 # Current Slice
 
-## Slice 23: Prepare Cubie camera hardware readiness checklist
-
-Create a hardware-first checklist before any Cubie deployment or service setup.
-
-## Purpose
-
-The Cubie camera-node source skeleton now exists. Before deploying software, confirm the old Wyze cameras, Cubie boards, microSD cards, networking, and power are ready.
-
-This avoids building software around unreliable or unverified hardware.
+## Paused: MCP validation complete, no active implementation slice
 
 ## Current State
 
+The recent MCP validation work is complete and documented.
+
 Completed:
 
-- `cubie-camera-node` source repo created on Strix.
-- Initial skeleton commit pushed to ThinkCentre mirror.
-- ThinkCentre mirror default branch corrected to `main`.
-- Homelab decision log records skeleton creation.
-- No Cubie runtime state was changed.
+- CodeGraphContext installed and validated on Strix and AMD.
+- Codex MCP adapter manually validated on Strix and AMD.
+- OpenCode MCP schema validated on AMD.
+- OpenCode disabled candidate config validated.
+- OpenCode isolated enabled config validated.
+- OpenCode isolated read-only session validated.
+- Live OpenCode MCP enablement deferred by decision.
+- Live OpenCode config remains unchanged.
+- CodeGraphContext remains documented optional tooling.
 
-Latest relevant commits:
+Cubie camera-node setup is also documented but not active:
 
-- Homelab: `e2b34fc record cubie camera node skeleton creation`
-- Cubie repo: `8fcd154 initialize cubie camera node skeleton`
+- `cubie-camera-node` source repo exists on Strix.
+- ThinkCentre mirror exists and tracks `main`.
+- Hardware readiness checklist exists.
+- No Cubie runtime state has been changed.
 
-## Scope
+## Active Posture
 
-Documentation/checklist only.
+No active implementation slice.
 
-Create or update documentation covering:
+Do not proceed into Wyze/Cubie camera work until explicitly selected.
 
-- Wyze camera physical readiness.
-- Power supply and cable checks.
-- microSD card condition.
-- Cubie board boot readiness.
-- Network identity and DHCP/static IP notes.
-- Camera stream discovery requirements.
-- What not to install yet.
+## Recommended Next Choices
+
+1. Stop here and treat MCP setup as complete.
+2. Enable CodeGraphContext live in OpenCode only if there is a concrete need.
+3. Test CodeGraphContext on a source-code-heavy repo before enabling it live.
+4. Resume Cubie/Wyze hardware readiness later.
 
 ## Constraints
 
-- Do not install anything on Cubies yet.
-- Do not configure services.
-- Do not deploy code.
-- Do not add object detection yet.
+- Do not change live OpenCode config unless explicitly requested.
+- Do not install MCP tooling on Cubies.
+- Do not deploy camera services.
 - Do not use ThinkCentre for camera processing.
-- Keep mini PC storage-only if it becomes involved later.
-- Keep Cubies runtime-only.
-
-## Acceptance Criteria
-
-- Hardware readiness checklist exists.
-- Checklist separates camera readiness from Cubie readiness.
-- Checklist clearly blocks software deployment until hardware basics are validated.
-- Git diff is reviewed before commit.
+- Keep Codex manual-only and out of infrastructure.
