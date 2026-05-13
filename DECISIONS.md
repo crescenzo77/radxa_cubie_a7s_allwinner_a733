@@ -97,3 +97,18 @@ Consequences:
 - OpenRouter remains free-only, explicit/manual, and fail-closed.
 - OpenCode remains direct-local on AMD and keeps its generated OpenRouter-free provider behavior separate from Open WebUI.
 - Follow-up decisions remain: token-estimation improvements, LiteLLM rollback retention, whether `model-dispatch` should get its own repo, and the future Continue.dev path.
+
+## 2026-05-12 — Defer live OpenCode CodeGraphContext MCP enablement
+
+Decision:
+Do not enable CodeGraphContext MCP in live OpenCode yet. Keep it documented as optional validated tooling.
+
+Rationale:
+OpenCode MCP compatibility has been validated through disabled-candidate, isolated-enabled, and isolated read-only sessions on AMD. However, the currently validated repos are mostly Markdown/documentation, and CodeGraphContext reports 0 functions, 0 classes, and 0 modules for them. Enabling the MCP server live would add daily tool-surface noise without a strong immediate benefit.
+
+Consequences:
+- Live OpenCode config remains unchanged.
+- CodeGraphContext remains available through the documented candidate and live-enable procedure.
+- Future live enablement should happen only when there is a source-code-heavy repo or a concrete workflow need.
+- GitNexus remains eval-only.
+- No MCP tooling is installed on Cubies.
