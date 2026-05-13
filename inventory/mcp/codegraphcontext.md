@@ -110,3 +110,40 @@ Conclusion:
 
 OpenCode `1.14.39` can connect to CodeGraphContext through the documented local MCP schema. CodeGraphContext is still not enabled in live OpenCode.
 
+## AMD OpenCode isolated read-only session validation
+
+Validated on AMD using an isolated temporary `XDG_CONFIG_HOME`.
+
+Observed OpenCode version during final validation:
+
+    1.14.48
+
+The temporary config enabled CodeGraphContext only inside the isolated config directory. Live OpenCode config was not changed.
+
+Prompt used:
+
+    Use only the codegraphcontext MCP server for read-only inspection. Do not edit files. Do not read repository files directly. Use only these tools if needed: list_indexed_repositories, get_repository_stats, list_watched_paths. In 5 bullet points or fewer, report the indexed repository name/path and repository stats. Then stop.
+
+Tools used:
+
+- `codegraphcontext_list_indexed_repositories`
+- `codegraphcontext_get_repository_stats`
+- `codegraphcontext_list_watched_paths`
+
+Result reported by OpenCode:
+
+- Indexed repository: `lora-corpus-pipeline-journal`
+- Path: `/home/enzo/crucial/lora-corpus-pipeline-journal`
+- Stats: 22 files, 0 functions, 0 classes, 0 modules
+- Watched paths: none
+
+Post-session validation:
+
+- `git status --short` produced no output in the LoRA journal repo.
+- Live `opencode mcp list` still showed no MCP servers configured.
+- Temporary OpenCode config directory was removed.
+
+Conclusion:
+
+OpenCode can use CodeGraphContext MCP successfully for a bounded read-only inspection when launched with an isolated temporary config. Live OpenCode MCP remains disabled/not configured.
+
