@@ -53,3 +53,33 @@ A Codex disable and rollback note now exists at:
 
 Codex remains manual-only and must not become homelab infrastructure.
 
+## AMD OpenCode disabled-candidate validation
+
+Validated on AMD with OpenCode `1.14.39`.
+
+A disabled candidate config was created at:
+
+    /home/enzo/.config/opencode/opencode.with-codegraphcontext-disabled.candidate.json
+
+The candidate added:
+
+- `mcp.codegraphcontext`
+- `enabled: false`
+- local command array:
+  - `/srv/mcp/servers/codegraphcontext-venv/bin/codegraphcontext`
+  - `mcp`
+  - `start`
+- `permission.codegraphcontext_* = ask`
+
+Validation result:
+
+- Candidate JSON was valid.
+- Running OpenCode with an isolated temporary `XDG_CONFIG_HOME` recognized the MCP server as configured but disabled.
+- Temporary output showed `codegraphcontext disabled`.
+- Live OpenCode config remained unchanged.
+- Live `opencode mcp list` still showed no MCP servers configured.
+
+Conclusion:
+
+The documented OpenCode MCP schema is accepted by OpenCode `1.14.39` when tested in an isolated temporary config. CodeGraphContext is still not enabled in live OpenCode.
+
