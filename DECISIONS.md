@@ -112,3 +112,18 @@ Consequences:
 - Future live enablement should happen only when there is a source-code-heavy repo or a concrete workflow need.
 - GitNexus remains eval-only.
 - No MCP tooling is installed on Cubies.
+
+## 2026-05-12 — Initialize Cubie camera-node source repository
+
+Decision:
+Create the canonical `cubie-camera-node` source repository on Strix and push the initial skeleton to the ThinkCentre bare mirror.
+
+Rationale:
+Cubies should remain runtime-only appliance nodes. Source development belongs on Strix, with ThinkCentre storing the bare mirror.
+
+Consequences:
+- Canonical source repo exists at `strix:/srv/projects/cubie-camera-node`.
+- ThinkCentre mirror exists at `/srv/git/cubie-camera-node.git`.
+- Mirror default branch is `main`.
+- Initial skeleton commit is `8fcd154 initialize cubie camera node skeleton`.
+- No Cubie runtime state was changed.
