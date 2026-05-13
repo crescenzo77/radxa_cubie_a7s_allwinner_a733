@@ -45,3 +45,15 @@ Do not proceed into Wyze/Cubie camera work until explicitly selected.
 - Do not deploy camera services.
 - Do not use ThinkCentre for camera processing.
 - Keep Codex manual-only and out of infrastructure.
+
+## 2026-05-13 — Force non-streaming upstream calls in model-dispatch
+
+Decision:
+`model-dispatch` now forces `stream: false` when forwarding chat completion requests to local and OpenRouter-free upstreams.
+
+Rationale:
+Open WebUI sends streaming chat requests. The local OpenAI-compatible backends return `text/event-stream` chunks for streaming responses. `model-dispatch` is not a streaming proxy and expects one JSON response object, so it failed with `no capable model available` after trying to parse SSE output as JSON.
+
+Consequence:
+Open WebUI can continue using streaming behavior at its own API boundary, while `model-dispatch` normalizes upstream calls to non-streaming JSON. Local model routing through `auto-local` is working again.
+
