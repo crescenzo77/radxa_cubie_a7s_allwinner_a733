@@ -153,3 +153,15 @@ Open WebUI sends streaming chat requests. The local OpenAI-compatible backends r
 Consequence:
 Open WebUI can continue using streaming behavior at its own API boundary, while `model-dispatch` normalizes upstream calls to non-streaming JSON. Local model routing through `auto-local` is working again.
 
+## 2026-05-13 — Use snippet-based SearXNG web search in Open WebUI
+
+Decision:
+Open WebUI web search should use SearXNG JSON results with snippet-based retrieval by keeping `BYPASS_WEB_SEARCH_WEB_LOADER=true`. The task model should be pinned to the explicit local AMD model `amd-coder-qwen3-coder-30b-32k`, not the `auto-local` route alias.
+
+Rationale:
+SearXNG JSON search worked from inside the Open WebUI container, and Open WebUI successfully generated web-search embeddings, stored snippet results in a `web-search-*` collection, and queried those results during chat. The fragile part was Open WebUI's downstream full-page fetch path, which repeatedly failed on page loads. Snippet-based retrieval avoids that loader path while preserving working web search for both local models and OpenRouter-free models.
+
+Consequences:
+- Web search works for `auto-local` and `openrouter-free/openrouter/auto-free-router`.
+- Search/query preparation is handled locally by `amd-coder-qwen3-coder-30b-32k`.
+- Full-page web loading remains deferred unless a later slice shows a concrete need for it.

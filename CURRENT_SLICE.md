@@ -57,3 +57,7 @@ Open WebUI sends streaming chat requests. The local OpenAI-compatible backends r
 Consequence:
 Open WebUI can continue using streaming behavior at its own API boundary, while `model-dispatch` normalizes upstream calls to non-streaming JSON. Local model routing through `auto-local` is working again.
 
+## 2026-05-13 — Open WebUI web search validated
+
+Current state:
+Open WebUI web search is validated for `auto-local` and `openrouter-free/openrouter/auto-free-router` using SearXNG JSON snippet retrieval with `BYPASS_WEB_SEARCH_WEB_LOADER=true` and the task model pinned to `amd-coder-qwen3-coder-30b-32k`.

@@ -62,6 +62,15 @@ Open WebUI currently routes through `model-dispatch`, not LiteLLM.
 
 Older direct-endpoint examples exist in backup/commented files under `/srv/openwebui/`.
 
+### Validated web-search state
+
+- `auto-local` web search works.
+- `openrouter-free/openrouter/auto-free-router` web search works.
+- SearXNG JSON search works from inside the Open WebUI container.
+- Open WebUI logs show successful `save_docs_to_vector_db`, embeddings generation, collection insert, and `query_doc:result`.
+- Stable posture: `BYPASS_WEB_SEARCH_WEB_LOADER=true`, `TASK_MODEL_EXTERNAL=amd-coder-qwen3-coder-30b-32k`, and `TASK_MODEL=amd-coder-qwen3-coder-30b-32k`.
+- Working path is snippet-based SearXNG retrieval, not full-page fetch.
+
 ## ThinkCentre model-dispatch
 
 Service details:

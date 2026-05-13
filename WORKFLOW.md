@@ -99,6 +99,8 @@ Direct `amd-backup-gemma4-26b-8k` should not be used for long pasted logs or lar
 
 OpenRouter remains free-only, explicit, and non-primary. In Open WebUI, choose `openrouter-free/openrouter/auto-free-router` or a specific `openrouter-free/<verified-model>:free` model only when you intentionally want a free cloud model. The OpenRouter paid catalog must remain hidden, and OpenRouter must not become an automatic fallback.
 
+For Open WebUI web search, keep the working SearXNG JSON snippet path by leaving `BYPASS_WEB_SEARCH_WEB_LOADER=true` and pinning the task model to explicit local `amd-coder-qwen3-coder-30b-32k`.
+
 ### 4. Hand a Bounded Prompt to the Coder
 
 Use a self-hosted coding agent on the coding PC or project host.
