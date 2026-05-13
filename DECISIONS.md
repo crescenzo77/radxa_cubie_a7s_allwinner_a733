@@ -127,3 +127,17 @@ Consequences:
 - Mirror default branch is `main`.
 - Initial skeleton commit is `8fcd154 initialize cubie camera node skeleton`.
 - No Cubie runtime state was changed.
+
+## 2026-05-12 — Add Cubie camera hardware readiness checklist
+
+Decision:
+Add a hardware-first readiness checklist to the `cubie-camera-node` repository before any software deployment.
+
+Rationale:
+The cameras are old and the Cubies use microSD-backed Debian installs. Hardware, power, network, storage, and camera stream basics should be verified before building or deploying runtime services.
+
+Consequences:
+- Checklist exists at `cubie-camera-node:docs/hardware-readiness-checklist.md`.
+- Cubie repo commit is `3449eba add hardware readiness checklist`.
+- No Cubie runtime state was changed.
+- Software deployment remains blocked until hardware readiness is reviewed.
