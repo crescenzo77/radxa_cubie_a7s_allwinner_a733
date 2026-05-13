@@ -83,3 +83,30 @@ Conclusion:
 
 The documented OpenCode MCP schema is accepted by OpenCode `1.14.39` when tested in an isolated temporary config. CodeGraphContext is still not enabled in live OpenCode.
 
+## AMD OpenCode isolated-enabled validation
+
+Validated on AMD with OpenCode `1.14.39`.
+
+An isolated temporary config directory was created with `XDG_CONFIG_HOME` pointing to a copied candidate config. Only the temporary copy was changed from:
+
+    enabled: false
+
+to:
+
+    enabled: true
+
+Validation result:
+
+- Temporary config JSON was valid.
+- `XDG_CONFIG_HOME=<temp>` `opencode mcp list` showed `codegraphcontext connected`.
+- The command path shown was:
+  - `/srv/mcp/servers/codegraphcontext-venv/bin/codegraphcontext`
+  - `mcp`
+  - `start`
+- Live OpenCode config remained unchanged.
+- Live `opencode mcp list` still showed no MCP servers configured.
+
+Conclusion:
+
+OpenCode `1.14.39` can connect to CodeGraphContext through the documented local MCP schema. CodeGraphContext is still not enabled in live OpenCode.
+
