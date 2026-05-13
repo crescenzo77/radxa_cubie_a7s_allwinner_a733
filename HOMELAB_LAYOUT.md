@@ -2,7 +2,7 @@
 
 This is the architectural reference for the practical two-surface homelab workflow. It answers what runs where, which machines own which responsibilities, and what must not become infrastructure.
 
-Last updated: 2026-05-11.
+Last updated: 2026-05-13.
 
 ## Operating Model
 
@@ -101,6 +101,26 @@ Preferred steady-state coder:
 Aider was evaluated and eliminated from the homelab workflow. LiteLLM is no longer in the default OpenCode path and no longer active for Open WebUI, but remains available as rollback/history. OpenRouter is available only through generated free-only entries when selected manually, not as an automatic hidden route.
 
 Codex/Claude-style hosted tools must not be wired into API automation, wrappers, scheduled tasks, or background jobs. If used at all during setup or emergency manual work, they remain manually invoked tools.
+
+## MCP and CodeGraphContext Boundary
+
+CodeGraphContext is optional tooling and must not become a broad mutation path into canonical repositories.
+
+Architecture boundary:
+
+```text
+canonical project repo = source of truth / read-only input by default
+CodeGraphContext sandbox = writable disposable task workspace
+promotion path = reviewed diff, patch, manual copy, or branch review
+```
+
+CodeGraphContext may read from approved canonical project repositories. By default, it must not write directly to canonical working trees.
+
+Any write-capable CodeGraphContext use belongs in a disposable sandbox. Git worktrees are the preferred sandbox shape because they preserve normal Git review while separating experiments from the source-of-truth working tree. Temporary branch checkouts, dedicated patch-proposal directories, and `/tmp` patch artifacts are also valid when they better fit the task. Exact paths are intentionally not required.
+
+This boundary is path-agnostic. It applies to operational source repos, project journal repos, documentation/control repos, and future project repos. No persistent broad mutation approval is allowed, and no automatic MCP setup wizard should be run against primary repositories.
+
+Large videos, extracted frames, datasets, generated evidence, model outputs, and bulky review artifacts should not be duplicated into sandboxes or tracked by Git unless that storage is explicitly intended.
 
 ## Bridge: `advisor-packet`
 

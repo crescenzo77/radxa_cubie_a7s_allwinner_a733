@@ -2,7 +2,7 @@
 
 This describes the normal working loop for homelab coding projects.
 
-Last updated: 2026-05-11.
+Last updated: 2026-05-13.
 
 ## Summary
 
@@ -120,6 +120,24 @@ OpenCode `small_model` points to the direct AMD RX 7900 XT backup provider `home
 Generated OpenRouter-free models are available through `homelab-openrouter-free` only when selected manually. OpenRouter remains manual-only and is not an automatic fallback. LiteLLM is outside the default OpenCode execution path and outside the active Open WebUI path; it remains available as rollback/history.
 
 Aider was evaluated and eliminated from the homelab steady-state workflow after unsafe file-handling behavior during a simple documentation task. Do not use Aider as the default or fallback coder for this workflow.
+
+### Optional MCP / CodeGraphContext Write Sandbox
+
+CodeGraphContext remains optional tooling. This is day-to-day operating guidance, not a live MCP config change and not permission to enable MCP live.
+
+Default pattern:
+
+```text
+canonical repo -> read-only context
+sandbox repo/worktree -> writable experiment
+reviewed diff/patch -> manual promotion
+```
+
+CodeGraphContext may read from approved canonical project repositories, but it must not write directly to canonical working trees by default. Any write-capable use must happen only inside a disposable sandbox, such as a Git worktree, temporary branch checkout, dedicated patch-proposal directory, or `/tmp` patch artifact.
+
+Promote sandbox changes only through reviewed diffs, patches, manual copy, or branch review. Do not grant persistent broad mutation approval, and do not run an automatic MCP setup wizard against primary repositories.
+
+This rule is path-agnostic. It applies to operational source repos, project journal repos, documentation/control repos, and future project repos. Do not duplicate large videos, extracted frames, datasets, generated evidence, model outputs, or bulky review artifacts into sandboxes or Git unless that storage is explicitly intended.
 
 The coder prompt should include:
 

@@ -113,6 +113,24 @@ Consequences:
 - GitNexus remains eval-only.
 - No MCP tooling is installed on Cubies.
 
+## 2026-05-13 — CodeGraphContext write use requires sandboxing
+
+Decision:
+CodeGraphContext may evolve beyond read-only use, but write-capable use must happen only inside a disposable sandbox. CodeGraphContext may read from approved canonical project repositories, but it must not write directly to canonical working trees by default.
+
+Valid sandboxes include Git worktrees, temporary branch checkouts, dedicated patch-proposal directories, or `/tmp` patch artifacts. Changes created in a sandbox must be promoted only through reviewed diffs, patches, manual copy, or branch review.
+
+Rationale:
+CodeGraphContext can be useful for code understanding and may become useful for patch proposal workflows, but canonical project repositories are the source of truth. Direct mutation of primary working trees by an MCP tool would blur review boundaries and could accidentally alter operational source repos, project journal repos, documentation/control repos, or future project repos.
+
+Consequences:
+- Approved canonical repositories may be indexed or read as CodeGraphContext input.
+- Canonical working trees remain read-only inputs by default.
+- No persistent broad mutation approval is allowed.
+- No automatic MCP setup wizard may be run against primary repositories.
+- The policy is path-agnostic and applies to operational source repos, project journal repos, documentation/control repos, and future project repos.
+- Large videos, extracted frames, datasets, generated evidence, model outputs, and bulky review artifacts should not be duplicated into sandboxes or tracked by Git unless explicitly intended.
+
 ## 2026-05-12 — Initialize Cubie camera-node source repository
 
 Decision:
