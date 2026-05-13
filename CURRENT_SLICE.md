@@ -1,64 +1,62 @@
 # Current Slice
 
-## Slice 21: Decide whether to enable CodeGraphContext MCP live in OpenCode
+## Slice 22: Create Cubie camera node deploy skeleton
 
-Decide whether the validated CodeGraphContext MCP adapter should be enabled in live OpenCode on AMD.
+Create the initial repository skeleton for `cubie-camera-node` on Strix without deploying anything to Cubies yet.
+
+## Purpose
+
+Prepare a clean, Git-tracked project structure for future Cubie camera-node work while preserving the rule that Cubies are runtime-only appliance nodes.
+
+The Cubies should not receive MCP tooling, coding agents, code graph tools, or source-development state.
 
 ## Current State
 
-Slice 20 completed the OpenCode MCP transition path without changing live OpenCode config.
+The MCP/OpenCode CodeGraphContext slice is complete:
 
-Completed:
-
-- OpenCode CodeGraphContext adapter template documented.
-- Codex CodeGraphContext rollback procedure documented.
-- OpenCode schema corrected to command-array format.
-- AMD disabled candidate config created and validated.
-- AMD isolated enabled config connected successfully.
-- AMD isolated read-only OpenCode session succeeded.
-- Live OpenCode config remained unchanged.
-- Live enable and rollback procedure documented.
-- ThinkCentre mirror received all documentation commits.
+- CodeGraphContext OpenCode adapter template documented.
+- Codex rollback procedure documented.
+- OpenCode isolated MCP validation succeeded on AMD.
+- Live OpenCode MCP enablement was deferred.
+- Decision recorded in `DECISIONS.md`.
+- ThinkCentre homelab mirror is current.
 
 Latest relevant homelab commit:
 
-- `b21bbf6 document opencode mcp live enable procedure`
+- `b04f175 defer live opencode codegraphcontext enablement`
 
-## Decision To Make
+## Scope
 
-Choose one:
+Documentation and repo skeleton only:
 
-1. Do not enable live MCP yet.
-2. Enable CodeGraphContext MCP live on AMD only.
-3. Test CodeGraphContext on a source-code-heavy repo before enabling live.
-4. Leave CodeGraphContext as documented optional tooling and move to another roadmap item.
-
-## Recommendation
-
-Do not enable live MCP yet unless there is an immediate use case.
-
-Reason:
-
-- The validated repos are mostly Markdown/documentation.
-- CodeGraphContext indexing reports 0 functions, 0 classes, and 0 modules for these repos.
-- The isolated validation proved compatibility, but not enough practical value to justify adding a live MCP surface by default.
-- Keeping it documented and ready preserves portability without adding daily tool noise.
-
-## Scope For This Slice
-
-Decision/documentation only unless explicitly redirected.
+- Confirm or create `strix:/srv/projects/cubie-camera-node`
+- Create basic project files if missing:
+  - `README.md`
+  - `PROJECT_PLAN.md`
+  - `CURRENT_SLICE.md`
+  - `DECISIONS.md`
+  - `AGENTS.md`
+  - `deploy/`
+  - `configs/`
+  - `scripts/`
+- Confirm ThinkCentre bare mirror exists:
+  - `/srv/git/cubie-camera-node.git`
+- Do not deploy to Cubies yet.
 
 ## Constraints
 
-- Do not change live OpenCode config unless the user explicitly chooses option 2.
-- Do not install MCP tooling on Cubies.
-- Do not grant persistent approval to mutation-capable MCP tools.
-- Do not make Codex part of infrastructure.
-- Do not broaden into GitNexus evaluation unless explicitly selected.
+- Do not install anything on Cubies during this slice.
+- Do not run workload services on Cubies yet.
+- Do not add MCP tooling to Cubies.
+- Do not create hidden daemons or auto-deploy jobs.
+- Use Git for source movement.
+- Keep Strix as canonical source host for this project.
+- Keep ThinkCentre as bare mirror only.
 
 ## Acceptance Criteria
 
-- The next action is chosen deliberately.
-- If live enable is deferred, record that decision.
-- If live enable is chosen, follow `inventory/mcp/opencode-codegraphcontext-live-enable.md`.
+- Cubie camera-node repo skeleton exists on Strix.
+- The repo clearly documents Cubies as runtime-only targets.
+- ThinkCentre mirror is confirmed or created.
+- No Cubie runtime state is changed.
 - Git diff is reviewed before commit.
