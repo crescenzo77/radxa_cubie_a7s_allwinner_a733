@@ -99,3 +99,21 @@ No approval is needed for the completed documentation-only edit.
 Review `inventory/models/llm-runtime-topology.md`, then add and commit
 `inventory/models/llm-runtime-topology.md` and `AGENT_STATUS.md` if the topology
 wording matches the intended stable inventory.
+
+## 2026-05-15 — Strix Halo vLLM Ubuntu Docker PR
+
+Created upstream PR for the Ubuntu 26.04 Docker Engine adaptation of `kyuz0/amd-strix-halo-vllm-toolboxes`.
+
+PR:
+
+- https://github.com/kyuz0/amd-strix-halo-vllm-toolboxes/pull/54
+
+Validated before PR:
+
+- Docker-only Ubuntu path.
+- No Podman, Distrobox, Toolbx, Ubuntu toolbox, or LXC.
+- ROCm/PyTorch/vLLM smoke test on Strix Halo.
+- Conservative Qwen/Qwen2.5-7B-Instruct API validation.
+- Hugging Face auth through `hf auth login`.
+- Conservative google/gemma-4-26B-A4B-it API validation.
+- Memory exposure notes with 48 GiB clean allocation while other model-serving containers were stopped.
