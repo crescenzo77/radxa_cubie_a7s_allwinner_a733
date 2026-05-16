@@ -117,3 +117,26 @@ Validated before PR:
 - Hugging Face auth through `hf auth login`.
 - Conservative google/gemma-4-26B-A4B-it API validation.
 - Memory exposure notes with 48 GiB clean allocation while other model-serving containers were stopped.
+
+## 2026-05-15 — Strix qwen3-6 visible-output fix
+
+Restored Strix llama.cpp mode as the default after vLLM benchmarking.
+
+Runtime state:
+- `qwen3-6` runs on port 8081.
+- `qwen3-coder` runs on port 8082.
+- vLLM on port 8010 is stopped/manual testbed mode.
+
+Fix:
+- Recreated `qwen3-6` with llama-server `--reasoning off`.
+- This fixed the issue where Qwen3.6 returned output only in `message.reasoning_content` while `message.content` was empty.
+
+Validation:
+- `/health` on 8081 returned OK.
+- `/v1/models` on 8081 listed `Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf`.
+- `/v1/chat/completions` on 8081 returned visible content:
+  `strix reasoning endpoint restored`.
+
+Operational note:
+- Keep `--reasoning off` for the normal visible-output Strix reasoning endpoint.
+- vLLM remains validated as an optional Docker testbed, but current Strix default should remain llama.cpp Vulkan.
