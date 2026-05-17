@@ -30,6 +30,31 @@ Codex may be used manually during setup documentation work, but it is not part o
 
 The Framework laptop remains a thin client. Important project state should live on the platform, not on the laptop.
 
+## Target Platform Architecture
+
+The desired end state separates control-plane services, source ownership, GPU
+compute, backup, external anchoring, and edge devices.
+
+| Host | Target role |
+|---|---|
+| `thinkcentre` | Control plane: Open WebUI, `model-dispatch`, SearXNG, reverse proxy, monitoring, service catalog, and tier-1 git mirrors |
+| `strix` | Canonical source, development, code-graph, and reasoning host |
+| `amd` | Mode-switched GPU compute worker for coding, LoRA/training, and creative workloads |
+| `minipc` | LAN backup and artifact storage |
+| `mac mini` | Apple/iMessage services and tier-2 git mirror |
+| `oracle` | Headscale, off-site backup, and external anchor |
+| `cubies` | Edge camera nodes only |
+| `framework` | Thin client for browser, SSH, editor, and review |
+
+`model-dispatch` is the target single model-facing API registry for Open WebUI,
+OpenCode, Continue.dev, and scripts. Clients should eventually use stable model
+aliases from `model-dispatch` rather than duplicating direct endpoint definitions.
+
+Direct AMD routing and LiteLLM remain rollback paths until each replacement path
+is validated. The migration must stay sliced, reversible, and reviewable. Codex
+may assist implementation, but it must not become background infrastructure or an
+autonomous approval system.
+
 ## Surface 1: Web UI Advisor
 
 Open WebUI on ThinkCentre is the browser-based advisor/planner:

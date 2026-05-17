@@ -183,3 +183,30 @@ Consequences:
 - Web search works for `auto-local` and `openrouter-free/openrouter/auto-free-router`.
 - Search/query preparation is handled locally by `amd-coder-qwen3-coder-30b-32k`.
 - Full-page web loading remains deferred unless a later slice shows a concrete need for it.
+
+## 2026-05-17 — Centralize model routing and clarify host roles
+
+Decision:
+Transition toward centralized `model-dispatch` routing, Strix as the canonical
+source/code-graph host, and AMD as a mode-switched compute worker.
+
+Rationale:
+Centralized `model-dispatch` routing reduces duplicated model endpoint
+definitions, makes source ownership clear, frees AMD for GPU-heavy work, and
+gives Open WebUI, OpenCode, Continue.dev, and scripts stable model aliases.
+
+Consequences:
+- `model-dispatch` becomes first-class infrastructure instead of an incidental
+  Open WebUI compatibility layer.
+- Strix becomes the primary source, development, code-graph, and reasoning host.
+- AMD becomes a mode-switched GPU compute worker for coding, LoRA/training, and
+  creative workloads.
+- OpenCode and Continue.dev eventually move to `model-dispatch`.
+- Direct AMD routing and LiteLLM remain rollback paths until their replacements
+  are validated.
+
+Non-goals:
+- No hidden approval daemon.
+- No paid fallback.
+- No broad autonomous orchestration.
+- No direct CodeGraphContext mutation of canonical repos.

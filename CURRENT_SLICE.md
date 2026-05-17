@@ -1,63 +1,61 @@
 # Current Slice
 
-## Paused: MCP validation complete, no active implementation slice
+## Active: Architecture transition planning and model-dispatch repo preparation
 
-## Current State
+## Purpose
 
-The recent MCP validation work is complete and documented.
+Start a reversible, documentation-first architecture transition toward:
 
-Completed:
+- ThinkCentre as the control plane.
+- Strix as the canonical source, development, code-graph, and reasoning host.
+- AMD as a mode-switched GPU compute worker.
+- `model-dispatch` as the single model-facing API registry for Open WebUI, OpenCode, Continue.dev, and scripts.
 
-- CodeGraphContext installed and validated on Strix and AMD.
-- Codex MCP adapter manually validated on Strix and AMD.
-- OpenCode MCP schema validated on AMD.
-- OpenCode disabled candidate config validated.
-- OpenCode isolated enabled config validated.
-- OpenCode isolated read-only session validated.
-- Live OpenCode MCP enablement deferred by decision.
-- Live OpenCode config remains unchanged.
-- CodeGraphContext remains documented optional tooling.
+This slice prepares the planning and repo boundaries for the transition. It does
+not change live services.
 
-Cubie camera-node setup is also documented but not active:
+## Scope
 
-- `cubie-camera-node` source repo exists on Strix.
-- ThinkCentre mirror exists and tracks `main`.
-- Hardware readiness checklist exists.
-- No Cubie runtime state has been changed.
+- Document the target platform architecture and migration sequence.
+- Record the routing/source/compute role decision in `DECISIONS.md`.
+- Define the next transition roadmap slices.
+- Prepare for making `model-dispatch` a first-class, reviewable repository.
+- Preserve current rollback paths while documenting the intended end state.
+- Keep the migration sliced, reversible, and validated at each step.
 
-## Active Posture
+## Non-Scope
 
-No active implementation slice.
+- Do not edit live service files outside this repo.
+- Do not change OpenCode config.
+- Do not change the live `model-dispatch` service.
+- Do not enable MCP.
+- Do not move canonical repos yet.
+- Do not change reverse proxy, Open WebUI, SearXNG, monitoring, or backup config.
+- Do not add scripts unless explicitly required by a later slice.
+- Do not create hidden automation, daemons, watchers, approval systems, or Codex infrastructure.
+- Do not add paid-provider fallback or broad autonomous orchestration.
 
-Do not proceed into Wyze/Cubie camera work until explicitly selected.
+## Validation Steps
 
-## Recommended Next Choices
+For this documentation-only slice:
 
-1. Stop here and treat MCP setup as complete.
-2. Enable CodeGraphContext live in OpenCode only if there is a concrete need.
-3. Test CodeGraphContext on a source-code-heavy repo before enabling it live.
-4. Resume Cubie/Wyze hardware readiness later.
+- Read the required control docs before editing.
+- Confirm edits are limited to repo documentation.
+- Run `git diff --check`.
+- Run `git diff --stat`.
+- Leave `AGENT_STATUS.md` with the handoff, checks, risks, and next recommended slice.
 
-## Constraints
+Later implementation slices must add their own concrete validation before any
+live service changes are made.
 
-- Do not change live OpenCode config unless explicitly requested.
-- Do not install MCP tooling on Cubies.
-- Do not deploy camera services.
-- Do not use ThinkCentre for camera processing.
-- Keep Codex manual-only and out of infrastructure.
+## Definition of Done
 
-## 2026-05-13 — Force non-streaming upstream calls in model-dispatch
-
-Decision:
-`model-dispatch` now forces `stream: false` when forwarding chat completion requests to local and OpenRouter-free upstreams.
-
-Rationale:
-Open WebUI sends streaming chat requests. The local OpenAI-compatible backends return `text/event-stream` chunks for streaming responses. `model-dispatch` is not a streaming proxy and expects one JSON response object, so it failed with `no capable model available` after trying to parse SSE output as JSON.
-
-Consequence:
-Open WebUI can continue using streaming behavior at its own API boundary, while `model-dispatch` normalizes upstream calls to non-streaming JSON. Local model routing through `auto-local` is working again.
-
-## 2026-05-13 — Open WebUI web search validated
-
-Current state:
-Open WebUI web search is validated for `auto-local` and `openrouter-free/openrouter/auto-free-router` using SearXNG JSON snippet retrieval with `BYPASS_WEB_SEARCH_WEB_LOADER=true` and the task model pinned to `amd-coder-qwen3-coder-30b-32k`.
+- `CURRENT_SLICE.md` defines this active transition-planning slice.
+- `DECISIONS.md` records the 2026-05-17 architecture transition decision.
+- `ROADMAP.md` includes the ordered full transition plan.
+- `HOMELAB_LAYOUT.md` describes the target platform host roles.
+- `WORKFLOW.md` documents the Codex-assisted deployment rule.
+- `AGENT_STATUS.md` is updated for handoff.
+- No live services, production configs, OpenCode config, MCP config, or
+  `model-dispatch` runtime files were changed.
+- `git diff --check` and `git diff --stat` were run.

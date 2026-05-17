@@ -19,6 +19,18 @@ The goal is to reduce copy/paste and context bloat. The goal is not autonomous s
 
 Codex may be used manually during setup documentation work, but it must not become part of the operating workflow.
 
+## Codex-Assisted Deployment Rule
+
+Codex can be used to draft patches and documentation, including implementation
+plans and operator command blocks.
+
+Codex must work inside a repository or disposable worktree and leave reviewable
+diffs. It must not run hidden automation, become infrastructure, approve its own
+changes, or operate as a background service.
+
+The user remains the final approver for direction, live service changes,
+deployment commands, and commits.
+
 ## Client Setup
 
 The Framework laptop remains a thin client:

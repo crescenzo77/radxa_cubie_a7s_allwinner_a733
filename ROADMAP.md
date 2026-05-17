@@ -189,6 +189,179 @@ Definition of done:
 - Decide whether `/srv/model-dispatch` should become its own repo.
 - Decide whether Continue.dev should remain LiteLLM-routed, move to model-dispatch, or use another explicit local path.
 
+## Architecture Transition Plan
+
+This plan transitions the homelab toward a clearer platform split:
+ThinkCentre control plane, Strix canonical source/development/code-graph host,
+AMD mode-switched GPU compute worker, MiniPC LAN backup/artifact storage, Mac
+Mini Apple services and tier-2 git mirror, Oracle Headscale/off-site
+backup/external anchor, and Cubies as edge camera nodes only.
+
+Each slice must be reversible, validated, and reviewable. No slice should add
+hidden automation, autonomous approval behavior, paid fallback, or broad
+orchestration. Codex may assist with patches and docs, but it must not become
+background infrastructure.
+
+### Slice 0: Baseline Inventory and Freeze Point
+
+Capture the current live state before moving anything.
+
+Definition of done:
+- Current model endpoints, OpenCode config posture, Open WebUI routing,
+  Continue.dev routing, git mirror state, and service locations are documented.
+- Rollback references are recorded.
+- No live services are changed.
+
+### Slice 1: `model-dispatch` First-Class Repo
+
+Move `model-dispatch` source/config into a reviewable repo boundary without
+changing the live service behavior.
+
+Definition of done:
+- Repo ownership, service source path, config files, and deploy path are
+  documented.
+- Existing live behavior is reproducible from reviewed files.
+- No service restart or config change happens without a later approval brief.
+
+### Slice 2: Model Registry and Stable Aliases
+
+Define the model registry and stable aliases that clients should use.
+
+Definition of done:
+- Aliases for advisor, coding, reasoning, small, training, and creative roles
+  are documented.
+- Open WebUI, OpenCode, Continue.dev, and scripts have intended alias mappings.
+- Rollback aliases or direct endpoints remain documented.
+
+### Slice 3: Strix Dual-Coder/Reasoning Layout
+
+Document and validate Strix as the source/development/code-graph/reasoning host.
+
+Definition of done:
+- Strix project layout, coder/reasoning endpoints, and CodeGraphContext
+  boundaries are documented.
+- No direct CodeGraphContext mutation of canonical repos is allowed.
+- AMD remains available for current coding until migration is validated.
+
+### Slice 4: OpenCode Through `model-dispatch`
+
+Move OpenCode from direct AMD routing to stable `model-dispatch` aliases only
+after validation.
+
+Definition of done:
+- Candidate OpenCode config is tested in isolation.
+- Direct AMD routing remains documented rollback.
+- Live OpenCode config is changed only after operator approval.
+
+### Slice 5: Canonical Repos to Strix
+
+Move canonical project repositories to Strix where appropriate.
+
+Definition of done:
+- Repo inventory and ownership are documented.
+- ThinkCentre tier-1 mirrors are validated.
+- Mac Mini tier-2 mirror expectations are documented.
+- Projects that must remain AMD-local are explicitly listed.
+
+### Slice 6: Worktree Parallelism
+
+Define safe parallel worktree patterns for reviewable agent/coder work.
+
+Definition of done:
+- Worktree naming, cleanup, review, and promotion rules are documented.
+- Disposable worktrees are preferred for risky or tool-assisted edits.
+- Canonical working trees remain protected.
+
+### Slice 7: Scoped CodeGraphContext Live Use
+
+Enable CodeGraphContext only for scoped, validated use cases if there is a
+source-heavy project need.
+
+Definition of done:
+- Read-only indexing boundaries are documented.
+- Any write-capable use is confined to disposable worktrees or sandboxes.
+- Live MCP enablement requires its own approval brief.
+
+### Slice 8: AMD Mode Switching
+
+Define AMD modes for coding, LoRA/training, and creative GPU workloads.
+
+Definition of done:
+- Modes, required services, stop/start boundaries, and rollback steps are
+  documented.
+- No hidden scheduler or autonomous mode switcher is added.
+- Manual validation exists for each mode before regular use.
+
+### Slice 9: Continue.dev Through `model-dispatch`
+
+Move Continue.dev from LiteLLM routing to stable `model-dispatch` aliases.
+
+Definition of done:
+- Candidate Continue.dev config is documented and tested.
+- LiteLLM remains rollback until the new path is stable.
+- Paid-provider exposure remains blocked.
+
+### Slice 10: Observability Foundation
+
+Place basic monitoring under the ThinkCentre control-plane role.
+
+Definition of done:
+- Monitoring scope, endpoints, and retained metrics are documented.
+- No hidden remediation or approval automation is added.
+- Alerts remain informational unless explicitly approved later.
+
+### Slice 11: Service Catalog and Inventory
+
+Create a durable service catalog for hosts, ports, repos, data paths, and
+ownership.
+
+Definition of done:
+- Services have documented host, port, source/config path, data path, and
+  rollback notes where known.
+- Secrets and raw logs are excluded.
+- Inventory is reviewable markdown or another simple local format.
+
+### Slice 12: Backup/Restore Hardening
+
+Validate MiniPC, Mac Mini, and Oracle backup/restore roles.
+
+Definition of done:
+- Backup sources, destinations, retention expectations, and restore tests are
+  documented.
+- At least one restore path is tested for critical repos or artifacts before
+  relying on it.
+- No paid backup automation is introduced.
+
+### Slice 13: LiteLLM Retirement Decision
+
+Decide whether LiteLLM remains rollback/history or is retired.
+
+Definition of done:
+- Remaining clients and rollback needs are reviewed.
+- Retirement, retention, or cold-standby options are documented.
+- Any live stop/remove action requires explicit operator approval.
+
+### Slice 14: Mac Mini Cleanup
+
+Limit Mac Mini to Apple/iMessage services and tier-2 git mirror duties.
+
+Definition of done:
+- Active Mac Mini services are inventoried.
+- Non-target responsibilities are either retired, moved, or explicitly retained
+  with rationale.
+- Tier-2 mirror behavior is documented and validated.
+
+### Slice 15: Cubie/Camera Edge Nodes
+
+Keep Cubies as edge camera nodes only.
+
+Definition of done:
+- Camera-node responsibilities are documented separately from control-plane
+  services.
+- No model routing, source ownership, or control-plane duties are assigned to
+  Cubies.
+- Runtime changes wait for hardware readiness and explicit approval.
+
 ## Optional Later Improvements
 
 Only consider these after the basic loop works:
