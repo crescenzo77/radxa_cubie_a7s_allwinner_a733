@@ -1,65 +1,95 @@
 # Current Slice
 
-## Active: model-dispatch first-class repo preparation
+## Active: model-dispatch deployment planning only
 
 ## Purpose
 
-Prepare the documentation, repo layout plan, validation plan, and operator
-approval brief for making `model-dispatch` a first-class source-controlled repo.
+Write the deployment, rollback, and validation plan for eventually deploying
+the Strix `model-dispatch` source repo to the live ThinkCentre
+`/srv/model-dispatch` service path.
 
-This slice does not change the live `model-dispatch` service.
+This slice is planning only. No deployment happens in this slice.
+
+## Current Known State
+
+- Homelab latest pushed commit:
+  `b7bd223 document model-dispatch mirror state`.
+- `model-dispatch` source repo: `strix:/srv/projects/model-dispatch`.
+- `model-dispatch` ThinkCentre mirror:
+  `thinkcentre:/srv/git/model-dispatch.git`.
+- `model-dispatch` latest mirrored commit:
+  `7cbb1d9 document thinkcentre mirror creation`.
+- `model-dispatch` remains review-only.
+- Live service path remains `thinkcentre:/srv/model-dispatch`.
+- No deployment has occurred.
+- Dashboards, monitoring, and observability deployment remain deferred.
 
 ## Scope
 
-- Document the current known live `model-dispatch` state from existing docs.
-- Define the target source repo and tier-1 mirror locations.
-- Propose a future repo layout and file inventory.
-- Record exact non-goals, risks, rollback thinking, and validation needed before
-  touching the live service.
-- Draft an operator approval brief template.
-- Include future command blocks only as proposals clearly marked `NOT RUN`.
-- Leave a clear handoff in `AGENT_STATUS.md`.
+- Update this active slice description.
+- Create `inventory/model-dispatch-deployment-plan-2026-05-17.md`.
+- Document deployment purpose, current source/mirror/live state, exact
+  non-goals, pre-deployment validation, eligible and excluded files, backup
+  plan, proposed deployment commands, rollback commands, post-deployment
+  validation commands, Open WebUI validation, OpenRouter-free fail-closed
+  validation, known risks, and approval requirements.
+- Mark all future command blocks clearly as `NOT RUN`.
+- Update `AGENT_STATUS.md` with the handoff.
 
 ## Non-Scope
 
+- Do not deploy.
+- Do not edit `/srv/model-dispatch`.
+- Do not copy files to `/srv/model-dispatch`.
+- Do not run `rsync`, `scp`, `cp`, `mv`, or `rm` against
+  `/srv/model-dispatch`.
+- Do not restart or reload `model-dispatch.service`.
 - Do not run `sudo`.
-- Do not restart services.
-- Do not edit files outside this repo.
+- Do not run Docker or systemd commands.
+- Do not change Open WebUI, OpenCode, LiteLLM, MCP, reverse proxy, dashboard,
+  monitoring, or observability configuration.
 - Do not touch `tools/`.
-- Do not create `strix:/srv/projects/model-dispatch` yet.
-- Do not create `/srv/projects/model-dispatch` yet.
-- Do not copy `/srv/model-dispatch` yet.
-- Do not change `model-dispatch` runtime files.
-- Do not change Open WebUI, OpenCode, LiteLLM, Docker, systemd, reverse proxy,
-  SearXNG, monitoring, backup, or MCP settings.
-- Do not deploy dashboards, Prometheus, Grafana, Loki, Vector, monitoring,
-  observability, or service dashboards.
-- Do not add scripts.
 - Do not commit.
+- Do not make network calls or model API calls as part of this planning slice.
 
 ## Validation Steps
 
-- Read the required control docs:
+- Read the required homelab control docs:
   - `CURRENT_SLICE.md`
   - `ROADMAP.md`
   - `HOMELAB_LAYOUT.md`
   - `WORKFLOW.md`
   - `DECISIONS.md`
   - `ROUTING_INVENTORY.md`
-  - `inventory/baseline-2026-05-17.md`
+  - `inventory/model-dispatch-first-class-repo-plan.md`
+  - `inventory/model-dispatch-live-inventory-2026-05-17.md`
   - `AGENT_STATUS.md`
-- Confirm the Slice 1 plan is documentation-only.
+- Read the allowed `model-dispatch` source repo docs:
+  - `README.md`
+  - `SERVICE.md`
+  - `DEPLOYMENT.md`
+  - `ROUTING.md`
+  - `DECISIONS.md`
+  - `TESTING.md`
+  - `AGENT_STATUS.md`
 - Run `git diff --check`.
 - Run `git diff --stat`.
 - Run `git status --short`.
 
 ## Definition of Done
 
-- `CURRENT_SLICE.md` identifies Slice 1 as the active slice.
-- `inventory/model-dispatch-first-class-repo-plan.md` records the preparation
-  plan and approval brief template.
+- `CURRENT_SLICE.md` identifies the active slice as
+  `model-dispatch deployment planning only`.
+- `inventory/model-dispatch-deployment-plan-2026-05-17.md` exists and covers
+  the required deployment, rollback, validation, and approval plan.
+- The deployment plan explicitly says:
+  - no deployment happens in this slice
+  - live `/srv/model-dispatch` remains untouched
+  - `model-dispatch.service` remains untouched
+  - dashboards, monitoring, and observability remain deferred
 - `AGENT_STATUS.md` describes what changed, what did not change, checks run,
   risks, and next recommended action.
-- No live services, configs, OpenCode settings, `model-dispatch` runtime files,
-  MCP settings, Docker state, systemd state, repo locations, scripts, or
-  `tools/` files were changed.
+- No live services, configs, OpenCode settings, Open WebUI settings, LiteLLM
+  settings, MCP settings, Docker state, systemd state, reverse proxy settings,
+  dashboard, monitoring, observability, source mirror, live runtime files,
+  `tools/` files, or commits were changed.

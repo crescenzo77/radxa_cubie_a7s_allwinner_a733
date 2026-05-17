@@ -2,38 +2,52 @@
 
 ## Current status
 
-The homelab transition docs now explicitly defer dashboard and observability
-deployment during the current `model-dispatch` first-class repo transition.
+The active slice is now `model-dispatch deployment planning only`.
+
+The deployment, rollback, and validation plan for a future
+`model-dispatch` deployment from Strix source to the live ThinkCentre service
+path has been drafted. No deployment was performed.
 
 ## Current task
 
-Clarify that no dashboards, Prometheus, Grafana, Loki, Vector, monitoring
-stack, observability stack, or service dashboards should be deployed during the
-current `model-dispatch` transition work.
+Write the planning-only deployment document for eventually deploying
+`strix:/srv/projects/model-dispatch` to
+`thinkcentre:/srv/model-dispatch`, while leaving the live service untouched.
 
 ## What changed
 
-- Updated `CURRENT_SLICE.md` with an explicit non-scope item forbidding
-  dashboard, Prometheus, Grafana, Loki, Vector, monitoring, observability, and
-  service dashboard deployment.
-- Updated `ROADMAP.md` Slice 10 to state that observability remains deferred,
-  is not part of the current `model-dispatch` transition, and requires a future
-  explicit slice and operator approval.
-- Updated `HOMELAB_LAYOUT.md` to clarify that dashboards and monitoring are
-  target control-plane capabilities, not current deployment tasks.
+- Updated `CURRENT_SLICE.md` so the active slice is
+  `model-dispatch deployment planning only`.
+- Added `inventory/model-dispatch-deployment-plan-2026-05-17.md` with:
+  - purpose
+  - current source, mirror, and live-service state
+  - exact non-goals
+  - pre-deployment validation checklist
+  - files eligible for deployment
+  - files explicitly excluded from deployment
+  - live backup/snapshot plan
+  - proposed deployment command block marked `NOT RUN`
+  - proposed rollback command block marked `NOT RUN`
+  - proposed post-deployment validation commands marked `NOT RUN`
+  - Open WebUI validation plan
+  - OpenRouter-free fail-closed validation plan
+  - known risks
+  - approval requirements
 - Updated this handoff.
 
 ## What did not change
 
-No dashboards were deployed.
+No deployment happened in this slice.
 
 No live services, production configs, OpenCode config, Open WebUI config, MCP
 config, Docker state, systemd state, reverse proxy settings, SearXNG settings,
 monitoring stack, observability stack, dashboard stack, or `model-dispatch`
 runtime files were changed.
 
-No service restart, deploy, push, endpoint call, Docker command, systemd
-command, or `/srv/litellm/.env` read occurred.
+No files were copied to `/srv/model-dispatch`.
+
+No service restart, reload, deploy, push, endpoint call, Docker command,
+systemd command, or `/srv/litellm/.env` read occurred.
 
 No homelab `tools/` files were touched.
 
@@ -41,14 +55,12 @@ No `/srv/model-dispatch` files were edited.
 
 No homelab commit was made.
 
-The `model-dispatch` first-class repo and mirror transition remains the active
-transition path.
+Dashboards, monitoring, and observability remain deferred.
 
 ## Files changed
 
 - `CURRENT_SLICE.md`
-- `ROADMAP.md`
-- `HOMELAB_LAYOUT.md`
+- `inventory/model-dispatch-deployment-plan-2026-05-17.md`
 - `AGENT_STATUS.md`
 
 ## Checks run
@@ -59,7 +71,19 @@ transition path.
   - `CURRENT_SLICE.md`
   - `ROADMAP.md`
   - `HOMELAB_LAYOUT.md`
+  - `WORKFLOW.md`
   - `DECISIONS.md`
+  - `ROUTING_INVENTORY.md`
+  - `inventory/model-dispatch-first-class-repo-plan.md`
+  - `inventory/model-dispatch-live-inventory-2026-05-17.md`
+  - `AGENT_STATUS.md`
+- Read allowed `model-dispatch` source repo docs:
+  - `README.md`
+  - `SERVICE.md`
+  - `DEPLOYMENT.md`
+  - `ROUTING.md`
+  - `DECISIONS.md`
+  - `TESTING.md`
   - `AGENT_STATUS.md`
 - Requested homelab validation checks:
   - `git diff --check`
@@ -68,28 +92,36 @@ transition path.
 
 ## Results of checks
 
-- `git diff --check` passed with no output.
-- `git diff --stat` reported 4 files changed, 90 insertions, and 54 deletions.
+- `git diff --check`: passed with no output.
+- `git diff --stat`: reported:
+  - `AGENT_STATUS.md  | 99 +++++++++++++++++++++++++++++++++++++-------------------`
+  - `CURRENT_SLICE.md | 94 +++++++++++++++++++++++++++++++++++------------------`
+  - `2 files changed, 128 insertions(+), 65 deletions(-)`
 - `git status --short` showed:
   - `M AGENT_STATUS.md`
   - `M CURRENT_SLICE.md`
-  - `M HOMELAB_LAYOUT.md`
-  - `M ROADMAP.md`
+  - `?? inventory/model-dispatch-deployment-plan-2026-05-17.md`
   - `?? tools/`
+
+Note: `git diff --stat` does not include the new untracked deployment-plan
+file until it is staged. The file is visible in `git status --short`.
 
 ## Known risks or blockers
 
-- Observability remains a future roadmap slice only. Any dashboard,
-  Prometheus, Grafana, Loki, Vector, monitoring, observability, or service
-  dashboard work needs a later explicit slice and approval.
-- Open WebUI currently depends on the live ThinkCentre `model-dispatch`; this
-  documentation update does not permit deployment changes.
+- Open WebUI currently depends on the live ThinkCentre `model-dispatch`;
+  deployment mistakes could interrupt the active advisor/planning surface.
+- The Strix source repo preserves live runtime path assumptions and remains
+  review-only until a later approved deployment slice.
+- OpenRouter-free fail-closed behavior must be preserved during any future
+  deployment; paid OpenRouter exposure remains forbidden.
 - Direct AMD routing and LiteLLM rollback remain available until later
   validated replacement slices.
+- Dashboards, monitoring, and observability remain deferred and require a
+  separate explicit slice and approval.
 
 ## User approval needed
 
-No approval is needed for this documentation-only deferral update because the
+No approval is needed for this planning-only documentation update because the
 user explicitly requested it.
 
 Approval will be needed before any live service change, OpenCode config change,
@@ -98,9 +130,10 @@ change, monitoring/dashboard deployment, push, or `model-dispatch` deployment.
 
 ## Recommended next action
 
-Review this narrow documentation diff. Continue the `model-dispatch`
-first-class repo and mirror transition path only; leave dashboard and
-observability deployment deferred until a future explicit slice.
+Review the deployment planning diff. The next safe step, if desired, is a
+separate deployment approval brief that confirms the exact source commit,
+backup path, eligible files, excluded files, rollback block, validation block,
+and operator approval point before any live command is run.
 
 ## Archived Status History
 
