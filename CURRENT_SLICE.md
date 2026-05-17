@@ -1,61 +1,61 @@
 # Current Slice
 
-## Active: Architecture transition planning and model-dispatch repo preparation
+## Active: Baseline inventory and freeze point
 
 ## Purpose
 
-Start a reversible, documentation-first architecture transition toward:
+Capture the current documented homelab architecture, routing, source, mirror,
+backup, and tooling posture before any transition implementation changes.
 
-- ThinkCentre as the control plane.
-- Strix as the canonical source, development, code-graph, and reasoning host.
-- AMD as a mode-switched GPU compute worker.
-- `model-dispatch` as the single model-facing API registry for Open WebUI, OpenCode, Continue.dev, and scripts.
-
-This slice prepares the planning and repo boundaries for the transition. It does
-not change live services.
+This slice is documentation-only. It creates a freeze point for later reversible
+migration slices.
 
 ## Scope
 
-- Document the target platform architecture and migration sequence.
-- Record the routing/source/compute role decision in `DECISIONS.md`.
-- Define the next transition roadmap slices.
-- Prepare for making `model-dispatch` a first-class, reviewable repository.
-- Preserve current rollback paths while documenting the intended end state.
-- Keep the migration sliced, reversible, and validated at each step.
+- Record host roles and known LAN/Tailscale IPs from existing docs.
+- Record current Open WebUI, `model-dispatch`, LiteLLM rollback, OpenRouter-free,
+  local model endpoint, OpenCode, MCP/CodeGraphContext, git source/mirror,
+  backup/off-site, and known untracked-path posture.
+- Use existing repo docs as the primary source of truth.
+- Use only safe read-only repo/Git checks where needed.
+- Leave a clear handoff in `AGENT_STATUS.md`.
 
 ## Non-Scope
 
 - Do not edit live service files outside this repo.
-- Do not change OpenCode config.
-- Do not change the live `model-dispatch` service.
-- Do not enable MCP.
-- Do not move canonical repos yet.
-- Do not change reverse proxy, Open WebUI, SearXNG, monitoring, or backup config.
-- Do not add scripts unless explicitly required by a later slice.
-- Do not create hidden automation, daemons, watchers, approval systems, or Codex infrastructure.
-- Do not add paid-provider fallback or broad autonomous orchestration.
+- Do not change OpenCode settings.
+- Do not change `model-dispatch` runtime files.
+- Do not change Open WebUI, LiteLLM, Docker, systemd, reverse proxy, SearXNG,
+  monitoring, backup, or MCP settings.
+- Do not restart services.
+- Do not run `sudo`.
+- Do not move repo locations.
+- Do not add scripts.
+- Do not touch `tools/`.
+- Do not commit.
 
 ## Validation Steps
 
-For this documentation-only slice:
-
-- Read the required control docs before editing.
-- Confirm edits are limited to repo documentation.
+- Read the required control docs:
+  - `CURRENT_SLICE.md`
+  - `ROADMAP.md`
+  - `HOMELAB_LAYOUT.md`
+  - `WORKFLOW.md`
+  - `DECISIONS.md`
+  - `ROUTING_INVENTORY.md` if present
+  - `AGENT_STATUS.md`
+- Confirm the baseline inventory is documentation-only.
 - Run `git diff --check`.
 - Run `git diff --stat`.
-- Leave `AGENT_STATUS.md` with the handoff, checks, risks, and next recommended slice.
-
-Later implementation slices must add their own concrete validation before any
-live service changes are made.
+- Run `git status --short`.
 
 ## Definition of Done
 
-- `CURRENT_SLICE.md` defines this active transition-planning slice.
-- `DECISIONS.md` records the 2026-05-17 architecture transition decision.
-- `ROADMAP.md` includes the ordered full transition plan.
-- `HOMELAB_LAYOUT.md` describes the target platform host roles.
-- `WORKFLOW.md` documents the Codex-assisted deployment rule.
-- `AGENT_STATUS.md` is updated for handoff.
-- No live services, production configs, OpenCode config, MCP config, or
-  `model-dispatch` runtime files were changed.
-- `git diff --check` and `git diff --stat` were run.
+- `CURRENT_SLICE.md` identifies Slice 0 as the active slice.
+- `inventory/baseline-2026-05-17.md` records the baseline inventory and freeze
+  point.
+- `AGENT_STATUS.md` describes what changed, what did not change, checks run,
+  risks, and next recommended action.
+- No live services, configs, OpenCode settings, `model-dispatch` runtime files,
+  MCP settings, Docker state, systemd state, repo locations, scripts, or
+  `tools/` files were changed.

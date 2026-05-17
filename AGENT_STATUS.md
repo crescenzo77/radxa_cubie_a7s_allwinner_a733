@@ -2,39 +2,153 @@
 
 ## Current status
 
-Documentation-only architecture transition slice has been started and is ready
-for review. This status file has been repaired so prior useful history remains
-available below the current handoff.
+Slice 0 baseline inventory and freeze point documentation update is complete and
+ready for review.
 
 ## Current task
 
-Start a new active slice: "Architecture transition planning and model-dispatch
-repo preparation."
+Create a documentation-only baseline inventory before any live service changes.
 
 ## What changed
 
-- `CURRENT_SLICE.md` now defines the active transition-planning slice, including
-  scope, non-scope, validation steps, and definition of done.
-- `DECISIONS.md` now records the 2026-05-17 decision to centralize model routing
-  through `model-dispatch`, make Strix the canonical source/code-graph host, and
-  make AMD a mode-switched GPU compute worker.
-- `ROADMAP.md` now includes the ordered architecture transition plan from slice
-  0 through slice 15.
-- `HOMELAB_LAYOUT.md` now includes the target platform architecture and final
-  desired host roles.
-- `WORKFLOW.md` now includes the Codex-assisted deployment rule.
-- `AGENT_STATUS.md` now preserves useful prior status history under
-  `Archived Status History` instead of replacing it.
+- `CURRENT_SLICE.md` now defines the active slice as "Baseline inventory and
+  freeze point."
+- `inventory/baseline-2026-05-17.md` was added as the Slice 0 baseline
+  inventory and freeze point.
+- `AGENT_STATUS.md` was updated with this handoff while preserving older history
+  below.
+
+The baseline records:
+
+- Host roles and known LAN/Tailscale IPs.
+- Open WebUI route.
+- `model-dispatch` service path, port, endpoint, and current/target role.
+- LiteLLM rollback/history status.
+- OpenRouter-free artifact posture.
+- Current known model endpoints.
+- OpenCode current routing posture.
+- Continue.dev current routing posture.
+- CodeGraphContext/MCP posture.
+- Git source and mirror posture.
+- Backup/off-site roles.
+- Known untracked repo path: `tools/`.
 
 ## What did not change
 
 No live services, production configs, OpenCode config, MCP config, or
 `model-dispatch` runtime files were changed.
 
+No Docker state, systemd state, repo locations, scripts, daemons, watchers,
+hidden automation, paid-provider fallback, model API calls, network calls, or
+`tools/` files were changed.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `inventory/baseline-2026-05-17.md`
+- `AGENT_STATUS.md`
+
+## Checks run
+
+- Read required context docs:
+  - `CURRENT_SLICE.md`
+  - `ROADMAP.md`
+  - `HOMELAB_LAYOUT.md`
+  - `WORKFLOW.md`
+  - `DECISIONS.md`
+  - `ROUTING_INVENTORY.md`
+  - `AGENT_STATUS.md`
+- Read additional repo control/inventory docs:
+  - `AGENTS.md`
+  - `CODEX_CONTEXT.md`
+  - `PROJECT_PLAN.md`
+  - `inventory/models/llm-runtime-topology.md`
+- Checked working tree before editing:
+  - `git status --short`
+- Listed repo files with:
+  - `rg --files`
+- Ran requested post-edit checks:
+  - `git diff --check`
+  - `git diff --stat`
+  - `git status --short`
+
+## Results of checks
+
+- Required docs were present and readable.
+- `ROUTING_INVENTORY.md` is present and was used as a source.
+- Pre-existing untracked `tools/` path was observed in `git status --short` and
+  left untouched.
+- `git diff --check` passed with no output.
+- `git diff --stat` reported tracked changes in `AGENT_STATUS.md` and
+  `CURRENT_SLICE.md`. The new untracked baseline file is visible in
+  `git status --short` but not included in tracked `git diff --stat` output
+  until staged.
+- `git status --short` shows:
+  - `M AGENT_STATUS.md`
+  - `M CURRENT_SLICE.md`
+  - `?? inventory/baseline-2026-05-17.md`
+  - `?? tools/`
+
+## Known risks or blockers
+
+- This baseline is documentation-derived, not live-probed. Runtime state may
+  have drifted since prior inventories.
+- LiteLLM `main-latest` remains a documented rollback/history risk.
+- Continue.dev remains documented as LiteLLM-routed until a later migration.
+- OpenCode remains direct AMD-routed until a later validated
+  OpenCode-through-`model-dispatch` slice.
+- No known blocker for this documentation-only slice.
+
+## User approval needed
+
+No approval is needed for this docs-only update.
+
+Approval will be needed before any live service change, OpenCode config change,
+MCP enablement, repo migration, Docker/systemd change, or `model-dispatch`
+deployment.
+
+## Recommended next action
+
+Review this diff, then proceed to transition slice 1: prepare `model-dispatch`
+as a first-class repo boundary without changing the live service.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active slice.
+
+## Previous status — Architecture transition planning
+
+Documentation-only architecture transition slice was started and made ready for
+review. The status file was repaired so prior useful history remained available
+below that handoff.
+
+Previous task:
+Start a new active slice: "Architecture transition planning and model-dispatch
+repo preparation."
+
+What changed:
+
+- `CURRENT_SLICE.md` defined the active transition-planning slice, including
+  scope, non-scope, validation steps, and definition of done.
+- `DECISIONS.md` recorded the 2026-05-17 decision to centralize model routing
+  through `model-dispatch`, make Strix the canonical source/code-graph host, and
+  make AMD a mode-switched GPU compute worker.
+- `ROADMAP.md` included the ordered architecture transition plan from slice 0
+  through slice 15.
+- `HOMELAB_LAYOUT.md` included the target platform architecture and final
+  desired host roles.
+- `WORKFLOW.md` included the Codex-assisted deployment rule.
+- `AGENT_STATUS.md` preserved useful prior status history under
+  `Archived Status History` instead of replacing it.
+
+What did not change:
+No live services, production configs, OpenCode config, MCP config, or
+`model-dispatch` runtime files were changed.
+
 No scripts, daemons, watchers, hidden automation, paid-provider fallback, model
 API calls, or network calls were added.
 
-## Files changed
+Files changed:
 
 - `CURRENT_SLICE.md`
 - `DECISIONS.md`
@@ -43,62 +157,19 @@ API calls, or network calls were added.
 - `WORKFLOW.md`
 - `AGENT_STATUS.md`
 
-## Checks run
+Checks run:
 
-- Read required context docs:
-  - `AGENTS.md`
-  - `CODEX_CONTEXT.md`
-  - `PROJECT_PLAN.md`
-  - `CURRENT_SLICE.md`
-  - `DECISIONS.md`
-  - `AGENT_STATUS.md`
-- Read related architecture/workflow docs:
-  - `ROADMAP.md`
-  - `HOMELAB_LAYOUT.md`
-  - `WORKFLOW.md`
-- Checked working tree before editing:
-  - `git status --short`
-- Ran requested post-edit checks:
-  - `git diff --check`
-  - `git diff --stat`
-  - `git diff -- AGENT_STATUS.md | sed -n '1,260p'`
+- `git diff --check`
+- `git diff --stat`
+- `git diff -- AGENT_STATUS.md | sed -n '1,260p'`
 
-## Results of checks
+Results:
 
-- Required docs were present and readable.
-- Pre-existing untracked `tools/` path was observed and left unchanged.
 - `git diff --check` passed with no output.
-- `git diff --stat` reported 6 files changed, 403 insertions, and 69
-  deletions across the full uncommitted docs diff.
-- `git diff -- AGENT_STATUS.md | sed -n '1,260p'` showed the current
-  architecture transition handoff followed by restored archived history.
-- `git status --short` shows only the requested markdown files modified plus the
-  pre-existing untracked `tools/` path.
-
-## Known risks or blockers
-
-No known blocker for this documentation-only slice.
-
-The next implementation slice should stay conservative: prepare
-`model-dispatch` as a first-class repo boundary without changing the live
-service until an operator-approved command block exists.
-
-## User approval needed
-
-No approval is needed for this docs-only update.
-
-Approval will be needed before any live service change, OpenCode config change,
-MCP enablement, repo migration, or `model-dispatch` deployment.
-
-## Recommended next action
-
-Review this diff, then start transition slice 0: baseline inventory and freeze
-point. After slice 0 is complete, proceed to slice 1: `model-dispatch`
-first-class repo preparation.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active slice.
+- `git diff --stat` reported 6 files changed, 403 insertions, and 69 deletions
+  across the full uncommitted docs diff.
+- The scoped `AGENT_STATUS.md` diff showed the current architecture transition
+  handoff followed by restored archived history.
 
 ## Previous status — LLM runtime topology documentation
 
