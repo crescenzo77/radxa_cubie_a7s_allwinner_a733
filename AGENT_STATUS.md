@@ -2,31 +2,45 @@
 
 ## Current status
 
-Slice 1 `model-dispatch` first-class repo preparation is complete and ready for
-review.
+Slice 1 read-only live inventory of `thinkcentre:/srv/model-dispatch` is
+complete and ready for review.
 
 ## Current task
 
-Prepare the plan and operator approval brief for making `model-dispatch` a
-first-class source-controlled repo without changing the live service.
+Document the live `model-dispatch` file shape for include/exclude planning
+without creating repos, copying files, restarting services, editing live config,
+or reading secret contents.
 
 ## What changed
 
-- `CURRENT_SLICE.md` now defines the active slice as
-  "model-dispatch first-class repo preparation."
-- `inventory/model-dispatch-first-class-repo-plan.md` was added with:
+- `inventory/model-dispatch-live-inventory-2026-05-17.md` was added with:
   - purpose
-  - current documented live state
-  - target repo layout
-  - proposed future repo contents
-  - exact non-goals
-  - risks
-  - rollback thinking
-  - validation needed before touching the live service
-  - operator approval brief template
-  - proposed future command blocks clearly marked `NOT RUN`
+  - boundaries
+  - commands run
+  - directory/file inventory summary
+  - candidate source files to include later
+  - candidate docs/config/tests to include later
+  - candidate excludes
+  - unknowns requiring user review
+  - recommended include/exclude policy
+  - next operator approval brief
 - `AGENT_STATUS.md` was updated with this handoff while preserving older history
   below.
+
+Live inventory highlights:
+
+- `/srv/model-dispatch` already contains a `.git/` directory.
+- Branch reported by read-only Git metadata: `main`.
+- Recent commit reported: `ef65a5c initialize model dispatch service repo`.
+- No Git remote was printed by `git remote -v`.
+- Non-`.git` top-level files observed by name/metadata:
+  - `.cgcignore`
+  - `.gitignore`
+  - `app.py`
+  - `config.json`
+  - timestamped `app.py.*.bak` files
+  - timestamped `config.json.*.bak` files
+  - `dispatch.log`
 
 ## What did not change
 
@@ -37,28 +51,32 @@ No Docker state, systemd state, repo locations, scripts, daemons, watchers,
 hidden automation, paid-provider fallback, model API calls, network calls, or
 `tools/` files were changed.
 
-No `/srv/projects/model-dispatch` repo was created. No `/srv/model-dispatch`
-files were copied or inspected directly.
+No `/srv/projects/model-dispatch` repo was created. No
+`thinkcentre:/srv/git/model-dispatch.git` mirror was created. No
+`/srv/model-dispatch` files were copied. No file contents were printed.
 
 ## Files changed
 
-- `CURRENT_SLICE.md`
-- `inventory/model-dispatch-first-class-repo-plan.md`
+- `inventory/model-dispatch-live-inventory-2026-05-17.md`
 - `AGENT_STATUS.md`
 
 ## Checks run
 
 - Read required context docs:
   - `CURRENT_SLICE.md`
-  - `ROADMAP.md`
-  - `HOMELAB_LAYOUT.md`
-  - `WORKFLOW.md`
-  - `DECISIONS.md`
-  - `ROUTING_INVENTORY.md`
+  - `inventory/model-dispatch-first-class-repo-plan.md`
   - `inventory/baseline-2026-05-17.md`
+  - `ROUTING_INVENTORY.md`
   - `AGENT_STATUS.md`
-- Checked working tree before editing:
-  - `git status --short`
+- Ran read-only remote inventory commands:
+  - `ssh thinkcentre 'find /srv/model-dispatch -maxdepth 4 -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
+  - `ssh -F /dev/null thinkcentre 'find /srv/model-dispatch -maxdepth 4 -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
+  - `ssh -F /dev/null 192.168.50.225 'find /srv/model-dispatch -maxdepth 4 -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
+  - `ssh -F /dev/null 192.168.50.225 'find /srv/model-dispatch -maxdepth 4 \( ... likely secret/log/cache name patterns ... \) -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
+  - `ssh -F /dev/null 192.168.50.225 'find /srv/model-dispatch -path /srv/model-dispatch/.git -prune -o -maxdepth 2 -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
+  - `ssh -F /dev/null 192.168.50.225 'git -C /srv/model-dispatch status --short && git -C /srv/model-dispatch branch --show-current && git -C /srv/model-dispatch log --oneline -5'`
+  - `ssh -F /dev/null 192.168.50.225 'git -C /srv/model-dispatch remote -v'`
+  - `ssh -F /dev/null 192.168.50.225 'find /srv/model-dispatch -path /srv/model-dispatch/.git -prune -o -type f -printf "%f\n" | awk ... | sort | uniq -c'`
 - Ran requested post-edit checks:
   - `git diff --check`
   - `git diff --stat`
@@ -67,29 +85,37 @@ files were copied or inspected directly.
 ## Results of checks
 
 - Required docs were present and readable.
-- `ROUTING_INVENTORY.md` is present and was used as a source.
-- `inventory/baseline-2026-05-17.md` is present and was used as a source.
-- Pre-existing untracked `tools/` path remains untouched.
+- Initial hostname SSH failed due local SSH config permissions, then DNS lookup
+  with `-F /dev/null` failed for hostname `thinkcentre`.
+- Read-only SSH using `192.168.50.225` succeeded.
+- The likely secret/log/cache name scan reported `dispatch.log` only.
+- No `.env`, obvious secret, token, key, database, sqlite, cache, virtualenv, or
+  `__pycache__` path was reported by name in the max-depth-4 scan.
+- `git -C /srv/model-dispatch status --short` printed no changes.
+- `git -C /srv/model-dispatch branch --show-current` printed `main`.
+- `git -C /srv/model-dispatch log --oneline -5` printed
+  `ef65a5c initialize model dispatch service repo`.
+- `git -C /srv/model-dispatch remote -v` printed no remotes.
 - `git diff --check` passed with no output.
-- `git diff --stat` reported tracked changes in `AGENT_STATUS.md` and
-  `CURRENT_SLICE.md`. The new untracked Slice 1 plan is visible in
-  `git status --short` but not included in tracked `git diff --stat` output
-  until staged.
+- `git diff --stat` reported tracked changes in `AGENT_STATUS.md`. The new
+  untracked live inventory file is visible in `git status --short` but not
+  included in tracked `git diff --stat` output until staged.
 - `git status --short` shows:
   - `M AGENT_STATUS.md`
-  - `M CURRENT_SLICE.md`
-  - `?? inventory/model-dispatch-first-class-repo-plan.md`
+  - `?? inventory/model-dispatch-live-inventory-2026-05-17.md`
   - `?? tools/`
 
 ## Known risks or blockers
 
-- The plan is documentation-derived and does not inspect the live
-  `/srv/model-dispatch` tree. Its proposed repo layout must be checked against a
-  later approved read-only inventory.
-- The live path may contain secrets, `.env`, logs, caches, generated files, or
-  machine-local artifacts that must not be committed.
-- Open WebUI currently depends on `model-dispatch`; deployment changes need an
-  approved rollback path before any service touch.
+- `config.json` was identified by name only and still needs user review for
+  secrets before any copy.
+- `app.py` was identified by name only and may contain embedded operational
+  details that need review before source promotion.
+- The live `.git/` directory should not be copied into the Strix source repo
+  candidate by default.
+- `dispatch.log` and timestamped `.bak` files should be excluded by default.
+- Open WebUI currently depends on `model-dispatch`; this inventory does not
+  permit deployment changes.
 - Direct AMD routing and LiteLLM rollback must remain available until later
   validated replacement slices.
 - No known blocker for this documentation-only slice.
@@ -104,14 +130,67 @@ deployment.
 
 ## Recommended next action
 
-Review this diff, then decide whether to approve the next narrow step: a
-read-only inventory of `thinkcentre:/srv/model-dispatch` for include/exclude
-planning. Do not create repos, copy files, restart services, or edit live config
-until that approval is explicit.
+Review `inventory/model-dispatch-live-inventory-2026-05-17.md`, then decide
+whether to approve the next narrow step: creating a Strix source repo candidate
+from the reviewed include list only. If `config.json` has not been manually
+reviewed safe, review it before copying it.
 
 ## Archived Status History
 
 Older status entries remain below for continuity. They are not the active slice.
+
+## Previous status — Slice 1 repo preparation plan
+
+Slice 1 `model-dispatch` first-class repo preparation was completed and made
+ready for review.
+
+Previous task:
+Prepare the plan and operator approval brief for making `model-dispatch` a
+first-class source-controlled repo without changing the live service.
+
+What changed:
+
+- `CURRENT_SLICE.md` defined the active slice as
+  "model-dispatch first-class repo preparation."
+- `inventory/model-dispatch-first-class-repo-plan.md` was added with purpose,
+  current documented live state, target repo layout, proposed future repo
+  contents, exact non-goals, risks, rollback thinking, validation needed before
+  touching the live service, operator approval brief template, and proposed
+  future command blocks clearly marked `NOT RUN`.
+- `AGENT_STATUS.md` was updated with that handoff while preserving older history
+  below.
+
+What did not change:
+No live services, production configs, OpenCode config, MCP config, or
+`model-dispatch` runtime files were changed.
+
+No Docker state, systemd state, repo locations, scripts, daemons, watchers,
+hidden automation, paid-provider fallback, model API calls, network calls, or
+`tools/` files were changed.
+
+No `/srv/projects/model-dispatch` repo was created. No `/srv/model-dispatch`
+files were copied or inspected directly.
+
+Files changed:
+
+- `CURRENT_SLICE.md`
+- `inventory/model-dispatch-first-class-repo-plan.md`
+- `AGENT_STATUS.md`
+
+Checks run:
+
+- `git diff --check`
+- `git diff --stat`
+- `git status --short`
+
+Results:
+
+- `git diff --check` passed with no output.
+- `git diff --stat` reported tracked changes in `AGENT_STATUS.md` and
+  `CURRENT_SLICE.md`; the untracked Slice 1 plan was visible in
+  `git status --short`.
+- `git status --short` showed `M AGENT_STATUS.md`, `M CURRENT_SLICE.md`,
+  `?? inventory/model-dispatch-first-class-repo-plan.md`, and `?? tools/`.
 
 ## Previous status — Slice 0 baseline inventory
 
