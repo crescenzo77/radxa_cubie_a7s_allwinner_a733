@@ -2,23 +2,135 @@
 
 ## Current status
 
-Slice 0 baseline inventory and freeze point documentation update is complete and
-ready for review.
+Slice 1 `model-dispatch` first-class repo preparation is complete and ready for
+review.
 
 ## Current task
 
-Create a documentation-only baseline inventory before any live service changes.
+Prepare the plan and operator approval brief for making `model-dispatch` a
+first-class source-controlled repo without changing the live service.
 
 ## What changed
 
-- `CURRENT_SLICE.md` now defines the active slice as "Baseline inventory and
-  freeze point."
-- `inventory/baseline-2026-05-17.md` was added as the Slice 0 baseline
-  inventory and freeze point.
+- `CURRENT_SLICE.md` now defines the active slice as
+  "model-dispatch first-class repo preparation."
+- `inventory/model-dispatch-first-class-repo-plan.md` was added with:
+  - purpose
+  - current documented live state
+  - target repo layout
+  - proposed future repo contents
+  - exact non-goals
+  - risks
+  - rollback thinking
+  - validation needed before touching the live service
+  - operator approval brief template
+  - proposed future command blocks clearly marked `NOT RUN`
 - `AGENT_STATUS.md` was updated with this handoff while preserving older history
   below.
 
-The baseline records:
+## What did not change
+
+No live services, production configs, OpenCode config, MCP config, or
+`model-dispatch` runtime files were changed.
+
+No Docker state, systemd state, repo locations, scripts, daemons, watchers,
+hidden automation, paid-provider fallback, model API calls, network calls, or
+`tools/` files were changed.
+
+No `/srv/projects/model-dispatch` repo was created. No `/srv/model-dispatch`
+files were copied or inspected directly.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `inventory/model-dispatch-first-class-repo-plan.md`
+- `AGENT_STATUS.md`
+
+## Checks run
+
+- Read required context docs:
+  - `CURRENT_SLICE.md`
+  - `ROADMAP.md`
+  - `HOMELAB_LAYOUT.md`
+  - `WORKFLOW.md`
+  - `DECISIONS.md`
+  - `ROUTING_INVENTORY.md`
+  - `inventory/baseline-2026-05-17.md`
+  - `AGENT_STATUS.md`
+- Checked working tree before editing:
+  - `git status --short`
+- Ran requested post-edit checks:
+  - `git diff --check`
+  - `git diff --stat`
+  - `git status --short`
+
+## Results of checks
+
+- Required docs were present and readable.
+- `ROUTING_INVENTORY.md` is present and was used as a source.
+- `inventory/baseline-2026-05-17.md` is present and was used as a source.
+- Pre-existing untracked `tools/` path remains untouched.
+- `git diff --check` passed with no output.
+- `git diff --stat` reported tracked changes in `AGENT_STATUS.md` and
+  `CURRENT_SLICE.md`. The new untracked Slice 1 plan is visible in
+  `git status --short` but not included in tracked `git diff --stat` output
+  until staged.
+- `git status --short` shows:
+  - `M AGENT_STATUS.md`
+  - `M CURRENT_SLICE.md`
+  - `?? inventory/model-dispatch-first-class-repo-plan.md`
+  - `?? tools/`
+
+## Known risks or blockers
+
+- The plan is documentation-derived and does not inspect the live
+  `/srv/model-dispatch` tree. Its proposed repo layout must be checked against a
+  later approved read-only inventory.
+- The live path may contain secrets, `.env`, logs, caches, generated files, or
+  machine-local artifacts that must not be committed.
+- Open WebUI currently depends on `model-dispatch`; deployment changes need an
+  approved rollback path before any service touch.
+- Direct AMD routing and LiteLLM rollback must remain available until later
+  validated replacement slices.
+- No known blocker for this documentation-only slice.
+
+## User approval needed
+
+No approval is needed for this docs-only update.
+
+Approval will be needed before any live service change, OpenCode config change,
+MCP enablement, repo migration, Docker/systemd change, or `model-dispatch`
+deployment.
+
+## Recommended next action
+
+Review this diff, then decide whether to approve the next narrow step: a
+read-only inventory of `thinkcentre:/srv/model-dispatch` for include/exclude
+planning. Do not create repos, copy files, restart services, or edit live config
+until that approval is explicit.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active slice.
+
+## Previous status — Slice 0 baseline inventory
+
+Slice 0 baseline inventory and freeze point documentation update was completed
+and made ready for review.
+
+Previous task:
+Create a documentation-only baseline inventory before any live service changes.
+
+What changed:
+
+- `CURRENT_SLICE.md` defined the active slice as "Baseline inventory and freeze
+  point."
+- `inventory/baseline-2026-05-17.md` was added as the Slice 0 baseline
+  inventory and freeze point.
+- `AGENT_STATUS.md` was updated with that handoff while preserving older history
+  below.
+
+The baseline recorded:
 
 - Host roles and known LAN/Tailscale IPs.
 - Open WebUI route.
@@ -33,8 +145,7 @@ The baseline records:
 - Backup/off-site roles.
 - Known untracked repo path: `tools/`.
 
-## What did not change
-
+What did not change:
 No live services, production configs, OpenCode config, MCP config, or
 `model-dispatch` runtime files were changed.
 
@@ -42,79 +153,26 @@ No Docker state, systemd state, repo locations, scripts, daemons, watchers,
 hidden automation, paid-provider fallback, model API calls, network calls, or
 `tools/` files were changed.
 
-## Files changed
+Files changed:
 
 - `CURRENT_SLICE.md`
 - `inventory/baseline-2026-05-17.md`
 - `AGENT_STATUS.md`
 
-## Checks run
+Checks run:
 
-- Read required context docs:
-  - `CURRENT_SLICE.md`
-  - `ROADMAP.md`
-  - `HOMELAB_LAYOUT.md`
-  - `WORKFLOW.md`
-  - `DECISIONS.md`
-  - `ROUTING_INVENTORY.md`
-  - `AGENT_STATUS.md`
-- Read additional repo control/inventory docs:
-  - `AGENTS.md`
-  - `CODEX_CONTEXT.md`
-  - `PROJECT_PLAN.md`
-  - `inventory/models/llm-runtime-topology.md`
-- Checked working tree before editing:
-  - `git status --short`
-- Listed repo files with:
-  - `rg --files`
-- Ran requested post-edit checks:
-  - `git diff --check`
-  - `git diff --stat`
-  - `git status --short`
+- `git diff --check`
+- `git diff --stat`
+- `git status --short`
 
-## Results of checks
+Results:
 
-- Required docs were present and readable.
-- `ROUTING_INVENTORY.md` is present and was used as a source.
-- Pre-existing untracked `tools/` path was observed in `git status --short` and
-  left untouched.
 - `git diff --check` passed with no output.
 - `git diff --stat` reported tracked changes in `AGENT_STATUS.md` and
-  `CURRENT_SLICE.md`. The new untracked baseline file is visible in
-  `git status --short` but not included in tracked `git diff --stat` output
-  until staged.
-- `git status --short` shows:
-  - `M AGENT_STATUS.md`
-  - `M CURRENT_SLICE.md`
-  - `?? inventory/baseline-2026-05-17.md`
-  - `?? tools/`
-
-## Known risks or blockers
-
-- This baseline is documentation-derived, not live-probed. Runtime state may
-  have drifted since prior inventories.
-- LiteLLM `main-latest` remains a documented rollback/history risk.
-- Continue.dev remains documented as LiteLLM-routed until a later migration.
-- OpenCode remains direct AMD-routed until a later validated
-  OpenCode-through-`model-dispatch` slice.
-- No known blocker for this documentation-only slice.
-
-## User approval needed
-
-No approval is needed for this docs-only update.
-
-Approval will be needed before any live service change, OpenCode config change,
-MCP enablement, repo migration, Docker/systemd change, or `model-dispatch`
-deployment.
-
-## Recommended next action
-
-Review this diff, then proceed to transition slice 1: prepare `model-dispatch`
-as a first-class repo boundary without changing the live service.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active slice.
+  `CURRENT_SLICE.md`; the untracked baseline file was visible in
+  `git status --short`.
+- `git status --short` showed `M AGENT_STATUS.md`, `M CURRENT_SLICE.md`,
+  `?? inventory/baseline-2026-05-17.md`, and `?? tools/`.
 
 ## Previous status — Architecture transition planning
 

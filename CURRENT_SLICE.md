@@ -1,37 +1,38 @@
 # Current Slice
 
-## Active: Baseline inventory and freeze point
+## Active: model-dispatch first-class repo preparation
 
 ## Purpose
 
-Capture the current documented homelab architecture, routing, source, mirror,
-backup, and tooling posture before any transition implementation changes.
+Prepare the documentation, repo layout plan, validation plan, and operator
+approval brief for making `model-dispatch` a first-class source-controlled repo.
 
-This slice is documentation-only. It creates a freeze point for later reversible
-migration slices.
+This slice does not change the live `model-dispatch` service.
 
 ## Scope
 
-- Record host roles and known LAN/Tailscale IPs from existing docs.
-- Record current Open WebUI, `model-dispatch`, LiteLLM rollback, OpenRouter-free,
-  local model endpoint, OpenCode, MCP/CodeGraphContext, git source/mirror,
-  backup/off-site, and known untracked-path posture.
-- Use existing repo docs as the primary source of truth.
-- Use only safe read-only repo/Git checks where needed.
+- Document the current known live `model-dispatch` state from existing docs.
+- Define the target source repo and tier-1 mirror locations.
+- Propose a future repo layout and file inventory.
+- Record exact non-goals, risks, rollback thinking, and validation needed before
+  touching the live service.
+- Draft an operator approval brief template.
+- Include future command blocks only as proposals clearly marked `NOT RUN`.
 - Leave a clear handoff in `AGENT_STATUS.md`.
 
 ## Non-Scope
 
-- Do not edit live service files outside this repo.
-- Do not change OpenCode settings.
-- Do not change `model-dispatch` runtime files.
-- Do not change Open WebUI, LiteLLM, Docker, systemd, reverse proxy, SearXNG,
-  monitoring, backup, or MCP settings.
-- Do not restart services.
 - Do not run `sudo`.
-- Do not move repo locations.
-- Do not add scripts.
+- Do not restart services.
+- Do not edit files outside this repo.
 - Do not touch `tools/`.
+- Do not create `strix:/srv/projects/model-dispatch` yet.
+- Do not create `/srv/projects/model-dispatch` yet.
+- Do not copy `/srv/model-dispatch` yet.
+- Do not change `model-dispatch` runtime files.
+- Do not change Open WebUI, OpenCode, LiteLLM, Docker, systemd, reverse proxy,
+  SearXNG, monitoring, backup, or MCP settings.
+- Do not add scripts.
 - Do not commit.
 
 ## Validation Steps
@@ -42,18 +43,19 @@ migration slices.
   - `HOMELAB_LAYOUT.md`
   - `WORKFLOW.md`
   - `DECISIONS.md`
-  - `ROUTING_INVENTORY.md` if present
+  - `ROUTING_INVENTORY.md`
+  - `inventory/baseline-2026-05-17.md`
   - `AGENT_STATUS.md`
-- Confirm the baseline inventory is documentation-only.
+- Confirm the Slice 1 plan is documentation-only.
 - Run `git diff --check`.
 - Run `git diff --stat`.
 - Run `git status --short`.
 
 ## Definition of Done
 
-- `CURRENT_SLICE.md` identifies Slice 0 as the active slice.
-- `inventory/baseline-2026-05-17.md` records the baseline inventory and freeze
-  point.
+- `CURRENT_SLICE.md` identifies Slice 1 as the active slice.
+- `inventory/model-dispatch-first-class-repo-plan.md` records the preparation
+  plan and approval brief template.
 - `AGENT_STATUS.md` describes what changed, what did not change, checks run,
   risks, and next recommended action.
 - No live services, configs, OpenCode settings, `model-dispatch` runtime files,
