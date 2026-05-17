@@ -2,17 +2,122 @@
 
 ## Current status
 
+The homelab transition docs now explicitly defer dashboard and observability
+deployment during the current `model-dispatch` first-class repo transition.
+
+## Current task
+
+Clarify that no dashboards, Prometheus, Grafana, Loki, Vector, monitoring
+stack, observability stack, or service dashboards should be deployed during the
+current `model-dispatch` transition work.
+
+## What changed
+
+- Updated `CURRENT_SLICE.md` with an explicit non-scope item forbidding
+  dashboard, Prometheus, Grafana, Loki, Vector, monitoring, observability, and
+  service dashboard deployment.
+- Updated `ROADMAP.md` Slice 10 to state that observability remains deferred,
+  is not part of the current `model-dispatch` transition, and requires a future
+  explicit slice and operator approval.
+- Updated `HOMELAB_LAYOUT.md` to clarify that dashboards and monitoring are
+  target control-plane capabilities, not current deployment tasks.
+- Updated this handoff.
+
+## What did not change
+
+No dashboards were deployed.
+
+No live services, production configs, OpenCode config, Open WebUI config, MCP
+config, Docker state, systemd state, reverse proxy settings, SearXNG settings,
+monitoring stack, observability stack, dashboard stack, or `model-dispatch`
+runtime files were changed.
+
+No service restart, deploy, push, endpoint call, Docker command, systemd
+command, or `/srv/litellm/.env` read occurred.
+
+No homelab `tools/` files were touched.
+
+No `/srv/model-dispatch` files were edited.
+
+No homelab commit was made.
+
+The `model-dispatch` first-class repo and mirror transition remains the active
+transition path.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `ROADMAP.md`
+- `HOMELAB_LAYOUT.md`
+- `AGENT_STATUS.md`
+
+## Checks run
+
+- Read required homelab docs:
+  - `CODEX_CONTEXT.md`
+  - `PROJECT_PLAN.md`
+  - `CURRENT_SLICE.md`
+  - `ROADMAP.md`
+  - `HOMELAB_LAYOUT.md`
+  - `DECISIONS.md`
+  - `AGENT_STATUS.md`
+- Requested homelab validation checks:
+  - `git diff --check`
+  - `git diff --stat`
+  - `git status --short`
+
+## Results of checks
+
+- `git diff --check` passed with no output.
+- `git diff --stat` reported 4 files changed, 90 insertions, and 54 deletions.
+- `git status --short` showed:
+  - `M AGENT_STATUS.md`
+  - `M CURRENT_SLICE.md`
+  - `M HOMELAB_LAYOUT.md`
+  - `M ROADMAP.md`
+  - `?? tools/`
+
+## Known risks or blockers
+
+- Observability remains a future roadmap slice only. Any dashboard,
+  Prometheus, Grafana, Loki, Vector, monitoring, observability, or service
+  dashboard work needs a later explicit slice and approval.
+- Open WebUI currently depends on the live ThinkCentre `model-dispatch`; this
+  documentation update does not permit deployment changes.
+- Direct AMD routing and LiteLLM rollback remain available until later
+  validated replacement slices.
+
+## User approval needed
+
+No approval is needed for this documentation-only deferral update because the
+user explicitly requested it.
+
+Approval will be needed before any live service change, OpenCode config change,
+Open WebUI config change, MCP enablement, repo migration, Docker/systemd
+change, monitoring/dashboard deployment, push, or `model-dispatch` deployment.
+
+## Recommended next action
+
+Review this narrow documentation diff. Continue the `model-dispatch`
+first-class repo and mirror transition path only; leave dashboard and
+observability deployment deferred until a future explicit slice.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active slice.
+
+## Previous status - local smoke-check scaffold
+
 The Strix `model-dispatch` source repo candidate at
 `/srv/projects/model-dispatch` now has a local-only smoke-check scaffold and a
 first local commit.
 
-## Current task
-
+Previous task:
 Record the completed next local-only `model-dispatch` candidate repo step in
 the homelab handoff, without touching `tools/`, committing, changing live
 services, or editing the live `/srv/model-dispatch` path.
 
-## What changed
+What changed:
 
 - Added a local smoke-check scaffold in `/srv/projects/model-dispatch`.
 - Added `/srv/projects/model-dispatch/tests/check_config.py`.
@@ -22,9 +127,9 @@ services, or editing the live `/srv/model-dispatch` path.
 - Added `/srv/projects/model-dispatch/AGENT_STATUS.md`.
 - Created the local `model-dispatch` commit:
   `add local config smoke check`.
-- Updated this handoff.
+- Updated the homelab handoff.
 
-## What did not change
+What did not change:
 
 No live `/srv/model-dispatch` files were edited.
 
@@ -41,79 +146,6 @@ No homelab commit was made.
 
 `__pycache__` was created by `py_compile` in `/srv/projects/model-dispatch`,
 but it is ignored by `.gitignore` and is not shown in Git status.
-
-## Files changed
-
-- `AGENT_STATUS.md`
-
-Files changed in `/srv/projects/model-dispatch`:
-
-  - `DECISIONS.md`
-  - `TESTING.md`
-  - `AGENT_STATUS.md`
-  - `tests/check_config.py`
-
-## Checks run
-
-- Read required homelab docs:
-  - `CODEX_CONTEXT.md`
-  - `PROJECT_PLAN.md`
-  - `CURRENT_SLICE.md`
-  - `DECISIONS.md`
-  - `AGENT_STATUS.md`
-- Read `CODEX_CONTEXT.md`.
-- Checks completed in `/srv/projects/model-dispatch`:
-  - `python3 tests/check_config.py`
-  - `python3 -m py_compile app.py`
-  - `python3 -m json.tool config.json`
-- Requested homelab validation checks:
-  - `git diff --check`
-  - `git diff --stat`
-  - `git status --short`
-
-## Results of checks
-
-- `/srv/projects/model-dispatch` `python3 tests/check_config.py` passed with:
-  `config check passed`.
-- `/srv/projects/model-dispatch` `python3 -m py_compile app.py` passed.
-- `/srv/projects/model-dispatch` `python3 -m json.tool config.json` passed.
-- Homelab validation results are recorded after the current edit is checked.
-
-## Known risks or blockers
-
-- `config.json` remains suitable only for a private homelab source candidate
-  unless sanitized before public publication because it contains internal
-  endpoint and served-model details.
-- `app.py` hardcodes runtime paths and key-loading assumptions; this has now
-  been documented, but not refactored.
-- The candidate has not been tested as a running service from the Strix source
-  tree.
-- The candidate is not portable or deployable from Strix without a later
-  path/config review and rollback brief.
-- Open WebUI currently depends on the live ThinkCentre `model-dispatch`; this
-  step does not permit deployment changes.
-- Direct AMD routing and LiteLLM rollback must remain available until later
-  validated replacement slices.
-
-## User approval needed
-
-No approval is needed for this handoff-only update because the user explicitly
-requested it.
-
-Approval will be needed before any live service change, OpenCode config change,
-Open WebUI config change, MCP enablement, repo migration, Docker/systemd
-change, mirror creation, push, or `model-dispatch` deployment.
-
-## Recommended next action
-
-Review the local `model-dispatch` commit and smoke-check scaffold. If
-acceptable, approve the next narrow local-only candidate repo step. Do not
-create the ThinkCentre bare mirror, push, deploy, restart services, or touch
-`/srv/model-dispatch` until a later explicit approval.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active slice.
 
 ## Previous status - source repo candidate creation
 

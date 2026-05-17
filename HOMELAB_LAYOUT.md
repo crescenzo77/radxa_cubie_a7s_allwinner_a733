@@ -50,6 +50,11 @@ compute, backup, external anchoring, and edge devices.
 OpenCode, Continue.dev, and scripts. Clients should eventually use stable model
 aliases from `model-dispatch` rather than duplicating direct endpoint definitions.
 
+Dashboards, monitoring, observability, service dashboards, Prometheus, Grafana,
+Loki, and Vector are target control-plane capabilities only. They are not
+current deployment tasks for the `model-dispatch` transition and require a
+future explicit slice and operator approval before any deployment.
+
 Direct AMD routing and LiteLLM remain rollback paths until each replacement path
 is validated. The migration must stay sliced, reversible, and reviewable. Codex
 may assist implementation, but it must not become background infrastructure or an

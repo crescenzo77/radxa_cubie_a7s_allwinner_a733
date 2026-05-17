@@ -305,6 +305,10 @@ Definition of done:
 
 Place basic monitoring under the ThinkCentre control-plane role.
 
+Observability remains deferred. No dashboard deployment is part of the current
+`model-dispatch` transition. Any monitoring or dashboard work requires a future
+explicit slice and operator approval before implementation.
+
 Definition of done:
 - Monitoring scope, endpoints, and retained metrics are documented.
 - No hidden remediation or approval automation is added.

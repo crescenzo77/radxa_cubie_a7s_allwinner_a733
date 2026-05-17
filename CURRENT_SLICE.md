@@ -32,6 +32,8 @@ This slice does not change the live `model-dispatch` service.
 - Do not change `model-dispatch` runtime files.
 - Do not change Open WebUI, OpenCode, LiteLLM, Docker, systemd, reverse proxy,
   SearXNG, monitoring, backup, or MCP settings.
+- Do not deploy dashboards, Prometheus, Grafana, Loki, Vector, monitoring,
+  observability, or service dashboards.
 - Do not add scripts.
 - Do not commit.
 
