@@ -3,50 +3,44 @@
 ## Current status
 
 The Strix `model-dispatch` source repo candidate at
-`/srv/projects/model-dispatch` now documents the runtime assumptions discovered
-during review of `app.py` before the first local commit.
+`/srv/projects/model-dispatch` now has a local-only smoke-check scaffold and a
+first local commit.
 
 ## Current task
 
-Document runtime assumptions in the Strix `model-dispatch` source repo
-candidate before the first local commit, without changing `app.py`,
-`config.json`, live services, deployment state, or the live
-`/srv/model-dispatch` path.
+Record the completed next local-only `model-dispatch` candidate repo step in
+the homelab handoff, without touching `tools/`, committing, changing live
+services, or editing the live `/srv/model-dispatch` path.
 
 ## What changed
 
-- Updated `/srv/projects/model-dispatch/README.md` with a runtime assumptions
-  section documenting:
-  - hardcoded base path `/srv/model-dispatch`
-  - log path `/srv/model-dispatch/dispatch.log`
-  - OpenRouter-free allowlist path
-    `/srv/openrouter-free/free-models.allowlist.json`
-  - `OPENROUTER_API_KEY` environment loading
-  - `/srv/litellm/.env` fallback loading
-  - no secrets exposed during review
-  - non-portability until later path/config review
-- Updated `/srv/projects/model-dispatch/SERVICE.md` with the same runtime paths
-  and key-loading behavior.
-- Updated `/srv/projects/model-dispatch/DEPLOYMENT.md` to require a later
-  path/config review and rollback brief before deployment.
-- Updated `/srv/projects/model-dispatch/DECISIONS.md` to record that the first
-  candidate commit preserves live behavior instead of refactoring paths.
+- Added a local smoke-check scaffold in `/srv/projects/model-dispatch`.
+- Added `/srv/projects/model-dispatch/tests/check_config.py`.
+- Added `/srv/projects/model-dispatch/TESTING.md`.
+- Updated `/srv/projects/model-dispatch/DECISIONS.md` to record that local
+  tests avoid importing `app.py` because `app.py` has live-path side effects.
+- Added `/srv/projects/model-dispatch/AGENT_STATUS.md`.
+- Created the local `model-dispatch` commit:
+  `add local config smoke check`.
 - Updated this handoff.
 
 ## What did not change
 
-No `app.py` behavior was changed.
-
-No `config.json` changes were made.
+No live `/srv/model-dispatch` files were edited.
 
 No live services, production configs, OpenCode config, Open WebUI config, MCP
 config, Docker state, systemd state, reverse proxy settings, SearXNG settings,
 or `model-dispatch` runtime files were changed.
 
-No `/srv/model-dispatch` files were edited. No service was restarted or
-reloaded. No `sudo` was used.
+No service restart, deploy, push, mirror creation, endpoint call, or
+`/srv/litellm/.env` read occurred.
 
-No commit was made. Nothing was pushed. Nothing was deployed.
+No homelab `tools/` files were touched.
+
+No homelab commit was made.
+
+`__pycache__` was created by `py_compile` in `/srv/projects/model-dispatch`,
+but it is ignored by `.gitignore` and is not shown in Git status.
 
 ## Files changed
 
@@ -54,10 +48,10 @@ No commit was made. Nothing was pushed. Nothing was deployed.
 
 Files changed in `/srv/projects/model-dispatch`:
 
-  - `README.md`
-  - `SERVICE.md`
-  - `DEPLOYMENT.md`
   - `DECISIONS.md`
+  - `TESTING.md`
+  - `AGENT_STATUS.md`
+  - `tests/check_config.py`
 
 ## Checks run
 
@@ -67,37 +61,23 @@ Files changed in `/srv/projects/model-dispatch`:
   - `CURRENT_SLICE.md`
   - `DECISIONS.md`
   - `AGENT_STATUS.md`
-- Read available candidate repo docs:
-  - `README.md`
-  - `SERVICE.md`
-  - `DEPLOYMENT.md`
-  - `DECISIONS.md`
-- Reviewed `/srv/projects/model-dispatch/app.py` enough to confirm the listed
-  runtime assumptions without exposing key values or secrets.
-- Ran requested validation checks:
-  - `cd /srv/projects/model-dispatch && git diff --check`
-  - `cd /srv/projects/model-dispatch && git diff --stat`
-  - `cd /srv/projects/model-dispatch && git status --short`
+- Read `CODEX_CONTEXT.md`.
+- Checks completed in `/srv/projects/model-dispatch`:
+  - `python3 tests/check_config.py`
+  - `python3 -m py_compile app.py`
+  - `python3 -m json.tool config.json`
+- Requested homelab validation checks:
+  - `git diff --check`
+  - `git diff --stat`
+  - `git status --short`
 
 ## Results of checks
 
-- Candidate repo `PROJECT_PLAN.md`, `CURRENT_SLICE.md`, `AGENT_STATUS.md`, and
-  `CODEX_CONTEXT.md` were not present; homelab control docs were used for the
-  handoff context.
-- `/srv/projects/model-dispatch` `git diff --check` passed with no output.
-- `/srv/projects/model-dispatch` `git diff --stat` reported the whole
-  intent-to-add candidate because there is no first commit yet:
-  - 9 files changed, 615 insertions
-- `/srv/projects/model-dispatch` `git status --short` showed:
-  - `.cgcignore`
-  - `.gitignore`
-  - `DECISIONS.md`
-  - `DEPLOYMENT.md`
-  - `README.md`
-  - `ROUTING.md`
-  - `SERVICE.md`
-  - `app.py`
-  - `config.json`
+- `/srv/projects/model-dispatch` `python3 tests/check_config.py` passed with:
+  `config check passed`.
+- `/srv/projects/model-dispatch` `python3 -m py_compile app.py` passed.
+- `/srv/projects/model-dispatch` `python3 -m json.tool config.json` passed.
+- Homelab validation results are recorded after the current edit is checked.
 
 ## Known risks or blockers
 
@@ -106,7 +86,6 @@ Files changed in `/srv/projects/model-dispatch`:
   endpoint and served-model details.
 - `app.py` hardcodes runtime paths and key-loading assumptions; this has now
   been documented, but not refactored.
-- The candidate repo has no committed baseline yet.
 - The candidate has not been tested as a running service from the Strix source
   tree.
 - The candidate is not portable or deployable from Strix without a later
@@ -118,8 +97,8 @@ Files changed in `/srv/projects/model-dispatch`:
 
 ## User approval needed
 
-No approval is needed for the completed documentation update because the user
-approved this narrow step in the prompt.
+No approval is needed for this handoff-only update because the user explicitly
+requested it.
 
 Approval will be needed before any live service change, OpenCode config change,
 Open WebUI config change, MCP enablement, repo migration, Docker/systemd
@@ -127,11 +106,10 @@ change, mirror creation, push, or `model-dispatch` deployment.
 
 ## Recommended next action
 
-Review `/srv/projects/model-dispatch` with `git diff`. If acceptable, approve
-the next narrow step: create the initial local commit in
-`/srv/projects/model-dispatch` only. Do not create the ThinkCentre bare mirror,
-push, deploy, restart services, or touch `/srv/model-dispatch` until a later
-explicit approval.
+Review the local `model-dispatch` commit and smoke-check scaffold. If
+acceptable, approve the next narrow local-only candidate repo step. Do not
+create the ThinkCentre bare mirror, push, deploy, restart services, or touch
+`/srv/model-dispatch` until a later explicit approval.
 
 ## Archived Status History
 
