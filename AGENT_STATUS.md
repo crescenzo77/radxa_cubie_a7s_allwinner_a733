@@ -2,140 +2,229 @@
 
 ## Current status
 
-`config.json` safety review documentation is complete and ready for review
-before any Strix source repo candidate is created.
+The Strix `model-dispatch` source repo candidate at
+`/srv/projects/model-dispatch` now documents the runtime assumptions discovered
+during review of `app.py` before the first local commit.
 
 ## Current task
 
-Document the completed safe, non-secret-dumping review of
-`thinkcentre:/srv/model-dispatch/config.json` in the homelab repo without
-editing live files, copying files, creating repos, touching `tools/`, or
-committing.
+Document runtime assumptions in the Strix `model-dispatch` source repo
+candidate before the first local commit, without changing `app.py`,
+`config.json`, live services, deployment state, or the live
+`/srv/model-dispatch` path.
 
 ## What changed
 
-- `inventory/model-dispatch-live-inventory-2026-05-17.md` now includes a
-  `config.json Safety Review` section documenting:
-  - full config values were not printed
-  - JSON shape only was printed
-  - redacted value preview showed strings only as lengths
-  - root keys observed:
-    - `listen_host`
-    - `listen_port`
-    - `models`
-    - `routes`
-    - `reserved_output_tokens`
-    - `token_estimate_divisor`
-  - `models` is a list of 8 entries
-  - model entries have keys:
-    - `id`
-    - `display`
-    - `role`
-    - `endpoint`
-    - `served_model`
-    - `context`
-  - `routes` has keys:
-    - `auto-local`
-    - `auto-coding-local`
-    - `auto-reasoning-local`
-    - `auto-small-local`
-  - suspicious-key scan only returned `reserved_output_tokens` and
-    `token_estimate_divisor`
-  - those keys are token-budget/routing settings, not credential fields
-  - no API key, password, secret, bearer, auth, credential, or token credential
-    field was shown
-  - `config.json` appears to be route/model registry configuration
-  - remaining risk is endpoint strings and served model names as internal
-    operational details
-- The inventory's unknowns and include policy were updated to say
-  `config.json` is acceptable for a private homelab source candidate but should
-  be sanitized before any public publication.
-- `AGENT_STATUS.md` was updated with this handoff while preserving prior history
-  below.
+- Updated `/srv/projects/model-dispatch/README.md` with a runtime assumptions
+  section documenting:
+  - hardcoded base path `/srv/model-dispatch`
+  - log path `/srv/model-dispatch/dispatch.log`
+  - OpenRouter-free allowlist path
+    `/srv/openrouter-free/free-models.allowlist.json`
+  - `OPENROUTER_API_KEY` environment loading
+  - `/srv/litellm/.env` fallback loading
+  - no secrets exposed during review
+  - non-portability until later path/config review
+- Updated `/srv/projects/model-dispatch/SERVICE.md` with the same runtime paths
+  and key-loading behavior.
+- Updated `/srv/projects/model-dispatch/DEPLOYMENT.md` to require a later
+  path/config review and rollback brief before deployment.
+- Updated `/srv/projects/model-dispatch/DECISIONS.md` to record that the first
+  candidate commit preserves live behavior instead of refactoring paths.
+- Updated this handoff.
 
 ## What did not change
 
-No live services, production configs, OpenCode config, MCP config, or
-`model-dispatch` runtime files were changed.
+No `app.py` behavior was changed.
 
-No Docker state, systemd state, repo locations, scripts, daemons, watchers,
-hidden automation, paid-provider fallback, model API calls, network calls, or
-`tools/` files were changed.
+No `config.json` changes were made.
 
-No `/srv/projects/model-dispatch` repo was created. No
-`thinkcentre:/srv/git/model-dispatch.git` mirror was created. No
-`/srv/model-dispatch` files were copied. No live files were edited. No commit
-was made.
+No live services, production configs, OpenCode config, Open WebUI config, MCP
+config, Docker state, systemd state, reverse proxy settings, SearXNG settings,
+or `model-dispatch` runtime files were changed.
+
+No `/srv/model-dispatch` files were edited. No service was restarted or
+reloaded. No `sudo` was used.
+
+No commit was made. Nothing was pushed. Nothing was deployed.
 
 ## Files changed
 
-- `inventory/model-dispatch-live-inventory-2026-05-17.md`
 - `AGENT_STATUS.md`
+
+Files changed in `/srv/projects/model-dispatch`:
+
+  - `README.md`
+  - `SERVICE.md`
+  - `DEPLOYMENT.md`
+  - `DECISIONS.md`
 
 ## Checks run
 
-- Read required context docs:
+- Read required homelab docs:
+  - `CODEX_CONTEXT.md`
+  - `PROJECT_PLAN.md`
+  - `CURRENT_SLICE.md`
+  - `DECISIONS.md`
+  - `AGENT_STATUS.md`
+- Read available candidate repo docs:
+  - `README.md`
+  - `SERVICE.md`
+  - `DEPLOYMENT.md`
+  - `DECISIONS.md`
+- Reviewed `/srv/projects/model-dispatch/app.py` enough to confirm the listed
+  runtime assumptions without exposing key values or secrets.
+- Ran requested validation checks:
+  - `cd /srv/projects/model-dispatch && git diff --check`
+  - `cd /srv/projects/model-dispatch && git diff --stat`
+  - `cd /srv/projects/model-dispatch && git status --short`
+
+## Results of checks
+
+- Candidate repo `PROJECT_PLAN.md`, `CURRENT_SLICE.md`, `AGENT_STATUS.md`, and
+  `CODEX_CONTEXT.md` were not present; homelab control docs were used for the
+  handoff context.
+- `/srv/projects/model-dispatch` `git diff --check` passed with no output.
+- `/srv/projects/model-dispatch` `git diff --stat` reported the whole
+  intent-to-add candidate because there is no first commit yet:
+  - 9 files changed, 615 insertions
+- `/srv/projects/model-dispatch` `git status --short` showed:
+  - `.cgcignore`
+  - `.gitignore`
+  - `DECISIONS.md`
+  - `DEPLOYMENT.md`
+  - `README.md`
+  - `ROUTING.md`
+  - `SERVICE.md`
+  - `app.py`
+  - `config.json`
+
+## Known risks or blockers
+
+- `config.json` remains suitable only for a private homelab source candidate
+  unless sanitized before public publication because it contains internal
+  endpoint and served-model details.
+- `app.py` hardcodes runtime paths and key-loading assumptions; this has now
+  been documented, but not refactored.
+- The candidate repo has no committed baseline yet.
+- The candidate has not been tested as a running service from the Strix source
+  tree.
+- The candidate is not portable or deployable from Strix without a later
+  path/config review and rollback brief.
+- Open WebUI currently depends on the live ThinkCentre `model-dispatch`; this
+  step does not permit deployment changes.
+- Direct AMD routing and LiteLLM rollback must remain available until later
+  validated replacement slices.
+
+## User approval needed
+
+No approval is needed for the completed documentation update because the user
+approved this narrow step in the prompt.
+
+Approval will be needed before any live service change, OpenCode config change,
+Open WebUI config change, MCP enablement, repo migration, Docker/systemd
+change, mirror creation, push, or `model-dispatch` deployment.
+
+## Recommended next action
+
+Review `/srv/projects/model-dispatch` with `git diff`. If acceptable, approve
+the next narrow step: create the initial local commit in
+`/srv/projects/model-dispatch` only. Do not create the ThinkCentre bare mirror,
+push, deploy, restart services, or touch `/srv/model-dispatch` until a later
+explicit approval.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active slice.
+
+## Previous status - source repo candidate creation
+
+The Strix `model-dispatch` source repo candidate was created for review at
+`/srv/projects/model-dispatch`.
+
+Previous task:
+Create a source repo candidate at `/srv/projects/model-dispatch` using only the
+reviewed include list from `thinkcentre:/srv/model-dispatch`, without deploying
+anything or touching the live service.
+
+What changed:
+
+- Created `/srv/projects/model-dispatch`.
+- Copied only the approved files from `thinkcentre:/srv/model-dispatch` using
+  the LAN IP `192.168.50.225`:
+  - `app.py`
+  - `config.json`
+  - `.gitignore`
+  - `.cgcignore`
+- Initialized Git in `/srv/projects/model-dispatch`.
+- Added review-only repo docs in `/srv/projects/model-dispatch`:
+  - `README.md`
+  - `ROUTING.md`
+  - `SERVICE.md`
+  - `DEPLOYMENT.md`
+  - `DECISIONS.md`
+- Tightened `/srv/projects/model-dispatch/.gitignore` to explicitly exclude
+  logs, request logs, backups, env files, secrets, tokens, keys, caches,
+  virtualenvs, databases, generated runtime files, and dependency/vendor
+  directories.
+- Marked files in `/srv/projects/model-dispatch` with `git add -N .` so
+  `git diff` and `git diff --check` can review the candidate without staging a
+  commit.
+
+What did not change:
+No live services, production configs, OpenCode config, Open WebUI config, MCP
+config, Docker state, systemd state, reverse proxy settings, SearXNG settings,
+or `model-dispatch` runtime files were changed.
+
+No `/srv/model-dispatch` files were edited. No service was restarted or
+reloaded. No `sudo` was used.
+
+No `thinkcentre:/srv/git/model-dispatch.git` mirror was created. Nothing was
+pushed. No commit was made in `/srv/projects/model-dispatch` or
+`/srv/projects/homelab`.
+
+No homelab `tools/` files were touched.
+
+The live `.git/` directory, `dispatch.log`, backup snapshots, env files,
+secrets, tokens, keys, databases, sqlite files, caches, virtualenvs, generated
+runtime files, and request logs were not copied from the live service.
+
+Checks run:
+
+- Read required homelab docs:
   - `AGENTS.md`
   - `CODEX_CONTEXT.md`
   - `PROJECT_PLAN.md`
   - `CURRENT_SLICE.md`
   - `DECISIONS.md`
   - `AGENT_STATUS.md`
-- Read target files:
+  - `inventory/model-dispatch-first-class-repo-plan.md`
   - `inventory/model-dispatch-live-inventory-2026-05-17.md`
-- Ran requested post-edit checks:
-  - `git diff --check`
-  - `git diff --stat`
-  - `git status --short`
+- Ran candidate repo setup commands:
+  - `mkdir -p /srv/projects/model-dispatch`
+  - `scp -F /dev/null 192.168.50.225:/srv/model-dispatch/app.py /srv/projects/model-dispatch/app.py`
+  - `scp -F /dev/null 192.168.50.225:/srv/model-dispatch/config.json /srv/projects/model-dispatch/config.json`
+  - `scp -F /dev/null 192.168.50.225:/srv/model-dispatch/.gitignore /srv/projects/model-dispatch/.gitignore`
+  - `scp -F /dev/null 192.168.50.225:/srv/model-dispatch/.cgcignore /srv/projects/model-dispatch/.cgcignore`
+  - `git init`
+  - `git add -N .`
+- Ran requested validation checks:
+  - `cd /srv/projects/model-dispatch && git status --short`
+  - `cd /srv/projects/model-dispatch && find . -maxdepth 2 -type f | sort`
+  - `cd /srv/projects/model-dispatch && git diff --check`
+  - `cd /srv/projects/homelab && git status --short`
+  - `cd /srv/projects/homelab && git diff --check`
+  - `cd /srv/projects/homelab && git diff --stat`
 
-## Results of checks
+Results:
 
 - Required docs were present and readable.
-- `git diff --check` passed with no output.
-- `git diff --stat` reported:
-  - `AGENT_STATUS.md | 175 ++++++++++++++++++---`
-  - `inventory/model-dispatch-live-inventory-2026-05-17.md | 65 +++++++-`
-  - `2 files changed, 212 insertions(+), 28 deletions(-)`
-- `git status --short` shows:
-  - `M AGENT_STATUS.md`
-  - `M inventory/model-dispatch-live-inventory-2026-05-17.md`
+- `/srv/projects/model-dispatch` `git status --short` showed intent-to-add
+  entries for the candidate files.
+- `/srv/projects/model-dispatch` `git diff --check` passed with no output.
+- `/srv/projects/homelab` `git status --short` initially showed:
   - `?? tools/`
-
-## Known risks or blockers
-
-- `config.json` appears safe for a private homelab source candidate based on the
-  completed safe review, but endpoint strings and served model names are
-  internal operational details and should be sanitized before public
-  publication.
-- `app.py` was identified by name only and may contain embedded operational
-  details that need review before source promotion.
-- The live `.git/` directory should not be copied into the Strix source repo
-  candidate by default.
-- `dispatch.log` and timestamped `.bak` files should be excluded by default.
-- Open WebUI currently depends on `model-dispatch`; this inventory does not
-  permit deployment changes.
-- Direct AMD routing and LiteLLM rollback must remain available until later
-  validated replacement slices.
-- No known blocker for this documentation-only slice.
-
-## User approval needed
-
-No approval is needed for this docs-only update.
-
-Approval will be needed before any live service change, OpenCode config change,
-MCP enablement, repo migration, Docker/systemd change, or `model-dispatch`
-deployment.
-
-## Recommended next action
-
-Review `inventory/model-dispatch-live-inventory-2026-05-17.md`, then decide
-whether to approve the next narrow step: creating a Strix source repo candidate
-from the reviewed include list only. Keep `config.json` private unless it is
-sanitized for public release.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active slice.
+- `/srv/projects/homelab` `git diff --check` passed with no output.
 
 ## Previous status — Slice 1 read-only live inventory
 
