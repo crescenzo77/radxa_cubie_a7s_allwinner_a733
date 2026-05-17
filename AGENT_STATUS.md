@@ -2,45 +2,56 @@
 
 ## Current status
 
-Slice 1 read-only live inventory of `thinkcentre:/srv/model-dispatch` is
-complete and ready for review.
+`config.json` safety review documentation is complete and ready for review
+before any Strix source repo candidate is created.
 
 ## Current task
 
-Document the live `model-dispatch` file shape for include/exclude planning
-without creating repos, copying files, restarting services, editing live config,
-or reading secret contents.
+Document the completed safe, non-secret-dumping review of
+`thinkcentre:/srv/model-dispatch/config.json` in the homelab repo without
+editing live files, copying files, creating repos, touching `tools/`, or
+committing.
 
 ## What changed
 
-- `inventory/model-dispatch-live-inventory-2026-05-17.md` was added with:
-  - purpose
-  - boundaries
-  - commands run
-  - directory/file inventory summary
-  - candidate source files to include later
-  - candidate docs/config/tests to include later
-  - candidate excludes
-  - unknowns requiring user review
-  - recommended include/exclude policy
-  - next operator approval brief
-- `AGENT_STATUS.md` was updated with this handoff while preserving older history
+- `inventory/model-dispatch-live-inventory-2026-05-17.md` now includes a
+  `config.json Safety Review` section documenting:
+  - full config values were not printed
+  - JSON shape only was printed
+  - redacted value preview showed strings only as lengths
+  - root keys observed:
+    - `listen_host`
+    - `listen_port`
+    - `models`
+    - `routes`
+    - `reserved_output_tokens`
+    - `token_estimate_divisor`
+  - `models` is a list of 8 entries
+  - model entries have keys:
+    - `id`
+    - `display`
+    - `role`
+    - `endpoint`
+    - `served_model`
+    - `context`
+  - `routes` has keys:
+    - `auto-local`
+    - `auto-coding-local`
+    - `auto-reasoning-local`
+    - `auto-small-local`
+  - suspicious-key scan only returned `reserved_output_tokens` and
+    `token_estimate_divisor`
+  - those keys are token-budget/routing settings, not credential fields
+  - no API key, password, secret, bearer, auth, credential, or token credential
+    field was shown
+  - `config.json` appears to be route/model registry configuration
+  - remaining risk is endpoint strings and served model names as internal
+    operational details
+- The inventory's unknowns and include policy were updated to say
+  `config.json` is acceptable for a private homelab source candidate but should
+  be sanitized before any public publication.
+- `AGENT_STATUS.md` was updated with this handoff while preserving prior history
   below.
-
-Live inventory highlights:
-
-- `/srv/model-dispatch` already contains a `.git/` directory.
-- Branch reported by read-only Git metadata: `main`.
-- Recent commit reported: `ef65a5c initialize model dispatch service repo`.
-- No Git remote was printed by `git remote -v`.
-- Non-`.git` top-level files observed by name/metadata:
-  - `.cgcignore`
-  - `.gitignore`
-  - `app.py`
-  - `config.json`
-  - timestamped `app.py.*.bak` files
-  - timestamped `config.json.*.bak` files
-  - `dispatch.log`
 
 ## What did not change
 
@@ -53,7 +64,8 @@ hidden automation, paid-provider fallback, model API calls, network calls, or
 
 No `/srv/projects/model-dispatch` repo was created. No
 `thinkcentre:/srv/git/model-dispatch.git` mirror was created. No
-`/srv/model-dispatch` files were copied. No file contents were printed.
+`/srv/model-dispatch` files were copied. No live files were edited. No commit
+was made.
 
 ## Files changed
 
@@ -63,20 +75,14 @@ No `/srv/projects/model-dispatch` repo was created. No
 ## Checks run
 
 - Read required context docs:
+  - `AGENTS.md`
+  - `CODEX_CONTEXT.md`
+  - `PROJECT_PLAN.md`
   - `CURRENT_SLICE.md`
-  - `inventory/model-dispatch-first-class-repo-plan.md`
-  - `inventory/baseline-2026-05-17.md`
-  - `ROUTING_INVENTORY.md`
+  - `DECISIONS.md`
   - `AGENT_STATUS.md`
-- Ran read-only remote inventory commands:
-  - `ssh thinkcentre 'find /srv/model-dispatch -maxdepth 4 -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
-  - `ssh -F /dev/null thinkcentre 'find /srv/model-dispatch -maxdepth 4 -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
-  - `ssh -F /dev/null 192.168.50.225 'find /srv/model-dispatch -maxdepth 4 -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
-  - `ssh -F /dev/null 192.168.50.225 'find /srv/model-dispatch -maxdepth 4 \( ... likely secret/log/cache name patterns ... \) -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
-  - `ssh -F /dev/null 192.168.50.225 'find /srv/model-dispatch -path /srv/model-dispatch/.git -prune -o -maxdepth 2 -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
-  - `ssh -F /dev/null 192.168.50.225 'git -C /srv/model-dispatch status --short && git -C /srv/model-dispatch branch --show-current && git -C /srv/model-dispatch log --oneline -5'`
-  - `ssh -F /dev/null 192.168.50.225 'git -C /srv/model-dispatch remote -v'`
-  - `ssh -F /dev/null 192.168.50.225 'find /srv/model-dispatch -path /srv/model-dispatch/.git -prune -o -type f -printf "%f\n" | awk ... | sort | uniq -c'`
+- Read target files:
+  - `inventory/model-dispatch-live-inventory-2026-05-17.md`
 - Ran requested post-edit checks:
   - `git diff --check`
   - `git diff --stat`
@@ -85,30 +91,22 @@ No `/srv/projects/model-dispatch` repo was created. No
 ## Results of checks
 
 - Required docs were present and readable.
-- Initial hostname SSH failed due local SSH config permissions, then DNS lookup
-  with `-F /dev/null` failed for hostname `thinkcentre`.
-- Read-only SSH using `192.168.50.225` succeeded.
-- The likely secret/log/cache name scan reported `dispatch.log` only.
-- No `.env`, obvious secret, token, key, database, sqlite, cache, virtualenv, or
-  `__pycache__` path was reported by name in the max-depth-4 scan.
-- `git -C /srv/model-dispatch status --short` printed no changes.
-- `git -C /srv/model-dispatch branch --show-current` printed `main`.
-- `git -C /srv/model-dispatch log --oneline -5` printed
-  `ef65a5c initialize model dispatch service repo`.
-- `git -C /srv/model-dispatch remote -v` printed no remotes.
 - `git diff --check` passed with no output.
-- `git diff --stat` reported tracked changes in `AGENT_STATUS.md`. The new
-  untracked live inventory file is visible in `git status --short` but not
-  included in tracked `git diff --stat` output until staged.
+- `git diff --stat` reported:
+  - `AGENT_STATUS.md | 175 ++++++++++++++++++---`
+  - `inventory/model-dispatch-live-inventory-2026-05-17.md | 65 +++++++-`
+  - `2 files changed, 212 insertions(+), 28 deletions(-)`
 - `git status --short` shows:
   - `M AGENT_STATUS.md`
-  - `?? inventory/model-dispatch-live-inventory-2026-05-17.md`
+  - `M inventory/model-dispatch-live-inventory-2026-05-17.md`
   - `?? tools/`
 
 ## Known risks or blockers
 
-- `config.json` was identified by name only and still needs user review for
-  secrets before any copy.
+- `config.json` appears safe for a private homelab source candidate based on the
+  completed safe review, but endpoint strings and served model names are
+  internal operational details and should be sanitized before public
+  publication.
 - `app.py` was identified by name only and may contain embedded operational
   details that need review before source promotion.
 - The live `.git/` directory should not be copied into the Strix source repo
@@ -132,12 +130,139 @@ deployment.
 
 Review `inventory/model-dispatch-live-inventory-2026-05-17.md`, then decide
 whether to approve the next narrow step: creating a Strix source repo candidate
-from the reviewed include list only. If `config.json` has not been manually
-reviewed safe, review it before copying it.
+from the reviewed include list only. Keep `config.json` private unless it is
+sanitized for public release.
 
 ## Archived Status History
 
 Older status entries remain below for continuity. They are not the active slice.
+
+## Previous status — Slice 1 read-only live inventory
+
+Slice 1 read-only live inventory of `thinkcentre:/srv/model-dispatch` was
+completed and made ready for review.
+
+Previous task:
+Document the live `model-dispatch` file shape for include/exclude planning
+without creating repos, copying files, restarting services, editing live config,
+or reading secret contents.
+
+What changed:
+
+- `inventory/model-dispatch-live-inventory-2026-05-17.md` was added with:
+  - purpose
+  - boundaries
+  - commands run
+  - directory/file inventory summary
+  - candidate source files to include later
+  - candidate docs/config/tests to include later
+  - candidate excludes
+  - unknowns requiring user review
+  - recommended include/exclude policy
+  - next operator approval brief
+- `AGENT_STATUS.md` was updated with that handoff while preserving older history
+  below.
+
+Live inventory highlights:
+
+- `/srv/model-dispatch` already contains a `.git/` directory.
+- Branch reported by read-only Git metadata: `main`.
+- Recent commit reported: `ef65a5c initialize model dispatch service repo`.
+- No Git remote was printed by `git remote -v`.
+- Non-`.git` top-level files observed by name/metadata:
+  - `.cgcignore`
+  - `.gitignore`
+  - `app.py`
+  - `config.json`
+  - timestamped `app.py.*.bak` files
+  - timestamped `config.json.*.bak` files
+  - `dispatch.log`
+
+What did not change:
+No live services, production configs, OpenCode config, MCP config, or
+`model-dispatch` runtime files were changed.
+
+No Docker state, systemd state, repo locations, scripts, daemons, watchers,
+hidden automation, paid-provider fallback, model API calls, network calls, or
+`tools/` files were changed.
+
+No `/srv/projects/model-dispatch` repo was created. No
+`thinkcentre:/srv/git/model-dispatch.git` mirror was created. No
+`/srv/model-dispatch` files were copied. No file contents were printed.
+
+Files changed:
+
+- `inventory/model-dispatch-live-inventory-2026-05-17.md`
+- `AGENT_STATUS.md`
+
+Checks run:
+
+- Read required context docs:
+  - `CURRENT_SLICE.md`
+  - `inventory/model-dispatch-first-class-repo-plan.md`
+  - `inventory/baseline-2026-05-17.md`
+  - `ROUTING_INVENTORY.md`
+  - `AGENT_STATUS.md`
+- Ran read-only remote inventory commands:
+  - `ssh thinkcentre 'find /srv/model-dispatch -maxdepth 4 -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
+  - `ssh -F /dev/null thinkcentre 'find /srv/model-dispatch -maxdepth 4 -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
+  - `ssh -F /dev/null 192.168.50.225 'find /srv/model-dispatch -maxdepth 4 -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
+  - `ssh -F /dev/null 192.168.50.225 'find /srv/model-dispatch -maxdepth 4 \( ... likely secret/log/cache name patterns ... \) -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
+  - `ssh -F /dev/null 192.168.50.225 'find /srv/model-dispatch -path /srv/model-dispatch/.git -prune -o -maxdepth 2 -printf "%y %s %TY-%Tm-%Td %TH:%TM %p\n" | sort'`
+  - `ssh -F /dev/null 192.168.50.225 'git -C /srv/model-dispatch status --short && git -C /srv/model-dispatch branch --show-current && git -C /srv/model-dispatch log --oneline -5'`
+  - `ssh -F /dev/null 192.168.50.225 'git -C /srv/model-dispatch remote -v'`
+  - `ssh -F /dev/null 192.168.50.225 'find /srv/model-dispatch -path /srv/model-dispatch/.git -prune -o -type f -printf "%f\n" | awk ... | sort | uniq -c'`
+- Ran requested post-edit checks:
+  - `git diff --check`
+  - `git diff --stat`
+  - `git status --short`
+
+Results:
+
+- Required docs were present and readable.
+- Initial hostname SSH failed due local SSH config permissions, then DNS lookup
+  with `-F /dev/null` failed for hostname `thinkcentre`.
+- Read-only SSH using `192.168.50.225` succeeded.
+- The likely secret/log/cache name scan reported `dispatch.log` only.
+- No `.env`, obvious secret, token, key, database, sqlite, cache, virtualenv, or
+  `__pycache__` path was reported by name in the max-depth-4 scan.
+- `git -C /srv/model-dispatch status --short` printed no changes.
+- `git -C /srv/model-dispatch branch --show-current` printed `main`.
+- `git -C /srv/model-dispatch log --oneline -5` printed
+  `ef65a5c initialize model dispatch service repo`.
+- `git -C /srv/model-dispatch remote -v` printed no remotes.
+- `git diff --check` passed with no output.
+- `git diff --stat` reported tracked changes in `AGENT_STATUS.md`. The new
+  untracked live inventory file is visible in `git status --short` but not
+  included in tracked `git diff --stat` output until staged.
+- `git status --short` showed:
+  - `M AGENT_STATUS.md`
+  - `?? inventory/model-dispatch-live-inventory-2026-05-17.md`
+  - `?? tools/`
+
+Known risks or blockers:
+
+- `config.json` was identified by name only and still needed user review for
+  secrets before any copy.
+- `app.py` was identified by name only and may contain embedded operational
+  details that need review before source promotion.
+- The live `.git/` directory should not be copied into the Strix source repo
+  candidate by default.
+- `dispatch.log` and timestamped `.bak` files should be excluded by default.
+- Open WebUI currently depends on `model-dispatch`; this inventory does not
+  permit deployment changes.
+- Direct AMD routing and LiteLLM rollback must remain available until later
+  validated replacement slices.
+- No known blocker for this documentation-only slice.
+
+User approval needed:
+No approval was needed for that docs-only update.
+
+Recommended next action:
+Review `inventory/model-dispatch-live-inventory-2026-05-17.md`, then decide
+whether to approve the next narrow step: creating a Strix source repo candidate
+from the reviewed include list only. If `config.json` has not been manually
+reviewed safe, review it before copying it.
 
 ## Previous status — Slice 1 repo preparation plan
 

@@ -112,6 +112,62 @@ These should be reviewed before copy. `config.json` may contain route
 definitions or endpoint URLs; it must be checked for secrets before being added
 to a public or shared repo.
 
+## config.json Safety Review
+
+A safe, non-secret-dumping review of
+`thinkcentre:/srv/model-dispatch/config.json` was completed before creating any
+Strix source repo candidate.
+
+Review boundaries:
+
+- Full config values were not printed.
+- JSON shape only was printed.
+- A redacted value preview was printed where strings were shown only as
+  lengths.
+- No live files were edited.
+- No files were copied.
+
+Observed root keys:
+
+- `listen_host`
+- `listen_port`
+- `models`
+- `routes`
+- `reserved_output_tokens`
+- `token_estimate_divisor`
+
+Observed structure:
+
+- `models` is a list of 8 entries.
+- Model entries have these keys:
+  - `id`
+  - `display`
+  - `role`
+  - `endpoint`
+  - `served_model`
+  - `context`
+- `routes` has these keys:
+  - `auto-local`
+  - `auto-coding-local`
+  - `auto-reasoning-local`
+  - `auto-small-local`
+
+The suspicious-key scan only returned:
+
+- `reserved_output_tokens`
+- `token_estimate_divisor`
+
+Those are token-budget/routing settings, not credential fields.
+
+No API key, password, secret, bearer, auth, credential, or token credential
+field was shown. Based on the safe review, `config.json` appears to be
+route/model registry configuration.
+
+Remaining risk:
+Endpoint strings and served model names are internal operational details.
+`config.json` is acceptable for a private homelab source candidate, but should
+not be published publicly without sanitization.
+
 ## Candidate Docs, Config, and Tests to Add Later
 
 The live tree does not currently show first-class docs or tests in the
@@ -176,7 +232,9 @@ No `.env`, obvious secret, token, key, database, sqlite, cache, virtualenv, or
 
 ## Unknowns Requiring User Review
 
-- Whether `config.json` contains only safe route definitions or also secrets.
+- Whether `config.json` should be sanitized before any public publication. The
+  safe review found route/model registry configuration and no credential fields,
+  but endpoint strings and served model names are internal operational details.
 - Whether `app.py` embeds endpoints, tokens, local paths, or operational details
   that should be moved into sanitized config.
 - Whether the existing live `.git` history should be preserved, archived, or
@@ -199,7 +257,8 @@ Recommended initial copy posture:
   - `app.py`
   - `.gitignore`
   - `.cgcignore`
-- Include `config.json` only after confirming it contains no secrets.
+- Include `config.json` for a private homelab source candidate based on the
+  completed safe review; sanitize it before any public publication.
 - Do not include `.git/` from the live runtime directory.
 - Do not include `dispatch.log`.
 - Do not include timestamped `.bak` files.
@@ -212,7 +271,7 @@ Suggested later copy include list after approval:
 
 ```text
 app.py
-config.json only if reviewed safe
+config.json for private homelab source candidate; sanitize before public release
 .gitignore
 .cgcignore
 ```
