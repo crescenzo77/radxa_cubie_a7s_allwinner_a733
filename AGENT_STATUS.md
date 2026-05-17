@@ -671,3 +671,30 @@ Operational note:
 - Keep `--reasoning off` for the normal visible-output Strix reasoning endpoint.
 - vLLM remains validated as an optional Docker testbed, but current Strix
   default should remain llama.cpp Vulkan.
+
+## 2026-05-17 — model-dispatch mirror documented in source repo
+
+The `model-dispatch` source repo on Strix is now mirrored to ThinkCentre.
+
+Source repo:
+- `strix:/srv/projects/model-dispatch`
+
+Mirror:
+- `thinkcentre:/srv/git/model-dispatch.git`
+
+Latest mirrored commit:
+- `7cbb1d9 document thinkcentre mirror creation`
+
+Previous source repo commits:
+- `02679e7 add local config smoke check`
+- `43b1f72 initialize model-dispatch source candidate`
+
+What did not change:
+- No deployment to live `/srv/model-dispatch`.
+- No `model-dispatch.service` restart or reload.
+- No Open WebUI, OpenCode, LiteLLM, Docker, systemd, MCP, reverse proxy, dashboard, monitoring, or observability change.
+
+Current boundary:
+- `model-dispatch` is now source-controlled on Strix and mirrored to ThinkCentre.
+- It remains review-only.
+- Deployment requires a later explicit deployment slice and rollback brief.
