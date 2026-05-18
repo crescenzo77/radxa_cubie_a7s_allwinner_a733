@@ -2,80 +2,93 @@
 
 ## Current status
 
-The active slice is `model-dispatch alias registry cleanup planning`.
+The active slice is `additive model-dispatch alias deployment planning`.
 
-This slice has a documentation-only correction to the alias registry plan. No
-live routing behavior was changed.
+This slice produced a documentation-only deployment plan for adding
+`model-dispatch` aliases later. No live routing behavior was changed.
 
 ## Current task
 
-Plan and document stable `model-dispatch` aliases before changing OpenCode or
-Continue.dev.
+Plan an additive `model-dispatch` alias deployment from the reviewed source
+repo. Do not change live routing yet.
 
 ## What changed
 
 - Updated `CURRENT_SLICE.md` so the active slice is
-  `model-dispatch alias registry cleanup planning`.
-- Created `inventory/model-dispatch-alias-registry-plan.md`.
-- Documented current exposed model IDs:
-  - current `model-dispatch` auto routes
-  - current explicit Strix and AMD model IDs
+  `additive model-dispatch alias deployment planning`.
+- Created `inventory/model-dispatch-additive-alias-deployment-plan.md`.
+- Documented current aliases and IDs to preserve:
+  - `auto-local`
+  - `auto-coding-local`
+  - `auto-reasoning-local`
+  - `auto-small-local`
+  - explicit Strix and AMD model IDs
   - OpenRouter-free model forms
-  - current direct OpenCode AMD IDs outside `model-dispatch`
-  - current Continue.dev LiteLLM-routed posture
-- Proposed stable aliases for:
+  - OpenCode direct AMD rollback IDs
+  - Continue.dev and LiteLLM rollback posture
+- Documented additive aliases to add:
   - `advisor`
   - `reasoning`
   - `coding`
   - `small`
   - `review`
   - `long-code`
-- Proposed explicit implementation aliases:
   - `local/strix-reasoning`
   - `local/strix-coder`
   - `local/amd-coder`
   - `local/amd-small`
   - `free-cloud`
-- Documented compatibility aliases to preserve.
-- Documented what must not change yet.
-- Documented validation required before any alias deployment.
-- Documented rollback expectations.
+- Documented required Open WebUI display names.
+- Documented exact future `config.json` additions for local aliases.
+- Documented that `free-cloud` needs a reviewed source change because current
+  `app.py` generates OpenRouter-free IDs outside `config.json`, and the current
+  validator rejects route targets not present in `models`.
+- Documented files eligible for a later alias deployment.
+- Documented backup path as `/srv/model-dispatch/backups/<timestamp>/`.
+- Documented future validation commands and rollback plan.
+- Documented non-goals.
 - Preserved prior slice history below in `CURRENT_SLICE.md`.
-- Added display-name requirements to clarify that stable alias IDs can hide
-  implementation details, while Open WebUI display names should be descriptive
-  enough for operators to infer model family, parameter size, quantization,
-  context window, and host or role where known.
 
 ## What did not change
 
 - No `/srv/model-dispatch` files were touched.
-- No `model-dispatch` source repo files were touched.
+- No `/srv/projects/model-dispatch` files were touched.
 - No service restart or reload was run.
-- No Docker, systemd, sudo, or network command was run.
+- No Docker, systemd, sudo, deployment, or live endpoint-changing command was
+  run.
 - No dashboard, monitoring, or observability deployment was started.
 - No OpenCode, Continue.dev, Open WebUI, LiteLLM, MCP, reverse proxy, or live
   service config was changed.
-- No benchmark code or `tools/` files were edited.
 - No commit was made.
 
 ## Files changed
 
 - `CURRENT_SLICE.md`
-- `inventory/model-dispatch-alias-registry-plan.md`
+- `inventory/model-dispatch-additive-alias-deployment-plan.md`
 - `AGENT_STATUS.md`
 
 ## Checks run
 
 - Read required homelab docs:
-  - `AGENTS.md`
+  - `AGENTS.md` from the user-provided repo instructions
   - `CODEX_CONTEXT.md`
-  - `PROJECT_PLAN.md`
   - `CURRENT_SLICE.md`
-  - `DECISIONS.md`
   - `AGENT_STATUS.md`
-  - `ROADMAP.md`
+  - `PROJECT_PLAN.md`
+  - `DECISIONS.md`
   - `HOMELAB_LAYOUT.md`
   - `WORKFLOW.md`
+  - `ROADMAP.md`
+- Read user-requested docs:
+  - `inventory/model-dispatch-alias-registry-plan.md`
+  - `inventory/model-dispatch-deployment-plan-2026-05-17.md`
+  - `inventory/model-dispatch-deployment-approval-brief-2026-05-17.md`
+  - `ROUTING_INVENTORY.md`
+- Inspected reviewed source repo docs/config only:
+  - `/srv/projects/model-dispatch/config.json`
+  - `/srv/projects/model-dispatch/ROUTING.md`
+  - `/srv/projects/model-dispatch/app.py`
+  - `/srv/projects/model-dispatch/tests/check_config.py`
 - Requested final checks:
   - `git diff --check`
   - `git diff --stat`
@@ -85,26 +98,30 @@ Continue.dev.
 
 - `git diff --check`: passed with no output.
 - `git diff --stat`:
-  - `AGENT_STATUS.md  | 135 ++++++++++++++++++++++---------------------`
-  - `CURRENT_SLICE.md | 171 ++++++++++++++++++-------------------------------------`
-  - `2 files changed, 125 insertions(+), 181 deletions(-)`
-  - Note: `git diff --stat` does not include the untracked alias registry plan
-    until it is staged or committed.
+  - `AGENT_STATUS.md  | 137 +++++++++++++++++++++++++++++++++++--------------------`
+  - `CURRENT_SLICE.md |  91 +++++++++++++++++++++++++++---------`
+  - `2 files changed, 157 insertions(+), 71 deletions(-)`
+  - Note: `git diff --stat` does not include the untracked additive alias
+    deployment plan until it is staged or committed.
 - `git status --short`:
   - `M AGENT_STATUS.md`
   - `M CURRENT_SLICE.md`
-  - `?? inventory/model-dispatch-alias-registry-plan.md`
+  - `?? inventory/model-dispatch-additive-alias-deployment-plan.md`
 
 ## Known risks or blockers
 
-- Alias deployment would affect model routing and needs a separate approved
-  slice.
+- Alias deployment would affect model routing and needs a separate explicit
+  deployment slice.
+- The `free-cloud` alias is not a pure `config.json` addition in the current
+  reviewed source shape. It needs a small reviewed source change so it maps
+  exactly to `openrouter-free/openrouter/auto-free-router` instead of falling
+  through to `auto-local`.
 - OpenCode and Continue.dev changes should remain separate explicit slices after
   aliases are validated.
 - Existing model IDs should be preserved during any first alias deployment to
   avoid breaking Open WebUI or rollback paths.
-- `long-code` needs validation against large-context workloads before it is
-  deployed.
+- `long-code` points to `auto-coding-local` for now and needs large-context
+  validation because the first target in that route is the AMD 32k coder.
 - Direct AMD routing and LiteLLM rollback should remain documented until
   replacement paths are validated.
 - Dashboards, monitoring, and observability remain deferred and require a
@@ -116,23 +133,45 @@ No approval is needed for this documentation-only planning slice because the
 user explicitly requested it.
 
 Approval will be needed before any live `model-dispatch` config change,
-OpenCode config change, Continue.dev config change, Open WebUI config change,
-MCP enablement, Docker/systemd change, monitoring/dashboard deployment, push, or
-deployment.
+source repo implementation change, OpenCode config change, Continue.dev config
+change, Open WebUI config change, MCP enablement, Docker/systemd change,
+monitoring/dashboard deployment, push, or deployment.
 
 ## Recommended next action
 
-Review the display-name requirements in
-`inventory/model-dispatch-alias-registry-plan.md`.
+Review `inventory/model-dispatch-additive-alias-deployment-plan.md`.
 
-If accepted, the next safe slice is additive `model-dispatch` alias deployment
-planning from the reviewed source repo, including exact validation and rollback
-command blocks. Do not change OpenCode or Continue.dev until alias deployment is
-validated separately.
+If accepted, the next safe slice is a reviewed source-repo implementation in
+`/srv/projects/model-dispatch` that adds the local aliases to `config.json` and
+implements an exact `free-cloud` alias without touching live
+`/srv/model-dispatch`.
 
 ## Archived Status History
 
 Older status entries remain below for continuity. They are not the active slice.
+
+## Previous status - alias registry cleanup planning
+
+The active slice was `model-dispatch alias registry cleanup planning`.
+
+That slice made a documentation-only correction to the alias registry plan. No
+live routing behavior was changed.
+
+What changed:
+
+- Updated `CURRENT_SLICE.md` so the active slice was
+  `model-dispatch alias registry cleanup planning`.
+- Created `inventory/model-dispatch-alias-registry-plan.md`.
+- Documented current exposed model IDs, proposed stable aliases,
+  compatibility aliases to preserve, validation requirements, rollback
+  expectations, and display-name requirements.
+
+What did not change:
+
+No `/srv/model-dispatch` files, source repo files, service state, Docker,
+systemd, sudo, OpenCode, Continue.dev, Open WebUI, LiteLLM, MCP, reverse proxy,
+dashboards, monitoring, observability, benchmark code, `tools/` files, or
+commits were changed.
 
 ## Previous status - deployment planning correction
 
