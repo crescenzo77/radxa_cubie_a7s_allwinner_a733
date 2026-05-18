@@ -2,6 +2,96 @@
 
 ## Current status
 
+The additive `model-dispatch` alias deployment has been recorded as completed.
+The record replaces the previous approval-brief wording with a deployment
+record for the live ThinkCentre service.
+
+## Current task
+
+Create the completed deployment record cleanly from scratch and append this
+handoff entry. Do not touch live `/srv/model-dispatch`, run deployment
+commands, restart services, or edit any client/router/dashboard/monitoring
+configuration.
+
+## What changed
+
+- Replaced
+  `inventory/model-dispatch-additive-alias-deployment-approval-brief-2026-05-18.md`
+  with a completed deployment record titled
+  `model-dispatch Additive Alias Deployment Record — 2026-05-18`.
+- Recorded that additive aliases were deployed to live ThinkCentre
+  `model-dispatch` from `strix:/srv/projects/model-dispatch` commit
+  `bf49923 add additive dispatch aliases`.
+- Recorded the mirror, live path, live service, backup path, deployed files,
+  validation results, non-changes, and rollback steps.
+- Updated this handoff.
+
+## What did not change
+
+- No `/srv/model-dispatch` files were touched.
+- No deployment command was run.
+- No service restart or reload was run.
+- No sudo, Docker, or systemd command was run.
+- No `/srv/projects/model-dispatch` files were touched.
+- No Open WebUI, OpenCode, Continue.dev, LiteLLM, dashboard, monitoring, or
+  observability config was changed.
+- No commit was made.
+
+## Files changed
+
+- `inventory/model-dispatch-additive-alias-deployment-approval-brief-2026-05-18.md`
+- `AGENT_STATUS.md`
+
+## Checks run
+
+- Read required homelab docs:
+  - `AGENTS.md` from the user-provided repo instructions
+  - `CODEX_CONTEXT.md`
+  - `CURRENT_SLICE.md`
+  - `AGENT_STATUS.md`
+  - `PROJECT_PLAN.md`
+  - `DECISIONS.md`
+- Requested final checks:
+  - `git diff --check`
+  - `git diff --stat`
+  - `git status --short`
+
+## Results of checks
+
+- `git diff --check`: passed with no output.
+- `git diff --stat`:
+  - `AGENT_STATUS.md | 94 ++++++++++++++++++++++++++++++++++++++++++++++++++++++---`
+  - `1 file changed, 90 insertions(+), 4 deletions(-)`
+  - Note: `git diff --stat` does not include the deployment record because it
+    is currently untracked.
+- `git status --short`:
+  - `M AGENT_STATUS.md`
+  - `?? inventory/model-dispatch-additive-alias-deployment-approval-brief-2026-05-18.md`
+
+## Known risks or blockers
+
+- `CURRENT_SLICE.md` still describes the prior planning-only slice. This task
+  intentionally edited only the two user-approved files, so the current-slice
+  document was not updated.
+- The deployment record is based on the completed deployment facts provided by
+  the user; no live endpoint or service validation was rerun in this task.
+
+## User approval needed
+
+No approval is needed for this documentation-only correction.
+
+## Recommended next action
+
+Review the two-file diff, then update `CURRENT_SLICE.md` in a separate explicit
+slice if the repo state should now treat the additive alias deployment as the
+current completed slice.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - additive alias deployment planning
+
 The active slice is `additive model-dispatch alias deployment planning`.
 
 This slice produced a documentation-only deployment plan for adding
@@ -145,10 +235,6 @@ If accepted, the next safe slice is a reviewed source-repo implementation in
 `/srv/projects/model-dispatch` that adds the local aliases to `config.json` and
 implements an exact `free-cloud` alias without touching live
 `/srv/model-dispatch`.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active slice.
 
 ## Previous status - alias registry cleanup planning
 
