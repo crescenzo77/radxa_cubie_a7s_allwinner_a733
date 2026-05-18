@@ -877,3 +877,39 @@ What did not change:
 - No OpenCode config change.
 - No LiteLLM config change.
 - No Docker, MCP, reverse proxy, dashboard, monitoring, or observability change.
+
+## 2026-05-18 — additive model-dispatch aliases implemented in source repo
+
+The additive alias implementation was completed in the `model-dispatch` source repo.
+
+Source repo:
+- `strix:/srv/projects/model-dispatch`
+
+Latest source commit:
+- `bf49923 add additive dispatch aliases`
+
+What changed in source:
+- Added additive aliases in `config.json`.
+- Added descriptive Open WebUI display names.
+- Added nested route expansion in `app.py`.
+- Added explicit `free-cloud` handling so it resolves to `openrouter-free/openrouter/auto-free-router`.
+- Updated `tests/check_config.py` to validate direct and expanded route targets.
+- Updated `TESTING.md`, `DECISIONS.md`, and `AGENT_STATUS.md`.
+
+Validation:
+- `git diff --check` passed.
+- `python3 -m py_compile app.py` passed.
+- `python3 -m json.tool config.json` passed.
+- `python3 tests/check_config.py` passed with `config check passed`.
+- Source repo was pushed to `thinkcentre/main`.
+
+What did not change:
+- No live `/srv/model-dispatch` deployment.
+- No `model-dispatch.service` restart or reload.
+- No Open WebUI config change.
+- No OpenCode config change.
+- No Continue.dev config change.
+- No Docker, systemd, MCP, dashboard, monitoring, or observability change.
+
+Next:
+- Prepare a deployment approval brief for the additive alias deployment before touching live `/srv/model-dispatch`.
