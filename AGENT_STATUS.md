@@ -2,23 +2,148 @@
 
 ## Current status
 
-The active slice is now `model-dispatch deployment planning only`.
+The `model-dispatch` first-class repo transition slice is complete.
 
-The deployment docs have been updated after a failed `model-dispatch`
-deployment attempt. The attempt started from
-`strix:/srv/projects/model-dispatch` and stopped before copying files because
-backup directory creation failed with `mkdir: Permission denied` at
-`/srv/model-dispatch-backups/<timestamp>`.
+The active state is now next-slice choice pending. No new implementation has
+started.
 
-The live service remained healthy, and no deployment completed.
+Completed state recorded:
+
+- Homelab latest commit:
+  `b0f5356 add OpenAI endpoint benchmark tool`.
+- Homelab pushed to `thinkcentre/main`.
+- `model-dispatch` source repo exists on Strix.
+- `model-dispatch` ThinkCentre mirror exists.
+- `model-dispatch` live deployment completed.
+- `model-dispatch.service` is healthy.
+- Systemd restart policy was fixed from `Restart=unless-stopped` to
+  `Restart=on-failure`.
+- OpenAI endpoint benchmark tool was committed at
+  `tools/bench/openai_endpoint_bench.py`.
+- Dashboard, monitoring, and observability deployment did not occur.
 
 ## Current task
 
-Correct the planning-only deployment docs after the failed backup-path attempt,
-without touching `tools/`, `/srv/model-dispatch`, live services, sudo, Docker,
-systemd, deployment commands, commits, or restarts.
+Mark the completed `model-dispatch` transition slice in homelab docs and
+prepare next-slice choices without touching `/srv/model-dispatch`, restarting
+services, running Docker/systemd/sudo, touching the `model-dispatch` repo,
+deploying dashboards or monitoring, or committing.
 
 ## What changed
+
+- Updated `CURRENT_SLICE.md` to mark the `model-dispatch` first-class repo
+  transition slice complete.
+- Added a completion summary covering:
+  - Strix source repo creation
+  - ThinkCentre mirror creation
+  - live deployment completion
+  - rollback backup location
+  - service validation
+  - systemd restart policy fix
+  - benchmark tool commit
+- Added next recommended slice choices:
+  - OpenCode through `model-dispatch`
+  - Strix dual-coder layout
+  - Continue.dev through `model-dispatch`
+  - `model-dispatch` alias registry cleanup
+  - pause and observe current deployment
+- Preserved prior slice history in `CURRENT_SLICE.md`.
+- Updated this handoff with the completed state and next action.
+
+## What did not change
+
+- No `/srv/model-dispatch` files were touched.
+- No `model-dispatch` source repo files were touched.
+- No service restart or reload was run.
+- No Docker, systemd, or sudo command was run.
+- No dashboard, monitoring, or observability deployment was started.
+- No OpenCode, Open WebUI, LiteLLM, MCP, reverse proxy, or live service config
+  was changed.
+- No benchmark code or `tools/` files were edited.
+- No commit was made.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+
+## Checks run
+
+- Read required homelab docs:
+  - `AGENTS.md`
+  - `CODEX_CONTEXT.md`
+  - `PROJECT_PLAN.md`
+  - `CURRENT_SLICE.md`
+  - `DECISIONS.md`
+  - `AGENT_STATUS.md`
+  - `ROADMAP.md`
+  - `HOMELAB_LAYOUT.md`
+  - `WORKFLOW.md`
+- Requested final checks:
+  - `git diff --check`
+  - `git diff --stat`
+  - `git status --short`
+
+## Results of checks
+
+- `git diff --check`: passed with no output.
+- `git diff --stat`:
+  - `AGENT_STATUS.md  | 219 ++++++++++++++++++++++++++++++++-----------------------`
+  - `CURRENT_SLICE.md | 202 +++++++++++++++++++++++++++++++-------------------`
+  - `2 files changed, 255 insertions(+), 166 deletions(-)`
+- `git status --short`:
+  - `M AGENT_STATUS.md`
+  - `M CURRENT_SLICE.md`
+
+## Known risks or blockers
+
+- The next slice has not been selected yet.
+- OpenCode, Continue.dev, and alias registry changes can affect model routing
+  and should remain separate explicit slices.
+- Direct AMD routing and LiteLLM rollback should remain documented until each
+  replacement path is validated.
+- Dashboards, monitoring, and observability remain deferred and require a
+  separate explicit slice and operator approval.
+
+## User approval needed
+
+No approval is needed for this documentation-only slice completion update
+because the user explicitly requested it.
+
+Approval will be needed before any live service change, OpenCode config change,
+Open WebUI config change, MCP enablement, repo migration, Docker/systemd
+change, monitoring/dashboard deployment, push, or `model-dispatch` deployment.
+
+## Recommended next action
+
+Choose the next slice before implementation.
+
+Recommended conservative choice:
+
+- Pause and observe current deployment.
+
+Recommended routing-continuation choice:
+
+- `model-dispatch` alias registry cleanup before changing OpenCode or
+  Continue.dev client configuration.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active slice.
+
+## Previous status - deployment planning correction
+
+The active slice was `model-dispatch deployment planning only`.
+
+The deployment docs were updated after a failed `model-dispatch` deployment
+attempt. The attempt started from `strix:/srv/projects/model-dispatch` and
+stopped before copying files because backup directory creation failed with
+`mkdir: Permission denied` at `/srv/model-dispatch-backups/<timestamp>`.
+
+The live service remained healthy, and no deployment completed during that
+attempt.
+
+What changed:
 
 - Updated `inventory/model-dispatch-deployment-plan-2026-05-17.md` to:
   - replace `/srv/model-dispatch-backups/<timestamp>` with
@@ -31,23 +156,10 @@ systemd, deployment commands, commits, or restarts.
 - Updated `inventory/model-dispatch-deployment-approval-brief-2026-05-17.md`
   to use `/srv/model-dispatch/backups/<timestamp>` for the backup destination
   and rollback reference.
-- Updated this handoff.
 
-## What did not change
+What did not change:
 
-No deployment completed.
-
-The failed deployment attempt stopped before file copy.
-
-Validation after failure showed:
-
-- `http://192.168.50.225:4010/health` returned ok
-- live `/srv/model-dispatch/app.py` timestamp remained `2026-05-13 09:39`
-- live `/srv/model-dispatch/config.json` timestamp remained
-  `2026-05-11 11:33`
-- `/srv` is root-owned
-- `/srv/model-dispatch` is owned by `enzo`
-- `/srv/model-dispatch-backups` did not exist
+No deployment completed. The failed deployment attempt stopped before file copy.
 
 No live services, production configs, OpenCode config, Open WebUI config, MCP
 config, Docker state, systemd state, reverse proxy settings, SearXNG settings,
@@ -65,82 +177,7 @@ No `/srv/model-dispatch` files were edited.
 
 No homelab commit was made.
 
-Dashboards, monitoring, and observability remain deferred.
-
-## Files changed
-
-- `inventory/model-dispatch-deployment-plan-2026-05-17.md`
-- `inventory/model-dispatch-deployment-approval-brief-2026-05-17.md`
-- `AGENT_STATUS.md`
-
-## Checks run
-
-- Read required homelab docs:
-  - `CODEX_CONTEXT.md`
-  - `PROJECT_PLAN.md`
-  - `CURRENT_SLICE.md`
-  - `DECISIONS.md`
-  - `AGENT_STATUS.md`
-- Read target deployment docs:
-  - `inventory/model-dispatch-deployment-plan-2026-05-17.md`
-  - `inventory/model-dispatch-deployment-approval-brief-2026-05-17.md`
-- Requested homelab validation checks:
-  - `git diff --check`
-  - `git diff --stat`
-  - `git status --short`
-
-## Results of checks
-
-- `git diff --check`: passed with no output.
-- `git diff --stat`: reported:
-  - `AGENT_STATUS.md | 111 +++++++++++----------`
-  - `inventory/model-dispatch-deployment-approval-brief-2026-05-17.md | 9 +-`
-  - `inventory/model-dispatch-deployment-plan-2026-05-17.md | 28 ++++--`
-  - `3 files changed, 86 insertions(+), 62 deletions(-)`
-- `git status --short` showed:
-  - `M AGENT_STATUS.md`
-  - `M inventory/model-dispatch-deployment-approval-brief-2026-05-17.md`
-  - `M inventory/model-dispatch-deployment-plan-2026-05-17.md`
-  - `?? tools/`
-
-Note: `tools/` was already untracked and was not touched.
-
-## Known risks or blockers
-
-- Open WebUI currently depends on the live ThinkCentre `model-dispatch`;
-  deployment mistakes could interrupt the active advisor/planning surface.
-- The previous `/srv/model-dispatch-backups/<timestamp>` backup destination is
-  invalid without elevated permissions because `/srv` is root-owned.
-- The corrected backup path is
-  `/srv/model-dispatch/backups/<timestamp>`.
-- The Strix source repo preserves live runtime path assumptions and remains
-  review-only until a later approved deployment slice.
-- OpenRouter-free fail-closed behavior must be preserved during any future
-  deployment; paid OpenRouter exposure remains forbidden.
-- Direct AMD routing and LiteLLM rollback remain available until later
-  validated replacement slices.
-- Dashboards, monitoring, and observability remain deferred and require a
-  separate explicit slice and approval.
-
-## User approval needed
-
-No approval is needed for this documentation-only correction because the user
-explicitly requested it.
-
-Approval will be needed before any live service change, OpenCode config change,
-Open WebUI config change, MCP enablement, repo migration, Docker/systemd
-change, monitoring/dashboard deployment, push, or `model-dispatch` deployment.
-
-## Recommended next action
-
-Review the documentation diff. The next safe deployment path is to use
-`/srv/model-dispatch/backups/<timestamp>` as the backup destination in any
-future approval brief and command block, then stop for operator approval before
-running live commands.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active slice.
+Dashboards, monitoring, and observability remained deferred.
 
 ## Previous status - local smoke-check scaffold
 
