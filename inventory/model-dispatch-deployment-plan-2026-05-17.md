@@ -26,11 +26,21 @@ this deployment plan.
 | Live port | `4010` |
 | Live OpenAI-compatible base URL | `http://192.168.50.225:4010/v1` |
 | Current Open WebUI target | `http://192.168.50.225:4010/v1` |
-| Deployment status | No source-repo deployment has occurred |
+| Deployment status | A deployment attempt stopped before file copy; no live files were changed |
 
 The source repo was prepared from reviewed live files and remains separate from
 the live runtime path. The live service path is still the runtime authority
 until a later explicit deployment approval.
+
+An attempted deployment from `strix:/srv/projects/model-dispatch` stopped while
+creating the backup directory. The attempted backup path
+`/srv/model-dispatch-backups/<timestamp>` failed with `mkdir: Permission
+denied` because `/srv` is root-owned and `/srv/model-dispatch-backups` did not
+exist. Validation after the failure showed the live health endpoint still
+returned ok, the live `/srv/model-dispatch/app.py` timestamp remained
+`2026-05-13 09:39`, and the live `/srv/model-dispatch/config.json` timestamp
+remained `2026-05-11 11:33`. The deployment copy did not occur, and no live
+files were changed during that failed attempt.
 
 ## Exact Non-Goals
 
@@ -158,9 +168,15 @@ Before a future deployment, create a timestamped backup of only the live runtime
 files required for rollback. Do not include logs, caches, secrets, or generated
 runtime data in the source repo.
 
-The backup should stay on ThinkCentre under an operator-approved backup
-location such as `/srv/model-dispatch-backups/`. The exact timestamped path
-must be recorded in `AGENT_STATUS.md` before deployment proceeds.
+The backup should stay on ThinkCentre inside the existing live service path,
+under `/srv/model-dispatch/backups/<timestamp>`. This keeps the backup under
+the `enzo`-owned `/srv/model-dispatch` directory. The earlier proposed
+`/srv/model-dispatch-backups/<timestamp>` path failed during a deployment
+attempt because `/srv` is root-owned and the backup directory could not be
+created without elevated permissions.
+
+The exact timestamped path must be recorded in `AGENT_STATUS.md` before
+deployment proceeds.
 
 The backup must include:
 
@@ -188,7 +204,7 @@ this slice.
 set -euo pipefail
 
 STAMP="$(date +%Y%m%d-%H%M%S)"
-BACKUP_DIR="/srv/model-dispatch-backups/${STAMP}"
+BACKUP_DIR="/srv/model-dispatch/backups/${STAMP}"
 
 ssh thinkcentre "mkdir -p '${BACKUP_DIR}'"
 ssh thinkcentre "cp -a /srv/model-dispatch/app.py '${BACKUP_DIR}/app.py'"
@@ -218,7 +234,7 @@ slice. Replace `<STAMP>` with the backup timestamp recorded during deployment.
 # NOT RUN - future operator-approved rollback only
 set -euo pipefail
 
-BACKUP_DIR="/srv/model-dispatch-backups/<STAMP>"
+BACKUP_DIR="/srv/model-dispatch/backups/<STAMP>"
 
 ssh thinkcentre "test -f '${BACKUP_DIR}/app.py'"
 ssh thinkcentre "test -f '${BACKUP_DIR}/config.json'"

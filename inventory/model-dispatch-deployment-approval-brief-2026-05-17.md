@@ -51,7 +51,12 @@ Back up the current live runtime files before copying anything:
 
 Backup destination:
 
-- `/srv/model-dispatch-backups/<timestamp>/`
+- `/srv/model-dispatch/backups/<timestamp>/`
+
+The earlier `/srv/model-dispatch-backups/<timestamp>/` destination failed at
+backup directory creation with `mkdir: Permission denied` because `/srv` is
+root-owned and `/srv/model-dispatch-backups` did not exist. The corrected
+destination stays under the `enzo`-owned live service directory.
 
 ## Deployment commands
 
@@ -64,7 +69,7 @@ To be run only after explicit approval:
 
 ## Rollback
 
-Restore the backed-up files from `/srv/model-dispatch-backups/<timestamp>/`, validate Python and JSON, then restart `model-dispatch.service`.
+Restore the backed-up files from `/srv/model-dispatch/backups/<timestamp>/`, validate Python and JSON, then restart `model-dispatch.service`.
 
 ## Validation
 
