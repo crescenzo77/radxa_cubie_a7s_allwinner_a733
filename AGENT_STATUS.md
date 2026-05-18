@@ -2,69 +2,66 @@
 
 ## Current status
 
-The `model-dispatch` first-class repo transition slice is complete.
+The active slice is `model-dispatch alias registry cleanup planning`.
 
-The active state is now next-slice choice pending. No new implementation has
-started.
-
-Completed state recorded:
-
-- Homelab latest commit:
-  `b0f5356 add OpenAI endpoint benchmark tool`.
-- Homelab pushed to `thinkcentre/main`.
-- `model-dispatch` source repo exists on Strix.
-- `model-dispatch` ThinkCentre mirror exists.
-- `model-dispatch` live deployment completed.
-- `model-dispatch.service` is healthy.
-- Systemd restart policy was fixed from `Restart=unless-stopped` to
-  `Restart=on-failure`.
-- OpenAI endpoint benchmark tool was committed at
-  `tools/bench/openai_endpoint_bench.py`.
-- Dashboard, monitoring, and observability deployment did not occur.
+This slice has a documentation-only correction to the alias registry plan. No
+live routing behavior was changed.
 
 ## Current task
 
-Mark the completed `model-dispatch` transition slice in homelab docs and
-prepare next-slice choices without touching `/srv/model-dispatch`, restarting
-services, running Docker/systemd/sudo, touching the `model-dispatch` repo,
-deploying dashboards or monitoring, or committing.
+Plan and document stable `model-dispatch` aliases before changing OpenCode or
+Continue.dev.
 
 ## What changed
 
-- Updated `CURRENT_SLICE.md` to mark the `model-dispatch` first-class repo
-  transition slice complete.
-- Added a completion summary covering:
-  - Strix source repo creation
-  - ThinkCentre mirror creation
-  - live deployment completion
-  - rollback backup location
-  - service validation
-  - systemd restart policy fix
-  - benchmark tool commit
-- Added next recommended slice choices:
-  - OpenCode through `model-dispatch`
-  - Strix dual-coder layout
-  - Continue.dev through `model-dispatch`
-  - `model-dispatch` alias registry cleanup
-  - pause and observe current deployment
-- Preserved prior slice history in `CURRENT_SLICE.md`.
-- Updated this handoff with the completed state and next action.
+- Updated `CURRENT_SLICE.md` so the active slice is
+  `model-dispatch alias registry cleanup planning`.
+- Created `inventory/model-dispatch-alias-registry-plan.md`.
+- Documented current exposed model IDs:
+  - current `model-dispatch` auto routes
+  - current explicit Strix and AMD model IDs
+  - OpenRouter-free model forms
+  - current direct OpenCode AMD IDs outside `model-dispatch`
+  - current Continue.dev LiteLLM-routed posture
+- Proposed stable aliases for:
+  - `advisor`
+  - `reasoning`
+  - `coding`
+  - `small`
+  - `review`
+  - `long-code`
+- Proposed explicit implementation aliases:
+  - `local/strix-reasoning`
+  - `local/strix-coder`
+  - `local/amd-coder`
+  - `local/amd-small`
+  - `free-cloud`
+- Documented compatibility aliases to preserve.
+- Documented what must not change yet.
+- Documented validation required before any alias deployment.
+- Documented rollback expectations.
+- Preserved prior slice history below in `CURRENT_SLICE.md`.
+- Added display-name requirements to clarify that stable alias IDs can hide
+  implementation details, while Open WebUI display names should be descriptive
+  enough for operators to infer model family, parameter size, quantization,
+  context window, and host or role where known.
 
 ## What did not change
 
 - No `/srv/model-dispatch` files were touched.
 - No `model-dispatch` source repo files were touched.
 - No service restart or reload was run.
-- No Docker, systemd, or sudo command was run.
+- No Docker, systemd, sudo, or network command was run.
 - No dashboard, monitoring, or observability deployment was started.
-- No OpenCode, Open WebUI, LiteLLM, MCP, reverse proxy, or live service config
-  was changed.
+- No OpenCode, Continue.dev, Open WebUI, LiteLLM, MCP, reverse proxy, or live
+  service config was changed.
 - No benchmark code or `tools/` files were edited.
 - No commit was made.
 
 ## Files changed
 
 - `CURRENT_SLICE.md`
+- `inventory/model-dispatch-alias-registry-plan.md`
 - `AGENT_STATUS.md`
 
 ## Checks run
@@ -88,44 +85,50 @@ deploying dashboards or monitoring, or committing.
 
 - `git diff --check`: passed with no output.
 - `git diff --stat`:
-  - `AGENT_STATUS.md  | 219 ++++++++++++++++++++++++++++++++-----------------------`
-  - `CURRENT_SLICE.md | 202 +++++++++++++++++++++++++++++++-------------------`
-  - `2 files changed, 255 insertions(+), 166 deletions(-)`
+  - `AGENT_STATUS.md  | 135 ++++++++++++++++++++++---------------------`
+  - `CURRENT_SLICE.md | 171 ++++++++++++++++++-------------------------------------`
+  - `2 files changed, 125 insertions(+), 181 deletions(-)`
+  - Note: `git diff --stat` does not include the untracked alias registry plan
+    until it is staged or committed.
 - `git status --short`:
   - `M AGENT_STATUS.md`
   - `M CURRENT_SLICE.md`
+  - `?? inventory/model-dispatch-alias-registry-plan.md`
 
 ## Known risks or blockers
 
-- The next slice has not been selected yet.
-- OpenCode, Continue.dev, and alias registry changes can affect model routing
-  and should remain separate explicit slices.
-- Direct AMD routing and LiteLLM rollback should remain documented until each
-  replacement path is validated.
+- Alias deployment would affect model routing and needs a separate approved
+  slice.
+- OpenCode and Continue.dev changes should remain separate explicit slices after
+  aliases are validated.
+- Existing model IDs should be preserved during any first alias deployment to
+  avoid breaking Open WebUI or rollback paths.
+- `long-code` needs validation against large-context workloads before it is
+  deployed.
+- Direct AMD routing and LiteLLM rollback should remain documented until
+  replacement paths are validated.
 - Dashboards, monitoring, and observability remain deferred and require a
   separate explicit slice and operator approval.
 
 ## User approval needed
 
-No approval is needed for this documentation-only slice completion update
-because the user explicitly requested it.
+No approval is needed for this documentation-only planning slice because the
+user explicitly requested it.
 
-Approval will be needed before any live service change, OpenCode config change,
-Open WebUI config change, MCP enablement, repo migration, Docker/systemd
-change, monitoring/dashboard deployment, push, or `model-dispatch` deployment.
+Approval will be needed before any live `model-dispatch` config change,
+OpenCode config change, Continue.dev config change, Open WebUI config change,
+MCP enablement, Docker/systemd change, monitoring/dashboard deployment, push, or
+deployment.
 
 ## Recommended next action
 
-Choose the next slice before implementation.
+Review the display-name requirements in
+`inventory/model-dispatch-alias-registry-plan.md`.
 
-Recommended conservative choice:
-
-- Pause and observe current deployment.
-
-Recommended routing-continuation choice:
-
-- `model-dispatch` alias registry cleanup before changing OpenCode or
-  Continue.dev client configuration.
+If accepted, the next safe slice is additive `model-dispatch` alias deployment
+planning from the reviewed source repo, including exact validation and rollback
+command blocks. Do not change OpenCode or Continue.dev until alias deployment is
+validated separately.
 
 ## Archived Status History
 

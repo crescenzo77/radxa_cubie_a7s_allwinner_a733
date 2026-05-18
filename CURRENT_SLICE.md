@@ -1,120 +1,61 @@
 # Current Slice
 
-## Active: next-slice choice pending
+## Active: model-dispatch alias registry cleanup planning
 
-## Completed Slice: model-dispatch first-class repo transition
+## Goal
 
-The `model-dispatch` transition slice is complete.
+Plan and document stable `model-dispatch` model aliases before changing
+OpenCode or Continue.dev.
 
-This slice moved `model-dispatch` from incidental live-service files toward a
-first-class reviewed repo, mirror, and deployment workflow, then validated the
-live service without adding dashboard, monitoring, or observability deployment.
+This slice is planning only. It must not change live routing behavior.
 
-## Completion Summary
+## Scope
 
-- Source repo created:
-  `strix:/srv/projects/model-dispatch`.
-- ThinkCentre mirror created:
-  `thinkcentre:/srv/git/model-dispatch.git`.
-- Live deployment completed to:
-  `thinkcentre:/srv/model-dispatch`.
-- Rollback backup location:
-  `/srv/model-dispatch/backups/<timestamp>`.
-- Service validation completed:
-  `model-dispatch.service` is healthy after deployment.
-- Systemd restart policy fixed:
-  `Restart=unless-stopped` was replaced with `Restart=on-failure`.
-- Benchmark tool committed:
-  `tools/bench/openai_endpoint_bench.py`.
-- Homelab latest commit:
-  `b0f5356 add OpenAI endpoint benchmark tool`.
-- Homelab pushed to:
-  `thinkcentre/main`.
+Create a registry cleanup plan that documents:
 
-## Explicit Non-Changes
+- Current exposed model IDs.
+- Proposed stable aliases.
+- Compatibility aliases to preserve.
+- Role aliases for advisor, reasoning, coding, small, review, and long-code.
+- What must not change yet.
+- Validation required before any alias deployment.
+- Rollback expectations.
 
-- No dashboard deployment occurred.
-- No monitoring deployment occurred.
-- No observability deployment occurred.
-- No new implementation is active until the next slice is chosen.
+## Files Expected to Change
 
-## Recommended Next Slice Choices
+- `CURRENT_SLICE.md`
+- `inventory/model-dispatch-alias-registry-plan.md`
+- `AGENT_STATUS.md`
 
-### Option 1: OpenCode Through model-dispatch
+## Acceptance Criteria
 
-Move OpenCode from direct AMD endpoint definitions toward stable
-`model-dispatch` aliases.
+- `CURRENT_SLICE.md` identifies the active slice as
+  `model-dispatch alias registry cleanup planning`.
+- `inventory/model-dispatch-alias-registry-plan.md` exists and covers the
+  required alias planning sections.
+- The plan preserves current behavior and explicitly says no live
+  `model-dispatch` config changes happen in this slice.
+- OpenCode direct AMD routing remains unchanged.
+- Continue.dev's current documented route remains unchanged.
+- `/srv/model-dispatch` is not edited.
+- No services are restarted.
+- No dashboards, monitoring, or observability are deployed.
+- `AGENT_STATUS.md` is updated with the handoff.
+- The requested checks are run:
+  - `git diff --check`
+  - `git diff --stat`
+  - `git status --short`
 
-Why this fits:
-- It advances the central routing decision.
-- It reduces duplicated model endpoint configuration.
-- It directly affects the main coding surface.
+## Scope Expansion Risks
 
-Risks:
-- OpenCode is the active coding tool, so config mistakes could interrupt the
-  normal coder workflow.
-- Direct AMD routing must remain documented as rollback until validated.
-
-### Option 2: Strix Dual-Coder Layout
-
-Document and validate Strix as a source/development/code-graph/reasoning host
-with a clear dual-coder layout.
-
-Why this fits:
-- It supports the target host-role split.
-- It keeps AMD available for mode-switched GPU workloads.
-
-Risks:
-- This can drift into architecture changes if it starts moving live services or
-  enabling new background tooling.
-
-### Option 3: Continue.dev Through model-dispatch
-
-Move Continue.dev away from LiteLLM-routed model IDs and toward stable
-`model-dispatch` aliases.
-
-Why this fits:
-- It reduces LiteLLM dependency in another client.
-- It aligns editor-side review with the central routing layer.
-
-Risks:
-- Continue.dev is optional but user-facing; config changes should be reversible.
-- Existing LiteLLM-routed IDs should remain rollback until validation.
-
-### Option 4: model-dispatch Alias Registry Cleanup
-
-Clean up and document the stable alias registry before moving more clients.
-
-Why this fits:
-- It improves the foundation before touching OpenCode or Continue.dev.
-- It can define advisor, coding, reasoning, small, training, and creative
-  aliases clearly.
-
-Risks:
-- Alias changes can break clients if existing names are removed too early.
-- This should stay registry-focused and avoid live deployment unless separately
-  approved.
-
-### Option 5: Pause and Observe Current Deployment
-
-Make no further routing or client changes yet. Observe the current
-`model-dispatch` deployment and only document findings.
-
-Why this fits:
-- It is the most conservative next slice.
-- It gives the live deployment time to prove stable.
-
-Risks:
-- It delays reducing duplicated client routing.
-- It may leave OpenCode and Continue.dev on older paths longer than necessary.
-
-## Recommended Next Action
-
-Choose the next slice before implementation. The conservative recommendation is
-Option 5, `pause and observe current deployment`, if live stability is the top
-priority. If continuing the routing migration is preferred, choose Option 4,
-`model-dispatch alias registry cleanup`, before changing OpenCode or
-Continue.dev clients.
+- Deploying aliases during this slice would change model routing and is out of
+  scope.
+- Editing OpenCode or Continue.dev would bundle client migration with registry
+  planning and is out of scope.
+- Removing existing model IDs too early could break Open WebUI or future
+  rollback paths.
+- Adding dashboards, monitoring, observability, automation, paid fallback, or
+  hidden supervision would violate the standing constraints.
 
 ## Prior Slice History
 
