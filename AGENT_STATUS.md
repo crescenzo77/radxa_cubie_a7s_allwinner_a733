@@ -734,3 +734,41 @@ Current boundary:
 - `model-dispatch` is now source-controlled on Strix and mirrored to ThinkCentre.
 - It remains review-only.
 - Deployment requires a later explicit deployment slice and rollback brief.
+
+## 2026-05-17 — model-dispatch deployment documented in source repo
+
+The live `model-dispatch` deployment was completed and documented in the `model-dispatch` source repo.
+
+Source repo:
+- `strix:/srv/projects/model-dispatch`
+
+Latest source repo commit:
+- `54e89c5 document live deployment`
+
+Mirror:
+- `thinkcentre:/srv/git/model-dispatch.git`
+
+Live path:
+- `thinkcentre:/srv/model-dispatch`
+
+Backup:
+- `/srv/model-dispatch/backups/20260517-212158`
+
+Validation:
+- `/health` returned `{"status": "ok"}`.
+- `/v1/models` returned local routes and OpenRouter-free entries.
+- `/v1/chat/completions` using `auto-local` returned a valid OpenAI-compatible response.
+- `auto-local` selected `amd-coder-qwen3-coder-30b-32k`.
+- Test response content was `OK`.
+
+Cleanup:
+- Removed accidental empty `main` file from `/srv/projects/model-dispatch` before commit.
+
+What did not change:
+- No Open WebUI config change.
+- No OpenCode config change.
+- No LiteLLM config change.
+- No Docker, MCP, reverse proxy, dashboard, monitoring, or observability change.
+
+Known follow-up:
+- `model-dispatch.service` has a pre-existing invalid `Restart=unless-stopped` warning. Consider a separate tiny service-unit fix later.
