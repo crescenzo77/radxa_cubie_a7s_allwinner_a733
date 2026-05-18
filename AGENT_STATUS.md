@@ -2,44 +2,53 @@
 
 ## Current status
 
-The additive `model-dispatch` alias deployment has been recorded as completed.
-The record replaces the previous approval-brief wording with a deployment
-record for the live ThinkCentre service.
+The repo is now in `next-slice choice pending` state after the additive
+`model-dispatch` alias deployment completed.
 
 ## Current task
 
-Create the completed deployment record cleanly from scratch and append this
-handoff entry. Do not touch live `/srv/model-dispatch`, run deployment
-commands, restart services, or edit any client/router/dashboard/monitoring
-configuration.
+Update `CURRENT_SLICE.md` to mark the additive alias deployment complete,
+record validation and the backup path, list the next slice options, and update
+this handoff. Do not touch `/srv/model-dispatch`, restart services, edit the
+`model-dispatch` repo, change client config, deploy dashboards/monitoring, or
+commit.
 
 ## What changed
 
-- Replaced
-  `inventory/model-dispatch-additive-alias-deployment-approval-brief-2026-05-18.md`
-  with a completed deployment record titled
-  `model-dispatch Additive Alias Deployment Record — 2026-05-18`.
-- Recorded that additive aliases were deployed to live ThinkCentre
-  `model-dispatch` from `strix:/srv/projects/model-dispatch` commit
-  `bf49923 add additive dispatch aliases`.
-- Recorded the mirror, live path, live service, backup path, deployed files,
-  validation results, non-changes, and rollback steps.
+- Updated `CURRENT_SLICE.md` active state to `next-slice choice pending`.
+- Added a completed slice section for
+  `additive model-dispatch alias deployment`.
+- Recorded the deployment record path:
+  `inventory/model-dispatch-additive-alias-deployment-approval-brief-2026-05-18.md`.
+- Recorded the backup path:
+  `/srv/model-dispatch/backups/20260518-093534`.
+- Recorded completed validation:
+  - `/health` OK.
+  - `/v1/models` listed `advisor`, `reasoning`, `coding`, `small`, `review`,
+    `long-code`, `local/strix-reasoning`, `local/strix-coder`,
+    `local/amd-coder`, `local/amd-small`, and `free-cloud`.
+  - `advisor` worked through `/v1/chat/completions`.
+  - `local/amd-coder` worked through `/v1/chat/completions`.
+- Listed next slice options:
+  - OpenCode through `model-dispatch`
+  - Continue.dev through `model-dispatch`
+  - observe current deployment
 - Updated this handoff.
 
 ## What did not change
 
 - No `/srv/model-dispatch` files were touched.
-- No deployment command was run.
 - No service restart or reload was run.
-- No sudo, Docker, or systemd command was run.
 - No `/srv/projects/model-dispatch` files were touched.
-- No Open WebUI, OpenCode, Continue.dev, LiteLLM, dashboard, monitoring, or
-  observability config was changed.
+- No Open WebUI config was changed.
+- No OpenCode config was changed.
+- No Continue.dev config was changed.
+- No dashboard, monitoring, or observability deployment was started.
 - No commit was made.
 
 ## Files changed
 
-- `inventory/model-dispatch-additive-alias-deployment-approval-brief-2026-05-18.md`
+- `CURRENT_SLICE.md`
 - `AGENT_STATUS.md`
 
 ## Checks run
@@ -60,31 +69,29 @@ configuration.
 
 - `git diff --check`: passed with no output.
 - `git diff --stat`:
-  - `AGENT_STATUS.md | 94 ++++++++++++++++++++++++++++++++++++++++++++++++++++++---`
-  - `1 file changed, 90 insertions(+), 4 deletions(-)`
-  - Note: `git diff --stat` does not include the deployment record because it
-    is currently untracked.
+  - `AGENT_STATUS.md  |  77 ++++++++++++++++--------------`
+  - `CURRENT_SLICE.md | 142 ++++++++++++++++++++++++++++++++++++++++++-------------`
+  - `2 files changed, 150 insertions(+), 69 deletions(-)`
 - `git status --short`:
   - `M AGENT_STATUS.md`
-  - `?? inventory/model-dispatch-additive-alias-deployment-approval-brief-2026-05-18.md`
+  - `M CURRENT_SLICE.md`
 
 ## Known risks or blockers
 
-- `CURRENT_SLICE.md` still describes the prior planning-only slice. This task
-  intentionally edited only the two user-approved files, so the current-slice
-  document was not updated.
-- The deployment record is based on the completed deployment facts provided by
-  the user; no live endpoint or service validation was rerun in this task.
+- OpenCode and Continue.dev migration remain separate next-slice options and
+  were not started.
+- Deployment validation is recorded from the user-provided completed facts; no
+  live endpoint validation was rerun in this task.
 
 ## User approval needed
 
-No approval is needed for this documentation-only correction.
+No approval is needed for this documentation-only status update.
 
 ## Recommended next action
 
-Review the two-file diff, then update `CURRENT_SLICE.md` in a separate explicit
-slice if the repo state should now treat the additive alias deployment as the
-current completed slice.
+Choose the next slice:
+OpenCode through `model-dispatch`, Continue.dev through `model-dispatch`, or
+observe current deployment.
 
 ## Archived Status History
 

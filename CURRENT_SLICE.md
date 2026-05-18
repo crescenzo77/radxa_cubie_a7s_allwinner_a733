@@ -1,37 +1,126 @@
 # Current Slice
 
-## Active: additive model-dispatch alias deployment planning
+## Active: next-slice choice pending
 
 ## Goal
 
-Plan an additive `model-dispatch` alias deployment from the reviewed source
-repo without changing live routing yet.
+Choose the next bounded slice after completing the additive
+`model-dispatch` alias deployment.
 
-This slice is planning only. It must not edit live `/srv/model-dispatch`,
-restart services, deploy aliases, or change Open WebUI, OpenCode, or
-Continue.dev configuration.
+The additive aliases are already deployed live. This state is selection only:
+do not edit live `/srv/model-dispatch`, restart services, edit the
+`model-dispatch` source repo, or change Open WebUI, OpenCode, Continue.dev,
+dashboard, monitoring, or observability configuration.
 
-## Scope
+## Next Slice Options
 
-Create an additive alias deployment plan that documents:
-
-- Current aliases and model IDs to preserve.
-- New aliases to add.
-- Proposed Open WebUI display names.
-- Exact future `config.json` changes.
-- Files eligible for deployment.
-- Backup path.
-- Validation commands.
-- Rollback plan.
-- Non-goals.
+- OpenCode through `model-dispatch`.
+- Continue.dev through `model-dispatch`.
+- Observe current deployment.
 
 ## Files Expected to Change
 
 - `CURRENT_SLICE.md`
-- `inventory/model-dispatch-additive-alias-deployment-plan.md`
 - `AGENT_STATUS.md`
 
 ## Acceptance Criteria
+
+- `CURRENT_SLICE.md` identifies the active state as
+  `next-slice choice pending`.
+- The completed additive model-dispatch alias deployment is recorded in prior
+  slice history.
+- The completed validation and backup path are listed.
+- Next slice options are listed:
+  - OpenCode through `model-dispatch`
+  - Continue.dev through `model-dispatch`
+  - observe current deployment
+- No `/srv/model-dispatch` files are touched.
+- No `/srv/projects/model-dispatch` files are touched.
+- No services are restarted.
+- No Open WebUI config is changed.
+- No OpenCode config is changed.
+- No Continue.dev config is changed.
+- No dashboard, monitoring, or observability deployment is started.
+- No commit is made.
+- `AGENT_STATUS.md` is updated with the handoff.
+- The requested checks are run:
+  - `git diff --check`
+  - `git diff --stat`
+  - `git status --short`
+
+## Scope Expansion Risks
+
+- Starting OpenCode or Continue.dev migration now would bundle next-slice
+  implementation into this status update.
+- Editing live `/srv/model-dispatch` or restarting services would turn a
+  documentation update into an operational change.
+- Adding dashboards, monitoring, observability, automation, paid fallback, or
+  hidden supervision would violate the standing constraints.
+
+## Prior Slice History
+
+### Completed Slice: additive model-dispatch alias deployment
+
+Purpose:
+
+Deploy additive `model-dispatch` aliases live after the deployment plan and
+approval checkpoint.
+
+Completed facts:
+
+- Homelab latest commit before this status update:
+  `5ce3374 document additive alias deployment checkpoint`.
+- Additive aliases were deployed live.
+- Deployment record exists:
+  `inventory/model-dispatch-additive-alias-deployment-approval-brief-2026-05-18.md`.
+- Backup path:
+  `/srv/model-dispatch/backups/20260518-093534`.
+- No Open WebUI config change.
+- No OpenCode config change.
+- No Continue.dev config change.
+- No dashboard, monitoring, or observability deployment.
+
+Validation completed:
+
+- `/health` returned OK.
+- `/v1/models` listed:
+  - `advisor`
+  - `reasoning`
+  - `coding`
+  - `small`
+  - `review`
+  - `long-code`
+  - `local/strix-reasoning`
+  - `local/strix-coder`
+  - `local/amd-coder`
+  - `local/amd-small`
+  - `free-cloud`
+- `advisor` worked through `/v1/chat/completions`.
+- `local/amd-coder` worked through `/v1/chat/completions`.
+
+Definition of done from that slice:
+
+- Additive aliases were deployed live.
+- Existing client configuration was left unchanged.
+- Backup path was recorded as
+  `/srv/model-dispatch/backups/20260518-093534`.
+- Validation confirmed health, model listing, and chat completions for
+  `advisor` and `local/amd-coder`.
+- No Open WebUI, OpenCode, Continue.dev, dashboard, monitoring, or
+  observability configuration was changed.
+
+### Previous Active Slice: additive model-dispatch alias deployment planning
+
+Purpose:
+
+Plan an additive `model-dispatch` alias deployment from the reviewed source
+repo without changing live routing yet.
+
+This slice was planning only. It did not edit live `/srv/model-dispatch`,
+restart services, deploy aliases, or change Open WebUI, OpenCode, or
+Continue.dev configuration.
+
+Definition of done from that slice:
 
 - `CURRENT_SLICE.md` identifies the active slice as
   `additive model-dispatch alias deployment planning`.
@@ -62,21 +151,6 @@ Create an additive alias deployment plan that documents:
   - `git diff --check`
   - `git diff --stat`
   - `git status --short`
-
-## Scope Expansion Risks
-
-- Deploying aliases during this slice would change model routing and is out of
-  scope.
-- Editing OpenCode, Continue.dev, or Open WebUI would bundle client migration
-  with alias deployment planning and is out of scope.
-- Removing existing model IDs during the first alias deployment could break
-  Open WebUI selections or rollback paths.
-- Treating `free-cloud` as an automatic fallback could introduce cloud routing
-  behavior that is not part of this slice.
-- Adding dashboards, monitoring, observability, automation, paid fallback, or
-  hidden supervision would violate the standing constraints.
-
-## Prior Slice History
 
 ### Previous Active Slice: model-dispatch alias registry cleanup planning
 
