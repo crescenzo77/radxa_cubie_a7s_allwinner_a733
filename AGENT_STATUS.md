@@ -772,3 +772,29 @@ What did not change:
 
 Known follow-up:
 - `model-dispatch.service` has a pre-existing invalid `Restart=unless-stopped` warning. Consider a separate tiny service-unit fix later.
+
+## 2026-05-17 — model-dispatch systemd restart policy fixed
+
+Fixed the pre-existing invalid restart policy in the live ThinkCentre systemd unit for `model-dispatch.service`.
+
+Change:
+- Replaced invalid `Restart=unless-stopped`
+- With valid `Restart=on-failure`
+
+Backup:
+- `/etc/systemd/system/model-dispatch.service.backup.20260517-212830`
+
+Validation:
+- `systemctl daemon-reload` completed.
+- `model-dispatch.service` restarted successfully.
+- Service is active/running.
+- `/health` returned `{"status": "ok"}`.
+- `/v1/chat/completions` using `auto-local` returned a valid OpenAI-compatible response.
+- `auto-local` selected `amd-coder-qwen3-coder-30b-32k`.
+- Response content was `ok`.
+
+What did not change:
+- No Open WebUI config change.
+- No OpenCode config change.
+- No LiteLLM config change.
+- No Docker, MCP, reverse proxy, dashboard, monitoring, or observability change.
