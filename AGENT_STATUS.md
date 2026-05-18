@@ -999,3 +999,22 @@ What did not change:
 
 Next:
 - Prepare a deployment approval brief for the additive alias deployment before touching live `/srv/model-dispatch`.
+
+## 2026-05-18 — additive alias deployment committed to homelab docs
+
+The additive `model-dispatch` alias deployment record was committed and pushed.
+
+Homelab commit:
+- `24ce0dd document additive alias deployment`
+
+Deployment state:
+- Additive aliases are live.
+- `/health` validated.
+- `/v1/models` lists the new aliases.
+- `advisor` and `local/amd-coder` validated through `/v1/chat/completions`.
+
+Backup:
+- `/srv/model-dispatch/backups/20260518-093534`
+
+Next:
+- Update `CURRENT_SLICE.md` to mark additive alias deployment complete.
