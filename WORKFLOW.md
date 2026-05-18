@@ -2,7 +2,7 @@
 
 This describes the normal working loop for homelab coding projects.
 
-Last updated: 2026-05-13.
+Last updated: 2026-05-18.
 
 ## Summary
 
@@ -17,7 +17,46 @@ Web UI advisor/planner
 
 The goal is to reduce copy/paste and context bloat. The goal is not autonomous supervision. The user remains responsible for approving direction, reviewing diffs, and deciding when work is done.
 
-Codex may be used manually during setup documentation work, but it must not become part of the operating workflow.
+Codex remains the primary manual agent for planning, sequencing, and risky
+live-service work. It must not become infrastructure, automation, or an
+approval system.
+
+## Agent Division of Labor
+
+Use agents by task shape, not by which one best fits the routing architecture.
+
+| Agent | Role |
+|---|---|
+| Codex | Primary for planning, migration choreography, documentation slices, approval briefs, and risky live-service steps. |
+| Claude Code | Strong frontier-code alternative and second opinion for difficult implementation or review. |
+| Aider | Preferred bounded repo patch assistant for small, already-planned edits. |
+| OpenCode | Later local-agent experiment, not the default operating agent. |
+| Continue.dev | Editor assist and review for selected code chunks. |
+| Cline | Sandbox-only experimentation. |
+
+Codex, Claude Code, and Aider are manually invoked tools. Do not wrap them in
+daemons, scheduled jobs, hidden approval flows, paid-provider automation, or
+repo-wide autonomous workflows.
+
+## Aider Use Rule
+
+Use Aider only after a slice is planned.
+
+Aider is appropriate for one repo, one bounded edit, and one reviewable diff.
+It is not a planner, migration controller, deployment tool, or architecture
+decision-maker.
+
+Do not use Aider for:
+
+- Live deployment.
+- Service restarts.
+- Docker or systemd changes.
+- Secrets or `.env` changes.
+- Multi-host changes.
+- Broad architecture decisions.
+
+Aider output must be validated before commit. Review the diff, run the slice's
+checks, and update `AGENT_STATUS.md` before handoff.
 
 ## Codex-Assisted Deployment Rule
 
@@ -115,23 +154,25 @@ For Open WebUI web search, keep the working SearXNG JSON snippet path by leaving
 
 ### 4. Hand a Bounded Prompt to the Coder
 
-Use a self-hosted coding agent on the coding PC or project host.
+Use the agent that matches the slice.
 
-Current default:
+For small, already-planned repo edits, prefer Aider as a bounded patch
+assistant. Keep the task to one repository, one bounded edit, and one
+reviewable diff.
 
-```bash
-opencode
-```
+For planning, sequencing, live-service risk, operator approval briefs, or any
+task that could affect host roles, routing, billing exposure, persistent state,
+security posture, Docker, systemd, or deployment behavior, use Codex instead.
 
-Run it on AMD or in the relevant project host directory.
+Claude Code is a strong frontier-code alternative and second opinion when the
+implementation is difficult enough to justify another high-capability manual
+agent.
 
-Current live AMD OpenCode defaults to the direct `homelab-local` provider at `http://192.168.50.252:8083/v1` with model `homelab-local/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`.
+OpenCode is deferred to a later local-agent experiment. It is no longer assumed
+to be the next primary operating agent only because it fits the local
+model-dispatch architecture.
 
-OpenCode `small_model` points to the direct AMD RX 7900 XT backup provider `homelab-local-backup` at `http://192.168.50.252:8084/v1` with model `homelab-local-backup/google_gemma-4-26B-A4B-it-Q4_K_M.gguf`.
-
-Generated OpenRouter-free models are available through `homelab-openrouter-free` only when selected manually. OpenRouter remains manual-only and is not an automatic fallback. LiteLLM is outside the default OpenCode execution path and outside the active Open WebUI path; it remains available as rollback/history.
-
-Aider was evaluated and eliminated from the homelab steady-state workflow after unsafe file-handling behavior during a simple documentation task. Do not use Aider as the default or fallback coder for this workflow.
+Continue.dev remains editor assist and review. Cline remains sandbox-only.
 
 ### Optional MCP / CodeGraphContext Write Sandbox
 
@@ -194,9 +235,13 @@ Commit only after the user has reviewed the changes.
 |---|---|---|
 | Plan a task | Open WebUI advisor | Browser |
 | Summarize state for advisor | `advisor-packet` | Project working tree |
-| Implement a bounded task | OpenCode direct local-coder path | AMD/project host terminal |
+| Choreograph risky live-service work | Codex | Project working tree |
+| Implement a small planned repo edit | Aider | Project working tree |
+| Get a frontier-code second opinion | Claude Code | Project working tree |
+| Experiment with local-agent coding | OpenCode | Sandbox or later explicit slice |
 | Review a diff | VS Code Remote-SSH and git | Project host |
 | Ask about a specific code chunk | Continue.dev highlight-and-ask | VS Code |
+| Try agent autonomy experiments | Cline | Sandbox only |
 | Make final decision | User | Always |
 
 ## Coder Status Briefs
@@ -238,6 +283,8 @@ Watch for these patterns:
 - The advisor is asked to reason without current slice or diff context.
 - The user is tempted to build an approval daemon instead of narrowing the slice.
 - Codex or Claude-style tools start appearing in scripts, wrappers, timers, or API jobs.
+- Aider is asked to plan, deploy, restart services, edit secrets, or make broad architecture decisions.
+- OpenCode is treated as the default next agent without an explicit local-agent experiment slice.
 - The Framework laptop accumulates project state.
 
 The fix is usually to narrow `CURRENT_SLICE.md`, run `advisor-packet`, ask the advisor for the next prompt, and keep the user in the approval seat.

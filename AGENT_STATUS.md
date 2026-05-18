@@ -2,53 +2,56 @@
 
 ## Current status
 
-The repo is now in `next-slice choice pending` state after the additive
-`model-dispatch` alias deployment completed.
+The active slice is `Aider workflow integration`.
 
 ## Current task
 
-Update `CURRENT_SLICE.md` to mark the additive alias deployment complete,
-record validation and the backup path, list the next slice options, and update
-this handoff. Do not touch `/srv/model-dispatch`, restart services, edit the
-`model-dispatch` repo, change client config, deploy dashboards/monitoring, or
-commit.
+Update the homelab workflow docs to reflect the corrected agent strategy:
+Codex remains primary for planning, sequencing, and risky live-service work;
+Claude Code remains a frontier-code alternative; Aider is added as the bounded
+patch assistant for small repo edits; OpenCode is demoted to a later
+local-agent experiment; Continue.dev remains editor assist; and Cline remains
+sandbox-only.
 
 ## What changed
 
-- Updated `CURRENT_SLICE.md` active state to `next-slice choice pending`.
-- Added a completed slice section for
-  `additive model-dispatch alias deployment`.
-- Recorded the deployment record path:
-  `inventory/model-dispatch-additive-alias-deployment-approval-brief-2026-05-18.md`.
-- Recorded the backup path:
-  `/srv/model-dispatch/backups/20260518-093534`.
-- Recorded completed validation:
-  - `/health` OK.
-  - `/v1/models` listed `advisor`, `reasoning`, `coding`, `small`, `review`,
-    `long-code`, `local/strix-reasoning`, `local/strix-coder`,
-    `local/amd-coder`, `local/amd-small`, and `free-cloud`.
-  - `advisor` worked through `/v1/chat/completions`.
-  - `local/amd-coder` worked through `/v1/chat/completions`.
-- Listed next slice options:
-  - OpenCode through `model-dispatch`
-  - Continue.dev through `model-dispatch`
-  - observe current deployment
+- Updated `WORKFLOW.md` with agent division of labor.
+- Added the Aider use rule to `WORKFLOW.md`.
+- Created `docs/aider-workflow.md`.
+- Updated `CURRENT_SLICE.md` so the active slice is
+  `Aider workflow integration`.
+- Updated `PROJECT_PLAN.md`, `DECISIONS.md`, `ROADMAP.md`,
+  `HOMELAB_LAYOUT.md`, and `CODEX_CONTEXT.md` so the corrected strategy is
+  reflected across workflow and planning docs.
+- Preserved prior Aider elimination and OpenCode routing history as historical
+  context instead of deleting it.
 - Updated this handoff.
 
 ## What did not change
 
 - No `/srv/model-dispatch` files were touched.
-- No service restart or reload was run.
 - No `/srv/projects/model-dispatch` files were touched.
+- No service restart or reload was run.
+- Aider was not installed.
+- `model-dispatch` was not edited.
 - No Open WebUI config was changed.
 - No OpenCode config was changed.
 - No Continue.dev config was changed.
+- No Open WebUI, LiteLLM, dashboard, monitoring, or observability deployment
+  was changed.
 - No dashboard, monitoring, or observability deployment was started.
 - No commit was made.
 
 ## Files changed
 
+- `WORKFLOW.md`
+- `docs/aider-workflow.md`
 - `CURRENT_SLICE.md`
+- `PROJECT_PLAN.md`
+- `DECISIONS.md`
+- `ROADMAP.md`
+- `HOMELAB_LAYOUT.md`
+- `CODEX_CONTEXT.md`
 - `AGENT_STATUS.md`
 
 ## Checks run
@@ -60,6 +63,9 @@ commit.
   - `AGENT_STATUS.md`
   - `PROJECT_PLAN.md`
   - `DECISIONS.md`
+  - `WORKFLOW.md`
+  - `HOMELAB_LAYOUT.md`
+  - `ROADMAP.md`
 - Requested final checks:
   - `git diff --check`
   - `git diff --stat`
@@ -69,29 +75,45 @@ commit.
 
 - `git diff --check`: passed with no output.
 - `git diff --stat`:
-  - `AGENT_STATUS.md  |  77 ++++++++++++++++--------------`
-  - `CURRENT_SLICE.md | 142 ++++++++++++++++++++++++++++++++++++++++++-------------`
-  - `2 files changed, 150 insertions(+), 69 deletions(-)`
+  - `AGENT_STATUS.md   | 96 ++++++++++++++++++++++++++++++++++---------------------`
+  - `CODEX_CONTEXT.md  | 16 +++++++---`
+  - `CURRENT_SLICE.md  | 96 ++++++++++++++++++++++++++++++++++++++-----------------`
+  - `DECISIONS.md      | 30 +++++++++++++++++`
+  - `HOMELAB_LAYOUT.md | 43 +++++++++++++++++--------`
+  - `PROJECT_PLAN.md   |  9 ++++--`
+  - `ROADMAP.md        | 44 +++++++++++++++++++------`
+  - `WORKFLOW.md       | 77 +++++++++++++++++++++++++++++++++++---------`
+  - `8 files changed, 300 insertions(+), 111 deletions(-)`
+  - Note: `git diff --stat` does not include untracked
+    `docs/aider-workflow.md` until it is staged.
 - `git status --short`:
   - `M AGENT_STATUS.md`
+  - `M CODEX_CONTEXT.md`
   - `M CURRENT_SLICE.md`
+  - `M DECISIONS.md`
+  - `M HOMELAB_LAYOUT.md`
+  - `M PROJECT_PLAN.md`
+  - `M ROADMAP.md`
+  - `M WORKFLOW.md`
+  - `?? docs/`
 
 ## Known risks or blockers
 
-- OpenCode and Continue.dev migration remain separate next-slice options and
-  were not started.
-- Deployment validation is recorded from the user-provided completed facts; no
-  live endpoint validation was rerun in this task.
+- The docs now permit Aider only under tight boundaries. The prior unsafe Aider
+  evaluation remains relevant history, so Aider output should be reviewed
+  carefully before commit.
+- OpenCode through `model-dispatch` remains a later local-agent experiment and
+  was not started.
+- No live endpoint validation was needed because this was a documentation-only
+  workflow slice.
 
 ## User approval needed
 
-No approval is needed for this documentation-only status update.
+No approval is needed for this documentation-only workflow update.
 
 ## Recommended next action
 
-Choose the next slice:
-OpenCode through `model-dispatch`, Continue.dev through `model-dispatch`, or
-observe current deployment.
+Review the diff. If accepted, commit the Aider workflow integration docs.
 
 ## Archived Status History
 

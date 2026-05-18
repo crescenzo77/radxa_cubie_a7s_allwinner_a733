@@ -1,39 +1,51 @@
 # Current Slice
 
-## Active: next-slice choice pending
+## Active: Aider workflow integration
 
 ## Goal
 
-Choose the next bounded slice after completing the additive
-`model-dispatch` alias deployment.
-
-The additive aliases are already deployed live. This state is selection only:
-do not edit live `/srv/model-dispatch`, restart services, edit the
-`model-dispatch` source repo, or change Open WebUI, OpenCode, Continue.dev,
-dashboard, monitoring, or observability configuration.
-
-## Next Slice Options
-
-- OpenCode through `model-dispatch`.
-- Continue.dev through `model-dispatch`.
-- Observe current deployment.
+Adapt the homelab workflow docs to reflect the corrected agent strategy:
+Codex remains primary for planning, sequencing, and risky live-service work;
+Claude Code remains a strong frontier-code alternative; Aider is added as the
+preferred bounded patch assistant for small repo edits; OpenCode is demoted to a
+later local-agent experiment; Continue.dev remains editor assist; and Cline
+remains sandbox-only.
 
 ## Files Expected to Change
 
+- `WORKFLOW.md`
+- `PROJECT_PLAN.md`
+- `DECISIONS.md`
+- `ROADMAP.md`
+- `HOMELAB_LAYOUT.md`
 - `CURRENT_SLICE.md`
 - `AGENT_STATUS.md`
+- `docs/aider-workflow.md`
 
 ## Acceptance Criteria
 
-- `CURRENT_SLICE.md` identifies the active state as
-  `next-slice choice pending`.
-- The completed additive model-dispatch alias deployment is recorded in prior
-  slice history.
-- The completed validation and backup path are listed.
-- Next slice options are listed:
-  - OpenCode through `model-dispatch`
-  - Continue.dev through `model-dispatch`
-  - observe current deployment
+- `WORKFLOW.md` includes an `Agent Division of Labor` section covering:
+  - Codex for planning, migration choreography, and risky live-service steps.
+  - Claude Code as a strong frontier-code alternative and second opinion.
+  - Aider as the preferred bounded repo patch assistant.
+  - OpenCode as a later local-agent experiment, not the default.
+  - Continue.dev as editor assist and review.
+  - Cline as sandbox-only.
+- `WORKFLOW.md` includes an `Aider Use Rule` section.
+- The Aider rule says Aider is used only after a slice is planned.
+- The Aider rule limits Aider to one repo, one bounded edit, and one
+  reviewable diff.
+- The Aider rule forbids Aider for live deployment, service restarts,
+  Docker/systemd, secrets, multi-host changes, and broad architecture
+  decisions.
+- The Aider rule requires validation before commit.
+- `docs/aider-workflow.md` exists and covers purpose, when to use Aider, when
+  not to use Aider, standard workflow, validation checklist, and commit
+  guidance.
+- The broader workflow docs no longer present OpenCode as the assumed next
+  primary agent.
+- Prior Aider/OpenCode history remains preserved in history sections and
+  decision logs.
 - No `/srv/model-dispatch` files are touched.
 - No `/srv/projects/model-dispatch` files are touched.
 - No services are restarted.
@@ -41,6 +53,9 @@ dashboard, monitoring, or observability configuration.
 - No OpenCode config is changed.
 - No Continue.dev config is changed.
 - No dashboard, monitoring, or observability deployment is started.
+- Aider is not installed.
+- `model-dispatch` is not edited.
+- `/srv/model-dispatch` is not touched.
 - No commit is made.
 - `AGENT_STATUS.md` is updated with the handoff.
 - The requested checks are run:
@@ -50,14 +65,37 @@ dashboard, monitoring, or observability configuration.
 
 ## Scope Expansion Risks
 
-- Starting OpenCode or Continue.dev migration now would bundle next-slice
-  implementation into this status update.
-- Editing live `/srv/model-dispatch` or restarting services would turn a
-  documentation update into an operational change.
-- Adding dashboards, monitoring, observability, automation, paid fallback, or
-  hidden supervision would violate the standing constraints.
+- Installing or configuring Aider would turn a documentation update into a tool
+  deployment.
+- Editing live `/srv/model-dispatch`, `/srv/projects/model-dispatch`, or
+  restarting services would violate this docs-only slice.
+- Changing OpenCode, Continue.dev, Open WebUI, LiteLLM, dashboard, monitoring,
+  or observability configuration would broaden the slice.
+- Replacing the historical decision record instead of adding the corrected
+  strategy would lose useful audit history.
+- Adding wrappers, background jobs, automation, paid fallback, or hidden
+  supervision would violate the standing constraints.
 
 ## Prior Slice History
+
+### Previous Active State: next-slice choice pending
+
+Purpose:
+
+Choose the next bounded slice after completing the additive
+`model-dispatch` alias deployment.
+
+The additive aliases were already deployed live. This state was selection only:
+do not edit live `/srv/model-dispatch`, restart services, edit the
+`model-dispatch` source repo, or change Open WebUI, OpenCode, Continue.dev,
+dashboard, monitoring, or observability configuration.
+
+Next slice options listed at that time:
+
+- OpenCode through `model-dispatch`.
+- Continue.dev through `model-dispatch`.
+- Observe current deployment.
+
 
 ### Completed Slice: additive model-dispatch alias deployment
 

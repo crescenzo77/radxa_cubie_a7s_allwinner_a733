@@ -7,7 +7,9 @@ Build a practical two-surface homelab workflow.
 Create a stable workflow where:
 
 1. A web UI advisor/planner helps interpret state and generate next prompts.
-2. OpenCode performs bounded coding work through a direct local-coder path.
+2. Manual agents are selected by task shape: Codex for planning and risky
+   sequencing, Aider for bounded repo patches, Claude Code as a frontier-code
+   alternative, and local agents only through explicit experiments.
 3. A local `advisor-packet` script creates compact context packets.
 4. Markdown files and Git provide durable project state.
 
@@ -19,7 +21,7 @@ Create a stable workflow where:
 - No hidden watcher agent.
 - No autonomous supervision loop.
 - No MCP failure-supervision system for this workflow.
-- No Aider usage in the homelab steady-state workflow.
+- No unreviewed Aider output.
 - No long-term LiteLLM dependency in the active OpenCode/OpenWebUI path.
 
 ## Completed stages
@@ -30,10 +32,11 @@ Create a stable workflow where:
 - Slice 4: Two-surface loop tested on one documentation-only repo task.
 - Slice 5: Aider evaluated and eliminated from the homelab workflow.
 - Slice 6: Workflow docs recentered on OpenCode after Aider elimination.
+- Slice 7: Additive `model-dispatch` aliases deployed live.
 
 ## Current build stage
 
-Slice 7: transition OpenCode and Open WebUI away from LiteLLM as the active routing layer.
+Slice 8: Aider workflow integration.
 
 ## How to use this repo
 

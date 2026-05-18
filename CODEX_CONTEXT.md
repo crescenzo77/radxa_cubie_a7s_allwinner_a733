@@ -2,10 +2,10 @@
 
 This repo is the canonical context source for homelab agents.
 
-Codex/OpenCode must treat these files as project memory:
+Codex/Aider/OpenCode must treat these files as project memory:
 
 - `AGENTS.md` — standing rules for agent behavior
-- `CODEX_CONTEXT.md` — context contract for Codex/OpenCode
+- `CODEX_CONTEXT.md` — context contract for Codex/Aider/OpenCode
 - `CURRENT_SLICE.md` — current work item and boundaries
 - `AGENT_STATUS.md` — latest known state
 - `DECISIONS.md` — durable architectural decisions
@@ -88,8 +88,16 @@ Do not chain unrelated tasks in one run.
 
 WebUI is the strategic supervisor.
 
-Codex/OpenCode is the bounded executor.
+Codex is primary for planning, sequencing, approval briefs, and risky
+live-service work.
+
+Aider is the bounded patch assistant for small, already-planned repo edits.
+
+OpenCode is a later local-agent experiment, not the assumed default executor.
+
+Continue.dev is editor assist, and Cline is sandbox-only.
 
 The repo is the shared memory layer.
 
-If Codex/OpenCode is uncertain, it should write the uncertainty into `AGENT_STATUS.md` instead of guessing.
+If Codex, Aider, or OpenCode is uncertain, it should write the uncertainty into
+`AGENT_STATUS.md` instead of guessing.

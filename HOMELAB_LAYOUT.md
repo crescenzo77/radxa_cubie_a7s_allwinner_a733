@@ -2,7 +2,7 @@
 
 This is the architectural reference for the practical two-surface homelab workflow. It answers what runs where, which machines own which responsibilities, and what must not become infrastructure.
 
-Last updated: 2026-05-13.
+Last updated: 2026-05-18.
 
 ## Operating Model
 
@@ -14,7 +14,9 @@ The normal workflow has two human-operated surfaces plus one small bridge script
 
 The user remains the final decision-maker. The system helps prepare decisions, explain confusing coder output, and reduce context bloat. It does not auto-approve code, supervise agents autonomously, or turn Codex/Claude-style hosted tools into infrastructure.
 
-Codex may be used manually during setup documentation work, but it is not part of the steady-state operating workflow.
+Codex is the primary manual agent for planning, sequencing, approval briefs,
+documentation slices, and risky live-service work. It must not become
+background infrastructure or an autonomous approval system.
 
 ## Machine Roles
 
@@ -101,11 +103,21 @@ Open WebUI visible model categories:
 - Explicit local models: `strix-reasoning-qwen3.6-65k`, `strix-coder-qwen3-coder-next-65k`, `amd-coder-qwen3-coder-30b-32k`, `amd-backup-gemma4-26b-8k`.
 - OpenRouter-free choices: `openrouter-free/openrouter/auto-free-router` and `openrouter-free/<verified-model>:free` entries.
 
-## Surface 2: Self-Hosted Coding Agent
+## Surface 2: Manual Agent Execution
 
-The coding surface runs on the coding PC or project host, not on the thin client.
+The execution surface runs on the project host or coding PC, not on the thin
+client. Choose the manual agent by task shape:
 
-Current practical default:
+- Codex: planning, migration choreography, approval briefs, documentation
+  slices, and risky live-service work.
+- Claude Code: strong frontier-code alternative and second opinion.
+- Aider: preferred bounded repo patch assistant for one planned edit in one
+  repo.
+- OpenCode: later local-agent experiment, not the default operating agent.
+- Continue.dev: editor assist and review.
+- Cline: sandbox-only.
+
+Existing OpenCode setup for later experiments:
 
 ```text
 Host: amd
@@ -124,11 +136,16 @@ Manual provider model count: 25 verified free OpenRouter models
 Rollback endpoint: http://192.168.50.225:4000/v1
 ```
 
-Preferred steady-state coder:
+OpenCode remains installed and usable for later explicit local-agent
+experiments. It is not the assumed next primary agent just because it fits the
+local model-dispatch architecture.
 
-- **OpenCode** using the direct local-coder path.
-
-Aider was evaluated and eliminated from the homelab workflow. LiteLLM is no longer in the default OpenCode path and no longer active for Open WebUI, but remains available as rollback/history. OpenRouter is available only through generated free-only entries when selected manually, not as an automatic hidden route.
+Aider may be used only as a bounded patch assistant after a slice is planned:
+one repo, one bounded edit, one reviewable diff, validated before commit.
+LiteLLM is no longer in the default OpenCode path and no longer active for Open
+WebUI, but remains available as rollback/history. OpenRouter is available only
+through generated free-only entries when selected manually, not as an automatic
+hidden route.
 
 Codex/Claude-style hosted tools must not be wired into API automation, wrappers, scheduled tasks, or background jobs. If used at all during setup or emergency manual work, they remain manually invoked tools.
 
@@ -201,9 +218,9 @@ These files are the shared state between the user, advisor, and coder. They are 
 
 ## Routing State: OpenCode Direct, Open WebUI Dispatch
 
-AMD OpenCode now defaults directly to the local AMD RTX 3090 coder endpoint and has a direct AMD RX 7900 XT backup provider for `small_model`. Open WebUI now points to `model-dispatch` on ThinkCentre at `http://192.168.50.225:4010/v1`. LiteLLM on ThinkCentre is retained as rollback/history only.
+AMD OpenCode is configured directly to the local AMD RTX 3090 coder endpoint and has a direct AMD RX 7900 XT backup provider for `small_model`. This remains available for later explicit local-agent experiments. Open WebUI now points to `model-dispatch` on ThinkCentre at `http://192.168.50.225:4010/v1`. LiteLLM on ThinkCentre is retained as rollback/history only.
 
-Continue.dev on framework intentionally routes through LiteLLM using the verbose exposed model IDs returned by `/v1/models`. Continue is treated as an editor-side shared routing client, unlike OpenCode which now defaults direct-local on AMD.
+Continue.dev on framework intentionally routes through LiteLLM using the verbose exposed model IDs returned by `/v1/models`. Continue is treated as an editor-side shared routing client. OpenCode remains configured direct-local on AMD for later local-agent experiments.
 
 ```text
 OpenCode on AMD
@@ -262,7 +279,7 @@ No paid OpenRouter fallback is allowed. If free models cannot be verified, they 
 
 | Role | Model label / target | Endpoint | Use |
 |---|---|---|---|
-| Primary local coding | `homelab-local/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf` | `amd:8083` | OpenCode default coding work |
+| OpenCode local-agent experiment | `homelab-local/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf` | `amd:8083` | Direct AMD coder path |
 | OpenCode small model backup | `homelab-local-backup/google_gemma-4-26B-A4B-it-Q4_K_M.gguf` | `amd:8084` | Direct AMD RX 7900 XT backup provider |
 | Planning/reasoning | `local-reasoning | Strix | Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf` | `strix:8081` | Advisor/planning |
 | Strix coder testbed | `local-coder-testbed | Strix | Qwen3-Coder-Next-UD-Q4_K_XL.gguf` | `strix:8082` | Manual coder testbed |
@@ -278,7 +295,7 @@ Target canonical source host:
 strix:/srv/projects/<project-name>/
 ```
 
-AMD remains an intentional exception for projects that need the RTX 3090 directly, such as the LoRA pipeline. AMD is also the current OpenCode execution host.
+AMD remains an intentional exception for projects that need the RTX 3090 directly, such as the LoRA pipeline. AMD also hosts the existing OpenCode setup for later local-agent experiments.
 
 Target git mirror convention:
 

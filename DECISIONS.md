@@ -210,3 +210,33 @@ Non-goals:
 - No paid fallback.
 - No broad autonomous orchestration.
 - No direct CodeGraphContext mutation of canonical repos.
+
+## 2026-05-18 — Use Aider as bounded patch assistant
+
+Decision:
+Aider is allowed back into the homelab workflow only as a bounded repo patch
+assistant for small, already-planned edits. Codex remains primary for planning,
+migration choreography, approval briefs, and risky live-service work. Claude
+Code remains a strong frontier-code alternative and second opinion. OpenCode is
+demoted from assumed next primary agent to a later local-agent experiment.
+Continue.dev remains editor assist, and Cline remains sandbox-only.
+
+Rationale:
+The previous plan over-weighted OpenCode because it fit the local
+model-dispatch architecture. The user's successful workflow has mostly used
+Codex, Claude, and Gemini CLI agents, while OpenCode has barely been used.
+Aider better matches the desired operating style for small repo edits: narrow
+diffs, Git-first work, manual review, easy rollback, and low background
+complexity.
+
+Consequences:
+- Aider may be used only after a slice is planned.
+- Aider use is limited to one repo, one bounded edit, and one reviewable diff.
+- Aider must not be used for live deployment, service restarts, Docker/systemd,
+  secrets, multi-host changes, broad architecture decisions, or approval
+  decisions.
+- Aider output must be validated before commit.
+- Do not install Aider as part of this documentation slice.
+- OpenCode remains available for later local-agent experiments, not as the
+  assumed default operating agent.
+- Historical Aider elimination remains preserved as prior context, not erased.

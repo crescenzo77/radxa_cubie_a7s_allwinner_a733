@@ -1,12 +1,22 @@
 # Roadmap: Two-Surface Homelab Workflow
 
-This roadmap describes the path from the current setup to a practical two-surface workflow.
+This roadmap describes the path from the current setup to a practical
+human-reviewed homelab workflow.
 
-Last updated: 2026-05-11.
+Last updated: 2026-05-18.
 
 ## Current Facts To Preserve
 
-- AMD is the current OpenCode and coding execution host.
+- Codex is the primary manual agent for planning, sequencing, approval briefs,
+  and risky live-service work.
+- Claude Code is a strong frontier-code alternative and second opinion.
+- Aider is the preferred bounded repo patch assistant after a slice is planned.
+- OpenCode is a later local-agent experiment, not the assumed next primary
+  operating agent.
+- Continue.dev remains editor assist and review.
+- Cline remains sandbox-only.
+- AMD has the current OpenCode local-agent setup if an explicit experiment
+  needs it later.
 - AMD OpenCode now defaults directly to `homelab-local` at `http://192.168.50.252:8083/v1`.
 - AMD OpenCode uses `homelab-local-backup` at `http://192.168.50.252:8084/v1` as the direct RX 7900 XT backup provider for `small_model`.
 - AMD OpenCode exposes `homelab-openrouter-free` as a manual-only provider with 25 verified free OpenRouter models.
@@ -26,7 +36,7 @@ The normal loop is:
 Open WebUI advisor
   <- compact advisor-packet markdown
   -> user decision
-  -> OpenCode on the project host through direct local-coder path
+  -> task-shaped manual agent selection
   -> git diff and shared markdown status
   -> advisor-packet again when needed
 ```
@@ -93,7 +103,7 @@ Definition of done:
 
 ## Slice 3: Add `AGENTS.md` Rules for Coder Status and Approval Briefs
 
-Create clear project-local instructions for OpenCode.
+Create clear project-local instructions for bounded coding agents.
 
 `AGENTS.md` should require the coder to:
 
@@ -121,7 +131,7 @@ Run the complete loop:
 2. Run `advisor-packet`.
 3. Paste the packet into Open WebUI.
 4. Generate a coder prompt.
-5. Run OpenCode on the project host.
+5. Run the selected bounded coding agent on the project host.
 6. Review the diff.
 7. Update `DECISIONS.md` if needed.
 8. Commit.
@@ -151,6 +161,19 @@ Definition of done:
 - `DECISIONS.md` records that Aider is eliminated from the homelab workflow.
 - The workflow docs no longer present Aider as an active default or fallback path.
 - OpenCode remains the coder path to recenter around.
+
+## Slice 8: Aider Workflow Integration
+
+The workflow is corrected to use Aider only as a bounded patch assistant after a
+slice is planned.
+
+Definition of done:
+- `WORKFLOW.md` describes agent division of labor.
+- `WORKFLOW.md` includes the Aider use rule.
+- `docs/aider-workflow.md` documents the standard Aider workflow.
+- `CURRENT_SLICE.md` and `AGENT_STATUS.md` reflect the handoff.
+- No Aider installation, service change, model-dispatch edit, client config
+  change, or commit happens in this slice.
 
 ## Slice 7: Transition Away From LiteLLM Active Routing
 
@@ -243,10 +266,10 @@ Definition of done:
 - No direct CodeGraphContext mutation of canonical repos is allowed.
 - AMD remains available for current coding until migration is validated.
 
-### Slice 4: OpenCode Through `model-dispatch`
+### Future Slice: OpenCode Through `model-dispatch`
 
-Move OpenCode from direct AMD routing to stable `model-dispatch` aliases only
-after validation.
+Evaluate OpenCode through stable `model-dispatch` aliases only after an
+explicit local-agent experiment slice.
 
 Definition of done:
 - Candidate OpenCode config is tested in isolation.
@@ -403,4 +426,5 @@ These remain valid but are not the immediate two-surface build:
 - MCP Ledger should eventually become a Pattern A service on Strix if it remains part of the stack.
 - Git mirror topology should converge on Strix canonical, ThinkCentre tier-1, Mac Mini tier-2.
 - iMessage relay and family dashboard documentation should be captured in the homelab repo.
-- Aider was evaluated and eliminated from the homelab workflow; do not migrate or integrate it.
+- Aider is allowed only as a bounded patch assistant after a slice is planned;
+  do not migrate it into automation or live-service workflows.
