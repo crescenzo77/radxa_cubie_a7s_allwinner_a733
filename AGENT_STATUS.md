@@ -1047,3 +1047,32 @@ Backup:
 
 Next:
 - Update `CURRENT_SLICE.md` to mark additive alias deployment complete.
+
+## Aider bounded patch trial — local model response failure
+
+Aider was tested on one harmless docs-only edit using the local `model-dispatch` alias `coding`.
+
+Command shape:
+- `aider docs/aider-workflow.md --model openai/coding --no-auto-commits`
+
+Result:
+- Aider started successfully.
+- Aider was limited to `docs/aider-workflow.md`.
+- Aider asked whether to add `AGENT_STATUS.md`; user answered no.
+- Aider asked whether to add `CURRENT_SLICE.md`; user skipped additional files.
+- The local model returned an empty response.
+- No edit was made to `docs/aider-workflow.md`.
+
+What changed:
+- `CURRENT_SLICE.md` contains the manually added Aider bounded patch test slice.
+
+What did not change:
+- No live service was touched.
+- No `/srv/model-dispatch` file was touched.
+- No OpenCode, Continue.dev, Open WebUI, LiteLLM, Docker, systemd, dashboard, monitoring, or observability config changed.
+- Aider did not commit.
+
+Conclusion:
+- Aider is installed and can be constrained to one file.
+- The local `coding` alias is not yet proven usable with Aider.
+- Next Aider trial should use a known-working frontier model or a separately validated Aider-compatible local model profile.

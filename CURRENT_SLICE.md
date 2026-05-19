@@ -245,3 +245,22 @@ Definition of done from that slice:
   settings, MCP settings, Docker state, systemd state, reverse proxy settings,
   dashboard, monitoring, observability, source mirror, live runtime files,
   `tools/` files, or commits were changed.
+
+## Trial Slice: Aider bounded patch test
+
+Purpose:
+Test Aider on one harmless docs-only edit.
+
+Scope:
+- Edit only `docs/aider-workflow.md`.
+- Add a short "Trial rule" note.
+- Do not edit live services.
+- Do not edit `/srv/model-dispatch`.
+- Do not install tools.
+- Do not change OpenCode, Continue.dev, Open WebUI, LiteLLM, Docker, systemd, dashboards, monitoring, or observability.
+- Do not commit from Aider.
+
+Validation:
+- `git diff --check`
+- `git diff --stat`
+- `git status --short`
