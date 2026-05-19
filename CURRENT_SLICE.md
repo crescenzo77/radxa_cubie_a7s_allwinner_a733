@@ -1,8 +1,99 @@
 # Current Slice
 
-## Active: Aider workflow integration
+## Active: Aider compatibility planning
 
 ## Goal
+
+Plan how to diagnose why Aider gets empty responses from local
+`model-dispatch` aliases without running more Aider trials in this slice.
+
+Known facts:
+
+- Aider is installed at version `0.86.2`.
+- Aider can start from `/srv/projects/homelab`.
+- Aider can be constrained to one file.
+- Aider asked to add extra files and the user rejected or skipped them.
+- Aider trials with local `model-dispatch` aliases failed with empty responses:
+  - `openai/coding`
+  - `openai/local/amd-coder`
+- The AMD containers were healthy:
+  - `qwen3-coder-30b`
+  - `gemma4-7900xt`
+- Non-Codex agentic work must use either a local LLM or a verified free
+  OpenRouter model from the allowlist.
+- Paid frontier models must not be recommended for Aider, OpenCode, Cline, or
+  other non-Codex agents.
+
+## Files Expected to Change
+
+- `inventory/aider-compatibility-plan.md`
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `PROJECT_PLAN.md`
+
+## Acceptance Criteria
+
+- `CURRENT_SLICE.md` identifies the active slice as
+  `Aider compatibility planning`.
+- `inventory/aider-compatibility-plan.md` exists.
+- The plan covers:
+  - observed failures
+  - hypotheses
+  - what to inspect first
+  - local `model-dispatch` compatibility checks
+  - direct AMD endpoint compatibility checks
+  - verified OpenRouter-free fallback test option
+  - what not to do
+  - validation commands for a later slice
+- The plan includes these likely hypotheses:
+  - Aider expects a response format or behavior not satisfied by
+    `model-dispatch` or local llama.cpp response.
+  - `model-dispatch` alias works for normal chat completion but may not satisfy
+    Aider's edit format expectations.
+  - Generic route aliases may be less compatible than direct explicit model
+    IDs.
+  - Aider may need model metadata, edit format override, or provider
+    configuration.
+- The plan does not recommend paid frontier models for Aider, OpenCode, Cline,
+  or other non-Codex agents.
+- Prior Aider and OpenCode history remains preserved.
+- No `/srv/model-dispatch` files are touched.
+- No `/srv/projects/model-dispatch` files are touched.
+- No services are restarted.
+- No Open WebUI config is changed.
+- No OpenCode config is changed.
+- No Continue.dev config is changed.
+- No dashboard, monitoring, or observability deployment is started.
+- Aider is not run.
+- No new Aider trials are run.
+- `model-dispatch` is not edited.
+- `/srv/model-dispatch` is not touched.
+- No commit is made.
+- `AGENT_STATUS.md` is updated with the handoff.
+- The requested checks are run:
+  - `git diff --check`
+  - `git diff --stat`
+  - `git status --short`
+
+## Scope Expansion Risks
+
+- Running Aider would turn this planning slice into a tool trial.
+- Editing live `/srv/model-dispatch`, `/srv/projects/model-dispatch`, or
+  restarting services would violate this docs-only slice.
+- Changing OpenCode, Continue.dev, Open WebUI, LiteLLM, dashboard, monitoring,
+  or observability configuration would broaden the slice.
+- Replacing the historical decision record instead of adding the compatibility
+  plan would lose useful audit history.
+- Recommending paid frontier models for non-Codex agents would violate the
+  current model-use constraint.
+- Adding wrappers, background jobs, automation, paid fallback, or hidden
+  supervision would violate the standing constraints.
+
+## Prior Slice History
+
+### Previous Active Slice: Aider workflow integration
+
+Purpose:
 
 Adapt the homelab workflow docs to reflect the corrected agent strategy:
 Codex remains primary for planning, sequencing, and risky live-service work;
@@ -11,18 +102,7 @@ preferred bounded patch assistant for small repo edits; OpenCode is demoted to a
 later local-agent experiment; Continue.dev remains editor assist; and Cline
 remains sandbox-only.
 
-## Files Expected to Change
-
-- `WORKFLOW.md`
-- `PROJECT_PLAN.md`
-- `DECISIONS.md`
-- `ROADMAP.md`
-- `HOMELAB_LAYOUT.md`
-- `CURRENT_SLICE.md`
-- `AGENT_STATUS.md`
-- `docs/aider-workflow.md`
-
-## Acceptance Criteria
+Definition of done from that slice:
 
 - `WORKFLOW.md` includes an `Agent Division of Labor` section covering:
   - Codex for planning, migration choreography, and risky live-service steps.
@@ -46,37 +126,12 @@ remains sandbox-only.
   primary agent.
 - Prior Aider/OpenCode history remains preserved in history sections and
   decision logs.
-- No `/srv/model-dispatch` files are touched.
-- No `/srv/projects/model-dispatch` files are touched.
-- No services are restarted.
-- No Open WebUI config is changed.
-- No OpenCode config is changed.
-- No Continue.dev config is changed.
-- No dashboard, monitoring, or observability deployment is started.
-- Aider is not installed.
-- `model-dispatch` is not edited.
-- `/srv/model-dispatch` is not touched.
-- No commit is made.
-- `AGENT_STATUS.md` is updated with the handoff.
-- The requested checks are run:
-  - `git diff --check`
-  - `git diff --stat`
-  - `git status --short`
-
-## Scope Expansion Risks
-
-- Installing or configuring Aider would turn a documentation update into a tool
-  deployment.
-- Editing live `/srv/model-dispatch`, `/srv/projects/model-dispatch`, or
-  restarting services would violate this docs-only slice.
-- Changing OpenCode, Continue.dev, Open WebUI, LiteLLM, dashboard, monitoring,
-  or observability configuration would broaden the slice.
-- Replacing the historical decision record instead of adding the corrected
-  strategy would lose useful audit history.
-- Adding wrappers, background jobs, automation, paid fallback, or hidden
-  supervision would violate the standing constraints.
-
-## Prior Slice History
+- No `/srv/model-dispatch` files were touched.
+- No `/srv/projects/model-dispatch` files were touched.
+- No services were restarted.
+- No Open WebUI, OpenCode, Continue.dev, dashboard, monitoring, or
+  observability configuration was changed.
+- No commit was made.
 
 ### Previous Active State: next-slice choice pending
 

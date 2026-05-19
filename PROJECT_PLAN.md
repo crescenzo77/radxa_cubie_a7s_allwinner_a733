@@ -36,7 +36,7 @@ Create a stable workflow where:
 
 ## Current build stage
 
-Slice 8: Aider workflow integration.
+Slice 9: Aider compatibility planning.
 
 ## How to use this repo
 

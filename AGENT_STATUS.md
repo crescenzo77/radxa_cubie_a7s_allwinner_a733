@@ -2,29 +2,31 @@
 
 ## Current status
 
-The active slice is `Aider workflow integration`.
+The active slice is `Aider compatibility planning`.
 
 ## Current task
 
-Update the homelab workflow docs to reflect the corrected agent strategy:
-Codex remains primary for planning, sequencing, and risky live-service work;
-Claude Code remains a frontier-code alternative; Aider is added as the bounded
-patch assistant for small repo edits; OpenCode is demoted to a later
-local-agent experiment; Continue.dev remains editor assist; and Cline remains
-sandbox-only.
+Plan how to diagnose why Aider gets empty responses from local
+`model-dispatch` aliases without running more Aider trials yet.
 
 ## What changed
 
-- Updated `WORKFLOW.md` with agent division of labor.
-- Added the Aider use rule to `WORKFLOW.md`.
-- Created `docs/aider-workflow.md`.
 - Updated `CURRENT_SLICE.md` so the active slice is
-  `Aider workflow integration`.
-- Updated `PROJECT_PLAN.md`, `DECISIONS.md`, `ROADMAP.md`,
-  `HOMELAB_LAYOUT.md`, and `CODEX_CONTEXT.md` so the corrected strategy is
-  reflected across workflow and planning docs.
-- Preserved prior Aider elimination and OpenCode routing history as historical
-  context instead of deleting it.
+  `Aider compatibility planning`.
+- Updated `PROJECT_PLAN.md` so the current build stage is
+  `Slice 9: Aider compatibility planning`.
+- Created `inventory/aider-compatibility-plan.md`.
+- Documented observed Aider failures with `openai/coding` and
+  `openai/local/amd-coder`.
+- Documented likely hypotheses around Aider response format expectations,
+  `model-dispatch` alias compatibility, generic aliases versus explicit model
+  IDs, and possible Aider metadata, edit format, or provider configuration
+  needs.
+- Documented what to inspect first, local `model-dispatch` compatibility
+  checks, direct AMD endpoint compatibility checks, a verified
+  OpenRouter-free fallback option, what not to do, and validation commands for
+  a later slice.
+- Preserved prior Aider workflow integration history in `CURRENT_SLICE.md`.
 - Updated this handoff.
 
 ## What did not change
@@ -32,7 +34,8 @@ sandbox-only.
 - No `/srv/model-dispatch` files were touched.
 - No `/srv/projects/model-dispatch` files were touched.
 - No service restart or reload was run.
-- Aider was not installed.
+- Aider was not run.
+- No new Aider trials were run.
 - `model-dispatch` was not edited.
 - No Open WebUI config was changed.
 - No OpenCode config was changed.
@@ -44,14 +47,9 @@ sandbox-only.
 
 ## Files changed
 
-- `WORKFLOW.md`
-- `docs/aider-workflow.md`
 - `CURRENT_SLICE.md`
 - `PROJECT_PLAN.md`
-- `DECISIONS.md`
-- `ROADMAP.md`
-- `HOMELAB_LAYOUT.md`
-- `CODEX_CONTEXT.md`
+- `inventory/aider-compatibility-plan.md`
 - `AGENT_STATUS.md`
 
 ## Checks run
@@ -63,9 +61,6 @@ sandbox-only.
   - `AGENT_STATUS.md`
   - `PROJECT_PLAN.md`
   - `DECISIONS.md`
-  - `WORKFLOW.md`
-  - `HOMELAB_LAYOUT.md`
-  - `ROADMAP.md`
 - Requested final checks:
   - `git diff --check`
   - `git diff --stat`
@@ -75,49 +70,64 @@ sandbox-only.
 
 - `git diff --check`: passed with no output.
 - `git diff --stat`:
-  - `AGENT_STATUS.md   | 96 ++++++++++++++++++++++++++++++++++---------------------`
-  - `CODEX_CONTEXT.md  | 16 +++++++---`
-  - `CURRENT_SLICE.md  | 96 ++++++++++++++++++++++++++++++++++++++-----------------`
-  - `DECISIONS.md      | 30 +++++++++++++++++`
-  - `HOMELAB_LAYOUT.md | 43 +++++++++++++++++--------`
-  - `PROJECT_PLAN.md   |  9 ++++--`
-  - `ROADMAP.md        | 44 +++++++++++++++++++------`
-  - `WORKFLOW.md       | 77 +++++++++++++++++++++++++++++++++++---------`
-  - `8 files changed, 300 insertions(+), 111 deletions(-)`
+  - `AGENT_STATUS.md  | 112 ++++++++++++++++++++++++---------------------`
+  - `CURRENT_SLICE.md | 135 ++++++++++++++++++++++++++++++++++++++-----------------`
+  - `PROJECT_PLAN.md  |   2 +-`
+  - `3 files changed, 157 insertions(+), 92 deletions(-)`
   - Note: `git diff --stat` does not include untracked
-    `docs/aider-workflow.md` until it is staged.
+    `inventory/aider-compatibility-plan.md` until it is staged.
 - `git status --short`:
   - `M AGENT_STATUS.md`
-  - `M CODEX_CONTEXT.md`
   - `M CURRENT_SLICE.md`
-  - `M DECISIONS.md`
-  - `M HOMELAB_LAYOUT.md`
   - `M PROJECT_PLAN.md`
-  - `M ROADMAP.md`
-  - `M WORKFLOW.md`
-  - `?? docs/`
+  - `?? inventory/aider-compatibility-plan.md`
 
 ## Known risks or blockers
 
-- The docs now permit Aider only under tight boundaries. The prior unsafe Aider
-  evaluation remains relevant history, so Aider output should be reviewed
-  carefully before commit.
-- OpenCode through `model-dispatch` remains a later local-agent experiment and
-  was not started.
-- No live endpoint validation was needed because this was a documentation-only
-  workflow slice.
+- Aider compatibility remains unverified because this slice intentionally did
+  not run Aider.
+- The failure may be in Aider provider/model settings, `model-dispatch`
+  response normalization, local backend behavior, or the interaction between
+  those layers.
+- Any future live endpoint tests should remain read-only compatibility checks
+  unless a later slice explicitly authorizes tool trials.
 
 ## User approval needed
 
-No approval is needed for this documentation-only workflow update.
+No approval is needed for this documentation-only planning slice.
 
 ## Recommended next action
 
-Review the diff. If accepted, commit the Aider workflow integration docs.
+Review the diff. If accepted, a later slice can run the documented
+compatibility checks before any new Aider edit trial.
 
 ## Archived Status History
 
 Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Aider workflow integration
+
+The active slice was `Aider workflow integration`.
+
+This slice updated the homelab workflow docs to reflect the corrected agent
+strategy: Codex remains primary for planning, sequencing, and risky
+live-service work; Claude Code remains a frontier-code alternative; Aider is
+added as the bounded patch assistant for small repo edits; OpenCode is demoted
+to a later local-agent experiment; Continue.dev remains editor assist; and
+Cline remains sandbox-only.
+
+Completed changes:
+
+- Updated `WORKFLOW.md` with agent division of labor.
+- Added the Aider use rule to `WORKFLOW.md`.
+- Created `docs/aider-workflow.md`.
+- Updated `CURRENT_SLICE.md` so the active slice was
+  `Aider workflow integration`.
+- Updated `PROJECT_PLAN.md`, `DECISIONS.md`, `ROADMAP.md`,
+  `HOMELAB_LAYOUT.md`, and `CODEX_CONTEXT.md` so the corrected strategy was
+  reflected across workflow and planning docs.
+- Preserved prior Aider elimination and OpenCode routing history as historical
+  context instead of deleting it.
 
 ## Previous status - additive alias deployment planning
 
