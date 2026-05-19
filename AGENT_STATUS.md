@@ -2,31 +2,41 @@
 
 ## Current status
 
-The active slice is `Aider compatibility planning`.
+The active slice is `Aider compatibility read-only inspection`.
 
 ## Current task
 
-Plan how to diagnose why Aider gets empty responses from local
-`model-dispatch` aliases without running more Aider trials yet.
+Correct `CURRENT_SLICE.md` after the Aider compatibility read-only inspection
+slice removed too much older prior-slice history. Keep the new active slice and
+new inspection inventory file, restore older history from `HEAD`, and do not
+run Aider, edit `/srv/model-dispatch`, restart services, run
+sudo/Docker/systemd, or commit.
 
 ## What changed
 
 - Updated `CURRENT_SLICE.md` so the active slice is
-  `Aider compatibility planning`.
+  `Aider compatibility read-only inspection`.
 - Updated `PROJECT_PLAN.md` so the current build stage is
-  `Slice 9: Aider compatibility planning`.
-- Created `inventory/aider-compatibility-plan.md`.
-- Documented observed Aider failures with `openai/coding` and
-  `openai/local/amd-coder`.
-- Documented likely hypotheses around Aider response format expectations,
-  `model-dispatch` alias compatibility, generic aliases versus explicit model
-  IDs, and possible Aider metadata, edit format, or provider configuration
-  needs.
-- Documented what to inspect first, local `model-dispatch` compatibility
-  checks, direct AMD endpoint compatibility checks, a verified
-  OpenRouter-free fallback option, what not to do, and validation commands for
-  a later slice.
-- Preserved prior Aider workflow integration history in `CURRENT_SLICE.md`.
+  `Slice 10: Aider compatibility read-only inspection`.
+- Created `inventory/aider-compatibility-inspection-2026-05-18.md`.
+- Documented the inspection purpose and endpoints:
+  - `http://192.168.50.225:4010/v1`
+  - `http://192.168.50.252:8083/v1`
+- Documented exact read-only manual `curl` commands for `/v1/models` and
+  `/v1/chat/completions` shape checks.
+- Documented what each command proves, expected response fields, comparison
+  criteria, and how to distinguish likely dispatcher, backend, and Aider
+  configuration or edit-format issues.
+- Preserved prior Aider compatibility planning history in
+  `CURRENT_SLICE.md`.
+- Restored older prior-slice history in `CURRENT_SLICE.md` from `HEAD`,
+  including:
+  - `Previous Active State: next-slice choice pending`
+  - `Completed Slice: additive model-dispatch alias deployment`
+  - `Previous Active Slice: additive model-dispatch alias deployment planning`
+  - `Previous Active Slice: model-dispatch alias registry cleanup planning`
+  - `Previous Active Slice: model-dispatch deployment planning only`
+  - `Trial Slice: Aider bounded patch test`
 - Updated this handoff.
 
 ## What did not change
@@ -36,6 +46,9 @@ Plan how to diagnose why Aider gets empty responses from local
 - No service restart or reload was run.
 - Aider was not run.
 - No new Aider trials were run.
+- No live endpoint commands were run; the inspection commands were documented
+  for manual execution only.
+- No `sudo`, Docker, or systemd commands were run.
 - `model-dispatch` was not edited.
 - No Open WebUI config was changed.
 - No OpenCode config was changed.
@@ -49,7 +62,7 @@ Plan how to diagnose why Aider gets empty responses from local
 
 - `CURRENT_SLICE.md`
 - `PROJECT_PLAN.md`
-- `inventory/aider-compatibility-plan.md`
+- `inventory/aider-compatibility-inspection-2026-05-18.md`
 - `AGENT_STATUS.md`
 
 ## Checks run
@@ -59,6 +72,8 @@ Plan how to diagnose why Aider gets empty responses from local
   - `CODEX_CONTEXT.md`
   - `CURRENT_SLICE.md`
   - `AGENT_STATUS.md`
+  - `inventory/aider-compatibility-plan.md`
+  - `WORKFLOW.md`
   - `PROJECT_PLAN.md`
   - `DECISIONS.md`
 - Requested final checks:
@@ -70,40 +85,68 @@ Plan how to diagnose why Aider gets empty responses from local
 
 - `git diff --check`: passed with no output.
 - `git diff --stat`:
-  - `AGENT_STATUS.md  | 112 ++++++++++++++++++++++++---------------------`
-  - `CURRENT_SLICE.md | 135 ++++++++++++++++++++++++++++++++++++++-----------------`
+  - `AGENT_STATUS.md  | 107 ++++++++++++++++++++++++++++++++--------------`
+  - `CURRENT_SLICE.md | 126 +++++++++++++++++++++++++++++++------------------------`
   - `PROJECT_PLAN.md  |   2 +-`
-  - `3 files changed, 157 insertions(+), 92 deletions(-)`
+  - `3 files changed, 148 insertions(+), 87 deletions(-)`
   - Note: `git diff --stat` does not include untracked
-    `inventory/aider-compatibility-plan.md` until it is staged.
+    `inventory/aider-compatibility-inspection-2026-05-18.md` until it is
+    staged.
 - `git status --short`:
   - `M AGENT_STATUS.md`
   - `M CURRENT_SLICE.md`
   - `M PROJECT_PLAN.md`
-  - `?? inventory/aider-compatibility-plan.md`
+  - `?? inventory/aider-compatibility-inspection-2026-05-18.md`
 
 ## Known risks or blockers
 
-- Aider compatibility remains unverified because this slice intentionally did
+- Aider compatibility remains unverified because this slice intentionally does
   not run Aider.
-- The failure may be in Aider provider/model settings, `model-dispatch`
-  response normalization, local backend behavior, or the interaction between
-  those layers.
-- Any future live endpoint tests should remain read-only compatibility checks
-  unless a later slice explicitly authorizes tool trials.
+- The documented commands include live read-only endpoint requests, but they
+  were not executed in this slice.
+- The root cause may still be in Aider provider/model settings,
+  `model-dispatch` response normalization, direct AMD backend behavior, or the
+  interaction between those layers.
+- Any future Aider trial should be a separate explicit slice after response
+  shapes are inspected.
 
 ## User approval needed
 
-No approval is needed for this documentation-only planning slice.
+No approval is needed for this documentation-only read-only inspection slice.
 
 ## Recommended next action
 
-Review the diff. If accepted, a later slice can run the documented
-compatibility checks before any new Aider edit trial.
+Review the diff. If accepted, manually run the documented read-only inspection
+commands or open a follow-up slice to record their results before any new Aider
+edit trial.
 
 ## Archived Status History
 
 Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Aider compatibility planning
+
+The active slice was `Aider compatibility planning`.
+
+This slice planned how to diagnose why Aider gets empty responses from local
+`model-dispatch` aliases without running more Aider trials.
+
+Completed changes:
+
+- Updated `CURRENT_SLICE.md` so the active slice was
+  `Aider compatibility planning`.
+- Updated `PROJECT_PLAN.md` so the current build stage was
+  `Slice 9: Aider compatibility planning`.
+- Created `inventory/aider-compatibility-plan.md`.
+- Documented observed Aider failures with `openai/coding` and
+  `openai/local/amd-coder`.
+- Documented likely hypotheses around Aider response format expectations,
+  `model-dispatch` alias compatibility, generic aliases versus explicit model
+  IDs, and possible Aider metadata, edit format, or provider configuration
+  needs.
+- Documented local `model-dispatch` checks, direct AMD endpoint checks,
+  verified OpenRouter-free fallback rules, what not to do, and validation
+  commands for a later slice.
 
 ## Previous status - Aider workflow integration
 

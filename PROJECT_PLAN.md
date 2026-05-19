@@ -36,7 +36,7 @@ Create a stable workflow where:
 
 ## Current build stage
 
-Slice 9: Aider compatibility planning.
+Slice 10: Aider compatibility read-only inspection.
 
 ## How to use this repo
 

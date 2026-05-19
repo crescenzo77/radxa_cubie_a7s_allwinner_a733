@@ -1,73 +1,62 @@
 # Current Slice
 
-## Active: Aider compatibility planning
+## Active: Aider compatibility read-only inspection
 
 ## Goal
 
-Plan how to diagnose why Aider gets empty responses from local
-`model-dispatch` aliases without running more Aider trials in this slice.
+Inspect why Aider gets empty responses from local `model-dispatch` aliases by
+comparing OpenAI-compatible response shapes from `model-dispatch` and the
+direct AMD Qwen3 Coder endpoint.
+
+This is a read-only inspection slice. Do not run Aider. Do not edit services.
 
 Known facts:
 
+- Aider compatibility plan is committed:
+  `a3e5a56 plan aider compatibility testing`.
 - Aider is installed at version `0.86.2`.
-- Aider can start from `/srv/projects/homelab`.
-- Aider can be constrained to one file.
-- Aider asked to add extra files and the user rejected or skipped them.
-- Aider trials with local `model-dispatch` aliases failed with empty responses:
+- Aider local trials failed with empty responses for:
   - `openai/coding`
   - `openai/local/amd-coder`
-- The AMD containers were healthy:
-  - `qwen3-coder-30b`
-  - `gemma4-7900xt`
-- Non-Codex agentic work must use either a local LLM or a verified free
-  OpenRouter model from the allowlist.
-- Paid frontier models must not be recommended for Aider, OpenCode, Cline, or
-  other non-Codex agents.
+- `model-dispatch` live endpoint:
+  `http://192.168.50.225:4010/v1`.
+- Direct AMD Qwen3 Coder endpoint:
+  `http://192.168.50.252:8083/v1`.
+- AMD containers were healthy during the failed trials.
+- Non-Codex agentic work must use local LLMs or verified OpenRouter-free
+  models only.
 
 ## Files Expected to Change
 
-- `inventory/aider-compatibility-plan.md`
 - `CURRENT_SLICE.md`
+- `inventory/aider-compatibility-inspection-2026-05-18.md`
 - `AGENT_STATUS.md`
 - `PROJECT_PLAN.md`
 
 ## Acceptance Criteria
 
 - `CURRENT_SLICE.md` identifies the active slice as
-  `Aider compatibility planning`.
-- `inventory/aider-compatibility-plan.md` exists.
-- The plan covers:
-  - observed failures
-  - hypotheses
-  - what to inspect first
-  - local `model-dispatch` compatibility checks
-  - direct AMD endpoint compatibility checks
-  - verified OpenRouter-free fallback test option
-  - what not to do
-  - validation commands for a later slice
-- The plan includes these likely hypotheses:
-  - Aider expects a response format or behavior not satisfied by
-    `model-dispatch` or local llama.cpp response.
-  - `model-dispatch` alias works for normal chat completion but may not satisfy
-    Aider's edit format expectations.
-  - Generic route aliases may be less compatible than direct explicit model
-    IDs.
-  - Aider may need model metadata, edit format override, or provider
-    configuration.
-- The plan does not recommend paid frontier models for Aider, OpenCode, Cline,
-  or other non-Codex agents.
-- Prior Aider and OpenCode history remains preserved.
+  `Aider compatibility read-only inspection`.
+- `inventory/aider-compatibility-inspection-2026-05-18.md` exists.
+- The inspection document includes:
+  - purpose
+  - endpoints inspected
+  - exact read-only commands to run manually
+  - what each command proves
+  - expected response fields
+  - how to compare `model-dispatch` vs direct AMD
+  - what would indicate a `model-dispatch` issue
+  - what would indicate a direct backend issue
+  - what would indicate an Aider configuration or edit-format issue
+  - next action after inspection
+- The manual commands do not run Aider.
+- The manual commands do not edit services.
 - No `/srv/model-dispatch` files are touched.
 - No `/srv/projects/model-dispatch` files are touched.
 - No services are restarted.
-- No Open WebUI config is changed.
-- No OpenCode config is changed.
-- No Continue.dev config is changed.
-- No dashboard, monitoring, or observability deployment is started.
-- Aider is not run.
-- No new Aider trials are run.
-- `model-dispatch` is not edited.
-- `/srv/model-dispatch` is not touched.
+- No `sudo`, Docker, or systemd commands are run.
+- No OpenCode, Continue.dev, Open WebUI, LiteLLM, dashboard, monitoring, or
+  observability configuration is changed.
 - No commit is made.
 - `AGENT_STATUS.md` is updated with the handoff.
 - The requested checks are run:
@@ -77,19 +66,48 @@ Known facts:
 
 ## Scope Expansion Risks
 
-- Running Aider would turn this planning slice into a tool trial.
-- Editing live `/srv/model-dispatch`, `/srv/projects/model-dispatch`, or
-  restarting services would violate this docs-only slice.
+- Running Aider would turn this read-only inspection into a tool trial.
+- Editing live `/srv/model-dispatch`, the source repo at
+  `/srv/projects/model-dispatch`, or restarting services would violate the
+  slice boundaries.
+- Using `sudo`, Docker, or systemd would broaden the slice into operations.
 - Changing OpenCode, Continue.dev, Open WebUI, LiteLLM, dashboard, monitoring,
-  or observability configuration would broaden the slice.
-- Replacing the historical decision record instead of adding the compatibility
-  plan would lose useful audit history.
+  or observability configuration would make this more than response-shape
+  inspection.
+- Adding wrappers, daemons, hidden background jobs, automation, paid fallback,
+  or approval behavior would violate standing constraints.
 - Recommending paid frontier models for non-Codex agents would violate the
   current model-use constraint.
-- Adding wrappers, background jobs, automation, paid fallback, or hidden
-  supervision would violate the standing constraints.
 
 ## Prior Slice History
+
+### Previous Active Slice: Aider compatibility planning
+
+Purpose:
+
+Plan how to diagnose why Aider gets empty responses from local
+`model-dispatch` aliases without running more Aider trials.
+
+Definition of done from that slice:
+
+- `CURRENT_SLICE.md` identified the active slice as
+  `Aider compatibility planning`.
+- `inventory/aider-compatibility-plan.md` was created.
+- The plan covered observed failures, hypotheses, what to inspect first, local
+  `model-dispatch` compatibility checks, direct AMD endpoint compatibility
+  checks, verified OpenRouter-free fallback test option, what not to do, and
+  validation commands for a later slice.
+- The plan preserved hypotheses around Aider response-format expectations,
+  `model-dispatch` alias compatibility, generic aliases versus direct model
+  IDs, and possible Aider metadata, edit-format, or provider configuration
+  needs.
+- Aider was not run.
+- No `/srv/model-dispatch` files were touched.
+- No `/srv/projects/model-dispatch` files were touched.
+- No services were restarted.
+- No Open WebUI, OpenCode, Continue.dev, LiteLLM, dashboard, monitoring, or
+  observability configuration was changed.
+- No commit was made.
 
 ### Previous Active Slice: Aider workflow integration
 
