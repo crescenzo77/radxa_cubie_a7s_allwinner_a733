@@ -1076,3 +1076,27 @@ Conclusion:
 - Aider is installed and can be constrained to one file.
 - The local `coding` alias is not yet proven usable with Aider.
 - Next Aider trial should use a known-working frontier model or a separately validated Aider-compatible local model profile.
+
+## Aider local-model compatibility trial
+
+Aider was tested with local `model-dispatch` aliases.
+
+Trials:
+- `openai/coding`
+- `openai/local/amd-coder`
+
+Result:
+- Aider started successfully.
+- Aider could be constrained to `docs/aider-workflow.md`.
+- Aider asked to add extra files; user declined/skipped them.
+- Both local model attempts returned an empty response.
+- No repository files were changed by Aider.
+
+Conclusion:
+- Aider is installed and can be constrained to one file.
+- The current local `model-dispatch` aliases are not yet proven compatible with Aider's edit workflow.
+- Non-Codex agentic work must use either a local LLM or a verified free OpenRouter model from the allowlist.
+- Do not use paid frontier models for Aider/OpenCode/Cline-style agentic work.
+
+Next:
+- Create a dedicated Aider compatibility slice before further Aider trials.
