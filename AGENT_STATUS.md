@@ -1247,3 +1247,43 @@ Next:
 - Review the diff.
 - If accepted, commit the AMD vLLM validation plan.
 - The next slice should be Phase 1: read-only AMD live-state recheck.
+
+## AMD vLLM Phase 1 live-state recheck
+
+Read-only AMD live-state recheck was performed for the AMD-first vLLM validation plan.
+
+Findings:
+- AMD host is reachable.
+- RTX 3090 is visible through `nvidia-smi`.
+- NVIDIA driver is `595.71.05`.
+- `nvidia-smi` reports CUDA `13.2`.
+- `nvcc` is present and reports CUDA toolkit `12.4`.
+- RTX 3090 VRAM is mostly occupied: about `18299 MiB / 24576 MiB`.
+- The active RTX 3090 compute process is `/app/llama-server`, using about `18276 MiB`.
+- `qwen3-coder-30b` is running and healthy on port `8083`.
+- `gemma4-7900xt` is running and healthy on port `8084`.
+- Both existing endpoints return OpenAI-compatible `/v1/models`.
+- Both existing endpoints returned simple chat completions.
+- `vllm` was not found in the current user path.
+- A local Docker image exists for `vllm/vllm-openai:latest`.
+- Existing model artifacts found:
+  - `/srv/llm/qwen3-coder-30b/models/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+  - `/srv/llm/gemma4-rocm/models/google_gemma-4-26B-A4B-it-Q4_K_M.gguf`
+
+Conclusion:
+- AMD remains the correct first vLLM candidate.
+- The next step should be read-only inspection of the existing `vllm/vllm-openai:latest` image.
+- Do not start vLLM yet because RTX 3090 VRAM is currently occupied by the healthy `qwen3-coder-30b` endpoint.
+- Do not stop or restart `qwen3-coder-30b` or `gemma4-7900xt` without a separate approval slice.
+
+What did not change:
+- vLLM was not started.
+- vLLM was not installed.
+- Aider was not run.
+- No containers were stopped or restarted.
+- No Docker write command was run.
+- No systemd or sudo command was run.
+- `model-dispatch` and Open WebUI routing were not changed.
+
+Next:
+- Phase 2: read-only inspect the local `vllm/vllm-openai:latest` image and candidate runtime method.
