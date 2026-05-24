@@ -3,14 +3,27 @@
 This roadmap describes the path from the current setup to a practical
 human-reviewed homelab workflow.
 
-Last updated: 2026-05-18.
+Last updated: 2026-05-23.
 
 ## Current Facts To Preserve
 
 - Codex is the primary manual agent for planning, sequencing, approval briefs,
   and risky live-service work.
 - Claude Code is a strong frontier-code alternative and second opinion.
-- Aider is the preferred bounded repo patch assistant after a slice is planned.
+- Aider is the preferred bounded repo patch assistant after a slice is planned,
+  but Aider compatibility is not yet solved.
+- Non-Codex agentic work must use local LLMs or verified OpenRouter-free models
+  only.
+- vLLM is the preferred candidate serving layer for local coding/reasoning
+  models on AMD and Strix, subject to validation.
+- Qwen thinking-off or non-thinking mode is the baseline to test for Aider
+  patch workflows.
+- Reasoning-parser mode should be validated separately for complex
+  review/architecture work.
+- Hermes is observer, summarizer, reviewer, recorder, and
+  approved-skill-assisted preservation checker only. It must not edit
+  canonical repos, install live skills, restart services, or become an
+  approval daemon.
 - OpenCode is a later local-agent experiment, not the assumed next primary
   operating agent.
 - Continue.dev remains editor assist and review.
@@ -147,6 +160,10 @@ Definition of done:
 
 Aider was evaluated as a possible steady-state coder and eliminated after unsafe file-handling behavior during a simple documentation task.
 
+This is preserved as historical context. Later decisions supersede the
+OpenCode-recenter conclusion by allowing Aider back only as a bounded patch
+assistant and keeping OpenCode as a later local-agent experiment.
+
 Evaluation criteria:
 
 - Works through local/self-hosted direct endpoints where possible.
@@ -160,7 +177,8 @@ Definition of done:
 
 - `DECISIONS.md` records that Aider is eliminated from the homelab workflow.
 - The workflow docs no longer present Aider as an active default or fallback path.
-- OpenCode remains the coder path to recenter around.
+- The then-current OpenCode recentering conclusion is historical and no longer
+  the active strategy.
 
 ## Slice 8: Aider Workflow Integration
 
@@ -174,6 +192,45 @@ Definition of done:
 - `CURRENT_SLICE.md` and `AGENT_STATUS.md` reflect the handoff.
 - No Aider installation, service change, model-dispatch edit, client config
   change, or commit happens in this slice.
+
+## Slice 11: Codex Aider vLLM Hermes Strategy Consolidation
+
+The workflow is consolidated around Codex for planning/risk, Aider for bounded
+patch work after compatibility is validated, vLLM as the preferred serving
+candidate for AMD and Strix tests, and Hermes as observer/reviewer/skill
+proposer only.
+
+Definition of done:
+- `CURRENT_SLICE.md` identifies this active strategy consolidation slice.
+- `inventory/codex-aider-vllm-hermes-strategy.md` records roles, target
+  architecture, AMD/Strix vLLM roles, Aider compatibility path, Qwen mode
+  decision tree, Hermes boundary, non-goals, validation order, and stop
+  conditions.
+- `WORKFLOW.md` no longer implies OpenCode is the next primary agent.
+- Roadmap and status docs reflect the vLLM/Aider/Hermes direction.
+- No Aider run, vLLM run, live-service edit, service restart, Docker/systemd,
+  or commit happens in this slice.
+
+## Slice 12: Codex Aider vLLM Architecture Planning
+
+The architecture direction is documented around Codex as the high-trust manual
+planner/reviewer, Aider as the bounded patch tool after compatibility is
+proven, vLLM as the clean serving layer to evaluate for Aider-compatible local
+models on AMD and Strix, `model-dispatch` as the policy/routing layer, and
+Hermes as observer/reviewer/recorder/preservation checker only.
+
+Definition of done:
+- `CURRENT_SLICE.md` identifies this active architecture planning slice.
+- `inventory/codex-aider-vllm-architecture-plan.md` records the operating
+  decision, roles, Qwen thinking-mode treatment, Aider compatibility approach,
+  non-changes, and phased path.
+- OpenCode is not treated as the primary coder path.
+- The phased path is preserved: document architecture, inspect AMD/Strix vLLM
+  readiness, curl-only vLLM test, harmless one-file Aider docs edit, dedicated
+  `model-dispatch` alias only after proof, then Hermes read-only preservation
+  check.
+- No Aider run, vLLM run, model-dispatch edit, live-service edit, service
+  restart, Docker/systemd, or commit happens in this slice.
 
 ## Slice 7: Transition Away From LiteLLM Active Routing
 
@@ -275,6 +332,53 @@ Definition of done:
 - Candidate OpenCode config is tested in isolation.
 - Direct AMD routing remains documented rollback.
 - Live OpenCode config is changed only after operator approval.
+
+### Future Slice: AMD vLLM Coding Validation
+
+Validate vLLM as the preferred candidate serving layer for local coding models
+on AMD before any Aider patch trial depends on it.
+
+Definition of done:
+- Candidate model, vLLM launch shape, endpoint, rollback path, and validation
+  commands are documented before execution.
+- OpenAI-compatible response shape is validated without running Aider first.
+- Qwen thinking-off or non-thinking mode is tested as the baseline patch-output
+  mode.
+- No client routing changes happen without a later approval brief.
+
+### Future Slice: Aider vLLM Compatibility Trial
+
+After AMD vLLM response shape is validated, test Aider against one file in one
+repo with one planned edit and one reviewable diff.
+
+Definition of done:
+- The trial uses a local LLM or verified OpenRouter-free model only.
+- Aider is constrained to one repo and one bounded edit.
+- The diff is reviewed and validated before commit.
+- Any empty-response, edit-format, or model-metadata issue is recorded instead
+  of worked around with broad automation.
+
+### Future Slice: Strix vLLM Reasoning Validation
+
+Validate vLLM on Strix for reasoning/review workloads near canonical source and
+code-graph context.
+
+Definition of done:
+- Reasoning-parser mode is tested separately from Aider patch workflows.
+- Review/architecture quality and response-shape behavior are documented.
+- Strix remains source/development/code-graph host, not an autonomous mutator.
+- Client routing changes require a separate approval brief.
+
+### Future Slice: Hermes Read-Only Review Workflow
+
+Define how Hermes may observe, summarize, review, and propose skills without
+mutating canonical repositories or live services.
+
+Definition of done:
+- Read-only inputs, output artifacts, and review boundaries are documented.
+- Hermes does not install live skills, restart services, edit canonical repos,
+  or become an approval daemon.
+- Any proposed skill is reviewed manually before installation.
 
 ### Slice 5: Canonical Repos to Strix
 

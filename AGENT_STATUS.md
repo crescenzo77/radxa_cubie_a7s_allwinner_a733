@@ -2,52 +2,43 @@
 
 ## Current status
 
-The active slice is `Aider compatibility read-only inspection`.
+The active slice is `Codex Aider vLLM architecture planning`.
 
 ## Current task
 
-Correct `CURRENT_SLICE.md` after the Aider compatibility read-only inspection
-slice removed too much older prior-slice history. Keep the new active slice and
-new inspection inventory file, restore older history from `HEAD`, and do not
-run Aider, edit `/srv/model-dispatch`, restart services, run
-sudo/Docker/systemd, or commit.
+Document the homelab development architecture direction: Codex as the
+high-trust manual planner/reviewer and risky live-service agent, Aider as the
+bounded patch tool only after compatibility is proven, vLLM as the preferred
+serving direction to evaluate on AMD and Strix, `model-dispatch` as the
+policy/routing layer, and Hermes as observer/reviewer/recorder/preservation
+checker only.
 
 ## What changed
 
 - Updated `CURRENT_SLICE.md` so the active slice is
-  `Aider compatibility read-only inspection`.
+  `Codex Aider vLLM architecture planning`.
 - Updated `PROJECT_PLAN.md` so the current build stage is
-  `Slice 10: Aider compatibility read-only inspection`.
-- Created `inventory/aider-compatibility-inspection-2026-05-18.md`.
-- Documented the inspection purpose and endpoints:
-  - `http://192.168.50.225:4010/v1`
-  - `http://192.168.50.252:8083/v1`
-- Documented exact read-only manual `curl` commands for `/v1/models` and
-  `/v1/chat/completions` shape checks.
-- Documented what each command proves, expected response fields, comparison
-  criteria, and how to distinguish likely dispatcher, backend, and Aider
-  configuration or edit-format issues.
-- Preserved prior Aider compatibility planning history in
-  `CURRENT_SLICE.md`.
-- Restored older prior-slice history in `CURRENT_SLICE.md` from `HEAD`,
-  including:
-  - `Previous Active State: next-slice choice pending`
-  - `Completed Slice: additive model-dispatch alias deployment`
-  - `Previous Active Slice: additive model-dispatch alias deployment planning`
-  - `Previous Active Slice: model-dispatch alias registry cleanup planning`
-  - `Previous Active Slice: model-dispatch deployment planning only`
-  - `Trial Slice: Aider bounded patch test`
-- Updated this handoff.
+  `Slice 12: Codex Aider vLLM architecture planning`.
+- Created `inventory/codex-aider-vllm-architecture-plan.md`.
+- Documented the current operating decision, why OpenCode is no longer
+  primary, Codex role, Aider role, vLLM roles on AMD and Strix,
+  `model-dispatch` role, Hermes role, Qwen thinking-on versus thinking-off
+  treatment, Aider compatibility test approach, non-changes, phased path, and
+  next recommended slices.
+- Updated `WORKFLOW.md` only where needed to clarify Hermes preservation-check
+  boundaries.
+- Updated `ROADMAP.md` to add the architecture planning slice and phased path.
+- Preserved the prior `inventory/codex-aider-vllm-hermes-strategy.md` draft and
+  prior Aider/OpenCode history instead of deleting it.
 
 ## What did not change
 
 - No `/srv/model-dispatch` files were touched.
 - No `/srv/projects/model-dispatch` files were touched.
+- No `/srv/projects/hermes-homelab-runtime` files were touched.
 - No service restart or reload was run.
 - Aider was not run.
-- No new Aider trials were run.
-- No live endpoint commands were run; the inspection commands were documented
-  for manual execution only.
+- vLLM was not run.
 - No `sudo`, Docker, or systemd commands were run.
 - `model-dispatch` was not edited.
 - No Open WebUI config was changed.
@@ -60,10 +51,21 @@ sudo/Docker/systemd, or commit.
 
 ## Files changed
 
+Changed by this slice:
+
 - `CURRENT_SLICE.md`
 - `PROJECT_PLAN.md`
-- `inventory/aider-compatibility-inspection-2026-05-18.md`
+- `ROADMAP.md`
+- `WORKFLOW.md`
 - `AGENT_STATUS.md`
+- `inventory/codex-aider-vllm-architecture-plan.md`
+
+Pre-existing uncommitted docs changes still present in the working tree:
+
+- `CODEX_CONTEXT.md`
+- `DECISIONS.md`
+- `HOMELAB_LAYOUT.md`
+- `inventory/codex-aider-vllm-hermes-strategy.md`
 
 ## Checks run
 
@@ -72,11 +74,13 @@ sudo/Docker/systemd, or commit.
   - `CODEX_CONTEXT.md`
   - `CURRENT_SLICE.md`
   - `AGENT_STATUS.md`
-  - `inventory/aider-compatibility-plan.md`
-  - `WORKFLOW.md`
   - `PROJECT_PLAN.md`
   - `DECISIONS.md`
-- Requested final checks:
+  - `HOMELAB_LAYOUT.md`
+  - `WORKFLOW.md`
+  - `ROADMAP.md`
+- Inspected existing inventory and strategy references with `rg`.
+- Final checks:
   - `git diff --check`
   - `git diff --stat`
   - `git status --short`
@@ -85,40 +89,52 @@ sudo/Docker/systemd, or commit.
 
 - `git diff --check`: passed with no output.
 - `git diff --stat`:
-  - `AGENT_STATUS.md  | 107 ++++++++++++++++++++++++++++++++--------------`
-  - `CURRENT_SLICE.md | 126 +++++++++++++++++++++++++++++++------------------------`
-  - `PROJECT_PLAN.md  |   2 +-`
-  - `3 files changed, 148 insertions(+), 87 deletions(-)`
-  - Note: `git diff --stat` does not include untracked
-    `inventory/aider-compatibility-inspection-2026-05-18.md` until it is
-    staged.
+  - `AGENT_STATUS.md   | 128 ++++++++++--------`
+  - `CODEX_CONTEXT.md  |  20 ++-`
+  - `CURRENT_SLICE.md  | 396 +++++++++++++++++-------------------------------------`
+  - `DECISIONS.md      |  36 +++++`
+  - `HOMELAB_LAYOUT.md |  25 +++-`
+  - `PROJECT_PLAN.md   |   9 +-`
+  - `ROADMAP.md        | 110 ++++++++++++++-`
+  - `WORKFLOW.md       |  37 +++--`
+  - `8 files changed, 411 insertions(+), 350 deletions(-)`
+  - Note: untracked files are not included by plain `git diff --stat`.
 - `git status --short`:
   - `M AGENT_STATUS.md`
+  - `M CODEX_CONTEXT.md`
   - `M CURRENT_SLICE.md`
+  - `M DECISIONS.md`
+  - `M HOMELAB_LAYOUT.md`
   - `M PROJECT_PLAN.md`
-  - `?? inventory/aider-compatibility-inspection-2026-05-18.md`
+  - `M ROADMAP.md`
+  - `M WORKFLOW.md`
+  - `?? inventory/codex-aider-vllm-architecture-plan.md`
+  - `?? inventory/codex-aider-vllm-hermes-strategy.md`
 
 ## Known risks or blockers
 
-- Aider compatibility remains unverified because this slice intentionally does
-  not run Aider.
-- The documented commands include live read-only endpoint requests, but they
-  were not executed in this slice.
-- The root cause may still be in Aider provider/model settings,
-  `model-dispatch` response normalization, direct AMD backend behavior, or the
-  interaction between those layers.
-- Any future Aider trial should be a separate explicit slice after response
-  shapes are inspected.
+- Aider compatibility remains unresolved because this slice intentionally does
+  not run Aider or any Aider trial.
+- vLLM remains unvalidated for AMD and Strix because this slice intentionally
+  does not run vLLM or change services.
+- Hermes preservation-check usage remains a future read-only slice; no Hermes
+  runtime or skill workflow was changed.
+- Any future vLLM, Aider, `model-dispatch`, or Hermes implementation work needs
+  a separate slice and approval brief if it touches live services, routing,
+  persistent state, or canonical-repo mutation.
+- The working tree already had uncommitted docs changes before this slice in
+  `CODEX_CONTEXT.md`, `DECISIONS.md`, `HOMELAB_LAYOUT.md`, and
+  `inventory/codex-aider-vllm-hermes-strategy.md`; those were preserved.
 
 ## User approval needed
 
-No approval is needed for this documentation-only read-only inspection slice.
+No approval is needed for this documentation-only strategy slice.
 
 ## Recommended next action
 
-Review the diff. If accepted, manually run the documented read-only inspection
-commands or open a follow-up slice to record their results before any new Aider
-edit trial.
+Review the diff. If accepted, open a follow-up slice for AMD and Strix vLLM
+readiness inspection before any vLLM run, Aider trial, or model-dispatch alias
+change.
 
 ## Archived Status History
 

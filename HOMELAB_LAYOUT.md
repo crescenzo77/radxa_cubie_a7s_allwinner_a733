@@ -2,7 +2,7 @@
 
 This is the architectural reference for the practical two-surface homelab workflow. It answers what runs where, which machines own which responsibilities, and what must not become infrastructure.
 
-Last updated: 2026-05-18.
+Last updated: 2026-05-23.
 
 ## Operating Model
 
@@ -17,6 +17,11 @@ The user remains the final decision-maker. The system helps prepare decisions, e
 Codex is the primary manual agent for planning, sequencing, approval briefs,
 documentation slices, and risky live-service work. It must not become
 background infrastructure or an autonomous approval system.
+
+Aider is the preferred bounded patch assistant after compatibility is
+validated. vLLM is the preferred candidate serving direction for local AMD and
+Strix coding/reasoning tests. Hermes is observer/reviewer/skill proposer only
+and must not mutate canonical repos or live services.
 
 ## Machine Roles
 
@@ -40,7 +45,7 @@ compute, backup, external anchoring, and edge devices.
 | Host | Target role |
 |---|---|
 | `thinkcentre` | Control plane: Open WebUI, `model-dispatch`, SearXNG, reverse proxy, monitoring, service catalog, and tier-1 git mirrors |
-| `strix` | Canonical source, development, code-graph, and reasoning host |
+| `strix` | Canonical source, development, code-graph, reasoning host, and vLLM reasoning testbed |
 | `amd` | Mode-switched GPU compute worker for coding, LoRA/training, and creative workloads |
 | `minipc` | LAN backup and artifact storage |
 | `mac mini` | Apple/iMessage services and tier-2 git mirror |
@@ -51,6 +56,11 @@ compute, backup, external anchoring, and edge devices.
 `model-dispatch` is the target single model-facing API registry for Open WebUI,
 OpenCode, Continue.dev, and scripts. Clients should eventually use stable model
 aliases from `model-dispatch` rather than duplicating direct endpoint definitions.
+
+vLLM is the preferred candidate serving layer for future local
+coding/reasoning validation on AMD and Strix. This does not change live routing
+by itself. Any vLLM service launch, client migration, or model-dispatch
+integration requires a separate explicit slice and operator approval.
 
 Dashboards, monitoring, observability, service dashboards, Prometheus, Grafana,
 Loki, and Vector are target control-plane capabilities only. They are not
@@ -112,7 +122,8 @@ client. Choose the manual agent by task shape:
   slices, and risky live-service work.
 - Claude Code: strong frontier-code alternative and second opinion.
 - Aider: preferred bounded repo patch assistant for one planned edit in one
-  repo.
+  repo after compatibility is validated.
+- Hermes: observer, summarizer, reviewer, and skill proposer only.
 - OpenCode: later local-agent experiment, not the default operating agent.
 - Continue.dev: editor assist and review.
 - Cline: sandbox-only.
@@ -141,11 +152,17 @@ experiments. It is not the assumed next primary agent just because it fits the
 local model-dispatch architecture.
 
 Aider may be used only as a bounded patch assistant after a slice is planned:
-one repo, one bounded edit, one reviewable diff, validated before commit.
+one repo, one bounded edit, one reviewable diff, validated before commit. Aider
+compatibility is still unresolved; Qwen thinking-off or non-thinking mode is
+the baseline to test before any new patch workflow depends on it.
 LiteLLM is no longer in the default OpenCode path and no longer active for Open
 WebUI, but remains available as rollback/history. OpenRouter is available only
 through generated free-only entries when selected manually, not as an automatic
 hidden route.
+
+Hermes must not edit canonical repositories, install live skills, restart
+services, change model routing, supervise failures autonomously, or become an
+approval daemon. Hermes outputs should remain review proposals or summaries.
 
 Codex/Claude-style hosted tools must not be wired into API automation, wrappers, scheduled tasks, or background jobs. If used at all during setup or emergency manual work, they remain manually invoked tools.
 

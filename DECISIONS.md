@@ -240,3 +240,39 @@ Consequences:
 - OpenCode remains available for later local-agent experiments, not as the
   assumed default operating agent.
 - Historical Aider elimination remains preserved as prior context, not erased.
+
+## 2026-05-23 — Consolidate Codex, Aider, vLLM, and Hermes strategy
+
+Decision:
+Use Codex as the primary manual agent for planning, sequencing, approval
+briefs, documentation slices, and risky live-service work. Keep Aider as the
+preferred bounded patch assistant after compatibility is validated. Treat vLLM
+as the preferred candidate serving layer for local coding/reasoning models on
+AMD and Strix, subject to validation. Keep Hermes limited to observing,
+summarizing, reviewing, and proposing skills.
+
+Rationale:
+The workflow should follow the tools that best match task shape rather than
+making OpenCode primary because it fit an earlier routing direction. Codex is
+already the safest fit for high-risk sequencing and approval briefs. Aider
+matches the desired bounded patch workflow if local compatibility is solved.
+vLLM is the stronger candidate direction for local model serving across AMD and
+Strix tests. Hermes is useful as review context, but letting it mutate repos or
+operate services would blur approval and safety boundaries.
+
+Consequences:
+- OpenCode is not the assumed next primary coder; it remains a later
+  local-agent experiment.
+- Aider compatibility remains unresolved and must be validated before relying
+  on Aider for patch workflows.
+- Non-Codex agentic work must use local LLMs or verified OpenRouter-free models
+  only.
+- Qwen thinking-off or non-thinking mode is the baseline for Aider patch
+  workflow testing.
+- Reasoning-parser mode is tested separately for complex review and
+  architecture work.
+- vLLM validation on AMD and Strix requires future explicit slices and operator
+  approval before live service changes.
+- Hermes must not edit canonical repositories, install live skills, restart
+  services, change routing, supervise failures autonomously, or become an
+  approval daemon.

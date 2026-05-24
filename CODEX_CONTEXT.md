@@ -2,7 +2,7 @@
 
 This repo is the canonical context source for homelab agents.
 
-Codex/Aider/OpenCode must treat these files as project memory:
+Codex/Aider/OpenCode/Hermes must treat these files as project memory:
 
 - `AGENTS.md` — standing rules for agent behavior
 - `CODEX_CONTEXT.md` — context contract for Codex/Aider/OpenCode
@@ -91,7 +91,19 @@ WebUI is the strategic supervisor.
 Codex is primary for planning, sequencing, approval briefs, and risky
 live-service work.
 
-Aider is the bounded patch assistant for small, already-planned repo edits.
+Aider is the bounded patch assistant for small, already-planned repo edits once
+compatibility is validated.
+
+vLLM is the preferred candidate serving layer for local coding/reasoning models
+on AMD and Strix, subject to explicit validation slices.
+
+Qwen thinking-off or non-thinking mode is the baseline to test for Aider patch
+workflows. Reasoning-parser mode is a separate review/architecture validation
+path.
+
+Hermes observes, summarizes, reviews, and proposes skills only. It must not
+edit canonical repos, install live skills, restart services, mutate model
+routing, or become an approval daemon.
 
 OpenCode is a later local-agent experiment, not the assumed default executor.
 
@@ -99,5 +111,5 @@ Continue.dev is editor assist, and Cline is sandbox-only.
 
 The repo is the shared memory layer.
 
-If Codex, Aider, or OpenCode is uncertain, it should write the uncertainty into
-`AGENT_STATUS.md` instead of guessing.
+If Codex, Aider, OpenCode, or Hermes is uncertain, it should write the
+uncertainty into `AGENT_STATUS.md` instead of guessing.

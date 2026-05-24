@@ -8,8 +8,10 @@ Create a stable workflow where:
 
 1. A web UI advisor/planner helps interpret state and generate next prompts.
 2. Manual agents are selected by task shape: Codex for planning and risky
-   sequencing, Aider for bounded repo patches, Claude Code as a frontier-code
-   alternative, and local agents only through explicit experiments.
+   sequencing, Aider for bounded repo patches once compatibility is solved,
+   Claude Code as a frontier-code alternative, Hermes for observation/review
+   and preservation checks only, and local agents only through explicit
+   experiments.
 3. A local `advisor-packet` script creates compact context packets.
 4. Markdown files and Git provide durable project state.
 
@@ -22,6 +24,7 @@ Create a stable workflow where:
 - No autonomous supervision loop.
 - No MCP failure-supervision system for this workflow.
 - No unreviewed Aider output.
+- No Hermes mutation of canonical repos or live services.
 - No long-term LiteLLM dependency in the active OpenCode/OpenWebUI path.
 
 ## Completed stages
@@ -36,7 +39,7 @@ Create a stable workflow where:
 
 ## Current build stage
 
-Slice 10: Aider compatibility read-only inspection.
+Slice 12: Codex Aider vLLM architecture planning.
 
 ## How to use this repo
 
