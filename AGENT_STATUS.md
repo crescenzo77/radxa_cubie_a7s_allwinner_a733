@@ -1214,3 +1214,36 @@ Conclusion:
 Next:
 - Plan an AMD-first vLLM validation slice.
 - That slice must account for current RTX 3090 VRAM usage before starting any vLLM server.
+
+## AMD vLLM validation planning
+
+The active slice is `AMD vLLM validation planning`.
+
+What changed:
+- Updated `CURRENT_SLICE.md` for the AMD-first vLLM validation planning slice.
+- Updated `PROJECT_PLAN.md` so the current build stage is `Slice 13: AMD vLLM validation planning`.
+- Created `inventory/amd-vllm-validation-plan.md`.
+
+Purpose:
+- Plan AMD-first vLLM validation without starting vLLM, installing vLLM, stopping existing containers, changing `model-dispatch`, or changing Open WebUI.
+
+Key planning constraints:
+- AMD is the first vLLM candidate because the RTX 3090 and CUDA path are visible.
+- The current `qwen3-coder-30b` llama.cpp container occupies most RTX 3090 VRAM.
+- Do not stop or restart `qwen3-coder-30b` or `gemma4-7900xt` without a separate explicit approval slice.
+- Do not run Aider until curl-only vLLM response-shape checks pass.
+- Do not add a `model-dispatch` alias until Aider/vLLM compatibility is proven.
+
+What did not change:
+- vLLM was not run.
+- vLLM was not installed.
+- Aider was not run.
+- `model-dispatch` was not edited.
+- `/srv/model-dispatch` was not touched.
+- Open WebUI, OpenCode, Continue.dev, LiteLLM, dashboards, monitoring, and observability were not changed.
+- No `sudo`, Docker write command, or systemd write command was run.
+
+Next:
+- Review the diff.
+- If accepted, commit the AMD vLLM validation plan.
+- The next slice should be Phase 1: read-only AMD live-state recheck.

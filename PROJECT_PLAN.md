@@ -39,7 +39,7 @@ Create a stable workflow where:
 
 ## Current build stage
 
-Slice 12: Codex Aider vLLM architecture planning.
+Slice 13: AMD vLLM validation planning.
 
 ## How to use this repo
 

@@ -1,85 +1,73 @@
 # Current Slice
 
-## Active: Codex Aider vLLM architecture planning
+## Active: AMD vLLM validation planning
 
 ## Goal
 
-Document the current homelab development architecture direction away from
-OpenCode as the primary coding-agent path and toward:
+Plan the first AMD-first vLLM validation slice without running vLLM, installing
+vLLM, stopping existing containers, changing model routing, or changing Open
+WebUI.
 
-- Codex as the high-trust manual planner, sequencer, approval-brief author,
-  reviewer, and risky live-service agent.
-- Aider as the small bounded patch assistant only after local/free-model
-  compatibility is proven.
-- vLLM as the preferred model-serving direction to evaluate for
-  coding/reasoning models on AMD and Strix.
-- `model-dispatch` as the policy/routing layer that should not be replaced
-  casually.
-- Hermes as an observer, reviewer, recorder, and approved-skill-assisted
-  preservation layer, not the primary coder and not an autonomous mutator.
+This is a docs-only planning slice. It should preserve the committed
+architecture direction:
 
-This is a docs-only architecture planning slice.
+- Codex is primary for planning, sequencing, approval briefs, and risky
+  live-service work.
+- Aider is the bounded patch assistant only after compatibility is proven.
+- vLLM is the preferred model-serving direction to evaluate on AMD and Strix.
+- `model-dispatch` remains the policy/routing layer.
+- Hermes remains observer/reviewer/recorder/preservation-check layer.
+- OpenCode is no longer primary.
 
 ## Files Expected to Change
 
 - `CURRENT_SLICE.md`
-- `inventory/codex-aider-vllm-architecture-plan.md`
 - `PROJECT_PLAN.md`
-- `ROADMAP.md`
-- `WORKFLOW.md`
 - `AGENT_STATUS.md`
+- `inventory/amd-vllm-validation-plan.md`
 
-`ROADMAP.md` and `WORKFLOW.md` should be updated only where needed to remove
-contradictions with this active architecture direction.
+`ROADMAP.md` should be updated only if this slice exposes a roadmap
+contradiction or missing planning boundary.
 
 ## Acceptance Criteria
 
 - `CURRENT_SLICE.md` identifies the active slice as
-  `Codex Aider vLLM architecture planning`.
-- `inventory/codex-aider-vllm-architecture-plan.md` exists.
-- The architecture plan includes:
-  - current operating decision
-  - why OpenCode is no longer primary
-  - Codex role
-  - Aider role
-  - vLLM role on AMD
-  - vLLM role on Strix
-  - `model-dispatch` role
-  - Hermes role
-  - Qwen thinking-on versus thinking-off treatment
-  - Aider compatibility test approach
+  `AMD vLLM validation planning`.
+- `inventory/amd-vllm-validation-plan.md` exists.
+- The plan includes:
+  - purpose
+  - current AMD facts
+  - why AMD goes first
+  - what must be inspected before any vLLM run
+  - VRAM issue from `qwen3-coder-30b` occupying RTX 3090
+  - candidate validation options
+  - port choice constraints
+  - model choice constraints
+  - Qwen thinking-off baseline for Aider-oriented patch output
+  - rollback/stop conditions
   - what not to change yet
-  - next recommended slices
-- The ideal architecture states:
-  - Codex remains the high-trust manual planner/reviewer.
-  - Aider becomes the small bounded patch tool after local/free-model
-    compatibility is proven.
-  - vLLM should be evaluated as the clean model-serving layer for Aider on AMD
-    and Strix.
-  - `model-dispatch` remains the policy/routing layer and should not be
-    replaced casually.
-  - Hermes observes, reviews, records, and uses approved skills for
-    preservation checks, but does not become the coding agent.
-- The plan includes this phased path:
-  - Phase 1: document architecture.
-  - Phase 2: inspect AMD and Strix vLLM readiness.
-  - Phase 3: test vLLM endpoint with curl only.
-  - Phase 4: test Aider against vLLM with a harmless one-file docs edit.
-  - Phase 5: add a dedicated `model-dispatch` alias only after Aider/vLLM
-    compatibility is proven.
-  - Phase 6: return to Hermes and use the approved runtime preservation skill
-    for a read-only preservation check.
-- Prior Aider/OpenCode history remains preserved as history.
-- Aider is not run.
+  - exact future validation phases
+- Future validation phases are:
+  - Phase 1: read-only AMD live-state recheck
+  - Phase 2: identify candidate vLLM install/runtime method
+  - Phase 3: identify candidate model and model format
+  - Phase 4: choose temporary port and resource plan
+  - Phase 5: stop or free RTX 3090 only after explicit approval
+  - Phase 6: start vLLM only after explicit approval
+  - Phase 7: curl-only OpenAI-compatible checks
+  - Phase 8: Aider one-file docs trial only after curl checks pass
+  - Phase 9: model-dispatch alias only after Aider/vLLM proof
+- Prior history remains preserved.
 - vLLM is not run.
+- vLLM is not installed.
+- `qwen3-coder-30b` and `gemma4-7900xt` containers are not stopped or
+  restarted.
+- Aider is not run.
 - `model-dispatch` is not edited.
 - No `/srv/model-dispatch` files are touched.
-- No `/srv/projects/model-dispatch` files are touched.
-- No `/srv/projects/hermes-homelab-runtime` files are touched.
-- No services are restarted.
-- No `sudo`, Docker, or systemd commands are run.
 - No Open WebUI, OpenCode, Continue.dev, LiteLLM, dashboard, monitoring, or
   observability configuration is changed.
+- No `sudo`, Docker write commands, or systemd write commands are run.
 - No commit is made.
 - `AGENT_STATUS.md` is updated with the handoff.
 - The requested checks are run:
@@ -87,22 +75,38 @@ contradictions with this active architecture direction.
   - `git diff --stat`
   - `git status --short`
 
+## Readiness Findings To Preserve
+
+- AMD is the better first vLLM candidate.
+- AMD has RTX 3090 visible through `nvidia-smi`.
+- NVIDIA driver reports CUDA 13.2 support.
+- RTX 3090 VRAM is mostly occupied by the current `qwen3-coder-30b`
+  llama.cpp container.
+- AMD currently has healthy containers:
+  - `qwen3-coder-30b` on 8083
+  - `gemma4-7900xt` on 8084
+- AMD current endpoints return OpenAI-compatible `/v1/models`.
+- `vllm` was not found in the current user path.
+- Python is 3.14.4.
+- Strix is later because ROCm tools are absent and port 8000 is occupied.
+- ThinkCentre `model-dispatch` and Open WebUI routing are healthy and
+  unchanged.
+
 ## Scope Expansion Risks
 
-- Running Aider would turn this planning slice into a tool trial.
-- Running vLLM would turn this planning slice into serving validation.
-- Editing live `/srv/model-dispatch` or `/srv/projects/model-dispatch` would
-  broaden the task into routing implementation.
-- Editing `/srv/projects/hermes-homelab-runtime` would broaden the task into
-  Hermes runtime implementation.
-- Restarting services, using `sudo`, Docker, or systemd would broaden the task
-  into operations.
+- Running vLLM would turn this planning slice into live serving validation.
+- Installing vLLM would turn this planning slice into runtime preparation.
+- Stopping or restarting `qwen3-coder-30b` or `gemma4-7900xt` would affect
+  healthy AMD serving.
+- Running Aider would turn this slice into a compatibility trial.
+- Editing `model-dispatch` or `/srv/model-dispatch` would broaden this into
+  routing implementation.
 - Changing Open WebUI, OpenCode, Continue.dev, LiteLLM, dashboards,
   monitoring, or observability would violate the docs-only boundary.
+- Running `sudo`, Docker write commands, or systemd write commands would
+  broaden this into operations.
 - Adding wrappers, daemons, hidden background jobs, automation, paid fallback,
   or approval behavior would violate standing constraints.
-- Recommending paid frontier models for Aider, OpenCode, Cline, or other
-  non-Codex agents would violate the current model-use constraint.
 
 ## Prior Slice History
 
