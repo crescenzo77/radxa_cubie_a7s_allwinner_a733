@@ -1169,3 +1169,48 @@ Conclusion:
 
 Next:
 - Create a dedicated Aider compatibility slice before further Aider trials.
+
+## AMD and Strix vLLM readiness inspection
+
+Read-only AMD, Strix, and ThinkCentre routing inspection was performed for the Codex/Aider/vLLM architecture plan.
+
+AMD findings:
+- Host `AMD` is reachable.
+- RTX 3090 is visible through `nvidia-smi`.
+- NVIDIA driver reports CUDA 13.2 support.
+- RTX 3090 VRAM is mostly occupied by the current `qwen3-coder-30b` llama.cpp container.
+- `rocm-smi` is present and reports AMD GPU devices, but emitted a low-power/device warning.
+- Current model containers are healthy:
+  - `qwen3-coder-30b` on port 8083.
+  - `gemma4-7900xt` on port 8084.
+- Existing AMD model endpoints return OpenAI-compatible `/v1/models`.
+- `vllm` was not found in the current user path.
+- Python is 3.14.4.
+
+Strix findings:
+- Host `strix` is reachable.
+- Strix Halo Vulkan/RADV device is visible as `Radeon 8060S Graphics (RADV STRIX_HALO)`.
+- `rocm-smi` and `rocminfo` are not available.
+- `vllm` and `lemonade` were not found in the current user path.
+- Current Strix llama.cpp Vulkan containers are healthy:
+  - `qwen3-6` on port 8081.
+  - `qwen3-coder` on port 8082.
+- Existing Strix model endpoints return OpenAI-compatible `/v1/models`.
+- Port 8000 is already used by `legacy-printer-app`.
+
+ThinkCentre/model-dispatch findings:
+- `model-dispatch` health returned `{"status": "ok"}`.
+- `model-dispatch` exposes local AMD and Strix aliases plus OpenRouter-free entries.
+- Open WebUI remains routed to `http://192.168.50.225:4010/v1`.
+- Open WebUI has Ollama disabled and web search enabled.
+
+Conclusion:
+- AMD is the better first vLLM candidate because the NVIDIA/CUDA path is already visible and the coding model role lives there.
+- Strix should remain a later vLLM/Lemonade/ROCm readiness slice because ROCm tools are not currently present and port 8000 is occupied.
+- Do not run vLLM yet.
+- Do not stop existing model containers yet.
+- Do not change model-dispatch or Open WebUI routing yet.
+
+Next:
+- Plan an AMD-first vLLM validation slice.
+- That slice must account for current RTX 3090 VRAM usage before starting any vLLM server.
