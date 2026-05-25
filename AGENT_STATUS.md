@@ -2,51 +2,44 @@
 
 ## Current status
 
-The active slice is `Codex Aider vLLM architecture planning`.
+The active slice is `AMD temporary vLLM runtime test planning`.
 
 ## Current task
 
-Document the homelab development architecture direction: Codex as the
-high-trust manual planner/reviewer and risky live-service agent, Aider as the
-bounded patch tool only after compatibility is proven, vLLM as the preferred
-serving direction to evaluate on AMD and Strix, `model-dispatch` as the
-policy/routing layer, and Hermes as observer/reviewer/recorder/preservation
-checker only.
+Plan the first temporary AMD vLLM runtime test without starting vLLM, stopping
+existing containers, changing `model-dispatch`, changing Open WebUI, or running
+Aider.
 
 ## What changed
 
 - Updated `CURRENT_SLICE.md` so the active slice is
-  `Codex Aider vLLM architecture planning`.
+  `AMD temporary vLLM runtime test planning`.
 - Updated `PROJECT_PLAN.md` so the current build stage is
-  `Slice 12: Codex Aider vLLM architecture planning`.
-- Created `inventory/codex-aider-vllm-architecture-plan.md`.
-- Documented the current operating decision, why OpenCode is no longer
-  primary, Codex role, Aider role, vLLM roles on AMD and Strix,
-  `model-dispatch` role, Hermes role, Qwen thinking-on versus thinking-off
-  treatment, Aider compatibility test approach, non-changes, phased path, and
-  next recommended slices.
-- Updated `WORKFLOW.md` only where needed to clarify Hermes preservation-check
-  boundaries.
-- Updated `ROADMAP.md` to add the architecture planning slice and phased path.
-- Preserved the prior `inventory/codex-aider-vllm-hermes-strategy.md` draft and
-  prior Aider/OpenCode history instead of deleting it.
+  `Slice 16: AMD temporary vLLM runtime test planning`.
+- Created `inventory/amd-temporary-vllm-runtime-test-plan.md`.
+- Documented the temporary vLLM test purpose, current proven facts, temporary
+  boundary, exact candidate image, model candidate requirements, GGUF versus
+  HF/safetensors model-format concern, candidate port, RTX 3090 VRAM issue,
+  decision point for stopping `qwen3-coder-30b`, future Docker run shape,
+  curl-only checks, rollback command, non-changes, and go/no-go criteria.
+- Preserved the AMD validation, Phase 1 live-state recheck, and Phase 2 local
+  image/runtime inspection history instead of replacing it.
 
 ## What did not change
 
 - No `/srv/model-dispatch` files were touched.
-- No `/srv/projects/model-dispatch` files were touched.
-- No `/srv/projects/hermes-homelab-runtime` files were touched.
-- No service restart or reload was run.
-- Aider was not run.
-- vLLM was not run.
-- No `sudo`, Docker, or systemd commands were run.
-- `model-dispatch` was not edited.
+- No `model-dispatch` files were edited.
 - No Open WebUI config was changed.
 - No OpenCode config was changed.
 - No Continue.dev config was changed.
-- No Open WebUI, LiteLLM, dashboard, monitoring, or observability deployment
-  was changed.
-- No dashboard, monitoring, or observability deployment was started.
+- No LiteLLM config was changed.
+- No dashboard, monitoring, or observability config was changed.
+- No service restart or reload was run.
+- Aider was not run.
+- vLLM was not run.
+- `qwen3-coder-30b` was not stopped or restarted.
+- `gemma4-7900xt` was not stopped or restarted.
+- No `sudo`, Docker, or systemd commands were run.
 - No commit was made.
 
 ## Files changed
@@ -55,17 +48,11 @@ Changed by this slice:
 
 - `CURRENT_SLICE.md`
 - `PROJECT_PLAN.md`
-- `ROADMAP.md`
-- `WORKFLOW.md`
 - `AGENT_STATUS.md`
-- `inventory/codex-aider-vllm-architecture-plan.md`
+- `inventory/amd-temporary-vllm-runtime-test-plan.md`
 
-Pre-existing uncommitted docs changes still present in the working tree:
-
-- `CODEX_CONTEXT.md`
-- `DECISIONS.md`
-- `HOMELAB_LAYOUT.md`
-- `inventory/codex-aider-vllm-hermes-strategy.md`
+`ROADMAP.md` was not changed because the existing roadmap already includes AMD
+vLLM coding validation as a future slice.
 
 ## Checks run
 
@@ -76,8 +63,6 @@ Pre-existing uncommitted docs changes still present in the working tree:
   - `AGENT_STATUS.md`
   - `PROJECT_PLAN.md`
   - `DECISIONS.md`
-  - `HOMELAB_LAYOUT.md`
-  - `WORKFLOW.md`
   - `ROADMAP.md`
 - Inspected existing inventory and strategy references with `rg`.
 - Final checks:
@@ -89,52 +74,40 @@ Pre-existing uncommitted docs changes still present in the working tree:
 
 - `git diff --check`: passed with no output.
 - `git diff --stat`:
-  - `AGENT_STATUS.md   | 128 ++++++++++--------`
-  - `CODEX_CONTEXT.md  |  20 ++-`
-  - `CURRENT_SLICE.md  | 396 +++++++++++++++++-------------------------------------`
-  - `DECISIONS.md      |  36 +++++`
-  - `HOMELAB_LAYOUT.md |  25 +++-`
-  - `PROJECT_PLAN.md   |   9 +-`
-  - `ROADMAP.md        | 110 ++++++++++++++-`
-  - `WORKFLOW.md       |  37 +++--`
-  - `8 files changed, 411 insertions(+), 350 deletions(-)`
-  - Note: untracked files are not included by plain `git diff --stat`.
+  - `AGENT_STATUS.md  | 119 +++++++++++-----------------`
+  - `CURRENT_SLICE.md | 231 +++++++++++++++++++++----------------------------------`
+  - `PROJECT_PLAN.md  |   2 +-`
+  - `3 files changed, 135 insertions(+), 217 deletions(-)`
+  - Note: plain `git diff --stat` does not include the untracked new inventory
+    file.
 - `git status --short`:
   - `M AGENT_STATUS.md`
-  - `M CODEX_CONTEXT.md`
   - `M CURRENT_SLICE.md`
-  - `M DECISIONS.md`
-  - `M HOMELAB_LAYOUT.md`
   - `M PROJECT_PLAN.md`
-  - `M ROADMAP.md`
-  - `M WORKFLOW.md`
-  - `?? inventory/codex-aider-vllm-architecture-plan.md`
-  - `?? inventory/codex-aider-vllm-hermes-strategy.md`
+  - `?? inventory/amd-temporary-vllm-runtime-test-plan.md`
 
 ## Known risks or blockers
 
-- Aider compatibility remains unresolved because this slice intentionally does
-  not run Aider or any Aider trial.
-- vLLM remains unvalidated for AMD and Strix because this slice intentionally
-  does not run vLLM or change services.
-- Hermes preservation-check usage remains a future read-only slice; no Hermes
-  runtime or skill workflow was changed.
-- Any future vLLM, Aider, `model-dispatch`, or Hermes implementation work needs
-  a separate slice and approval brief if it touches live services, routing,
-  persistent state, or canonical-repo mutation.
-- The working tree already had uncommitted docs changes before this slice in
-  `CODEX_CONTEXT.md`, `DECISIONS.md`, `HOMELAB_LAYOUT.md`, and
-  `inventory/codex-aider-vllm-hermes-strategy.md`; those were preserved.
+- The immediate blocker for runtime execution is model format, not image
+  availability. The current AMD Qwen coder artifact is GGUF under llama.cpp
+  and is likely unsuitable for vLLM.
+- Do not stop `qwen3-coder-30b` until an exact local HF/safetensors-style model
+  candidate is proven.
+- If no HF/safetensors model is present locally, stop and plan model
+  acquisition separately instead of trying to force vLLM to serve GGUF.
+- RTX 3090 VRAM remains mostly occupied by the healthy `qwen3-coder-30b`
+  endpoint, so any later runtime test needs explicit operator approval before
+  freeing that GPU.
 
 ## User approval needed
 
-No approval is needed for this documentation-only strategy slice.
+No approval is needed for this documentation-only planning slice.
 
 ## Recommended next action
 
-Review the diff. If accepted, open a follow-up slice for AMD and Strix vLLM
-readiness inspection before any vLLM run, Aider trial, or model-dispatch alias
-change.
+Review the diff. If accepted, open a read-only AMD model inventory slice to
+prove whether a local HF/safetensors-style vLLM candidate exists before any
+runtime execution or `qwen3-coder-30b` stop decision.
 
 ## Archived Status History
 

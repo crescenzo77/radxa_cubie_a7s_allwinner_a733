@@ -1,30 +1,23 @@
 # Current Slice
 
-## Active: AMD vLLM validation planning
+## Active: AMD temporary vLLM runtime test planning
 
 ## Goal
 
-Plan the first AMD-first vLLM validation slice without running vLLM, installing
-vLLM, stopping existing containers, changing model routing, or changing Open
-WebUI.
+Plan the first temporary AMD vLLM runtime test without starting vLLM, stopping
+existing containers, changing model routing, changing Open WebUI, or running
+Aider.
 
-This is a docs-only planning slice. It should preserve the committed
-architecture direction:
+This is a docs-only planning slice. It must turn the completed AMD Phase 1
+live-state recheck and AMD Phase 2 local image/runtime inspection into a
+reviewable future runtime-test plan.
 
-- Codex is primary for planning, sequencing, approval briefs, and risky
-  live-service work.
-- Aider is the bounded patch assistant only after compatibility is proven.
-- vLLM is the preferred model-serving direction to evaluate on AMD and Strix.
-- `model-dispatch` remains the policy/routing layer.
-- Hermes remains observer/reviewer/recorder/preservation-check layer.
-- OpenCode is no longer primary.
-
-## Files Expected to Change
+## Files Expected To Change
 
 - `CURRENT_SLICE.md`
 - `PROJECT_PLAN.md`
 - `AGENT_STATUS.md`
-- `inventory/amd-vllm-validation-plan.md`
+- `inventory/amd-temporary-vllm-runtime-test-plan.md`
 
 `ROADMAP.md` should be updated only if this slice exposes a roadmap
 contradiction or missing planning boundary.
@@ -32,39 +25,36 @@ contradiction or missing planning boundary.
 ## Acceptance Criteria
 
 - `CURRENT_SLICE.md` identifies the active slice as
-  `AMD vLLM validation planning`.
-- `inventory/amd-vllm-validation-plan.md` exists.
+  `AMD temporary vLLM runtime test planning`.
+- `inventory/amd-temporary-vllm-runtime-test-plan.md` exists.
 - The plan includes:
   - purpose
-  - current AMD facts
-  - why AMD goes first
-  - what must be inspected before any vLLM run
-  - VRAM issue from `qwen3-coder-30b` occupying RTX 3090
-  - candidate validation options
-  - port choice constraints
-  - model choice constraints
-  - Qwen thinking-off baseline for Aider-oriented patch output
-  - rollback/stop conditions
-  - what not to change yet
-  - exact future validation phases
-- Future validation phases are:
-  - Phase 1: read-only AMD live-state recheck
-  - Phase 2: identify candidate vLLM install/runtime method
-  - Phase 3: identify candidate model and model format
-  - Phase 4: choose temporary port and resource plan
-  - Phase 5: stop or free RTX 3090 only after explicit approval
-  - Phase 6: start vLLM only after explicit approval
-  - Phase 7: curl-only OpenAI-compatible checks
-  - Phase 8: Aider one-file docs trial only after curl checks pass
-  - Phase 9: model-dispatch alias only after Aider/vLLM proof
+  - current proven facts
+  - why the test must be temporary
+  - exact candidate image
+  - exact candidate model
+  - model format concern
+  - whether the existing GGUF model is suitable or likely unsuitable for vLLM
+  - candidate port selection
+  - resource and VRAM issue
+  - decision point for stopping `qwen3-coder-30b`
+  - proposed future Docker run shape, clearly marked not to run yet
+  - curl-only validation checks
+  - stop/rollback command
+  - what not to change
+  - go/no-go criteria before runtime execution
+- The plan includes this warning:
+  - Do not stop `qwen3-coder-30b` until the model candidate and vLLM model
+    format are proven.
+  - If no HF/safetensors model is present locally, stop and plan model
+    acquisition separately instead of trying to force vLLM to serve GGUF.
 - Prior history remains preserved.
-- vLLM is not run.
-- vLLM is not installed.
-- `qwen3-coder-30b` and `gemma4-7900xt` containers are not stopped or
-  restarted.
+- vLLM is not started.
+- `qwen3-coder-30b` is not stopped or restarted.
+- `gemma4-7900xt` is not stopped or restarted.
 - Aider is not run.
 - `model-dispatch` is not edited.
-- No `/srv/model-dispatch` files are touched.
+- `/srv/model-dispatch` is not touched.
 - No Open WebUI, OpenCode, Continue.dev, LiteLLM, dashboard, monitoring, or
   observability configuration is changed.
 - No `sudo`, Docker write commands, or systemd write commands are run.
@@ -75,38 +65,43 @@ contradiction or missing planning boundary.
   - `git diff --stat`
   - `git status --short`
 
-## Readiness Findings To Preserve
+## Proven Facts To Preserve
 
-- AMD is the better first vLLM candidate.
-- AMD has RTX 3090 visible through `nvidia-smi`.
-- NVIDIA driver reports CUDA 13.2 support.
-- RTX 3090 VRAM is mostly occupied by the current `qwen3-coder-30b`
-  llama.cpp container.
-- AMD currently has healthy containers:
-  - `qwen3-coder-30b` on 8083
-  - `gemma4-7900xt` on 8084
-- AMD current endpoints return OpenAI-compatible `/v1/models`.
-- `vllm` was not found in the current user path.
-- Python is 3.14.4.
-- Strix is later because ROCm tools are absent and port 8000 is occupied.
-- ThinkCentre `model-dispatch` and Open WebUI routing are healthy and
-  unchanged.
+- Latest homelab commit before this slice:
+  `fc15397 document amd vllm phase 2 image inspection`.
+- AMD Phase 1 live-state recheck is documented.
+- AMD Phase 2 local vLLM image/runtime inspection is documented.
+- Local image exists on AMD: `vllm/vllm-openai:latest`.
+- Image has:
+  - `python3`
+  - Python `3.12.13`
+  - torch `2.10.0+cu129`
+  - CUDA `12.9`
+  - vLLM `0.19.0`
+- Image can see RTX 3090 with `--gpus all`.
+- Existing containers remained healthy after dry checks:
+  - `qwen3-coder-30b` on `8083`
+  - `gemma4-7900xt` on `8084`
+- RTX 3090 VRAM is mostly occupied by `qwen3-coder-30b`.
+- vLLM has not been started.
+- `qwen3-coder-30b` has not been stopped.
+- `model-dispatch` and Open WebUI remain unchanged.
 
 ## Scope Expansion Risks
 
-- Running vLLM would turn this planning slice into live serving validation.
-- Installing vLLM would turn this planning slice into runtime preparation.
+- Starting vLLM would turn this planning slice into live runtime execution.
 - Stopping or restarting `qwen3-coder-30b` or `gemma4-7900xt` would affect
   healthy AMD serving.
-- Running Aider would turn this slice into a compatibility trial.
+- Pulling or downloading a model would turn this into model acquisition.
+- Forcing the existing GGUF llama.cpp artifact into vLLM would create a
+  confused validation target and risk wasting the RTX 3090 stop window.
+- Running Aider would turn this into an agent compatibility trial.
 - Editing `model-dispatch` or `/srv/model-dispatch` would broaden this into
   routing implementation.
 - Changing Open WebUI, OpenCode, Continue.dev, LiteLLM, dashboards,
   monitoring, or observability would violate the docs-only boundary.
 - Running `sudo`, Docker write commands, or systemd write commands would
   broaden this into operations.
-- Adding wrappers, daemons, hidden background jobs, automation, paid fallback,
-  or approval behavior would violate standing constraints.
 
 ## Prior Slice History
 

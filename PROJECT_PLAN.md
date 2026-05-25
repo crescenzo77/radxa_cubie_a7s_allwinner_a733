@@ -39,7 +39,7 @@ Create a stable workflow where:
 
 ## Current build stage
 
-Slice 13: AMD vLLM validation planning.
+Slice 16: AMD temporary vLLM runtime test planning.
 
 ## How to use this repo
 
