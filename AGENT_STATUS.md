@@ -1302,3 +1302,45 @@ What did not change:
 
 Next:
 - Plan the approved temporary runtime test, including port, model choice, VRAM freeing decision, exact start command, curl-only checks, and rollback command.
+
+## AMD vLLM local model inventory
+
+A read-only AMD model inventory was performed to determine whether a local HF/safetensors-style model candidate exists for vLLM.
+
+Findings:
+- Local HF/safetensors-style model directories were found under `/home/enzo/.cache/huggingface/hub/`.
+- Candidate local HF-style models include:
+  - `Qwen2.5-1.5B-Instruct`
+  - `Qwen2.5-7B-Instruct`
+  - `Qwen2.5-Coder-7B-Instruct`
+  - `Qwen3-14B-AWQ`
+  - `Qwen3.5-35B-A3B-GPTQ-Int4`
+  - `cyankiwi/Qwen3-Coder-30B-A3B-Instruct-AWQ-4bit`
+- Active llama.cpp GGUF artifacts remain:
+  - `/srv/llm/qwen3-coder-30b/models/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+  - `/srv/llm/gemma4-rocm/models/google_gemma-4-26B-A4B-it-Q4_K_M.gguf`
+- The HF-like directory summary found tokenizer files and safetensors weights for multiple Qwen candidates.
+- `qwen3-coder-30b` remained healthy on port `8083`.
+- `gemma4-7900xt` remained healthy on port `8084`.
+- RTX 3090 VRAM remained mostly occupied by `/app/llama-server`.
+
+Conclusion:
+- Model acquisition is not the immediate next step.
+- The next step should be read-only inspection of exact candidate model directories.
+- The existing GGUF artifacts remain unsuitable as the first vLLM candidate unless separately proven otherwise.
+- Do not stop `qwen3-coder-30b` yet.
+
+Candidate priority:
+- For a no-interruption vLLM smoke test, inspect `Qwen2.5-1.5B-Instruct`.
+- For a coding-relevant vLLM test, inspect `Qwen2.5-Coder-7B-Instruct`.
+- For a larger coding candidate, inspect `cyankiwi/Qwen3-Coder-30B-A3B-Instruct-AWQ-4bit`, but assume it may require freeing RTX 3090 VRAM.
+
+What did not change:
+- vLLM was not started.
+- No model was downloaded.
+- No containers were stopped or restarted.
+- No Docker write command was run.
+- No model-dispatch or Open WebUI routing was changed.
+
+Next:
+- Read-only inspect the exact local candidate directories and choose the first runtime candidate.
