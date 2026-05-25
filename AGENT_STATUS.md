@@ -1287,3 +1287,45 @@ What did not change:
 
 Next:
 - Phase 2: read-only inspect the local `vllm/vllm-openai:latest` image and candidate runtime method.
+
+## AMD vLLM Phase 2 local image/runtime inspection
+
+Read-only inspection of the local `vllm/vllm-openai:latest` image was performed.
+
+Findings:
+- Local image `vllm/vllm-openai:latest` exists on AMD.
+- Initial dry-run with `python` failed because the image provides `python3`, not `python`.
+- `python3` exists inside the image.
+- `vllm` exists inside the image.
+- Image Python version is `3.12.13`.
+- Torch version is `2.10.0+cu129`.
+- Torch CUDA version is `12.9`.
+- vLLM version is `0.19.0`.
+- The vLLM OpenAI API server help is available through `python3 -m vllm.entrypoints.openai.api_server --help`.
+- With `--gpus all`, the image can see the RTX 3090.
+- CUDA is available inside the image.
+- The image reports one CUDA device:
+  `NVIDIA GeForce RTX 3090`.
+- Container-visible GPU memory was about:
+  - free: `5836898304`
+  - total: `25298141184`
+- Existing containers remained running after dry checks:
+  - `qwen3-coder-30b`
+  - `gemma4-7900xt`
+
+Conclusion:
+- The local vLLM image is viable enough for a future approved runtime test.
+- The next blocker is not image availability; it is RTX 3090 VRAM availability.
+- Do not start vLLM yet because `qwen3-coder-30b` is still using most RTX 3090 VRAM.
+- Do not stop or restart `qwen3-coder-30b` without a separate approval slice.
+
+What did not change:
+- vLLM was not started as a server.
+- No vLLM package was installed.
+- No image was pulled.
+- No containers were stopped or restarted.
+- No model-dispatch or Open WebUI routing was changed.
+- No Aider trial was run.
+
+Next:
+- Plan the approved temporary runtime test, including port, model choice, VRAM freeing decision, exact start command, curl-only checks, and rollback command.
