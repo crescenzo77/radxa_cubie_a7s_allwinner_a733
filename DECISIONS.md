@@ -1,5 +1,48 @@
 # Decisions
 
+## 2026-05-26 — Strix bulk storage mount
+
+Decision:
+Rename the old unused Strix `/models` mount to `/bulk` and make `/bulk` the
+persistent mount for UUID `80475fbf-4c66-42d1-8f31-1492e0f14c64`.
+
+Rationale:
+The previous `/models` mount name implied an active model-runtime location, but
+Strix currently uses the WD_BLACK root drive for active projects and LLM
+runtime data. The SanDisk SSD is better documented as replaceable bulk storage.
+
+Consequences:
+- `/bulk` is `/dev/nvme0n1p1`, ext4, label `bulk`, on the SanDisk SSD Plus
+  2TB A3N.
+- `/bulk` has about 1.8T capacity and was almost empty at validation time.
+- `/models` is no longer mounted, and the empty `/models` directory was
+  removed.
+- `/etc/fstab` now contains:
+
+```text
+UUID=80475fbf-4c66-42d1-8f31-1492e0f14c64  /bulk  ext4  defaults,nofail  0  2
+```
+
+- The change was reboot-tested successfully.
+- Strix LLM containers `qwen3-6` and `qwen3-coder` came back healthy after
+  reboot.
+- Health checks passed for both Strix NVMe drives:
+  - SanDisk `/bulk`: SMART passed, `critical_warning` 0, `media_errors` 0,
+    error log entries 0, `available_spare` 100%, `percentage_used` 1%.
+  - WD_BLACK root: SMART passed, `critical_warning` 0, `media_errors` 0,
+    error log entries 0, `available_spare` 100%, `percentage_used` 0%.
+
+Policy:
+- `/srv/projects` on the WD_BLACK root drive remains the trusted active
+  project/source home.
+- `/srv/llm` on the WD_BLACK root drive remains the active Strix LLM
+  runtime/model location for now.
+- `/bulk` is available for replaceable bulk, cache, scratch, model downloads,
+  and artifacts.
+- `/bulk` must not be used for canonical source repos, sole-copy databases,
+  irreplaceable scanned documents, registry primary data, or only-copy project
+  history.
+
 ## 2026-05-05 — Two-surface workflow
 
 Decision:

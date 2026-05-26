@@ -2,7 +2,7 @@
 
 This is the architectural reference for the practical two-surface homelab workflow. It answers what runs where, which machines own which responsibilities, and what must not become infrastructure.
 
-Last updated: 2026-05-23.
+Last updated: 2026-05-26.
 
 ## Operating Model
 
@@ -313,6 +313,35 @@ strix:/srv/projects/<project-name>/
 ```
 
 AMD remains an intentional exception for projects that need the RTX 3090 directly, such as the LoRA pipeline. AMD also hosts the existing OpenCode setup for later local-agent experiments.
+
+## Strix Storage
+
+Strix active source and LLM runtime data remain on the WD_BLACK root drive:
+
+```text
+/srv/projects = trusted active project/source home
+/srv/llm = active Strix LLM runtime/model location for now
+```
+
+The SanDisk SSD Plus 2TB A3N is mounted as replaceable bulk storage:
+
+```text
+Device: /dev/nvme0n1p1
+UUID: 80475fbf-4c66-42d1-8f31-1492e0f14c64
+Filesystem: ext4
+Label: bulk
+Mountpoint: /bulk
+Capacity: about 1.8T
+fstab: UUID=80475fbf-4c66-42d1-8f31-1492e0f14c64  /bulk  ext4  defaults,nofail  0  2
+```
+
+`/bulk` is available for replaceable bulk, cache, scratch, model downloads, and
+artifacts. It must not hold canonical source repos, sole-copy databases,
+irreplaceable scanned documents, registry primary data, or only-copy project
+history.
+
+The old `/models` mount is retired. `/models` is no longer mounted, and the
+empty directory was removed after the `/bulk` change was reboot-tested.
 
 Target git mirror convention:
 
