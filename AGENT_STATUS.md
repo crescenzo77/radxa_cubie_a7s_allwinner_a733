@@ -1413,3 +1413,48 @@ Conclusion:
   coding model.
 - The next decision is whether to test Aider directly against the temporary vLLM
   endpoint, or first create a dedicated model-dispatch alias plan.
+
+## Direct Aider vLLM one-file docs trial succeeded
+
+Aider was tested directly against the temporary AMD vLLM endpoint.
+
+Endpoint:
+- `http://192.168.50.252:18000/v1`
+
+Model:
+- `openai/amd-vllm-temp-qwen2.5-coder-7b`
+
+Task:
+- One small docs-only edit to `docs/aider-workflow.md`.
+- Add section: `Direct vLLM Trial Note`.
+
+Result:
+- Aider connected to the direct vLLM endpoint.
+- Aider returned a non-empty response.
+- Aider edited only `docs/aider-workflow.md`.
+- Aider asked to add extra files:
+  - `AGENT_STATUS.md`
+  - `CURRENT_SLICE.md`
+  - `PROJECT_PLAN.md`
+  - `AGENTS.md`
+  - `CODEX_CONTEXT.md`
+  - `DECISIONS.md`
+- The user declined each extra file request.
+- Aider did not commit.
+- `git diff --check` passed.
+- `git diff --stat` showed only:
+  `docs/aider-workflow.md | 4 ++++`
+
+Conclusion:
+- Direct Aider against temporary AMD vLLM is now proven for a one-file docs edit.
+- The previous empty-response failure appears tied to the earlier local alias/model-dispatch path, not Aider itself.
+- Aider still tries to add context/control files when they are mentioned, so future trials must continue to decline extra files or avoid naming out-of-scope files in the prompt where practical.
+
+What did not change:
+- No model-dispatch alias was added.
+- Open WebUI routing was not changed.
+- No service config was changed.
+- No Docker/systemd persistent unit, wrapper, restart policy, or daemon was created.
+
+Next:
+- Decide whether to run a second Aider trial with a slightly more realistic one-file patch, or plan a dedicated model-dispatch alias for the proven vLLM endpoint.

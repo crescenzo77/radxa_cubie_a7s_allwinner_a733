@@ -87,3 +87,7 @@ Do not let Aider commit by default.
 The user reviews the diff first. After review, commit manually with a concise
 message that names the slice. If the Aider diff is wrong, reject it or revert it
 with normal Git tools instead of asking Aider to broaden the task.
+
+## Direct vLLM Trial Note
+
+Direct vLLM trials must use one file only. The user reviews the diff before commit. If Aider edits unrelated files, reject the run and restore the diff.
