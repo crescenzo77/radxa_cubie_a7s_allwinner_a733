@@ -39,7 +39,7 @@ Create a stable workflow where:
 
 ## Current build stage
 
-Slice 16: AMD temporary vLLM runtime test planning.
+Slice 17: AMD vLLM model-dispatch alias planning.
 
 ## How to use this repo
 

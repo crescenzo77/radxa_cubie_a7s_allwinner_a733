@@ -10,12 +10,20 @@ Last updated: 2026-05-23.
 - Codex is the primary manual agent for planning, sequencing, approval briefs,
   and risky live-service work.
 - Claude Code is a strong frontier-code alternative and second opinion.
-- Aider is the preferred bounded repo patch assistant after a slice is planned,
-  but Aider compatibility is not yet solved.
+- Aider is the preferred bounded repo patch assistant after a slice is planned.
+  Direct Aider-to-temporary AMD vLLM is proven twice for bounded one-file docs
+  edits, but Aider through `model-dispatch` is not yet proven.
 - Non-Codex agentic work must use local LLMs or verified OpenRouter-free models
   only.
 - vLLM is the preferred candidate serving layer for local coding/reasoning
   models on AMD and Strix, subject to validation.
+- AMD vLLM with `Qwen2.5-Coder-7B-Instruct` is proven as a temporary direct
+  endpoint at `http://192.168.50.252:18000/v1`, served as
+  `amd-vllm-temp-qwen2.5-coder-7b`; it is not persistent and should not be
+  treated as always available.
+- AMD RTX 3090 is currently mode-switched between `qwen3-coder-30b` llama.cpp
+  on `8083` and temporary vLLM on `18000`; both should not be assumed
+  available at the same time.
 - Qwen thinking-off or non-thinking mode is the baseline to test for Aider
   patch workflows.
 - Reasoning-parser mode should be validated separately for complex

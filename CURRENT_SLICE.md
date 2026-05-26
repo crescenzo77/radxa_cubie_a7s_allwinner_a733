@@ -1,62 +1,77 @@
 # Current Slice
 
-## Active: AMD temporary vLLM runtime test planning
+## Active: AMD vLLM model-dispatch alias planning
 
 ## Goal
 
-Plan the first temporary AMD vLLM runtime test without starting vLLM, stopping
-existing containers, changing model routing, changing Open WebUI, or running
+Plan whether and how to add a dedicated `model-dispatch` alias for the proven
+temporary AMD vLLM endpoint, without implementing the alias, changing live
+routing, changing Open WebUI, starting vLLM, stopping services, or running
 Aider.
 
-This is a docs-only planning slice. It must turn the completed AMD Phase 1
-live-state recheck and AMD Phase 2 local image/runtime inspection into a
-reviewable future runtime-test plan.
+This is a docs-only planning slice. It must preserve the direct AMD vLLM and
+Aider trial history while deciding the conservative next routing posture.
 
 ## Files Expected To Change
 
 - `CURRENT_SLICE.md`
 - `PROJECT_PLAN.md`
 - `AGENT_STATUS.md`
-- `inventory/amd-temporary-vllm-runtime-test-plan.md`
+- `ROADMAP.md`, only if needed to correct current workflow facts
+- `inventory/amd-vllm-model-dispatch-alias-plan.md`
 
-`ROADMAP.md` should be updated only if this slice exposes a roadmap
-contradiction or missing planning boundary.
+Do not edit `/srv/model-dispatch` or `/srv/projects/model-dispatch`.
 
 ## Acceptance Criteria
 
 - `CURRENT_SLICE.md` identifies the active slice as
-  `AMD temporary vLLM runtime test planning`.
-- `inventory/amd-temporary-vllm-runtime-test-plan.md` exists.
+  `AMD vLLM model-dispatch alias planning`.
+- `inventory/amd-vllm-model-dispatch-alias-plan.md` exists.
 - The plan includes:
   - purpose
   - current proven facts
-  - why the test must be temporary
-  - exact candidate image
-  - exact candidate model
-  - model format concern
-  - whether the existing GGUF model is suitable or likely unsuitable for vLLM
-  - candidate port selection
-  - resource and VRAM issue
-  - decision point for stopping `qwen3-coder-30b`
-  - proposed future Docker run shape, clearly marked not to run yet
-  - curl-only validation checks
-  - stop/rollback command
-  - what not to change
-  - go/no-go criteria before runtime execution
-- The plan includes this warning:
-  - Do not stop `qwen3-coder-30b` until the model candidate and vLLM model
-    format are proven.
-  - If no HF/safetensors model is present locally, stop and plan model
-    acquisition separately instead of trying to force vLLM to serve GGUF.
+  - why no live alias should be added yet
+  - temporary/manual-only alias recommendation
+  - alias naming options
+  - whether Aider should stay direct-to-vLLM for now
+  - how to handle RTX 3090 ownership conflict
+  - why `qwen3-coder-30b` and vLLM should not both be assumed available
+  - `model-dispatch` risks
+  - Open WebUI risks
+  - Aider risks
+  - exact go/no-go criteria before implementation
+  - future implementation phases
+  - rollback expectations
+- The recommended direction is:
+  - Do not add a `model-dispatch` alias yet.
+  - Keep Aider direct-to-vLLM for one more practical one-file patch or until
+    vLLM runtime mode is made repeatable.
+  - If an alias is later added, make it explicit/manual-only, not auto-routed.
+  - Do not route Open WebUI `auto-local` or `auto-coding-local` to this vLLM
+    endpoint yet.
+  - Do not expose it as always available unless a persistent vLLM runtime
+    exists.
+  - Treat AMD RTX 3090 as mode-switched: either `qwen3-coder-30b` llama.cpp on
+    `8083` or vLLM on `18000`, not both.
+- Future phases are documented:
+  - Phase 1: document alias plan.
+  - Phase 2: create repeatable temporary vLLM start/stop procedure.
+  - Phase 3: run one more direct Aider trial with a practical single-file patch,
+    if needed.
+  - Phase 4: inspect `model-dispatch` source and config read-only.
+  - Phase 5: propose explicit manual alias only.
+  - Phase 6: implement alias only after approval.
+  - Phase 7: curl-test alias through `model-dispatch`.
+  - Phase 8: optionally test Aider through `model-dispatch` alias.
 - Prior history remains preserved.
+- `/srv/model-dispatch` is not edited or touched.
+- `/srv/projects/model-dispatch` is not edited or touched.
+- `model-dispatch` live config and service are not changed.
+- Open WebUI is not changed.
 - vLLM is not started.
 - `qwen3-coder-30b` is not stopped or restarted.
 - `gemma4-7900xt` is not stopped or restarted.
 - Aider is not run.
-- `model-dispatch` is not edited.
-- `/srv/model-dispatch` is not touched.
-- No Open WebUI, OpenCode, Continue.dev, LiteLLM, dashboard, monitoring, or
-  observability configuration is changed.
 - No `sudo`, Docker write commands, or systemd write commands are run.
 - No commit is made.
 - `AGENT_STATUS.md` is updated with the handoff.
@@ -68,38 +83,37 @@ contradiction or missing planning boundary.
 ## Proven Facts To Preserve
 
 - Latest homelab commit before this slice:
-  `fc15397 document amd vllm phase 2 image inspection`.
-- AMD Phase 1 live-state recheck is documented.
-- AMD Phase 2 local vLLM image/runtime inspection is documented.
-- Local image exists on AMD: `vllm/vllm-openai:latest`.
-- Image has:
-  - `python3`
-  - Python `3.12.13`
-  - torch `2.10.0+cu129`
-  - CUDA `12.9`
-  - vLLM `0.19.0`
-- Image can see RTX 3090 with `--gpus all`.
-- Existing containers remained healthy after dry checks:
-  - `qwen3-coder-30b` on `8083`
-  - `gemma4-7900xt` on `8084`
-- RTX 3090 VRAM is mostly occupied by `qwen3-coder-30b`.
-- vLLM has not been started.
-- `qwen3-coder-30b` has not been stopped.
-- `model-dispatch` and Open WebUI remain unchanged.
+  `8d79196 document second direct aider vllm trial`.
+- AMD vLLM with `Qwen2.5-Coder-7B-Instruct` works directly on port `18000`.
+- Direct endpoint used:
+  `http://192.168.50.252:18000/v1`
+- Served model:
+  `amd-vllm-temp-qwen2.5-coder-7b`
+- Aider succeeded twice against the direct vLLM endpoint.
+- Both Aider trials were bounded one-file docs edits.
+- Aider still asks to add context/control files, but respects declined
+  additions.
+- `qwen3-coder-30b` was restored healthy on `8083` after each test.
+- `gemma4-7900xt` stayed healthy on `8084`.
+- `model-dispatch` and Open WebUI were not changed.
+- vLLM is not currently persistent.
+- vLLM owns the RTX 3090 while running.
+- `qwen3-coder-30b` must be stopped while vLLM owns the RTX 3090.
 
 ## Scope Expansion Risks
 
-- Starting vLLM would turn this planning slice into live runtime execution.
+- Adding a live alias would turn this planning slice into routing
+  implementation.
+- Editing `/srv/model-dispatch` or `/srv/projects/model-dispatch` would violate
+  the requested boundary.
+- Routing Open WebUI auto aliases to vLLM would imply the endpoint is generally
+  available, which is false while vLLM is temporary and RTX 3090 mode-switched.
+- Starting vLLM would turn this into runtime execution.
 - Stopping or restarting `qwen3-coder-30b` or `gemma4-7900xt` would affect
   healthy AMD serving.
-- Pulling or downloading a model would turn this into model acquisition.
-- Forcing the existing GGUF llama.cpp artifact into vLLM would create a
-  confused validation target and risk wasting the RTX 3090 stop window.
-- Running Aider would turn this into an agent compatibility trial.
-- Editing `model-dispatch` or `/srv/model-dispatch` would broaden this into
-  routing implementation.
-- Changing Open WebUI, OpenCode, Continue.dev, LiteLLM, dashboards,
-  monitoring, or observability would violate the docs-only boundary.
+- Running Aider would turn this into another agent trial.
+- Adding daemons, wrappers, restart policies, Compose files, systemd units, or
+  automation would broaden the slice beyond planning.
 - Running `sudo`, Docker write commands, or systemd write commands would
   broaden this into operations.
 
