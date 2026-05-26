@@ -11,16 +11,24 @@ The steady-state workflow is:
 ```text
 Web UI advisor/planner
   + advisor-packet markdown summary
-  + self-hosted coding agent on the project host
-  + user review and final decision
+  + targeted evidence requests
+  + exact commands or controlled manual edit steps
+  + Review Coach diff explanation
+  + user commit and push after review
 ```
 
 The goal is to reduce copy/paste and context bloat. The goal is not autonomous supervision. The user remains responsible for approving direction, reviewing diffs, and deciding when work is done.
 
 Codex remains the primary manual agent for planning, sequencing, approval
-briefs, and risky live-service work. Aider is the preferred bounded patch
-assistant after compatibility is solved. Neither tool may become
-infrastructure, automation, or an approval system.
+briefs, and risky live-service work. The core walking skeleton is manual and
+safe: the planner asks for targeted evidence, gives exact commands or
+controlled edit steps, the user runs them, the Review Coach explains diffs in
+layman's terms, and the user commits and pushes after review.
+
+Aider, OpenCode, and CodeGraphContext write workflows are evaluation-only for
+now. OpenHuman is abandoned for the current phase because it creates
+signup/service pressure. None of these tools may become infrastructure,
+automation, or an approval system.
 
 ## Agent Division of Labor
 
@@ -30,27 +38,30 @@ Use agents by task shape, not by which one best fits the routing architecture.
 |---|---|
 | Codex | Primary for planning, migration choreography, documentation slices, approval briefs, and risky live-service steps. |
 | Claude Code | Strong frontier-code alternative and second opinion for difficult implementation or review. |
-| Aider | Preferred bounded repo patch assistant for small, already-planned edits after compatibility is validated. |
+| Aider | Evaluation-only for bounded repo patch trials; not part of the core walking skeleton. |
 | Hermes | Observer, summarizer, reviewer, recorder, and approved-skill-assisted preservation checker only; no canonical repo mutation or live-service action. |
-| OpenCode | Later local-agent experiment, not the default operating agent. |
+| OpenCode | Later local-agent experiment; not the default or primary coder, and nothing should depend on it. |
+| OpenHuman | Abandoned for the current phase because it creates signup/service pressure. |
 | Continue.dev | Editor assist and review for selected code chunks. |
 | Cline | Sandbox-only experimentation. |
+| Review Coach | Explains diffs in layman's terms and ends with Commit, Revise, Revert, or Inspect more. |
 
-Codex, Claude Code, and Aider are manually invoked tools. Do not wrap them in
-daemons, scheduled jobs, hidden approval flows, paid-provider automation, or
-repo-wide autonomous workflows.
+Codex, Claude Code, and any evaluation agents are manually invoked tools. Do
+not wrap them in daemons, scheduled jobs, hidden approval flows, paid-provider
+automation, or repo-wide autonomous workflows.
 
-## Aider Use Rule
+## Aider Evaluation Boundary
 
-Use Aider only after a slice is planned and the selected model endpoint is
-validated as Aider-compatible.
+Aider is evaluation-only for now. Do not make it required for the walking
+skeleton, and do not depend on it for normal workflow edits.
 
-Aider is appropriate for one repo, one bounded edit, and one reviewable diff.
-It is not a planner, migration controller, deployment tool, or architecture
-decision-maker.
+Aider trials, when explicitly approved, must stay to one repo, one named-file
+bounded edit, and one reviewable diff. Aider is not a planner, migration
+controller, deployment tool, or architecture decision-maker.
 
 Do not use Aider for:
 
+- Core walking-skeleton workflow edits.
 - Live deployment.
 - Service restarts.
 - Docker or systemd changes.
@@ -58,8 +69,9 @@ Do not use Aider for:
 - Multi-host changes.
 - Broad architecture decisions.
 
-Aider output must be validated before commit. Review the diff, run the slice's
-checks, and update `AGENT_STATUS.md` before handoff.
+Aider output must be validated before commit. Review the diff and run the
+slice's checks. Do not add Aider wrappers, default paths, or normal handoff
+requirements around Aider.
 
 For Aider model testing, prefer local LLMs or verified OpenRouter-free models
 only. Qwen thinking-off or non-thinking mode is the baseline for patch
@@ -104,7 +116,7 @@ No canonical project state lives on the laptop. The laptop is the screen; the pr
 Open the project on its host:
 
 - Prefer `strix:/srv/projects/<project-name>/` once the canonical source convention is established.
-- Use `amd` for projects that need the RTX 3090 or while AMD remains the OpenCode execution host.
+- Use `amd` only for projects that need the RTX 3090 or an explicit local-agent evaluation slice.
 
 Read or update the shared operating files:
 
@@ -167,13 +179,18 @@ OpenRouter remains free-only, explicit, and non-primary. In Open WebUI, choose `
 
 For Open WebUI web search, keep the working SearXNG JSON snippet path by leaving `BYPASS_WEB_SEARCH_WEB_LOADER=true` and pinning the task model to explicit local `amd-coder-qwen3-coder-30b-32k`.
 
-### 4. Hand a Bounded Prompt to the Coder
+### 4. Run Controlled Manual Steps
 
-Use the agent that matches the slice.
+Use the planner to turn the next action into exact commands or controlled
+manual edit steps. The user runs the commands in a terminal and keeps the
+change bounded to the current slice.
 
-For small, already-planned repo edits, prefer Aider as a bounded patch
-assistant once compatibility is validated. Keep the task to one repository, one
-bounded edit, and one reviewable diff.
+For file edits, prefer explicit steps such as:
+
+- Open this file.
+- Change this section.
+- Replace this paragraph.
+- Run these checks.
 
 For planning, sequencing, live-service risk, operator approval briefs, or any
 task that could affect host roles, routing, billing exposure, persistent state,
@@ -184,15 +201,17 @@ implementation is difficult enough to justify another high-capability manual
 agent.
 
 OpenCode is deferred to a later local-agent experiment. It is no longer assumed
-to be the next primary operating agent only because it fits the local
-model-dispatch architecture.
+to be the next primary operating agent, and nothing in the walking skeleton
+should depend on it.
 
 Continue.dev remains editor assist and review. Hermes remains observer/reviewer
 only. Cline remains sandbox-only.
 
-### Optional MCP / CodeGraphContext Write Sandbox
+### Optional MCP / CodeGraphContext Evaluation Boundary
 
-CodeGraphContext remains optional tooling. This is day-to-day operating guidance, not a live MCP config change and not permission to enable MCP live.
+CodeGraphContext write workflows are evaluation-only. This is day-to-day
+operating guidance, not a live MCP config change and not permission to enable
+MCP live.
 
 Default pattern:
 
@@ -208,17 +227,18 @@ Promote sandbox changes only through reviewed diffs, patches, manual copy, or br
 
 This rule is path-agnostic. It applies to operational source repos, project journal repos, documentation/control repos, and future project repos. Do not duplicate large videos, extracted frames, datasets, generated evidence, model outputs, or bulky review artifacts into sandboxes or Git unless that storage is explicitly intended.
 
-The coder prompt should include:
+Controlled manual steps should include:
 
 - The current slice.
 - Specific files or areas in scope.
 - Constraints.
 - Acceptance criteria.
-- The instruction to update `AGENT_STATUS.md` with what happened, what changed, and what needs user approval.
+- Exact commands or manual edit instructions.
+- Checks to run before review.
 
 ### 5. Review the Result
 
-The user reviews the diff. The system does not auto-approve coder actions.
+The user reviews the diff. The system does not auto-approve changes.
 
 Use normal git and editor tools:
 
@@ -232,7 +252,17 @@ Use VS Code Remote-SSH for visual diff review. Continue.dev highlight-and-ask ca
 
 Continue.dev uses LiteLLM-routed model IDs from thinkcentre:4000 rather than direct inference endpoints. This keeps editor-side review behavior aligned across models and avoids duplicating endpoint definitions on client devices.
 
-If the coder output is confusing, rerun `advisor-packet`, paste the packet into Open WebUI, and ask the advisor to interpret the state and draft the next bounded prompt.
+Use the Review Coach to explain the diff in layman's terms. Every Review Coach
+response must end with one of:
+
+- Commit
+- Revise
+- Revert
+- Inspect more
+
+If the diff is confusing, rerun `advisor-packet`, paste the packet into Open
+WebUI, and ask the advisor or Review Coach to interpret the state and draft the
+next controlled manual step.
 
 ### 6. Decide, Commit, or Iterate
 
@@ -252,12 +282,13 @@ Commit only after the user has reviewed the changes.
 | Plan a task | Open WebUI advisor | Browser |
 | Summarize state for advisor | `advisor-packet` | Project working tree |
 | Choreograph risky live-service work | Codex | Project working tree |
-| Implement a small planned repo edit | Aider | Project working tree |
+| Make a controlled manual edit | User following planner steps | Project working tree |
+| Evaluate a bounded patch agent | Aider | Explicit evaluation slice only |
 | Serve candidate local coding/reasoning models | vLLM | AMD or Strix explicit validation slice |
 | Summarize or propose review skills | Hermes | Read-only observer/reviewer path |
 | Get a frontier-code second opinion | Claude Code | Project working tree |
 | Experiment with local-agent coding | OpenCode | Sandbox or later explicit slice |
-| Review a diff | VS Code Remote-SSH and git | Project host |
+| Review a diff | Review Coach, VS Code Remote-SSH, and git | Project host and browser |
 | Ask about a specific code chunk | Continue.dev highlight-and-ask | VS Code |
 | Try agent autonomy experiments | Cline | Sandbox only |
 | Make final decision | User | Always |
@@ -297,13 +328,13 @@ The durable state is simple markdown plus git history. The bridge is a local pac
 Watch for these patterns:
 
 - Raw terminal output is repeatedly pasted into Open WebUI.
-- The coder runs multiple broad attempts without updating `AGENT_STATUS.md`.
+- A tool runs multiple broad attempts instead of the user following controlled manual steps.
 - The advisor is asked to reason without current slice or diff context.
 - The user is tempted to build an approval daemon instead of narrowing the slice.
 - Codex or Claude-style tools start appearing in scripts, wrappers, timers, or API jobs.
-- Aider is asked to plan, deploy, restart services, edit secrets, or make broad architecture decisions.
+- Aider is treated as required for normal workflow edits, or asked to plan, deploy, restart services, edit secrets, or make broad architecture decisions.
 - Hermes is asked to mutate canonical repos, install live skills, restart services, or approve actions.
-- OpenCode is treated as the default next agent without an explicit local-agent experiment slice.
+- OpenCode is treated as the default or primary coder without an explicit local-agent experiment slice.
 - The Framework laptop accumulates project state.
 
 The fix is usually to narrow `CURRENT_SLICE.md`, run `advisor-packet`, ask the advisor for the next prompt, and keep the user in the approval seat.
