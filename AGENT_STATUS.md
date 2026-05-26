@@ -1344,3 +1344,72 @@ What did not change:
 
 Next:
 - Read-only inspect the exact local candidate directories and choose the first runtime candidate.
+
+## AMD temporary vLLM runtime test succeeded and rolled back
+
+A temporary AMD vLLM runtime test was performed using the downloaded
+`Qwen2.5-Coder-7B-Instruct` HF/safetensors model.
+
+Model acquisition:
+- Hugging Face authentication was configured on AMD outside Git.
+- HF username verification succeeded without exposing the token.
+- `Qwen/Qwen2.5-Coder-7B-Instruct` was downloaded to:
+  `/srv/llm/hf/Qwen2.5-Coder-7B-Instruct`
+- The model directory is about `15G`.
+- Safetensors shards are real multi-GB files, not placeholder cache entries.
+
+Temporary vLLM runtime:
+- `qwen3-coder-30b` was stopped to free RTX 3090 VRAM.
+- `gemma4-7900xt` remained running on port `8084`.
+- Temporary vLLM container was started:
+  `amd-vllm-temp-test`
+- Image:
+  `vllm/vllm-openai:latest`
+- Model path:
+  `/srv/llm/hf/Qwen2.5-Coder-7B-Instruct`
+- Served model:
+  `amd-vllm-temp-qwen2.5-coder-7b`
+- Host port:
+  `18000`
+- vLLM loaded the model as `Qwen2ForCausalLM`.
+- vLLM loaded all four safetensors checkpoint shards successfully.
+- vLLM started the OpenAI-compatible server successfully.
+
+Curl validation:
+- `GET /v1/models` returned HTTP 200 and listed:
+  `amd-vllm-temp-qwen2.5-coder-7b`
+- `POST /v1/chat/completions` returned HTTP 200.
+- Completion content was:
+  `vllm-ok`
+
+Rollback:
+- Temporary vLLM container `amd-vllm-temp-test` was stopped.
+- `qwen3-coder-30b` was restarted.
+- `qwen3-coder-30b` returned healthy on port `8083`.
+- `gemma4-7900xt` remained healthy on port `8084`.
+- `8083 /v1/models` again returned:
+  `Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+- `8084 /v1/models` continued returning:
+  `google_gemma-4-26B-A4B-it-Q4_K_M.gguf`
+- RTX 3090 VRAM returned to the expected llama.cpp state, with `/app/llama-server`
+  using about `18212 MiB`.
+
+What changed:
+- A real HF/safetensors model now exists at:
+  `/srv/llm/hf/Qwen2.5-Coder-7B-Instruct`
+- Runtime state was temporarily changed during the approved test and then rolled
+  back.
+
+What did not change:
+- `model-dispatch` was not edited.
+- Open WebUI routing was not changed.
+- Aider was not run.
+- No vLLM endpoint was added to model-dispatch.
+- No persistent vLLM container, Compose file, systemd unit, restart policy,
+  wrapper, watcher, or daemon was created.
+
+Conclusion:
+- Direct temporary vLLM serving on AMD is proven with a real HF/safetensors
+  coding model.
+- The next decision is whether to test Aider directly against the temporary vLLM
+  endpoint, or first create a dedicated model-dispatch alias plan.
