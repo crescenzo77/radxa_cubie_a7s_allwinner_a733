@@ -1,5 +1,36 @@
 # Decisions
 
+## 2026-05-26 — Homelab walking skeleton before broader cleanup
+
+Decision:
+Build a minimal walking skeleton for homelab cleanup and buildout before adding more tools, moving services, or expanding automation.
+
+Rationale:
+The user needs a safe, ADHD-friendly workflow that works from the Framework laptop without relying on IDE clutter, hidden automation, or broad coding-agent freedom. Recent testing showed that Aider can connect to the local Strix coder endpoint, but it is not reliable enough yet for the core skeleton. It attempted broad rewrites on long workflow/control Markdown files and had to be reverted.
+
+Walking skeleton:
+- Framework remains the user seat: browser planner plus terminal sessions.
+- Strix is the normal project home for new non-GPU projects.
+- The homelab repo on Strix is the first walking-skeleton project.
+- Planner asks for targeted evidence instead of guessing.
+- Planner gives exact commands or controlled manual edit steps.
+- User runs the commands.
+- Review Coach reviews diffs in layman's terms using the documented fixed format.
+- User commits and pushes to the ThinkCentre mirror.
+
+Evaluation-only for now:
+- Aider.
+- OpenCode.
+- OpenHuman.
+- CodeGraphContext write workflows.
+- Autonomous reviewer/oracle loops.
+
+Policy:
+- Do not make Aider, OpenCode, OpenHuman, or CodeGraphContext write workflows required for the first skeleton.
+- Do not add hidden automation, approval daemons, or automatic reviewer loops.
+- Do not move services or redesign host roles as part of the walking skeleton.
+- Continue to preserve old decisions as history, but let newer decisions define current operating policy.
+
 ## 2026-05-26 — Review Coach format
 
 Decision:
