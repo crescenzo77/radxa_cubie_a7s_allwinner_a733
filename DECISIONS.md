@@ -1,5 +1,37 @@
 # Decisions
 
+## 2026-05-26 — Review Coach format
+
+Decision:
+Use a two-level fixed Review Coach format for reviewing coding-agent output.
+
+Rationale:
+The user needs reviews in layman's terms with predictable structure. This reduces mental load, avoids dense technical review language, and helps the user make a clear commit/revise/revert decision without needing to manually understand every line of code.
+
+Policy:
+- The Review Coach must speak in layman's terms.
+- Every review must end with one of:
+  - Commit
+  - Revise
+  - Revert
+  - Inspect more
+- Use the short fixed review for tiny, low-risk changes.
+- Use the full fixed review for anything involving code, services, configs, multiple files, databases, storage, Docker, systemd, routing, or unclear scope.
+
+Short review format:
+- Changed:
+- Scope:
+- Risk:
+- Recommendation:
+
+Full review format:
+- What changed:
+- Scope check:
+- Risk:
+- Proof:
+- What to inspect:
+- Recommendation:
+
 ## 2026-05-26 — Strix-local Aider launcher validated but restricted
 
 Decision:
