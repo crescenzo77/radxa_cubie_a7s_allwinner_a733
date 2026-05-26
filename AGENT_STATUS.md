@@ -2,30 +2,33 @@
 
 ## Current status
 
-The active slice is `AMD vLLM model-dispatch alias planning`.
+The active slice is `AMD vLLM manual mode-switch runbook`.
 
 ## Current task
 
-Plan whether and how to add a dedicated `model-dispatch` alias for the proven
-temporary AMD vLLM endpoint, without implementing it yet.
+Create a docs-only manual runbook for temporarily switching AMD RTX 3090 from
+`qwen3-coder-30b` llama.cpp on `8083` to vLLM on `18000`, then restoring
+`qwen3-coder-30b`. Do not execute the procedure.
 
 ## What changed
 
 - Updated `CURRENT_SLICE.md` so the active slice is
-  `AMD vLLM model-dispatch alias planning`.
+  `AMD vLLM manual mode-switch runbook`.
 - Updated `PROJECT_PLAN.md` so the current build stage is
-  `Slice 17: AMD vLLM model-dispatch alias planning`.
-- Updated `ROADMAP.md` to preserve the current fact that direct Aider-to-AMD
-  vLLM is proven twice, while Aider through `model-dispatch` remains unproven.
-- Created `inventory/amd-vllm-model-dispatch-alias-plan.md`.
-- Documented the alias-planning purpose, proven AMD vLLM facts, no-live-alias
-  recommendation, temporary/manual-only alias direction, alias naming options,
-  Aider direct-to-vLLM recommendation, RTX 3090 ownership conflict,
-  `model-dispatch` risks, Open WebUI risks, Aider risks, exact go/no-go
-  criteria, future phases, and rollback expectations.
+  `Slice 18: AMD vLLM manual mode-switch runbook`.
+- Created `runbooks/amd-vllm-manual-mode-switch.md`.
+- Documented the manual mode-switch purpose, use boundaries, prerequisites,
+  exact paths, exact models, temporary vLLM runtime facts, preflight checks,
+  stop/start command shapes, vLLM readiness checks, curl validation, optional
+  direct Aider command shape, rollback, `8083` and `8084` validation, GPU
+  validation, failure handling, and what not to change.
 
 ## What did not change
 
+- vLLM was not started.
+- `qwen3-coder-30b` was not stopped or restarted.
+- `gemma4-7900xt` was not stopped or restarted.
+- Aider was not run.
 - No `/srv/model-dispatch` files were touched.
 - No `/srv/projects/model-dispatch` files were touched.
 - No `model-dispatch` live config or service was changed.
@@ -34,12 +37,11 @@ temporary AMD vLLM endpoint, without implementing it yet.
 - No Continue.dev config was changed.
 - No LiteLLM config was changed.
 - No dashboard, monitoring, or observability config was changed.
-- No service restart or reload was run.
-- Aider was not run.
-- vLLM was not started.
-- `qwen3-coder-30b` was not stopped or restarted.
-- `gemma4-7900xt` was not stopped or restarted.
+- No restart policies, Compose files, systemd units, wrappers, daemons,
+  watchers, schedulers, or automation were added.
 - No `sudo`, Docker write command, or systemd write command was run.
+- `ROADMAP.md` was not changed because its current AMD mode-switch facts are
+  already accurate for this docs-only runbook slice.
 - No commit was made.
 
 ## Files changed
@@ -48,25 +50,20 @@ Changed by this slice:
 
 - `CURRENT_SLICE.md`
 - `PROJECT_PLAN.md`
-- `ROADMAP.md`
 - `AGENT_STATUS.md`
-- `inventory/amd-vllm-model-dispatch-alias-plan.md`
+- `runbooks/amd-vllm-manual-mode-switch.md`
 
 ## Checks run
 
 - Read required homelab docs:
-  - `AGENTS.md`
   - `CODEX_CONTEXT.md`
   - `CURRENT_SLICE.md`
   - `AGENT_STATUS.md`
   - `PROJECT_PLAN.md`
   - `DECISIONS.md`
-- Read routing/workflow context because this slice touches model-routing
-  assumptions:
-  - `HOMELAB_LAYOUT.md`
-  - `WORKFLOW.md`
   - `ROADMAP.md`
-- Inspected existing Aider/vLLM history and inventory references with `rg`.
+- Inspected existing AMD vLLM alias-plan context:
+  - `inventory/amd-vllm-model-dispatch-alias-plan.md`
 - Final checks:
   - `git diff --check`
   - `git diff --stat`
@@ -76,46 +73,45 @@ Changed by this slice:
 
 - `git diff --check`: passed with no output.
 - `git diff --stat`:
-  - `AGENT_STATUS.md  |  88 +++++++++++----------`
-  - `CURRENT_SLICE.md | 235 +++++++++++++++++++++++--------------------------------`
+  - `AGENT_STATUS.md  |  92 +++++++++++++++++-----------------`
+  - `CURRENT_SLICE.md | 147 ++++++++++++++++++++++++++++---------------------------`
   - `PROJECT_PLAN.md  |   2 +-`
-  - `ROADMAP.md       |  12 ++-`
-  - `4 files changed, 156 insertions(+), 181 deletions(-)`
-  - Note: plain `git diff --stat` does not include the untracked new inventory
+  - `3 files changed, 120 insertions(+), 121 deletions(-)`
+  - Note: plain `git diff --stat` does not include the untracked new runbook
     file.
 - `git status --short`:
   - `M AGENT_STATUS.md`
   - `M CURRENT_SLICE.md`
   - `M PROJECT_PLAN.md`
-  - `M ROADMAP.md`
-  - `?? inventory/amd-vllm-model-dispatch-alias-plan.md`
+  - `?? runbooks/`
 
 ## Known risks or blockers
 
-- A live `model-dispatch` alias would be premature because vLLM is temporary
-  and not persistent.
-- The proven vLLM endpoint owns RTX 3090 while running, so `qwen3-coder-30b`
-  on `8083` and vLLM on `18000` must be treated as mutually exclusive modes.
-- Open WebUI auto aliases must not be routed to vLLM yet because that would
-  imply always-on availability.
+- This procedure intentionally takes `amd:8083` offline while vLLM owns RTX
+  3090, so it must not be run during work that depends on
+  `qwen3-coder-30b`.
+- The documented Docker command may need local ROCm-specific flags if the AMD
+  host requires them; the runbook says to record the exact working command in a
+  later revision if that occurs.
+- `model-dispatch` aliasing remains planned but not implemented. The
+  recommendation remains: do not add a `model-dispatch` alias yet.
 - Aider through direct vLLM is proven twice, but Aider through
   `model-dispatch` is still unproven.
-- Aider still asks to add context/control files; operators must continue to
-  decline out-of-scope file additions during bounded trials.
 
 ## User approval needed
 
-No approval is needed for this documentation-only planning slice.
+No approval is needed for this documentation-only runbook slice.
 
-Approval will be needed before any future `model-dispatch` source edit, live
-deployment, service restart, Open WebUI routing change, vLLM start, or
-`qwen3-coder-30b` stop/restart.
+Approval is needed before any future live mode switch, vLLM start,
+`qwen3-coder-30b` stop/restart, `gemma4-7900xt` stop/restart, Docker write
+command, systemd change, `model-dispatch` edit, Open WebUI change, or Aider
+run.
 
 ## Recommended next action
 
-Review the diff. If accepted, open a new docs-only slice to create a repeatable
-temporary AMD vLLM start/stop procedure, including the `qwen3-coder-30b`
-restore checks and `gemma4-7900xt` preservation checks.
+Review the diff. If accepted, an operator can later use the runbook manually
+only after explicitly approving the live mode switch and confirming that no
+work depends on `qwen3-coder-30b` on `8083`.
 
 ## Archived Status History
 

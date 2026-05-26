@@ -39,7 +39,7 @@ Create a stable workflow where:
 
 ## Current build stage
 
-Slice 17: AMD vLLM model-dispatch alias planning.
+Slice 18: AMD vLLM manual mode-switch runbook.
 
 ## How to use this repo
 
