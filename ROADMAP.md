@@ -3,16 +3,39 @@
 This roadmap describes the path from the current setup to a practical
 human-reviewed homelab workflow.
 
-Last updated: 2026-05-23.
+Last updated: 2026-05-26.
+
+## Current Priority: Walking Skeleton
+
+The current priority is proving the manual walking skeleton before broader
+cleanup or buildout.
+
+The walking skeleton is:
+
+- Framework is the user seat.
+- Strix is the normal project home for new non-GPU projects.
+- The planner asks for targeted evidence.
+- The planner gives exact commands or controlled manual edit steps.
+- The user runs commands.
+- Review Coach reviews diffs in layman's terms.
+- The user commits and pushes to ThinkCentre.
+
+Aider, OpenCode, and CodeGraphContext write workflows are evaluation-only for
+now. OpenCode is not a default or primary coder, and nothing should depend on
+it. OpenHuman is abandoned for the current phase because it creates signup and
+service pressure. Hermes remains observer, reviewer, and reporting only.
+
+Older Aider, OpenCode, and vLLM slices below are historical unless superseded
+by newer decisions.
 
 ## Current Facts To Preserve
 
 - Codex is the primary manual agent for planning, sequencing, approval briefs,
   and risky live-service work.
 - Claude Code is a strong frontier-code alternative and second opinion.
-- Aider is the preferred bounded repo patch assistant after a slice is planned.
-  Direct Aider-to-temporary AMD vLLM is proven twice for bounded one-file docs
-  edits, but Aider through `model-dispatch` is not yet proven.
+- Aider is evaluation-only for now. Direct Aider-to-temporary AMD vLLM is
+  proven twice for bounded one-file docs edits, but it is not part of the
+  walking skeleton and Aider through `model-dispatch` is not yet proven.
 - Non-Codex agentic work must use local LLMs or verified OpenRouter-free models
   only.
 - vLLM is the preferred candidate serving layer for local coding/reasoning
@@ -33,7 +56,11 @@ Last updated: 2026-05-23.
   canonical repos, install live skills, restart services, or become an
   approval daemon.
 - OpenCode is a later local-agent experiment, not the assumed next primary
-  operating agent.
+  operating agent. It is not a default or primary coder, and nothing should
+  depend on it.
+- OpenHuman is abandoned for the current phase because it creates signup and
+  service pressure.
+- CodeGraphContext write workflows are evaluation-only.
 - Continue.dev remains editor assist and review.
 - Cline remains sandbox-only.
 - AMD has the current OpenCode local-agent setup if an explicit experiment
