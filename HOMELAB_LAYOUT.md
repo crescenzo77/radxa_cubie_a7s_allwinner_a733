@@ -6,31 +6,40 @@ Last updated: 2026-05-26.
 
 ## Operating Model
 
-The normal workflow has two human-operated surfaces plus one small bridge script:
+The normal walking skeleton is a manual Framework-centered loop with two
+human-operated surfaces plus one small bridge script:
 
 1. **Web UI advisor/planner** in Open WebUI.
-2. **Self-hosted coding agent** on the coding PC or project host.
+2. **Terminal on the project host** where the user runs exact commands or
+   controlled manual edit steps.
 3. **`advisor-packet`** local script that summarizes project state for the advisor.
 
-The user remains the final decision-maker. The system helps prepare decisions, explain confusing coder output, and reduce context bloat. It does not auto-approve code, supervise agents autonomously, or turn Codex/Claude-style hosted tools into infrastructure.
+The Framework laptop is the user seat. The planner asks for targeted evidence,
+then gives exact commands or controlled manual edit steps. The user runs the
+commands, Review Coach explains diffs in layman's terms, and the user commits
+and pushes after review. The system helps prepare decisions, explain confusing
+output, and reduce context bloat. It does not auto-approve code, supervise
+agents autonomously, or turn Codex/Claude-style hosted tools into
+infrastructure.
 
 Codex is the primary manual agent for planning, sequencing, approval briefs,
 documentation slices, and risky live-service work. It must not become
 background infrastructure or an autonomous approval system.
 
-Aider is the preferred bounded patch assistant after compatibility is
-validated. vLLM is the preferred candidate serving direction for local AMD and
-Strix coding/reasoning tests. Hermes is observer/reviewer/skill proposer only
+Aider is evaluation-only for now. OpenCode may remain installed, but it is not
+default, primary, or required by any workflow. OpenHuman is abandoned for the
+current phase because it creates signup/service pressure. CodeGraphContext
+write workflows are evaluation-only. Hermes is observer/reviewer/reporting only
 and must not mutate canonical repos or live services.
 
 ## Machine Roles
 
 | Hostname | LAN | Tailscale | Role |
 |---|---:|---:|---|
-| `framework` | — | yes | Thin client: browser, SSH, VS Code Remote-SSH |
-| `amd` | `192.168.50.252` | `100.107.201.16` | Current coding execution host; OpenCode installed; primary RTX 3090 coder model and RX 7900 XT backup |
-| `strix` | `192.168.50.11` | `100.105.138.41` | Target canonical project/source host; reasoning/testbed inference |
-| `thinkcentre` | `192.168.50.225` | `100.127.113.105` | Services hub: Open WebUI, model-dispatch, SearXNG, AdGuard, dashboard, proxies; LiteLLM retained for rollback/history |
+| `framework` | — | yes | User seat: browser, SSH, terminal, VS Code Remote-SSH |
+| `amd` | `192.168.50.252` | `100.107.201.16` | GPU-heavy project host and model host; OpenCode installed for evaluation; primary RTX 3090 coder model and RX 7900 XT backup |
+| `strix` | `192.168.50.11` | `100.105.138.41` | Normal project home for new non-GPU projects; canonical project/source host; reasoning/testbed inference |
+| `thinkcentre` | `192.168.50.225` | `100.127.113.105` | Services/control plane and Git mirror: Open WebUI, model-dispatch, SearXNG, AdGuard, dashboard, proxies; LiteLLM retained for rollback/history |
 | `mac mini` | `192.168.50.164` | yes | iMessage relay backend; future tier-2 git mirror |
 | `minipc` | `192.168.50.76` | yes | LAN backup target |
 | `oracle` | cloud | yes | Off-site backup, headscale host |
@@ -45,8 +54,8 @@ compute, backup, external anchoring, and edge devices.
 | Host | Target role |
 |---|---|
 | `thinkcentre` | Control plane: Open WebUI, `model-dispatch`, SearXNG, reverse proxy, monitoring, service catalog, and tier-1 git mirrors |
-| `strix` | Canonical source, development, code-graph, reasoning host, and vLLM reasoning testbed |
-| `amd` | Mode-switched GPU compute worker for coding, LoRA/training, and creative workloads |
+| `strix` | Normal home for new non-GPU projects, canonical source, development, code-graph evaluation, reasoning host, and model-serving testbed |
+| `amd` | GPU-heavy project host and model host for coding models, LoRA/training, and creative workloads |
 | `minipc` | LAN backup and artifact storage |
 | `mac mini` | Apple/iMessage services and tier-2 git mirror |
 | `oracle` | Headscale, off-site backup, and external anchor |
@@ -54,13 +63,16 @@ compute, backup, external anchoring, and edge devices.
 | `framework` | Thin client for browser, SSH, editor, and review |
 
 `model-dispatch` is the target single model-facing API registry for Open WebUI,
-OpenCode, Continue.dev, and scripts. Clients should eventually use stable model
-aliases from `model-dispatch` rather than duplicating direct endpoint definitions.
+Continue.dev, and scripts. OpenCode can be evaluated against it later, but is
+not an active dependency of the walking skeleton. Clients should eventually use
+stable model aliases from `model-dispatch` rather than duplicating direct
+endpoint definitions.
 
-vLLM is the preferred candidate serving layer for future local
-coding/reasoning validation on AMD and Strix. This does not change live routing
-by itself. Any vLLM service launch, client migration, or model-dispatch
-integration requires a separate explicit slice and operator approval.
+vLLM is a candidate serving layer for future local coding/reasoning validation
+on AMD and Strix. It is not an active dependency of the walking skeleton and
+does not change live routing by itself. Any vLLM service launch, client
+migration, or model-dispatch integration requires a separate explicit slice and
+operator approval.
 
 Dashboards, monitoring, observability, service dashboards, Prometheus, Grafana,
 Loki, and Vector are target control-plane capabilities only. They are not
@@ -113,18 +125,22 @@ Open WebUI visible model categories:
 - Explicit local models: `strix-reasoning-qwen3.6-65k`, `strix-coder-qwen3-coder-next-65k`, `amd-coder-qwen3-coder-30b-32k`, `amd-backup-gemma4-26b-8k`.
 - OpenRouter-free choices: `openrouter-free/openrouter/auto-free-router` and `openrouter-free/<verified-model>:free` entries.
 
-## Surface 2: Manual Agent Execution
+## Surface 2: Manual Walking Skeleton Execution
 
-The execution surface runs on the project host or coding PC, not on the thin
-client. Choose the manual agent by task shape:
+The execution surface is a terminal on the project host, usually Strix for new
+non-GPU projects. The planner supplies exact commands or controlled manual edit
+steps, the user runs them, Review Coach explains the resulting diff in layman's
+terms, and the user commits and pushes after review.
+
+Manual tool roles:
 
 - Codex: planning, migration choreography, approval briefs, documentation
   slices, and risky live-service work.
 - Claude Code: strong frontier-code alternative and second opinion.
-- Aider: preferred bounded repo patch assistant for one planned edit in one
-  repo after compatibility is validated.
-- Hermes: observer, summarizer, reviewer, and skill proposer only.
-- OpenCode: later local-agent experiment, not the default operating agent.
+- Aider: evaluation-only for now.
+- Hermes: observer, reviewer, and reporting only.
+- OpenCode: optional/evaluation-only local-agent experiment, not a default or
+  required operating agent.
 - Continue.dev: editor assist and review.
 - Cline: sandbox-only.
 
@@ -151,10 +167,8 @@ OpenCode remains installed and usable for later explicit local-agent
 experiments. It is not the assumed next primary agent just because it fits the
 local model-dispatch architecture.
 
-Aider may be used only as a bounded patch assistant after a slice is planned:
-one repo, one bounded edit, one reviewable diff, validated before commit. Aider
-compatibility is still unresolved; Qwen thinking-off or non-thinking mode is
-the baseline to test before any new patch workflow depends on it.
+Aider is evaluation-only for now. It must not be required by the walking
+skeleton.
 LiteLLM is no longer in the default OpenCode path and no longer active for Open
 WebUI, but remains available as rollback/history. OpenRouter is available only
 through generated free-only entries when selected manually, not as an automatic
@@ -162,7 +176,8 @@ hidden route.
 
 Hermes must not edit canonical repositories, install live skills, restart
 services, change model routing, supervise failures autonomously, or become an
-approval daemon. Hermes outputs should remain review proposals or summaries.
+approval daemon. Hermes outputs should remain review proposals, summaries, or
+reports.
 
 Codex/Claude-style hosted tools must not be wired into API automation, wrappers, scheduled tasks, or background jobs. If used at all during setup or emergency manual work, they remain manually invoked tools.
 
@@ -233,11 +248,11 @@ Each active project should keep human-readable operating files in the repository
 
 These files are the shared state between the user, advisor, and coder. They are deliberately simple markdown plus git.
 
-## Routing State: OpenCode Direct, Open WebUI Dispatch
+## Routing State: Open WebUI Dispatch, OpenCode Optional
 
-AMD OpenCode is configured directly to the local AMD RTX 3090 coder endpoint and has a direct AMD RX 7900 XT backup provider for `small_model`. This remains available for later explicit local-agent experiments. Open WebUI now points to `model-dispatch` on ThinkCentre at `http://192.168.50.225:4010/v1`. LiteLLM on ThinkCentre is retained as rollback/history only.
+Open WebUI now points to `model-dispatch` on ThinkCentre at `http://192.168.50.225:4010/v1`. AMD OpenCode is configured directly to the local AMD RTX 3090 coder endpoint and has a direct AMD RX 7900 XT backup provider for `small_model`, but that is optional/evaluation-only and not the default coding workflow center. LiteLLM on ThinkCentre is retained as rollback/history only.
 
-Continue.dev on framework intentionally routes through LiteLLM using the verbose exposed model IDs returned by `/v1/models`. Continue is treated as an editor-side shared routing client. OpenCode remains configured direct-local on AMD for later local-agent experiments.
+Continue.dev on framework intentionally routes through LiteLLM using the verbose exposed model IDs returned by `/v1/models`. Continue is treated as an editor-side shared routing client. OpenCode remains configured direct-local on AMD only for later local-agent experiments.
 
 ```text
 OpenCode on AMD
@@ -296,8 +311,8 @@ No paid OpenRouter fallback is allowed. If free models cannot be verified, they 
 
 | Role | Model label / target | Endpoint | Use |
 |---|---|---|---|
-| OpenCode local-agent experiment | `homelab-local/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf` | `amd:8083` | Direct AMD coder path |
-| OpenCode small model backup | `homelab-local-backup/google_gemma-4-26B-A4B-it-Q4_K_M.gguf` | `amd:8084` | Direct AMD RX 7900 XT backup provider |
+| OpenCode optional local-agent experiment | `homelab-local/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf` | `amd:8083` | Direct AMD coder path for evaluation only |
+| OpenCode optional small model backup | `homelab-local-backup/google_gemma-4-26B-A4B-it-Q4_K_M.gguf` | `amd:8084` | Direct AMD RX 7900 XT backup provider for evaluation only |
 | Planning/reasoning | `local-reasoning | Strix | Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf` | `strix:8081` | Advisor/planning |
 | Strix coder testbed | `local-coder-testbed | Strix | Qwen3-Coder-Next-UD-Q4_K_XL.gguf` | `strix:8082` | Manual coder testbed |
 | Manual free cloud provider | generated `homelab-openrouter-free` entries | OpenRouter API | Free-only manual use, generated from verified allowlist |
@@ -312,7 +327,10 @@ Target canonical source host:
 strix:/srv/projects/<project-name>/
 ```
 
-AMD remains an intentional exception for projects that need the RTX 3090 directly, such as the LoRA pipeline. AMD also hosts the existing OpenCode setup for later local-agent experiments.
+Strix is the normal project home for new non-GPU projects. AMD remains an
+intentional exception for GPU-heavy projects that need the RTX 3090 directly,
+such as the LoRA pipeline, and for model hosting. AMD also hosts the existing
+OpenCode setup for later local-agent experiments.
 
 ## Strix Storage
 
