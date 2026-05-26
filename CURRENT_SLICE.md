@@ -1,8 +1,75 @@
 # Current Slice
 
-## Active: AMD vLLM manual mode-switch runbook
+## Active: Walking skeleton documentation alignment complete
 
-## Goal
+## Current State
+
+The current walking-skeleton documentation alignment is complete enough to stop
+this cleanup pass.
+
+Validated and pushed:
+
+- `DECISIONS.md` documents the walking skeleton, Review Coach format,
+  Strix-local Aider restriction, and Strix `/bulk` storage policy.
+- `WORKFLOW.md` is aligned with the manual walking skeleton.
+- `HOMELAB_LAYOUT.md` is aligned with the manual walking skeleton and current
+  host roles.
+- `ROADMAP.md` identifies the walking skeleton as the current priority.
+- Latest pushed checkpoint at the time of this slice update:
+  `b56076e align roadmap with walking skeleton`.
+
+## Active Posture
+
+No active implementation slice.
+
+Do not proceed into broader homelab cleanup, service moves, OpenHuman,
+OpenCode, Aider workflow promotion, CodeGraphContext write workflows, or
+automated reviewer/oracle loops until explicitly selected.
+
+## Current Walking Skeleton
+
+- Framework is the user seat.
+- Strix is the normal project home for new non-GPU projects.
+- ThinkCentre is the services/control-plane host and Git mirror.
+- AMD is the GPU-heavy project host and model host.
+- Planner asks for targeted evidence instead of guessing.
+- Planner gives exact commands or controlled manual edit steps.
+- User runs the commands.
+- Review Coach reviews diffs in layman's terms.
+- User commits and pushes to ThinkCentre.
+
+## Evaluation-Only / Deferred
+
+- Aider is evaluation-only for now.
+- OpenCode is not the default or primary coder, and nothing should depend on it.
+- OpenHuman is abandoned for the current phase because it creates signup/service
+  pressure.
+- CodeGraphContext write workflows are evaluation-only.
+- Hermes remains observer/reviewer/reporting only.
+- Autonomous reviewer/oracle loops are out of scope.
+
+## Recommended Next Choices
+
+1. Stop here and treat the walking-skeleton documentation alignment as complete.
+2. Start a new explicitly selected cleanup slice.
+3. Inventory current repos and mirrors before deciding any project moves.
+4. Pick one low-risk manual walking-skeleton task to prove the end-to-end loop
+   again.
+
+## Constraints
+
+- Do not use Aider on `DECISIONS.md`, `WORKFLOW.md`, `CURRENT_SLICE.md`,
+  `AGENT_STATUS.md`, or `PROJECT_PLAN.md`.
+- Do not make service, Docker, systemd, routing, storage, or model-runtime
+  changes without fresh live-state validation.
+- Do not trust project docs as current truth without checking live state.
+- Keep old decisions as history; newer decisions define current policy.
+
+## Prior Slice History
+
+### Previous Active Slice: AMD vLLM manual mode-switch runbook
+
+### Goal
 
 Create a reviewed manual runbook for temporarily switching AMD RTX 3090 from
 `qwen3-coder-30b` llama.cpp on port `8083` to vLLM on port `18000`, then
@@ -10,7 +77,7 @@ restoring `qwen3-coder-30b`.
 
 This is a docs-only slice. Do not execute the procedure.
 
-## Files Expected To Change
+### Files Expected To Change
 
 - `CURRENT_SLICE.md`
 - `PROJECT_PLAN.md`
@@ -20,7 +87,7 @@ This is a docs-only slice. Do not execute the procedure.
 
 Do not edit `/srv/model-dispatch` or `/srv/projects/model-dispatch`.
 
-## Acceptance Criteria
+### Acceptance Criteria
 
 - `CURRENT_SLICE.md` identifies the active slice as
   `AMD vLLM manual mode-switch runbook`.
@@ -92,7 +159,7 @@ Do not edit `/srv/model-dispatch` or `/srv/projects/model-dispatch`.
   - `git diff --stat`
   - `git status --short`
 
-## Runtime Facts To Preserve
+### Runtime Facts To Preserve
 
 - Latest homelab commit before this slice:
   `689e6e7 plan amd vllm model dispatch alias`.
@@ -104,7 +171,7 @@ Do not edit `/srv/model-dispatch` or `/srv/projects/model-dispatch`.
 - `model-dispatch` alias is planned but not implemented.
 - Recommendation remains: do not add a `model-dispatch` alias yet.
 
-## Scope Expansion Risks
+### Scope Expansion Risks
 
 - Executing the mode switch would turn this from a runbook slice into live
   operations.
@@ -119,8 +186,6 @@ Do not edit `/srv/model-dispatch` or `/srv/projects/model-dispatch`.
 - Running Aider would turn this into another agent trial.
 - Running `sudo`, Docker write commands, or systemd write commands would
   broaden this into operations.
-
-## Prior Slice History
 
 ### Previous Active Slice: Codex Aider vLLM Hermes strategy consolidation
 
