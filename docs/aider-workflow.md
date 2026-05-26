@@ -90,4 +90,8 @@ with normal Git tools instead of asking Aider to broaden the task.
 
 ## Direct vLLM Trial Note
 
-Direct vLLM trials must use one file only. The user reviews the diff before commit. If Aider edits unrelated files, reject the run and restore the diff.
+- Use one file only.
+- Confirm the direct vLLM endpoint works before launching Aider.
+- Decline requests to add unrelated context files.
+- Review the diff before committing.
+- Reject the run if Aider edits unrelated files.

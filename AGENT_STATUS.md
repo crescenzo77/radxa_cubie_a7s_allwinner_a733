@@ -1458,3 +1458,50 @@ What did not change:
 
 Next:
 - Decide whether to run a second Aider trial with a slightly more realistic one-file patch, or plan a dedicated model-dispatch alias for the proven vLLM endpoint.
+
+## Second direct Aider vLLM one-file docs trial succeeded
+
+A second direct Aider trial was run against the temporary AMD vLLM endpoint.
+
+Endpoint:
+- `http://192.168.50.252:18000/v1`
+
+Model:
+- `openai/amd-vllm-temp-qwen2.5-coder-7b`
+
+Task:
+- Update only `docs/aider-workflow.md`.
+- Replace the one-sentence `Direct vLLM Trial Note` with a structured bullet list.
+
+Result:
+- Aider connected to the direct AMD vLLM endpoint.
+- Aider returned a non-empty response.
+- Aider edited only `docs/aider-workflow.md`.
+- Aider asked to add extra files:
+  - `AGENTS.md`
+  - `AGENT_STATUS.md`
+  - `CODEX_CONTEXT.md`
+  - `CURRENT_SLICE.md`
+  - `DECISIONS.md`
+  - `PROJECT_PLAN.md`
+- The user declined each extra file request.
+- Aider did not commit.
+- `git diff --check` passed.
+- `git diff --stat` showed only:
+  `docs/aider-workflow.md | 6 +++++-`
+
+Rollback:
+- Temporary vLLM container `amd-vllm-temp-test` was stopped.
+- `qwen3-coder-30b` was restarted and became healthy on port `8083`.
+- `gemma4-7900xt` stayed healthy on port `8084`.
+- `8083 /v1/models` returned:
+  `Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+- `8084 /v1/models` returned:
+  `google_gemma-4-26B-A4B-it-Q4_K_M.gguf`
+- RTX 3090 returned to the expected llama.cpp state, with `/app/llama-server`
+  using about `18212 MiB`.
+
+Conclusion:
+- Direct Aider against AMD vLLM is now proven twice for bounded one-file docs edits.
+- Aider still asks to add context/control files, but it respected declined file additions.
+- The next sensible step is to plan a dedicated model-dispatch alias for the proven vLLM endpoint, or decide that direct Aider-to-vLLM is sufficient for now.
