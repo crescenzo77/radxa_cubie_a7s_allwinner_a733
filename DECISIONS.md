@@ -1,5 +1,26 @@
 # Decisions
 
+## 2026-05-26 — Strix-local Aider launcher validated but restricted
+
+Decision:
+Use `/home/enzo/.local/bin/aider-strix-coder` as the approved Strix-local Aider launcher for bounded, named-file edits only.
+
+Rationale:
+The launcher successfully used the local Strix coder endpoint at `http://127.0.0.1:8082/v1` with model `openai/Qwen3-Coder-Next-UD-Q4_K_XL.gguf`, avoided the OpenRouter onboarding prompt, disabled auto-commits, and stored main history files outside the repo.
+
+Aider still creates `.aider.tags.cache.v4/`, so repos approved for Aider use should ignore `.aider*`.
+
+Aider is not currently reliable for long history/control Markdown files. A test against `DECISIONS.md` and `WORKFLOW.md` attempted broad rewrites and had to be reverted.
+
+Policy:
+- Use Aider with named files only.
+- Do not run bare `aider` in homelab repos.
+- Do not allow Aider auto-commits.
+- Do not use Aider as planner.
+- Do not use Aider yet on `DECISIONS.md`, `WORKFLOW.md`, `CURRENT_SLICE.md`, `AGENT_STATUS.md`, or `PROJECT_PLAN.md`.
+- Use Aider for small isolated docs, scripts, and code patches after planner-generated prompts.
+- User reviews diffs and commits manually.
+
 ## 2026-05-26 — Strix bulk storage mount
 
 Decision:
