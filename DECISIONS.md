@@ -1,5 +1,59 @@
 # Decisions
 
+## 2026-05-26 — Strix Qwen3.6 AWQ vLLM tool-loop validation
+
+Decision:
+Treat Strix vLLM with `cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit` as the first validated local model/harness candidate for agent-facing tool-loop behavior.
+
+Validated path:
+
+- Strix runs `docker.io/kyuz0/vllm-therock-gfx1151:stable`.
+- Served model name: `qwen36-awq-agent-test`.
+- vLLM listens on Strix port `8010`.
+- model-dispatch exposes explicit backend alias:
+  - `local/strix-qwen36-awq-agent`
+- model-dispatch exposes stable test role alias:
+  - `local/tool-test`
+- `local/tool-test` routes to `local/strix-qwen36-awq-agent`.
+
+Required launch characteristics observed during validation:
+
+- `--skip-mm-profiling`
+- `--enable-auto-tool-choice`
+- `--tool-call-parser qwen3_xml`
+- `--default-chat-template-kwargs '{"enable_thinking": false}'`
+- `--generation-config vllm`
+- `--trust-remote-code`
+- `--enforce-eager`
+
+Validation passed:
+
+- Direct Strix vLLM `/v1/models`.
+- Direct Strix vLLM normal chat.
+- Direct Strix vLLM JSON-only response.
+- Direct Strix vLLM OpenAI-style `tool_calls`.
+- Direct Strix vLLM multi-turn tool-result follow-up.
+- Remote Framework access to Strix vLLM.
+- Open WebUI manual selection through model-dispatch.
+- model-dispatch direct chat through `local/strix-qwen36-awq-agent`.
+- model-dispatch OpenAI-style tool call through `local/strix-qwen36-awq-agent`.
+- model-dispatch multi-turn tool-result follow-up.
+- Repeatable smoke test committed at `scripts/model-tool-loop-smoke`.
+- Stable role alias `local/tool-test` validated for chat and tool calls.
+
+Important boundaries:
+
+- `local/tool-test` is manual/test-only.
+- Do not add this model to `auto-local`, `auto-coding-local`, `auto-reasoning-local`, `advisor`, `reasoning`, `coding`, `review`, or `small` until explicitly selected and revalidated.
+- Existing llama.cpp model containers on Strix and AMD were intentionally stopped during the inference harness work.
+- This is not yet a persistent service design.
+- This does not prove long-context stability, production reliability, speed, or all-agent compatibility.
+- Aider is not validated for this model path; Aider connected but received an empty response and made no edit.
+- Continue using the repeatable smoke test before relying on the alias after restarts or model changes.
+
+Rationale:
+The main reliability goal is not only better model quality. It is consistent local model behavior across tools, skills, and agents: clean non-thinking output, predictable OpenAI-compatible response fields, valid JSON, real `tool_calls`, and clean multi-turn tool-result handling. This Strix vLLM path is the first local Qwen3.6-class setup in the homelab that passed that contract.
+
 ## 2026-05-26 — Homelab walking skeleton before broader cleanup
 
 Decision:
