@@ -64,11 +64,40 @@ Run from the Strix toolbox repo:
         --default-chat-template-kwargs '{"enable_thinking": false}' \
         --skip-mm-profiling
 
-This command currently runs as a manual container with `restart=no`.
+The preferred runtime is now Docker Compose at `runtime/strix-qwen36-awq-agent/compose.yml`.
+
+The direct command above is retained as a manual recovery reference, not the preferred day-to-day start path.
 
 ## Stop Command
 
     docker stop vllm-strix-qwen36-awq-tools-test
+
+## Preferred Compose Runtime
+
+The validated runtime is now managed with Docker Compose from the homelab repo:
+
+    cd /srv/projects/homelab
+    docker compose -f runtime/strix-qwen36-awq-agent/compose.yml up -d
+
+Check status:
+
+    docker compose -f runtime/strix-qwen36-awq-agent/compose.yml ps
+
+Follow logs:
+
+    docker compose -f runtime/strix-qwen36-awq-agent/compose.yml logs -f
+
+Stop the Compose-managed runtime:
+
+    docker compose -f runtime/strix-qwen36-awq-agent/compose.yml down
+
+The Compose-managed container is:
+
+    vllm-strix-qwen36-awq-agent
+
+It uses:
+
+    restart: unless-stopped
 
 ## Basic Validation
 
@@ -130,8 +159,9 @@ Validated successfully:
 - local/tool-test is manual/test-only.
 - Do not add this model to auto routes yet.
 - Do not make this the Open WebUI default yet.
-- Do not create systemd, Docker Compose, restart policy, watchdog, or automation until explicitly selected.
-- This does not yet prove long-context stability, production reliability, speed, all-agent compatibility, or recovery after reboot.
+- Docker Compose is now the preferred runtime definition for this container.
+- Do not create systemd, watchdog, or additional automation until explicitly selected.
+- This does not yet prove long-context stability, production reliability, speed, all-agent compatibility, or full recovery after host reboot.
 - Aider is not validated for this model path. Aider connected but received an empty response and made no edit.
 - Existing llama.cpp model containers on Strix and AMD were intentionally stopped during this inference-harness work.
 
@@ -144,3 +174,7 @@ Homelab repo checkpoint after defaulting the smoke test to the role alias:
 model-dispatch checkpoint after adding role aliases:
 
     a44126f add local tool test role alias
+
+Homelab repo checkpoint after adding the Compose runtime:
+
+    32ba194 add compose runtime for strix qwen36 awq vllm
