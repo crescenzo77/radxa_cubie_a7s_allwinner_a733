@@ -58,7 +58,7 @@ def main():
     )
     parser.add_argument(
         "--model",
-        default="local/strix-qwen36-awq-agent",
+        default="local/tool-test",
         help="Model-dispatch model alias.",
     )
     parser.add_argument(
