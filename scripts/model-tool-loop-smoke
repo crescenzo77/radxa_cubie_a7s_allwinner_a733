@@ -1,0 +1,168 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import subprocess
+import sys
+import urllib.request
+
+
+def post_chat(base_url, payload):
+    req = urllib.request.Request(
+        f"{base_url.rstrip('/')}/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=180) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def repo_status(path):
+    allowed_paths = {"/srv/projects/homelab"}
+
+    if path not in allowed_paths:
+        raise RuntimeError(f"refusing unexpected repo path: {path}")
+
+    branch = subprocess.check_output(
+        ["git", "-C", path, "branch", "--show-current"],
+        text=True,
+    ).strip()
+
+    status = subprocess.check_output(
+        ["git", "-C", path, "status", "--short"],
+        text=True,
+    ).strip()
+
+    head = subprocess.check_output(
+        ["git", "-C", path, "log", "--oneline", "-1"],
+        text=True,
+    ).strip()
+
+    return {
+        "path": path,
+        "host": "strix",
+        "branch": branch,
+        "status": status or "clean",
+        "head": head,
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Smoke-test model-dispatch tool-call loop against a local model alias."
+    )
+    parser.add_argument(
+        "--base-url",
+        default="http://192.168.50.225:4010/v1",
+        help="OpenAI-compatible base URL.",
+    )
+    parser.add_argument(
+        "--model",
+        default="local/strix-qwen36-awq-agent",
+        help="Model-dispatch model alias.",
+    )
+    parser.add_argument(
+        "--repo",
+        default="/srv/projects/homelab",
+        help="Repo path to inspect. Only /srv/projects/homelab is allowed.",
+    )
+    args = parser.parse_args()
+
+    messages = [
+        {
+            "role": "user",
+            "content": f"Use the repo_status tool for {args.repo}, then summarize the result in one sentence.",
+        }
+    ]
+
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "repo_status",
+                "description": "Get git status for a repository",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "path": {"type": "string"}
+                    },
+                    "required": ["path"],
+                },
+            },
+        }
+    ]
+
+    first = post_chat(args.base_url, {
+        "model": args.model,
+        "messages": messages,
+        "tools": tools,
+        "tool_choice": "auto",
+        "temperature": 0,
+        "max_tokens": 200,
+    })
+
+    print("=== first response ===")
+    print(json.dumps(first, indent=2))
+
+    first_message = first["choices"][0]["message"]
+    tool_calls = first_message.get("tool_calls") or []
+
+    if not tool_calls:
+        raise SystemExit("FAIL: model did not return tool_calls")
+
+    if first_message.get("reasoning") is not None:
+        raise SystemExit("FAIL: first response reasoning was not null")
+
+    messages.append(first_message)
+
+    for call in tool_calls:
+        name = call["function"]["name"]
+        arguments = json.loads(call["function"]["arguments"])
+
+        if name != "repo_status":
+            raise SystemExit(f"FAIL: unexpected tool name: {name}")
+
+        result = repo_status(arguments["path"])
+
+        messages.append({
+            "role": "tool",
+            "tool_call_id": call["id"],
+            "name": name,
+            "content": json.dumps(result),
+        })
+
+    second = post_chat(args.base_url, {
+        "model": args.model,
+        "messages": messages,
+        "temperature": 0,
+        "max_tokens": 200,
+    })
+
+    print()
+    print("=== second response ===")
+    print(json.dumps(second, indent=2))
+
+    final_message = second["choices"][0]["message"]
+
+    if final_message.get("reasoning") is not None:
+        raise SystemExit("FAIL: final response reasoning was not null")
+
+    if final_message.get("tool_calls"):
+        raise SystemExit("FAIL: final response unexpectedly requested another tool")
+
+    if not final_message.get("content"):
+        raise SystemExit("FAIL: final response content was empty")
+
+    print()
+    print("PASS: model-dispatch tool loop completed successfully.")
+    print(f"model={args.model}")
+    print(f"base_url={args.base_url}")
+    print(f"repo={args.repo}")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as exc:
+        print(f"FAIL: {exc}", file=sys.stderr)
+        raise
