@@ -44,8 +44,11 @@ Do not use Aider for:
 
 Use Codex for planning, sequencing, approval briefs, and risky live-service
 steps. Use Claude Code as a strong frontier-code alternative or second opinion
-when needed. Keep OpenCode as a later local-agent experiment, Continue.dev as
-editor assist, and Cline sandbox-only.
+when needed. Keep OpenCode as the preferred next local-model coding-agent
+candidate to evaluate, Continue.dev as editor assist, and Cline sandbox-only.
+
+For the full provider-neutral patch/review loop, see
+`docs/patch-review-workflow.md`.
 
 ## Standard Aider Workflow
 
@@ -87,6 +90,29 @@ Do not let Aider commit by default.
 The user reviews the diff first. After review, commit manually with a concise
 message that names the slice. If the Aider diff is wrong, reject it or revert it
 with normal Git tools instead of asking Aider to broaden the task.
+
+## Review Coach Boundary
+
+Aider is only the patch assistant. A separate reviewer must inspect the diff
+before commit.
+
+Reviewer options include Codex desktop, ChatGPT, Open WebUI with a local model,
+OpenCode in review-only mode, Claude Code, or another explicit reviewer chosen
+by the user.
+
+The reviewer checks:
+
+- `git status --short`
+- `git diff --check`
+- `git diff --stat`
+- the actual diff
+
+The reviewer ends with one of:
+
+- Commit
+- Revise
+- Revert
+- Inspect more
 
 ## Direct vLLM Trial Note
 

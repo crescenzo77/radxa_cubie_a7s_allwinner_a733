@@ -2,7 +2,93 @@
 
 ## Current status
 
-The active slice is `Strix llama.cpp Aider validation checkpoint complete`.
+The active slice is `Provider-neutral patch-review workflow checkpoint complete`.
+
+## Current task
+
+Preserve the provider-neutral workflow for planner, patch tool, reviewer, and
+user approval.
+
+## What changed
+
+- Added `docs/patch-review-workflow.md`.
+- Updated `WORKFLOW.md` with the provider-neutral patch-review loop.
+- Updated `docs/aider-workflow.md` so Aider is only one patch tool and the
+  reviewer role can be Codex desktop, ChatGPT, Open WebUI/local model,
+  OpenCode, Claude Code, or another selected reviewer.
+- Updated `DECISIONS.md` with the patch-review workflow decision.
+- Clarified that local models can review diffs through Open WebUI without a
+  coding agent.
+- Clarified that local models need a coding harness only when expected to edit
+  files.
+- Documented OpenCode as the preferred next local-model coding-agent candidate
+  to evaluate.
+- Documented Codex-on-Strix-with-local-model as unproven and a separate
+  investigation.
+- Updated `CURRENT_SLICE.md` for the completed checkpoint.
+- Preserved the prior Strix llama.cpp Aider validation below as history.
+
+## What did not change
+
+- No live services were changed.
+- No model-dispatch config was changed.
+- No Open WebUI config was changed.
+- No model containers were changed.
+- No Aider run was performed.
+- No OpenCode install or trial was performed.
+- No Codex local-provider setup was attempted.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `DECISIONS.md`
+- `WORKFLOW.md`
+- `docs/aider-workflow.md`
+- `docs/patch-review-workflow.md`
+
+## Checks run
+
+- Live homelab repo status.
+- Read current workflow and Aider docs.
+- Local check for Codex CLI on Mac mini.
+- Local check for Codex/OpenCode on Strix.
+- Official Codex documentation search for local-provider support context.
+- `git diff --check`
+- `git diff --stat`
+- `git status --short`
+
+## Results of checks
+
+- Codex CLI exists on the Mac mini.
+- Codex CLI was not found on Strix.
+- OpenCode was not found on Strix.
+- Official OpenAI Codex CLI documentation describes OpenAI-hosted Responses API
+  model usage; local-provider Codex-on-Strix is not proven in this homelab.
+
+## Known risks or blockers
+
+- OpenCode still needs installation/evaluation before it can become a local
+  coding-agent surface.
+- Codex with a local model on Strix is not proven.
+- Aider remains bounded-patch only, not a general autonomous coder.
+
+## User approval needed
+
+Approval is needed before installing OpenCode, configuring Codex local-provider
+profiles, changing model-dispatch defaults, changing Open WebUI defaults, or
+promoting any coding agent into normal workflow.
+
+## Recommended next action
+
+Stop here, or plan an OpenCode local-model evaluation slice using the same
+patch-review workflow.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Strix llama.cpp Aider validation checkpoint complete
 
 ## Current task
 
@@ -81,10 +167,6 @@ service/deployment work.
 
 Stop here, or validate AMD `local/amd-coder` as the RTX 3090 agentic workhorse
 with a similarly bounded edit.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - Local model role reset checkpoint complete
 

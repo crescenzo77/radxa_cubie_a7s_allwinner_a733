@@ -31,6 +31,22 @@ it is still not part of the core walking skeleton. OpenHuman is abandoned for
 the current phase because it creates signup/service pressure. None of these
 tools may become infrastructure, automation, or an approval system.
 
+The patch-review workflow is now the preferred shape for coding-agent trials:
+
+```text
+planner/advisor writes bounded prompt
+  -> patch tool makes one reviewable Git diff
+  -> reviewer / Review Coach inspects the diff
+  -> user decides Commit, Revise, Revert, or Inspect more
+```
+
+The reviewer role is provider-neutral. It can be Codex desktop, ChatGPT, Open
+WebUI with a local model, OpenCode in review-only mode, Claude Code, or another
+explicit reviewer selected by the user. The reviewer does not approve its own
+changes automatically.
+
+See `docs/patch-review-workflow.md`.
+
 ## Agent Division of Labor
 
 Use agents by task shape, not by which one best fits the routing architecture.
@@ -39,9 +55,9 @@ Use agents by task shape, not by which one best fits the routing architecture.
 |---|---|
 | Codex | Primary for planning, migration choreography, documentation slices, approval briefs, and risky live-service steps. |
 | Claude Code | Strong frontier-code alternative and second opinion for difficult implementation or review. |
-| Aider | Evaluation-only for bounded repo patch trials; one local `local/code-test` throwaway edit is proven, but it is not part of the core walking skeleton. |
+| Aider | Conditional bounded patch assistant for named-file edits only; not autonomous, not a planner, and not a default coder. |
 | Hermes | Observer, summarizer, reviewer, recorder, and approved-skill-assisted preservation checker only; no canonical repo mutation or live-service action. |
-| OpenCode | Later local-agent experiment; not the default or primary coder, and nothing should depend on it. |
+| OpenCode | Preferred next local-model coding-agent candidate to evaluate under the patch-review workflow; not a default coder yet. |
 | OpenHuman | Abandoned for the current phase because it creates signup/service pressure. |
 | Continue.dev | Editor assist and review for selected code chunks. |
 | Cline | Sandbox-only experimentation. |
@@ -51,14 +67,28 @@ Codex, Claude Code, and any evaluation agents are manually invoked tools. Do
 not wrap them in daemons, scheduled jobs, hidden approval flows, paid-provider
 automation, or repo-wide autonomous workflows.
 
+## Patch Tool And Review Boundary
+
+Patch tools make diffs. Reviewers inspect diffs. The user approves commits.
+
+A local model does not need a coding agent if it is only reviewing; Open WebUI
+can review pasted `git status`, `git diff --check`, `git diff --stat`, and diff
+excerpts. A local model does need a coding harness if it is expected to edit
+files directly. Candidate harnesses are Aider for strict patch mode and
+OpenCode for the next local coding-agent evaluation.
+
+Codex desktop on macOS remains a strong planner and reviewer. Running Codex on
+Strix with a local model is not proven in this homelab and should be treated as
+a separate investigation, not an assumed operating path.
+
 ## Aider Evaluation Boundary
 
-Aider is evaluation-only for now. Do not make it required for the walking
-skeleton, and do not depend on it for normal workflow edits.
+Aider is conditionally allowed for supervised bounded patch trials. Do not make
+it autonomous, and do not depend on it for broad workflow edits.
 
-The currently validated local path is `scripts/strix-vllm-mode code` followed
-by `scripts/aider-code-test` for a bounded named-file edit. Restore the normal
-Strix baseline afterward with `scripts/strix-vllm-mode tool`.
+The currently preferred local path is the restored Strix llama.cpp Coder-Next
+endpoint through `scripts/aider-strix-coder-llamacpp` for bounded named-file
+edits.
 
 Aider trials, when explicitly approved, must stay to one repo, one named-file
 bounded edit, and one reviewable diff. Aider is not a planner, migration

@@ -1,8 +1,29 @@
 # Current Slice
 
-## Active: Strix llama.cpp Aider validation checkpoint complete
+## Active: Provider-neutral patch-review workflow checkpoint complete
 
 ## Current State
+
+The provider-neutral patch-review workflow checkpoint is complete enough to
+preserve.
+
+Validated and pushed:
+
+- Added `docs/patch-review-workflow.md`.
+- Updated `WORKFLOW.md` so coding-agent trials follow:
+  planner/advisor -> patch tool -> reviewer -> user decision.
+- Updated `docs/aider-workflow.md` to make the reviewer role provider-neutral.
+- Updated `DECISIONS.md` with the provider-neutral patch-review decision.
+- Clarified that local models can review diffs through Open WebUI without a
+  coding agent.
+- Clarified that local models need a coding harness only when expected to edit
+  files.
+- Documented OpenCode as the preferred next local-model coding-agent candidate
+  to evaluate.
+- Documented Codex-on-Strix-with-local-model as unproven and a separate
+  investigation.
+
+## Prior Current State
 
 The first bounded Aider edit through the restored Strix llama.cpp/GGUF
 Coder-Next endpoint is complete enough to preserve.
@@ -26,7 +47,7 @@ Aider llama.cpp validation note:
 
 - `inventory/aider-strix-llamacpp-validation-2026-05-28.md`
 
-## Prior Current State
+## Earlier Current State
 
 The local model role reset is complete enough to preserve.
 
@@ -213,10 +234,10 @@ explicit slice selects that work.
 
 ## Recommended Next Choices
 
-1. Stop here and treat the Strix llama.cpp Aider path as preserved.
+1. Stop here and treat the patch-review workflow as preserved.
 2. Validate AMD `local/amd-coder` as the RTX 3090 agentic workhorse.
-3. Decide whether to point a model-dispatch alias or helper at the Strix
-   llama.cpp Aider path.
+3. Evaluate OpenCode as a local-model coding-agent candidate under the same
+   patch-review workflow.
 4. Pick a concrete open-weight 7900 XT experiment model when one is available.
 
 ## Constraints

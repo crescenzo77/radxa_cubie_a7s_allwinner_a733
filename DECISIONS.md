@@ -1,5 +1,36 @@
 # Decisions
 
+## 2026-05-28 — Use provider-neutral patch-review workflow
+
+Decision:
+Use a provider-neutral patch-review workflow for coding-agent trials.
+
+Workflow:
+
+- Planner/advisor writes a bounded prompt.
+- Patch tool makes one reviewable Git diff.
+- Reviewer / Review Coach inspects the diff.
+- User decides Commit, Revise, Revert, or Inspect more.
+
+Reviewer options include Codex desktop, ChatGPT, Open WebUI with a local model,
+OpenCode in review-only mode, Claude Code, or another explicit reviewer chosen
+by the user. The reviewer role is not tied to one provider.
+
+Patch tool options include Aider for strict named-file edits, Codex when
+explicitly selected, and OpenCode as the preferred next local-model coding-agent
+candidate to evaluate.
+
+Policy:
+
+- Aider remains conditionally allowed only as a bounded patch assistant, not as
+  a general autonomous coder.
+- Local models can review diffs through Open WebUI without needing a coding
+  agent.
+- Local models need a coding harness only when they are expected to edit files.
+- Running Codex on Strix with a local model is not proven in this homelab and
+  remains a separate investigation.
+- Commit only after proof and user approval.
+
 ## 2026-05-28 — Aider passes bounded edit through Strix llama.cpp Coder-Next
 
 Decision:
