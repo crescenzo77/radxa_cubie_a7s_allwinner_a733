@@ -182,19 +182,23 @@ model-dispatch aliases:
     local/strix-qwen3-coder-next-awq-agent
     local/code-test
 
-To switch from the current Qwen3.6 runtime to the Coder-Next test runtime, stop the active Qwen3.6 Compose service first, then start the Coder-Next Compose service. Do this only for manual testing:
+Use the mode-switch helper for manual one-port runtime switching:
 
     cd /srv/projects/homelab
-    docker compose -f runtime/strix-qwen36-awq-agent/compose.yml down
-    docker compose -f runtime/strix-qwen3-coder-next-awq-test/compose.yml up -d
-    scripts/model-tool-loop-smoke --model local/code-test
+    scripts/strix-vllm-mode status
+    scripts/strix-vllm-mode code
 
-To restore the current stable baseline:
+The helper stops the other Compose runtime, starts the selected Compose runtime, waits for the expected served model on `127.0.0.1:8010`, then runs the matching smoke test:
+
+- `code` validates `local/code-test`.
+- `tool` validates `local/tool-test`.
+
+To restore the current stable baseline after Coder-Next testing:
 
     cd /srv/projects/homelab
-    docker compose -f runtime/strix-qwen3-coder-next-awq-test/compose.yml down
-    docker compose -f runtime/strix-qwen36-awq-agent/compose.yml up -d
-    scripts/model-tool-loop-smoke
+    scripts/strix-vllm-mode tool
+
+The helper was validated end to end by switching from `tool` to `code`, passing the Coder-Next smoke test, then switching back to `tool` and passing the Qwen3.6 smoke test.
 
 Qwen2.5-Coder-7B was also tested under vLLM. It passed normal chat but did not produce OpenAI-style tool calls with the tested parser setup, so it is not part of the current tool-call contract.
 
@@ -215,3 +219,7 @@ Homelab repo checkpoint after adding the Compose runtime:
 Homelab repo checkpoint after preserving the Coder-Next test runtime:
 
     1ba8b71 add qwen3 coder next awq test runtime
+
+Homelab repo checkpoint after adding and validating the mode-switch helper:
+
+    9fc1776 add strix vllm mode switch helper
