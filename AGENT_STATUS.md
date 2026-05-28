@@ -2,7 +2,98 @@
 
 ## Current status
 
-The active slice is `Strix concurrent model variant comparison checkpoint complete`.
+The active slice is `Local model role reset checkpoint complete`.
+
+## Current task
+
+Preserve the return to the former llama.cpp/GGUF multi-model arrangement and
+the updated host roles for Strix and AMD.
+
+## What changed
+
+- Stopped the Strix vLLM Qwen3.6 AWQ runtime.
+- Started Strix `qwen3-6` on `8081`.
+- Started Strix `qwen3-coder` on `8082`.
+- Started AMD `qwen3-coder-30b` on `8083`.
+- Started AMD `gemma4-7900xt` on `8084`.
+- Confirmed model-dispatch already routes:
+  - `local/strix-reasoning` to Strix `8081`
+  - `local/strix-coder` to Strix `8082`
+  - `local/amd-coder` to AMD `8083`
+  - `local/amd-small` to AMD `8084`
+- Added `inventory/local-model-role-reset-2026-05-28.md`.
+- Updated `DECISIONS.md` with the local model role reset.
+- Updated `CURRENT_SLICE.md` for the completed checkpoint.
+- Preserved the prior Strix variant comparison checkpoint below as history.
+
+## What did not change
+
+- model-dispatch config was not edited.
+- Open WebUI config was not edited.
+- No systemd units, daemons, watchdogs, timers, or hidden automation were
+  added.
+- Aider was not run.
+- No Qwen 3.7 local model was installed or tested.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `DECISIONS.md`
+- `inventory/local-model-role-reset-2026-05-28.md`
+
+## Checks run
+
+- Live Strix validation.
+- Live ThinkCentre model-dispatch validation.
+- Live AMD container inspection.
+- Direct Strix `/v1/models` checks on `8081` and `8082`.
+- Direct AMD `/v1/models` checks on `8083` and `8084`.
+- model-dispatch chat checks for:
+  - `local/strix-reasoning`
+  - `local/strix-coder`
+  - `local/amd-coder`
+  - `local/amd-small`
+- Web check for current Qwen 3.7 local/open-weight availability.
+- `git diff --check`
+- `git diff --stat`
+- `git status --short`
+
+## Results of checks
+
+- `local/strix-reasoning` returned `ok`.
+- `local/strix-coder` returned `ok`.
+- `local/amd-coder` returned `ok`.
+- `local/amd-small` reached the model, but returned reasoning content instead
+  of clean final content for the tiny prompt.
+- Qwen 3.7 appears to be proprietary/preview/API-only for now, not a local
+  open-weight 7900 XT candidate.
+
+## Known risks or blockers
+
+- Strix llama.cpp/GGUF Coder-Next still needs Aider compatibility validation.
+- AMD `local/amd-coder` still needs a focused agentic workload validation.
+- `local/amd-small` is not a clean agent model until its thinking/output format
+  is controlled.
+- Qwen 3.7 cannot be tested locally until an official open-weight model or
+  concrete compatible quant exists.
+
+## User approval needed
+
+Approval is needed before changing model-dispatch defaults, changing Open WebUI
+defaults, promoting any model as the primary agentic backend, changing Aider
+helpers, or installing/testing new 7900 XT models.
+
+## Recommended next action
+
+Stop here, revalidate Aider against `local/strix-coder`, or validate AMD
+`local/amd-coder` with a focused agentic coding workload.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Strix concurrent model variant comparison checkpoint complete
 
 ## Current task
 
@@ -82,10 +173,6 @@ persistent Compose files, or adding automation.
 
 Stop here, or plan a separate evaluation of the old llama.cpp/GGUF code model
 path for Aider compatibility before changing any live routes.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - Strix two-model feasibility recovery checkpoint complete
 

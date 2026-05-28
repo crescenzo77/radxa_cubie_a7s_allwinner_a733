@@ -1,5 +1,38 @@
 # Decisions
 
+## 2026-05-28 — Return Strix default to llama.cpp GGUF multi-model harness
+
+Decision:
+Use the former llama.cpp/GGUF Strix pair as the default always-live Strix model
+arrangement, and use AMD for fast agentic coding plus experimental models.
+
+Current intended roles:
+
+- Strix `qwen3-6` / `local/strix-reasoning`: Qwen3.6 GGUF on llama.cpp
+  Vulkan for long-context reasoning and review.
+- Strix `qwen3-coder` / `local/strix-coder`: Qwen3-Coder-Next GGUF on
+  llama.cpp Vulkan as the always-live local code model candidate.
+- AMD `qwen3-coder-30b` / `local/amd-coder`: RTX 3090 fast agentic coding
+  workhorse.
+- AMD `gemma4-7900xt` / `local/amd-small`: RX 7900 XT backup and experimental
+  lane.
+
+Rationale:
+The vLLM Qwen3.6 AWQ harness is validated for clean tool-call behavior, but it
+reserves enough memory that concurrent large vLLM serving on Strix is not safe
+in the tested shape. The llama.cpp/GGUF pair fits Strix's strength better:
+large unified memory and multiple local models live at once.
+
+Boundaries:
+
+- Do not remove the vLLM Qwen3.6 AWQ runtime; keep it as a validated reference
+  tool-call harness.
+- Do not assume llama.cpp/GGUF Coder-Next is Aider-compatible until revalidated.
+- Do not treat `local/amd-small` as a clean agent model until its thinking
+  output behavior is controlled.
+- Do not plan local Qwen 3.7 testing until official open weights or a concrete
+  compatible quant are available.
+
 ## 2026-05-28 — Aider passes first real bounded non-critical repo edit
 
 Decision:

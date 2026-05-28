@@ -1,8 +1,31 @@
 # Current Slice
 
-## Active: Strix concurrent model variant comparison checkpoint complete
+## Active: Local model role reset checkpoint complete
 
 ## Current State
+
+The local model role reset is complete enough to preserve.
+
+Validated and pushed:
+
+- Strix vLLM Qwen3.6 AWQ was stopped.
+- Strix llama.cpp/GGUF `qwen3-6` was started on `8081`.
+- Strix llama.cpp/GGUF `qwen3-coder` was started on `8082`.
+- AMD RTX 3090 `qwen3-coder-30b` was started on `8083`.
+- AMD RX 7900 XT `gemma4-7900xt` was started on `8084`.
+- model-dispatch already had the required aliases and routes.
+- `local/strix-reasoning`, `local/strix-coder`, and `local/amd-coder`
+  returned clean `ok` responses.
+- `local/amd-small` responded, but emitted reasoning text instead of clean
+  content for a tiny prompt.
+- Qwen 3.7 was checked as a future experiment topic; no local open-weight
+  target is available yet.
+
+Role reset note:
+
+- `inventory/local-model-role-reset-2026-05-28.md`
+
+## Prior Current State
 
 The Strix concurrent model variant comparison is complete enough to preserve.
 
@@ -25,7 +48,7 @@ Comparison note:
 
 - `inventory/strix-concurrent-model-variant-comparison-2026-05-28.md`
 
-## Prior Current State
+## Earlier Current State
 
 The first attempt to run both Strix vLLM models live at the same time failed
 and was recovered to the known-good single-model baseline.
@@ -166,11 +189,11 @@ explicit slice selects that work.
 
 ## Recommended Next Choices
 
-1. Stop here and treat the variant comparison as preserved.
-2. Keep the current manual vLLM mode switch as the validated baseline.
-3. If always-live code serving is required, evaluate the older llama.cpp/GGUF
-   path separately before changing model-dispatch or Aider.
-4. Consider a separate host for an always-live vLLM code model.
+1. Stop here and treat the four-model llama.cpp/GGUF arrangement as preserved.
+2. Revalidate Aider against `local/strix-coder` or the direct Strix
+   llama.cpp Coder-Next endpoint.
+3. Validate AMD `local/amd-coder` as the RTX 3090 agentic workhorse.
+4. Pick a concrete open-weight 7900 XT experiment model when one is available.
 
 ## Constraints
 
