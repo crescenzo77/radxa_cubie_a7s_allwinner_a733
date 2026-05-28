@@ -160,10 +160,43 @@ Validated successfully:
 - Do not add this model to auto routes yet.
 - Do not make this the Open WebUI default yet.
 - Docker Compose is now the preferred runtime definition for this container.
+- The Coder-Next test runtime at `runtime/strix-qwen3-coder-next-awq-test/compose.yml` also uses port 8010.
+- With the current one-port Strix setup, `local/tool-test` and `local/code-test` are mode-specific aliases, not simultaneously live services.
 - Do not create systemd, watchdog, or additional automation until explicitly selected.
 - This does not yet prove long-context stability, production reliability, speed, all-agent compatibility, or full recovery after host reboot.
 - Aider is not validated for this model path. Aider connected but received an empty response and made no edit.
 - Existing llama.cpp model containers on Strix and AMD were intentionally stopped during this inference-harness work.
+
+## Related Coder-Next Test Runtime
+
+The validated Coder-Next test runtime is:
+
+    runtime/strix-qwen3-coder-next-awq-test/compose.yml
+
+It serves:
+
+    qwen3-coder-next-awq-agent-test
+
+model-dispatch aliases:
+
+    local/strix-qwen3-coder-next-awq-agent
+    local/code-test
+
+To switch from the current Qwen3.6 runtime to the Coder-Next test runtime, stop the active Qwen3.6 Compose service first, then start the Coder-Next Compose service. Do this only for manual testing:
+
+    cd /srv/projects/homelab
+    docker compose -f runtime/strix-qwen36-awq-agent/compose.yml down
+    docker compose -f runtime/strix-qwen3-coder-next-awq-test/compose.yml up -d
+    scripts/model-tool-loop-smoke --model local/code-test
+
+To restore the current stable baseline:
+
+    cd /srv/projects/homelab
+    docker compose -f runtime/strix-qwen3-coder-next-awq-test/compose.yml down
+    docker compose -f runtime/strix-qwen36-awq-agent/compose.yml up -d
+    scripts/model-tool-loop-smoke
+
+Qwen2.5-Coder-7B was also tested under vLLM. It passed normal chat but did not produce OpenAI-style tool calls with the tested parser setup, so it is not part of the current tool-call contract.
 
 ## Current Known Good Checkpoints
 
@@ -178,3 +211,7 @@ model-dispatch checkpoint after adding role aliases:
 Homelab repo checkpoint after adding the Compose runtime:
 
     32ba194 add compose runtime for strix qwen36 awq vllm
+
+Homelab repo checkpoint after preserving the Coder-Next test runtime:
+
+    1ba8b71 add qwen3 coder next awq test runtime

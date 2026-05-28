@@ -1,5 +1,45 @@
 # Decisions
 
+## 2026-05-28 — Strix Qwen3-Coder-Next AWQ test runtime preserved
+
+Decision:
+Keep `cyankiwi/Qwen3-Coder-Next-AWQ-4bit` as a validated Strix vLLM code/tool test runtime, but do not make it persistent or automatic yet.
+
+Validated path while the Coder-Next runtime is active:
+
+- Strix runs `docker.io/kyuz0/vllm-therock-gfx1151:stable`.
+- Served model name: `qwen3-coder-next-awq-agent-test`.
+- vLLM listens on Strix port `8010`.
+- model-dispatch exposes explicit backend alias:
+  - `local/strix-qwen3-coder-next-awq-agent`
+- model-dispatch exposes stable test role alias:
+  - `local/code-test`
+- `scripts/model-tool-loop-smoke --model local/code-test` passed.
+
+Validation passed:
+
+- Direct Strix vLLM `/v1/models`.
+- Direct Strix vLLM normal chat.
+- Direct Strix vLLM OpenAI-style `tool_calls`.
+- Direct Strix vLLM multi-turn tool-result follow-up.
+- model-dispatch direct chat through `local/code-test`.
+- model-dispatch OpenAI-style tool call through `local/code-test`.
+- Repeatable smoke test through `scripts/model-tool-loop-smoke --model local/code-test`.
+
+Important boundaries:
+
+- This runtime uses the same Strix port, `8010`, as the Qwen3.6 AWQ runtime.
+- Only one of `local/tool-test` or `local/code-test` can work at a time with the current one-port Strix setup.
+- When Qwen3.6 AWQ is active, `local/tool-test` works and `local/code-test` fails because the Coder-Next served model is absent.
+- When Coder-Next AWQ is active, `local/code-test` works and `local/tool-test` fails because the Qwen3.6 served model is absent.
+- Do not add `local/code-test` to auto routes or defaults until the runtime switching or port strategy is explicitly selected and revalidated.
+
+Related negative result:
+`Qwen/Qwen2.5-Coder-7B-Instruct` passed normal chat under vLLM but did not produce OpenAI-style `tool_calls` with the tested parser setup. Do not use that model for the current tool-call contract.
+
+Rationale:
+Coder-Next is the first validated local coder-oriented model for the same OpenAI-style tool-call surface, but it is still a manual test runtime. The current stable baseline remains Qwen3.6 AWQ on `local/tool-test` until runtime switching or concurrent serving is deliberately designed.
+
 ## 2026-05-26 — Strix Qwen3.6 AWQ vLLM tool-loop validation
 
 Decision:
