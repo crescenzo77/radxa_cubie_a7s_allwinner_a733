@@ -1,5 +1,33 @@
 # Decisions
 
+## 2026-05-28 — OpenCode local-model preflight is partial, not validated
+
+Decision:
+Treat OpenCode as installed on Strix but not yet validated as a working local
+patch tool.
+
+Validated facts:
+
+- OpenCode version `1.15.12` is installed on Strix at
+  `/home/enzo/.local/npm-global/bin/opencode`.
+- A project-local OpenCode config can use `@ai-sdk/openai-compatible` against
+  model-dispatch at `http://192.168.50.225:4010/v1`.
+- OpenCode can list configured local models from that config.
+
+Trial results:
+
+- AMD `local/amd-coder` failed before editing because OpenCode's build-agent
+  request exceeded the AMD model's advertised context.
+- Strix `local/strix-coder` exited without editing, with zero recorded model
+  tokens and no tool calls in the exported OpenCode session.
+
+Policy:
+
+- Do not promote OpenCode into the normal workflow yet.
+- Do not change model-dispatch or Open WebUI defaults for OpenCode.
+- Do not switch Strix runtimes for OpenCode testing unless explicitly selected.
+- Keep Aider as the currently validated bounded patch-tool path.
+
 ## 2026-05-28 — Aider passes bounded edit through AMD local coder
 
 Decision:

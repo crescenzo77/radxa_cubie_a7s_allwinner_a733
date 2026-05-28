@@ -1,8 +1,43 @@
 # Current Slice
 
-## Active: AMD local coder bounded patch validation complete
+## Active: OpenCode local-model preflight complete
 
 ## Current State
+
+The first OpenCode local-model preflight is complete enough to preserve as a
+partial/negative checkpoint.
+
+Validated:
+
+- OpenCode was not initially present on Strix or the Mac mini.
+- Official installer access via `https://opencode.ai/install` failed from
+  Strix because `opencode.ai:443` was unreachable.
+- Strix had general internet access and `npm`.
+- OpenCode was installed on Strix with `npm install -g opencode-ai`.
+- Installed OpenCode version: `1.15.12`.
+- Binary path: `/home/enzo/.local/npm-global/bin/opencode`.
+- A throwaway repo was created at `/tmp/opencode-local-trial`.
+- Project-local `opencode.json` configured model-dispatch through
+  `@ai-sdk/openai-compatible`.
+- OpenCode listed:
+  - `homelab/amd-coder-qwen3-coder-30b-32k`
+  - `homelab/strix-coder-qwen3-coder-next-65k`
+
+Trial results:
+
+- AMD `local/amd-coder` did not run the OpenCode build agent because
+  model-dispatch rejected the request as context-too-small:
+  estimated total `34682` tokens against `32768` context.
+- Strix `local/strix-coder` accepted the larger-context request, but OpenCode
+  exited without editing, with zero recorded model tokens and no tool calls.
+- No real project repo was edited by OpenCode.
+- No model-dispatch, Open WebUI, Docker, systemd, or routing config changed.
+
+OpenCode preflight note:
+
+- `inventory/opencode-local-model-preflight-2026-05-28.md`
+
+## Prior Current State
 
 The AMD `local/amd-coder` bounded patch-tool validation is complete enough to
 preserve.

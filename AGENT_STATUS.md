@@ -2,7 +2,105 @@
 
 ## Current status
 
-The active slice is `AMD local coder bounded patch validation complete`.
+The active slice is `OpenCode local-model preflight complete`.
+
+## Current task
+
+Preserve the first OpenCode local-model preflight as a partial/negative
+checkpoint.
+
+## What changed
+
+- Installed OpenCode `1.15.12` on Strix with `npm install -g opencode-ai`
+  after the official installer URL was unreachable from Strix.
+- Created a throwaway repo at `/tmp/opencode-local-trial`.
+- Configured a project-local OpenCode provider named `homelab` using
+  `@ai-sdk/openai-compatible` and model-dispatch endpoint
+  `http://192.168.50.225:4010/v1`.
+- Confirmed OpenCode listed the AMD and Strix local coder models.
+- Tested AMD `local/amd-coder` through OpenCode.
+- Tested Strix `local/strix-coder` through OpenCode.
+- Added `inventory/opencode-local-model-preflight-2026-05-28.md`.
+- Updated `DECISIONS.md` with the OpenCode preflight result.
+- Updated `CURRENT_SLICE.md` for the completed checkpoint.
+- Preserved the prior AMD Aider validation below as history.
+
+## What did not change
+
+- No live services were changed.
+- No model-dispatch config was changed.
+- No Open WebUI config was changed.
+- No model containers were changed.
+- No Codex local-provider setup was attempted.
+- Aider was not promoted into the core workflow.
+- No real project repo was edited by OpenCode.
+- No OpenCode result was promoted into the normal workflow.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `DECISIONS.md`
+- `inventory/opencode-local-model-preflight-2026-05-28.md`
+
+## Checks run
+
+- Live homelab repo status.
+- OpenCode presence check on Strix and Mac mini.
+- `curl` checks from Strix for `opencode.ai` and `github.com`.
+- Strix package tooling check for `npm`.
+- OpenCode install through `npm install -g opencode-ai`.
+- `opencode --version`.
+- `opencode models homelab` in the throwaway repo.
+- OpenCode AMD throwaway edit attempt.
+- OpenCode Strix throwaway edit attempt.
+- OpenCode session export for the Strix attempt.
+- `git status --short` in the throwaway repo.
+- `git diff --check` in the throwaway repo.
+- `git diff --check`
+- `git diff --stat`
+- `git status --short`
+
+## Results of checks
+
+- OpenCode installed on Strix and runs from
+  `/home/enzo/.local/npm-global/bin/opencode`.
+- OpenCode can load a custom OpenAI-compatible provider config.
+- AMD OpenCode run failed before editing because the build-agent request was
+  larger than AMD's advertised context.
+- Strix OpenCode run exited `0` but did not edit `README.md`; session export
+  showed zero recorded model tokens and no tool calls.
+- The throwaway repo remained clean after the test setup commit.
+
+## Known risks or blockers
+
+- OpenCode is installed but not validated as a working local patch tool.
+- AMD `local/amd-coder` may need a smaller OpenCode prompt/output budget or a
+  larger-context route before OpenCode can use it.
+- Strix `local/strix-coder` needs a separate investigation for the zero-token,
+  no-tool-call OpenCode result.
+- Codex with a local model on Strix is not proven.
+
+## User approval needed
+
+Approval is needed before changing OpenCode global config, changing
+model-dispatch defaults, changing Open WebUI defaults, switching Strix to a
+vLLM tool-call runtime for OpenCode testing, configuring Codex local-provider
+profiles, or promoting any coding agent into normal workflow.
+
+## Recommended next action
+
+Stop here, or explicitly select a narrower OpenCode follow-up:
+
+- tune OpenCode prompt/output budget for AMD,
+- investigate the Strix zero-token result,
+- or test OpenCode against the validated vLLM tool-call harness.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - AMD local coder bounded patch validation complete
 
 ## Current task
 
@@ -82,10 +180,6 @@ promoting any coding agent into normal workflow.
 
 Stop here, or plan an OpenCode local-model evaluation slice under the same
 patch-review workflow.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - Provider-neutral patch-review workflow checkpoint complete
 
