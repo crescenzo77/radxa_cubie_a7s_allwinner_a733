@@ -1,30 +1,37 @@
 # Current Slice
 
-## Active: Walking skeleton documentation alignment complete
+## Active: Strix vLLM local-agent validation checkpoint complete
 
 ## Current State
 
-The current walking-skeleton documentation alignment is complete enough to stop
-this cleanup pass.
+The current Strix vLLM local-agent validation checkpoint is complete enough to
+stop this pass.
 
 Validated and pushed:
 
-- `DECISIONS.md` documents the walking skeleton, Review Coach format,
-  Strix-local Aider restriction, and Strix `/bulk` storage policy.
-- `WORKFLOW.md` is aligned with the manual walking skeleton.
-- `HOMELAB_LAYOUT.md` is aligned with the manual walking skeleton and current
-  host roles.
-- `ROADMAP.md` identifies the walking skeleton as the current priority.
+- Strix Qwen3.6 AWQ vLLM runtime is managed by Docker Compose and restored as
+  the current stable baseline.
+- `local/tool-test` passes the model-dispatch OpenAI-style tool loop while
+  Qwen3.6 is active.
+- Strix Qwen3-Coder-Next AWQ has a preserved manual test runtime.
+- `local/code-test` passes the model-dispatch OpenAI-style tool loop while
+  Coder-Next is active.
+- `scripts/strix-vllm-mode` switches the one-port Strix runtime between
+  `tool` and `code`, waits for readiness, and runs the matching smoke test.
+- Aider `0.86.2` passed a bounded one-file throwaway edit through
+  `local/code-test` and model-dispatch.
+- `scripts/aider-code-test` preserves the validated Aider command shape and
+  refuses to run unless the Coder-Next served model is active.
 - Latest pushed checkpoint at the time of this slice update:
-  `b56076e align roadmap with walking skeleton`.
+  `6ee8fc0 add local code-test aider helper`.
 
 ## Active Posture
 
 No active implementation slice.
 
-Do not proceed into broader homelab cleanup, service moves, OpenHuman,
-OpenCode, Aider workflow promotion, CodeGraphContext write workflows, or
-automated reviewer/oracle loops until explicitly selected.
+Do not promote Aider, add auto routes, make Coder-Next persistent, add hidden
+automation, change Open WebUI defaults, or redesign model routing until an
+explicit slice selects that work.
 
 ## Current Walking Skeleton
 
@@ -40,7 +47,8 @@ automated reviewer/oracle loops until explicitly selected.
 
 ## Evaluation-Only / Deferred
 
-- Aider is evaluation-only for now.
+- Aider remains evaluation-only, but one bounded local `local/code-test` edit is
+  now proven.
 - OpenCode is not the default or primary coder, and nothing should depend on it.
 - OpenHuman is abandoned for the current phase because it creates signup/service
   pressure.
@@ -50,16 +58,18 @@ automated reviewer/oracle loops until explicitly selected.
 
 ## Recommended Next Choices
 
-1. Stop here and treat the walking-skeleton documentation alignment as complete.
-2. Start a new explicitly selected cleanup slice.
-3. Inventory current repos and mirrors before deciding any project moves.
-4. Pick one low-risk manual walking-skeleton task to prove the end-to-end loop
-   again.
+1. Stop here and treat the Strix vLLM/Aider checkpoint as preserved.
+2. Pick one non-critical repo and run a real bounded Aider edit with
+   `scripts/aider-code-test`, then review the diff manually.
+3. Design, but do not yet automate, a clearer Strix runtime mode strategy if
+   `local/tool-test` and `local/code-test` both need to be live.
+4. Inventory current repos and mirrors before deciding any project moves.
 
 ## Constraints
 
 - Do not use Aider on `DECISIONS.md`, `WORKFLOW.md`, `CURRENT_SLICE.md`,
   `AGENT_STATUS.md`, or `PROJECT_PLAN.md`.
+- Do not use Aider in the homelab repo as a normal workflow yet.
 - Do not make service, Docker, systemd, routing, storage, or model-runtime
   changes without fresh live-state validation.
 - Do not trust project docs as current truth without checking live state.

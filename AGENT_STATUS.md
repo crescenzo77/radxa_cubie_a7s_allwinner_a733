@@ -2,116 +2,106 @@
 
 ## Current status
 
-The active slice is `AMD vLLM manual mode-switch runbook`.
+The active slice is `Strix vLLM local-agent validation checkpoint complete`.
 
 ## Current task
 
-Create a docs-only manual runbook for temporarily switching AMD RTX 3090 from
-`qwen3-coder-30b` llama.cpp on `8083` to vLLM on `18000`, then restoring
-`qwen3-coder-30b`. Do not execute the procedure.
+Preserve the current validated Strix vLLM and Aider compatibility state. Do not
+promote Aider or change default routes without a new explicit slice.
 
 ## What changed
 
-- Updated `CURRENT_SLICE.md` so the active slice is
-  `AMD vLLM manual mode-switch runbook`.
-- Updated `PROJECT_PLAN.md` so the current build stage is
-  `Slice 18: AMD vLLM manual mode-switch runbook`.
-- Created `runbooks/amd-vllm-manual-mode-switch.md`.
-- Documented the manual mode-switch purpose, use boundaries, prerequisites,
-  exact paths, exact models, temporary vLLM runtime facts, preflight checks,
-  stop/start command shapes, vLLM readiness checks, curl validation, optional
-  direct Aider command shape, rollback, `8083` and `8084` validation, GPU
-  validation, failure handling, and what not to change.
+- Added and validated the Strix Qwen3.6 AWQ Compose runtime.
+- Added and validated the Coder-Next AWQ manual test runtime.
+- Added `scripts/model-tool-loop-smoke` and defaulted it to `local/tool-test`.
+- Added `scripts/strix-vllm-mode` to switch the one-port Strix runtime between
+  `tool` and `code` modes with readiness and smoke validation.
+- Proved `local/tool-test` and `local/code-test` through model-dispatch.
+- Proved Aider `0.86.2` can make one bounded throwaway edit through
+  `local/code-test`.
+- Added `scripts/aider-code-test` to preserve the validated Aider command shape
+  while refusing to run unless Coder-Next is active.
+- Documented the decisions and runbook updates for these validations.
 
 ## What did not change
 
-- vLLM was not started.
-- `qwen3-coder-30b` was not stopped or restarted.
-- `gemma4-7900xt` was not stopped or restarted.
-- Aider was not run.
-- No `/srv/model-dispatch` files were touched.
-- No `/srv/projects/model-dispatch` files were touched.
-- No `model-dispatch` live config or service was changed.
+- Aider was not promoted into the core walking skeleton.
+- Aider was not run against the homelab repo for a real workflow edit.
+- No auto routes or default model routes were changed.
+- `local/tool-test` remains manual/test-only.
+- `local/code-test` remains manual/test-only.
+- Only one Strix vLLM runtime is active on port `8010` at a time.
+- Strix was restored to `tool` mode after Coder-Next and Aider tests.
+- No `/srv/model-dispatch` files were changed in this checkpoint.
 - No Open WebUI config was changed.
 - No OpenCode config was changed.
 - No Continue.dev config was changed.
 - No LiteLLM config was changed.
 - No dashboard, monitoring, or observability config was changed.
-- No restart policies, Compose files, systemd units, wrappers, daemons,
-  watchers, schedulers, or automation were added.
-- No `sudo`, Docker write command, or systemd write command was run.
-- `ROADMAP.md` was not changed because its current AMD mode-switch facts are
-  already accurate for this docs-only runbook slice.
-- No commit was made.
+- No systemd units, daemons, watchers, schedulers, hidden jobs, or approval
+  automation were added.
 
 ## Files changed
 
-Changed by this slice:
+Recently changed by this checkpoint:
 
+- `DECISIONS.md`
+- `docs/aider-workflow.md`
+- `runbooks/strix-vllm-qwen36-awq-agent.md`
+- `runtime/strix-qwen3-coder-next-awq-test/compose.yml`
+- `scripts/aider-code-test`
+- `scripts/strix-vllm-mode`
 - `CURRENT_SLICE.md`
 - `PROJECT_PLAN.md`
 - `AGENT_STATUS.md`
-- `runbooks/amd-vllm-manual-mode-switch.md`
+- `ROADMAP.md`
+- `WORKFLOW.md`
 
 ## Checks run
 
-- Read required homelab docs:
-  - `CODEX_CONTEXT.md`
-  - `CURRENT_SLICE.md`
-  - `AGENT_STATUS.md`
-  - `PROJECT_PLAN.md`
-  - `DECISIONS.md`
-  - `ROADMAP.md`
-- Inspected existing AMD vLLM alias-plan context:
-  - `inventory/amd-vllm-model-dispatch-alias-plan.md`
-- Final checks:
-  - `git diff --check`
-  - `git diff --stat`
-  - `git status --short`
+- `scripts/model-tool-loop-smoke`
+- `scripts/model-tool-loop-smoke --model local/code-test`
+- `scripts/strix-vllm-mode code`
+- `scripts/strix-vllm-mode tool`
+- `scripts/aider-code-test` failure path in `tool` mode.
+- `scripts/aider-code-test` success path in a throwaway repo while in `code`
+  mode.
+- `bash -n scripts/aider-code-test`
+- `git diff --check`
+- `git status --short`
 
 ## Results of checks
 
-- `git diff --check`: passed with no output.
-- `git diff --stat`:
-  - `AGENT_STATUS.md  |  92 +++++++++++++++++-----------------`
-  - `CURRENT_SLICE.md | 147 ++++++++++++++++++++++++++++---------------------------`
-  - `PROJECT_PLAN.md  |   2 +-`
-  - `3 files changed, 120 insertions(+), 121 deletions(-)`
-  - Note: plain `git diff --stat` does not include the untracked new runbook
-    file.
-- `git status --short`:
-  - `M AGENT_STATUS.md`
-  - `M CURRENT_SLICE.md`
-  - `M PROJECT_PLAN.md`
-  - `?? runbooks/`
+- `local/tool-test` passes through model-dispatch when Qwen3.6 is active.
+- `local/code-test` passes through model-dispatch when Coder-Next is active.
+- Aider edited only the requested file in throwaway repos and exited `0`.
+- `scripts/aider-code-test` refuses to run when the wrong Strix runtime is
+  active.
+- Final live Strix state after tests: `active_mode=tool`.
+- Latest pushed checkpoint before this status alignment:
+  `6ee8fc0 add local code-test aider helper`.
 
 ## Known risks or blockers
 
-- This procedure intentionally takes `amd:8083` offline while vLLM owns RTX
-  3090, so it must not be run during work that depends on
-  `qwen3-coder-30b`.
-- The documented Docker command may need local ROCm-specific flags if the AMD
-  host requires them; the runbook says to record the exact working command in a
-  later revision if that occurs.
-- `model-dispatch` aliasing remains planned but not implemented. The
-  recommendation remains: do not add a `model-dispatch` alias yet.
-- Aider through direct vLLM is proven twice, but Aider through
-  `model-dispatch` is still unproven.
+- `local/tool-test` and `local/code-test` share Strix port `8010`; they are
+  mode-specific, not simultaneously live.
+- Aider compatibility is still only proven for tiny, explicit, one-file edits.
+- Aider is not validated for broad repo maps, long context, multi-file edits,
+  auto-commits, or autonomous coding workflows.
+- The existing `/home/enzo/.local/bin/aider-strix-coder` launcher still points
+  at the older `8082` llama.cpp/GGUF path, not the validated vLLM Coder-Next
+  path.
 
 ## User approval needed
 
-No approval is needed for this documentation-only runbook slice.
-
-Approval is needed before any future live mode switch, vLLM start,
-`qwen3-coder-30b` stop/restart, `gemma4-7900xt` stop/restart, Docker write
-command, systemd change, `model-dispatch` edit, Open WebUI change, or Aider
-run.
+Approval is needed before promoting Aider into normal workflow, changing
+default routes, making Coder-Next persistent, adding concurrent Strix serving,
+editing Open WebUI defaults, changing `model-dispatch`, or adding automation.
 
 ## Recommended next action
 
-Review the diff. If accepted, an operator can later use the runbook manually
-only after explicitly approving the live mode switch and confirming that no
-work depends on `qwen3-coder-30b` on `8083`.
+Stop here or choose one non-critical repo for a real bounded
+`scripts/aider-code-test` edit, with manual diff review before commit.
 
 ## Archived Status History
 

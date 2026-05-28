@@ -34,12 +34,21 @@ by newer decisions.
   and risky live-service work.
 - Claude Code is a strong frontier-code alternative and second opinion.
 - Aider is evaluation-only for now. Direct Aider-to-temporary AMD vLLM is
-  proven twice for bounded one-file docs edits, but it is not part of the
-  walking skeleton and Aider through `model-dispatch` is not yet proven.
+  proven twice for bounded one-file docs edits. Aider through Strix
+  Coder-Next, vLLM, and `model-dispatch` is also proven for one tiny
+  throwaway edit via `local/code-test`, but it is not part of the core walking
+  skeleton yet.
 - Non-Codex agentic work must use local LLMs or verified OpenRouter-free models
   only.
 - vLLM is the preferred candidate serving layer for local coding/reasoning
   models on AMD and Strix, subject to validation.
+- Strix Qwen3.6 AWQ on vLLM is the current validated `local/tool-test`
+  baseline for OpenAI-style tool calls.
+- Strix Qwen3-Coder-Next AWQ on vLLM is the current validated manual
+  `local/code-test` runtime for code/tool tests and the bounded Aider helper.
+- `scripts/strix-vllm-mode` is the validated manual switch helper for the
+  current one-port Strix vLLM setup. It restores the stable baseline with
+  `scripts/strix-vllm-mode tool`.
 - AMD vLLM with `Qwen2.5-Coder-7B-Instruct` is proven as a temporary direct
   endpoint at `http://192.168.50.252:18000/v1`, served as
   `amd-vllm-temp-qwen2.5-coder-7b`; it is not persistent and should not be

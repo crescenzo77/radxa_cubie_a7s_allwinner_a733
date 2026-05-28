@@ -39,7 +39,7 @@ Create a stable workflow where:
 
 ## Current build stage
 
-Slice 18: AMD vLLM manual mode-switch runbook.
+Slice 19: Strix vLLM local-agent validation checkpoint.
 
 ## How to use this repo
 

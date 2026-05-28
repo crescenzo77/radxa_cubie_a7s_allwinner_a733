@@ -26,9 +26,10 @@ controlled edit steps, the user runs them, the Review Coach explains diffs in
 layman's terms, and the user commits and pushes after review.
 
 Aider, OpenCode, and CodeGraphContext write workflows are evaluation-only for
-now. OpenHuman is abandoned for the current phase because it creates
-signup/service pressure. None of these tools may become infrastructure,
-automation, or an approval system.
+now. Aider has one validated local `local/code-test` throwaway edit path, but
+it is still not part of the core walking skeleton. OpenHuman is abandoned for
+the current phase because it creates signup/service pressure. None of these
+tools may become infrastructure, automation, or an approval system.
 
 ## Agent Division of Labor
 
@@ -38,7 +39,7 @@ Use agents by task shape, not by which one best fits the routing architecture.
 |---|---|
 | Codex | Primary for planning, migration choreography, documentation slices, approval briefs, and risky live-service steps. |
 | Claude Code | Strong frontier-code alternative and second opinion for difficult implementation or review. |
-| Aider | Evaluation-only for bounded repo patch trials; not part of the core walking skeleton. |
+| Aider | Evaluation-only for bounded repo patch trials; one local `local/code-test` throwaway edit is proven, but it is not part of the core walking skeleton. |
 | Hermes | Observer, summarizer, reviewer, recorder, and approved-skill-assisted preservation checker only; no canonical repo mutation or live-service action. |
 | OpenCode | Later local-agent experiment; not the default or primary coder, and nothing should depend on it. |
 | OpenHuman | Abandoned for the current phase because it creates signup/service pressure. |
@@ -54,6 +55,10 @@ automation, or repo-wide autonomous workflows.
 
 Aider is evaluation-only for now. Do not make it required for the walking
 skeleton, and do not depend on it for normal workflow edits.
+
+The currently validated local path is `scripts/strix-vllm-mode code` followed
+by `scripts/aider-code-test` for a bounded named-file edit. Restore the normal
+Strix baseline afterward with `scripts/strix-vllm-mode tool`.
 
 Aider trials, when explicitly approved, must stay to one repo, one named-file
 bounded edit, and one reviewable diff. Aider is not a planner, migration
