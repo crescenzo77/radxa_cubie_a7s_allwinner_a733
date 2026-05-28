@@ -2,7 +2,94 @@
 
 ## Current status
 
-The active slice is `Repo and mirror inventory checkpoint complete`.
+The active slice is `Real bounded Aider repo trial checkpoint complete`.
+
+## Current task
+
+Preserve the first real bounded Aider edit in a non-critical repo. Do not
+promote Aider or change default routes without a new explicit slice.
+
+## What changed
+
+- Ran one real bounded Aider edit in `/srv/projects/cubie-camera-node`.
+- Aider edited `README.md` only.
+- Committed the result in `cubie-camera-node` as
+  `3af1c05 document next hardware readiness step`.
+- Pushed the commit to `thinkcentre:/srv/git/cubie-camera-node.git`.
+- Restored Strix to `tool` mode after the trial.
+- Documented the result in `DECISIONS.md` and `docs/aider-workflow.md`.
+- Updated `CURRENT_SLICE.md` for the completed real bounded Aider checkpoint.
+- Preserved the prior repo and mirror inventory checkpoint below as history.
+
+## What did not change
+
+- Aider was not promoted into the core walking skeleton.
+- No homelab repo files were edited by Aider.
+- No auto routes or default model routes were changed.
+- No model-dispatch config was changed.
+- No Open WebUI config was changed.
+- No Docker, systemd, service, storage, or repo remote changes were made.
+- No deployment was performed in `cubie-camera-node`.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `DECISIONS.md`
+- `docs/aider-workflow.md`
+
+## Checks run
+
+- Live Strix checkpoint validation.
+- Live ThinkCentre model-dispatch validation.
+- `scripts/strix-vllm-mode code`
+- `scripts/model-tool-loop-smoke --model local/code-test`
+- `scripts/aider-code-test README.md --yes-always --message ...`
+- `git status --short` in `cubie-camera-node`
+- `git diff --check` in `cubie-camera-node`
+- `git diff --stat` in `cubie-camera-node`
+- Push verification on `thinkcentre:/srv/git/cubie-camera-node.git`
+- `scripts/strix-vllm-mode tool`
+- `scripts/model-tool-loop-smoke --model local/tool-test`
+- `git diff --check` in homelab
+- `git diff --stat` in homelab
+- `git status --short` in homelab
+
+## Results of checks
+
+- `local/code-test` passed before the Aider run.
+- Aider edited only `README.md` in `cubie-camera-node`.
+- Generated Aider history files were removed before commit.
+- The `cubie-camera-node` diff was one file and four inserted lines.
+- `cubie-camera-node` push to ThinkCentre succeeded.
+- Strix was restored to `tool` mode.
+- `local/tool-test` passed after restore.
+
+## Known risks or blockers
+
+- Aider is still only validated for tiny, explicit, one-file documentation
+  edits.
+- Aider is not validated for broad repo maps, long context, multi-file edits,
+  auto-commits, service edits, deployment work, or autonomous follow-up work.
+- `local/tool-test` and `local/code-test` remain one-port Strix modes, not
+  simultaneous services.
+
+## User approval needed
+
+Approval is needed before promoting Aider into normal workflow, changing
+default routes, making Coder-Next persistent, adding concurrent Strix serving,
+editing Open WebUI defaults, changing `model-dispatch`, or adding automation.
+
+## Recommended next action
+
+Stop here, plan a second bounded Aider trial only for a specific low-risk
+target, or design a clearer Strix runtime mode strategy without automating it.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Repo and mirror inventory checkpoint complete
 
 ## Current task
 
@@ -81,10 +168,6 @@ or adding automation.
 
 Stop here, pick one non-critical repo for a bounded Aider trial, or plan a
 separate repo/mirror cleanup slice using the inventory.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - Strix vLLM local-agent validation checkpoint complete
 

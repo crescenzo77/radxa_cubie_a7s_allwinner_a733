@@ -132,6 +132,32 @@ Keep this as a minimal compatibility proof, not a default workflow. The
 existing `aider-strix-coder` launcher still points at the older `8082`
 llama.cpp/GGUF path and is not the validated vLLM Coder-Next path.
 
+## First Real Non-Critical Repo Trial
+
+The first real non-critical repo trial used the same Coder-Next path against
+`/srv/projects/cubie-camera-node`.
+
+Task:
+
+- Edit `README.md` only.
+- Add a short `Next safe step` section.
+- Point the next work at `docs/hardware-readiness-checklist.md`.
+- Do not change deployment state or any other file.
+
+Result:
+
+- Aider edited only `README.md`.
+- The diff was one file and four inserted lines.
+- Generated Aider history files were removed before commit.
+- `git diff --check` passed.
+- Commit: `3af1c05 document next hardware readiness step`
+- Push to `thinkcentre:/srv/git/cubie-camera-node.git` succeeded.
+- Strix was restored to `tool` mode and `local/tool-test` passed afterward.
+
+Keep this as a bounded evaluation proof. It does not promote Aider to default
+workflow, service edits, multi-file edits, broad repo-map use, auto-commits, or
+autonomous follow-up work.
+
 ## Repeatable Helper
 
 Use this helper for the validated Coder-Next path after switching Strix to code

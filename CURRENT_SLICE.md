@@ -1,8 +1,27 @@
 # Current Slice
 
-## Active: Repo and mirror inventory checkpoint complete
+## Active: Real bounded Aider repo trial checkpoint complete
 
 ## Current State
+
+The first real bounded Aider trial in a non-critical repo is complete enough to
+preserve.
+
+Validated and pushed:
+
+- `cubie-camera-node` was selected as a clean, non-critical repo.
+- Strix switched to `code` mode and `local/code-test` passed the smoke test.
+- `scripts/aider-code-test` edited `README.md` only.
+- The generated Aider history files were removed before commit.
+- The committed diff was one file and four inserted lines.
+- `cubie-camera-node` commit:
+  `3af1c05 document next hardware readiness step`
+- The commit was pushed to `thinkcentre:/srv/git/cubie-camera-node.git`.
+- Strix was restored to `tool` mode and `local/tool-test` passed the smoke
+  test.
+- Aider remains evaluation-only and is not promoted to the core workflow.
+
+## Prior Current State
 
 The repo and mirror inventory checkpoint is complete enough to preserve.
 
@@ -23,7 +42,7 @@ Inventory file:
 
 - `inventory/repo-and-mirror-inventory-2026-05-28.md`
 
-## Prior Current State
+## Earlier Current State
 
 The current Strix vLLM local-agent validation checkpoint is complete enough to
 stop this pass.
@@ -41,6 +60,8 @@ Validated and pushed:
   `tool` and `code`, waits for readiness, and runs the matching smoke test.
 - Aider `0.86.2` passed a bounded one-file throwaway edit through
   `local/code-test` and model-dispatch.
+- Aider `0.86.2` passed one real bounded non-critical repo edit in
+  `cubie-camera-node`.
 - `scripts/aider-code-test` preserves the validated Aider command shape and
   refuses to run unless the Coder-Next served model is active.
 - Latest pushed checkpoint at the time of this slice update:
@@ -79,9 +100,9 @@ explicit slice selects that work.
 
 ## Recommended Next Choices
 
-1. Stop here and treat the repo and mirror inventory as preserved.
-2. Pick one non-critical repo and run a real bounded Aider edit with
-   `scripts/aider-code-test`, then review the diff manually.
+1. Stop here and treat the real bounded Aider repo trial as preserved.
+2. Plan a second bounded Aider trial only if a specific low-risk target is
+   selected.
 3. Design, but do not yet automate, a clearer Strix runtime mode strategy if
    `local/tool-test` and `local/code-test` both need to be live.
 4. Plan a separate repo/mirror cleanup slice using the inventory.

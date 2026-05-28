@@ -1,5 +1,56 @@
 # Decisions
 
+## 2026-05-28 — Aider passes first real bounded non-critical repo edit
+
+Decision:
+Treat Aider as validated for one real bounded documentation edit in a
+non-critical repo through `local/code-test`, but keep it evaluation-only and
+off the core workflow.
+
+Validated path:
+
+- Repo: `/srv/projects/cubie-camera-node`
+- Target file: `README.md`
+- Commit: `3af1c05 document next hardware readiness step`
+- Mirror push: `thinkcentre:/srv/git/cubie-camera-node.git`
+- Strix mode before and after: restored to `tool`
+- Aider path: `scripts/aider-code-test`
+- Model: `openai/local/code-test`
+- API base: `http://192.168.50.225:4010/v1`
+- Edit format: `diff`
+- Non-streaming request
+- Repo map disabled with `--map-tokens 0`
+- Auto-commits disabled
+
+Validation passed:
+
+- `scripts/strix-vllm-mode code` completed.
+- `scripts/model-tool-loop-smoke --model local/code-test` passed before Aider.
+- Aider edited only `README.md`.
+- Generated Aider history files were removed before commit.
+- `git diff --check` passed.
+- The committed diff was one file and four inserted lines.
+- Push to the ThinkCentre mirror succeeded.
+- `scripts/strix-vllm-mode tool` restored the Qwen3.6 baseline.
+- `scripts/model-tool-loop-smoke --model local/tool-test` passed after restore.
+
+Important boundaries:
+
+- This validates only a tiny, explicit, one-file documentation edit in a
+  non-critical repo.
+- This does not validate broad repo maps, long context, multi-file edits,
+  auto-commits, service edits, deployment work, or autonomous coding workflows.
+- Aider remains evaluation-only.
+- Do not use Aider on long control/history docs in the homelab repo.
+- Do not promote Aider into the default walking skeleton without a separate
+  explicit decision.
+
+Rationale:
+The throwaway test proved local Aider compatibility. This real repo trial proves
+the same path can produce a small reviewable diff in a non-critical project
+while preserving the required manual review, commit, push, and Strix restore
+steps.
+
 ## 2026-05-28 — Aider passes bounded edit through local/code-test
 
 Decision:
