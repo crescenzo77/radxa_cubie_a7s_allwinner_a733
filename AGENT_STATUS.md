@@ -2,7 +2,92 @@
 
 ## Current status
 
-The active slice is `Strix vLLM runtime mode strategy checkpoint complete`.
+The active slice is `Strix two-model feasibility recovery checkpoint complete`.
+
+## Current task
+
+Preserve the failed two-model feasibility attempt and the successful recovery
+to the known-good Strix `tool` baseline.
+
+## What changed
+
+- Added `inventory/strix-two-model-feasibility-attempt-2026-05-28.md`.
+- Recorded the failed attempt to run Qwen3.6 on `8010` and Coder-Next on
+  `8011`.
+- Recorded the first failure: Coder-Next could not reserve enough GPU memory at
+  `gpu-memory-utilization=0.70`.
+- Recorded the second failure: lowering Coder-Next to `0.25` made Strix stop
+  accepting SSH reliably and required a power cycle.
+- Restored all temporary uncommitted Strix homelab edits from `HEAD`.
+- Restored the temporary uncommitted ThinkCentre model-dispatch config edit
+  from `HEAD`.
+- Removed generated `scripts/__pycache__/`.
+- Ran `scripts/strix-vllm-mode tool` to remove the failed Coder-Next container
+  and prove the Qwen3.6 baseline.
+- Updated `CURRENT_SLICE.md` for the recovery checkpoint.
+- Preserved the prior runtime mode strategy checkpoint below as history.
+
+## What did not change
+
+- No failed-attempt runtime changes were committed.
+- No model-dispatch route change was kept.
+- No Aider helper change was kept.
+- No `strix-vllm-mode both` helper change was kept.
+- No Open WebUI config was changed.
+- No systemd units, daemons, watchdogs, timers, or hidden automation were
+  added.
+- Aider was not run.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `inventory/strix-two-model-feasibility-attempt-2026-05-28.md`
+
+## Checks run
+
+- Post-reboot Strix validation.
+- Post-reboot ThinkCentre model-dispatch validation.
+- Restore homelab changed files from `HEAD`.
+- Restore ThinkCentre `model-dispatch/config.json` from `HEAD`.
+- Remove generated `scripts/__pycache__/`.
+- `scripts/strix-vllm-mode tool`
+- `scripts/model-tool-loop-smoke --model local/tool-test`
+- `git status --short` in homelab.
+- `git status --short` in model-dispatch.
+
+## Results of checks
+
+- Strix recovered after reboot.
+- Qwen3.6 restarted and is live on `8010`.
+- Coder-Next failed container was removed.
+- `local/tool-test` passed through model-dispatch.
+- Homelab returned to a clean working tree before this documentation update.
+- model-dispatch returned to only the expected untracked backup files.
+- Final active Strix mode: `tool`.
+
+## Known risks or blockers
+
+- Concurrent Strix serving is not proven.
+- The simple two-port Coder-Next approach overloaded Strix during startup.
+- The next concurrency attempt must test direct Strix runtime stability before
+  touching model-dispatch or Aider.
+
+## User approval needed
+
+Approval is needed before any new two-model runtime test, model-dispatch route
+change, Aider helper change, Open WebUI change, systemd change, or automation.
+
+## Recommended next action
+
+Stop here, or plan a safer direct-only two-model feasibility test with a
+predefined rollback command and no model-dispatch or Aider changes.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Strix vLLM runtime mode strategy checkpoint complete
 
 ## Current task
 
@@ -77,10 +162,6 @@ adding automation.
 
 Stop here, or write a separate approval brief for a future Strix two-port
 concurrency feasibility test.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - Real bounded Aider repo trial checkpoint complete
 

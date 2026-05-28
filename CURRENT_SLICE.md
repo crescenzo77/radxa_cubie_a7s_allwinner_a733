@@ -1,8 +1,30 @@
 # Current Slice
 
-## Active: Strix vLLM runtime mode strategy checkpoint complete
+## Active: Strix two-model feasibility recovery checkpoint complete
 
 ## Current State
+
+The first attempt to run both Strix vLLM models live at the same time failed
+and was recovered to the known-good single-model baseline.
+
+Validated and pushed:
+
+- The failed two-model attempt was documented.
+- Temporary uncommitted Strix runtime/helper edits were restored from `HEAD`.
+- Temporary uncommitted ThinkCentre model-dispatch config edit was restored
+  from `HEAD`.
+- Generated Python cache was removed.
+- `scripts/strix-vllm-mode tool` removed the failed Coder-Next container and
+  proved `local/tool-test`.
+- Final Strix mode: `tool`
+- Final served model: `qwen36-awq-agent-test`
+- Final model-dispatch service state: active
+
+Recovery note:
+
+- `inventory/strix-two-model-feasibility-attempt-2026-05-28.md`
+
+## Prior Current State
 
 The Strix vLLM runtime mode strategy checkpoint is complete enough to
 preserve.
@@ -23,7 +45,7 @@ Strategy file:
 
 - `inventory/strix-vllm-runtime-mode-strategy-2026-05-28.md`
 
-## Prior Current State
+## Earlier Current State
 
 The first real bounded Aider trial in a non-critical repo is complete enough to
 preserve.
@@ -121,9 +143,9 @@ explicit slice selects that work.
 
 ## Recommended Next Choices
 
-1. Stop here and treat the Strix runtime mode strategy as preserved.
-2. Write a separate approval brief for a future two-port Strix concurrency
-   feasibility test.
+1. Stop here and treat the recovery checkpoint as preserved.
+2. Plan a safer direct-only two-model feasibility test that does not touch
+   model-dispatch or Aider first.
 3. Plan a second bounded Aider trial only if a specific low-risk target is
    selected.
 4. Plan a separate repo/mirror cleanup slice using the inventory.
