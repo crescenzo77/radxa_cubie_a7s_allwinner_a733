@@ -2,7 +2,92 @@
 
 ## Current status
 
-The active slice is `Strix two-model feasibility recovery checkpoint complete`.
+The active slice is `Strix concurrent model variant comparison checkpoint complete`.
+
+## Current task
+
+Preserve the comparison between the older concurrently runnable Strix model
+pair and the current vLLM AWQ pair that failed concurrent startup.
+
+## What changed
+
+- Added `inventory/strix-concurrent-model-variant-comparison-2026-05-28.md`.
+- Removed the temporary direct-test Coder-Next container after reboot.
+- Removed the temporary `/tmp` direct-test Compose files.
+- Proved the Qwen3.6 `tool` baseline again with `scripts/strix-vllm-mode tool`.
+- Inspected the old `qwen3-6` and `qwen3-coder` containers.
+- Confirmed the old concurrent pair used llama.cpp/Vulkan/GGUF variants.
+- Compared that with the current vLLM/AWQ Hugging Face variants.
+- Recorded the conclusion that the older concurrent success does not carry over
+  to the current vLLM AWQ harness.
+- Updated `CURRENT_SLICE.md` for the variant comparison checkpoint.
+- Preserved the prior recovery checkpoint below as history.
+
+## What did not change
+
+- No model-dispatch config was changed.
+- No Aider config or helper was changed.
+- No Open WebUI config was changed.
+- No persistent Compose files were changed.
+- No service units, daemons, watchdogs, timers, or hidden automation were added.
+- The old llama.cpp containers were inspected but not started.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `inventory/strix-concurrent-model-variant-comparison-2026-05-28.md`
+
+## Checks run
+
+- Post-reboot Strix validation.
+- Remove temporary Coder-Next direct-test container.
+- Remove temporary `/tmp` direct-test Compose files.
+- `scripts/strix-vllm-mode tool`
+- `scripts/model-tool-loop-smoke --model local/tool-test`
+- `docker inspect qwen3-6 qwen3-coder`
+- `docker logs --tail 40 qwen3-6`
+- `docker logs --tail 40 qwen3-coder`
+- Read current vLLM Compose files.
+- `git diff --check`
+- `git diff --stat`
+- `git status --short`
+
+## Results of checks
+
+- Final Strix active mode: `tool`.
+- Final served model: `qwen36-awq-agent-test`.
+- `local/tool-test` passed through model-dispatch.
+- Old concurrent pair:
+  `Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf` and
+  `Qwen3-Coder-Next-UD-Q4_K_XL.gguf` under llama.cpp/Vulkan.
+- Current failing pair:
+  `cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit` and
+  `cyankiwi/Qwen3-Coder-Next-AWQ-4bit` under vLLM AWQ.
+
+## Known risks or blockers
+
+- Concurrent vLLM AWQ serving on Strix is not safe in the tested shape.
+- The old llama.cpp/GGUF pair may not satisfy the current OpenAI-style tool-call
+  and Aider requirements.
+- Always-live `local/code-test` remains unproven.
+
+## User approval needed
+
+Approval is needed before starting the old llama.cpp containers, changing
+model-dispatch, changing Aider helpers, changing Open WebUI, changing
+persistent Compose files, or adding automation.
+
+## Recommended next action
+
+Stop here, or plan a separate evaluation of the old llama.cpp/GGUF code model
+path for Aider compatibility before changing any live routes.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Strix two-model feasibility recovery checkpoint complete
 
 ## Current task
 
@@ -82,10 +167,6 @@ change, Aider helper change, Open WebUI change, systemd change, or automation.
 
 Stop here, or plan a safer direct-only two-model feasibility test with a
 predefined rollback command and no model-dispatch or Aider changes.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - Strix vLLM runtime mode strategy checkpoint complete
 

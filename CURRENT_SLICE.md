@@ -1,8 +1,31 @@
 # Current Slice
 
-## Active: Strix two-model feasibility recovery checkpoint complete
+## Active: Strix concurrent model variant comparison checkpoint complete
 
 ## Current State
+
+The Strix concurrent model variant comparison is complete enough to preserve.
+
+Validated and pushed:
+
+- Strix was recovered after the second direct-only concurrent vLLM attempt.
+- Temporary Coder-Next direct-test container and `/tmp` Compose files were
+  removed.
+- `scripts/strix-vllm-mode tool` proved the Qwen3.6 baseline again.
+- The old concurrently runnable containers were inspected.
+- The old pair was confirmed to be llama.cpp/Vulkan/GGUF:
+  `Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf` and
+  `Qwen3-Coder-Next-UD-Q4_K_XL.gguf`.
+- The current failing pair was confirmed to be vLLM/AWQ Hugging Face packages:
+  `cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit` and
+  `cyankiwi/Qwen3-Coder-Next-AWQ-4bit`.
+- Recommendation: do not keep retrying concurrent vLLM AWQ numeric tweaks.
+
+Comparison note:
+
+- `inventory/strix-concurrent-model-variant-comparison-2026-05-28.md`
+
+## Prior Current State
 
 The first attempt to run both Strix vLLM models live at the same time failed
 and was recovered to the known-good single-model baseline.
@@ -24,7 +47,7 @@ Recovery note:
 
 - `inventory/strix-two-model-feasibility-attempt-2026-05-28.md`
 
-## Prior Current State
+## Earlier Current State
 
 The Strix vLLM runtime mode strategy checkpoint is complete enough to
 preserve.
@@ -143,12 +166,11 @@ explicit slice selects that work.
 
 ## Recommended Next Choices
 
-1. Stop here and treat the recovery checkpoint as preserved.
-2. Plan a safer direct-only two-model feasibility test that does not touch
-   model-dispatch or Aider first.
-3. Plan a second bounded Aider trial only if a specific low-risk target is
-   selected.
-4. Plan a separate repo/mirror cleanup slice using the inventory.
+1. Stop here and treat the variant comparison as preserved.
+2. Keep the current manual vLLM mode switch as the validated baseline.
+3. If always-live code serving is required, evaluate the older llama.cpp/GGUF
+   path separately before changing model-dispatch or Aider.
+4. Consider a separate host for an always-live vLLM code model.
 
 ## Constraints
 
