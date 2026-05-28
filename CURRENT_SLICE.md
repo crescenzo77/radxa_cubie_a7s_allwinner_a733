@@ -1,8 +1,29 @@
 # Current Slice
 
-## Active: Strix vLLM local-agent validation checkpoint complete
+## Active: Repo and mirror inventory checkpoint complete
 
 ## Current State
+
+The repo and mirror inventory checkpoint is complete enough to preserve.
+
+Validated and pushed:
+
+- Live Strix and ThinkCentre state matched the Strix local-agent checkpoint.
+- Strix remained in `tool` mode with `qwen36-awq-agent-test` active.
+- ThinkCentre `model-dispatch.service` was active and still used
+  `Restart=on-failure`.
+- Current Strix working repositories were inventoried.
+- Current ThinkCentre working repositories were inventoried.
+- Current ThinkCentre bare mirrors were inventoried.
+- Dirty working trees were recorded without modification.
+- No services, routes, Docker runtimes, systemd units, Open WebUI defaults, or
+  model-dispatch config were changed.
+
+Inventory file:
+
+- `inventory/repo-and-mirror-inventory-2026-05-28.md`
+
+## Prior Current State
 
 The current Strix vLLM local-agent validation checkpoint is complete enough to
 stop this pass.
@@ -58,12 +79,12 @@ explicit slice selects that work.
 
 ## Recommended Next Choices
 
-1. Stop here and treat the Strix vLLM/Aider checkpoint as preserved.
+1. Stop here and treat the repo and mirror inventory as preserved.
 2. Pick one non-critical repo and run a real bounded Aider edit with
    `scripts/aider-code-test`, then review the diff manually.
 3. Design, but do not yet automate, a clearer Strix runtime mode strategy if
    `local/tool-test` and `local/code-test` both need to be live.
-4. Inventory current repos and mirrors before deciding any project moves.
+4. Plan a separate repo/mirror cleanup slice using the inventory.
 
 ## Constraints
 

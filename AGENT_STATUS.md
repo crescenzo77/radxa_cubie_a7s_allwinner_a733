@@ -2,7 +2,91 @@
 
 ## Current status
 
-The active slice is `Strix vLLM local-agent validation checkpoint complete`.
+The active slice is `Repo and mirror inventory checkpoint complete`.
+
+## Current task
+
+Preserve the current repo and mirror inventory before deciding any project
+moves. Do not promote Aider or change default routes without a new explicit
+slice.
+
+## What changed
+
+- Added `inventory/repo-and-mirror-inventory-2026-05-28.md`.
+- Recorded current Strix working repositories, branches, remotes, and dirty
+  working trees.
+- Recorded current ThinkCentre working repositories, branches, remotes, and
+  dirty working trees.
+- Recorded current ThinkCentre bare mirrors and HEAD branches.
+- Updated `CURRENT_SLICE.md` for the completed inventory checkpoint.
+- Preserved the prior Strix local-agent checkpoint below as history.
+
+## What did not change
+
+- No Aider run was performed.
+- No model runtime was switched.
+- No model-dispatch config was changed.
+- No Open WebUI config was changed.
+- No Docker, systemd, service, route, storage, or repo remote changes were
+  made.
+- Dirty repositories found during inventory were not modified.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `inventory/repo-and-mirror-inventory-2026-05-28.md`
+
+## Checks run
+
+- Live Strix checkpoint validation.
+- Live ThinkCentre model-dispatch validation.
+- Strix working repo discovery under `/srv/projects`.
+- ThinkCentre working repo and bare mirror discovery under `/srv`.
+- Per-repo branch, remote, and `git status --short` checks for discovered
+  working repositories.
+- Bare mirror HEAD branch checks under `/srv/git`.
+- `git diff --check`
+- `git diff --stat`
+- `git status --short`
+
+## Results of checks
+
+- Strix was still on `de7a33e` before this inventory update.
+- Strix active mode was still `tool`.
+- Strix served model was still `qwen36-awq-agent-test`.
+- ThinkCentre `model-dispatch.service` was active.
+- ThinkCentre `model-dispatch.service` still used `Restart=on-failure`.
+- Strix dirty repo observed:
+  `/srv/projects/cubie-a7s-armbian` with `M READ_ONLY_CUBIE_CAPTURE_BRIEF.md`.
+- ThinkCentre dirty repos observed:
+  `/srv/telegram-tasks-bot` with `M app.py`,
+  `/srv/model-dispatch` with expected untracked backups, and
+  `/srv/scandocs` with many untracked project files.
+
+## Known risks or blockers
+
+- ThinkCentre discovery hit `Permission denied` under `/srv/hermes-agent/data`
+  because this inventory did not use `sudo`.
+- The inventory records presence and Git state only. It does not classify repo
+  ownership, archival status, migration priority, or cleanup order.
+
+## User approval needed
+
+Approval is needed before changing any repo remotes, moving projects, cleaning
+dirty trees, changing service config, promoting Aider, changing default routes,
+or adding automation.
+
+## Recommended next action
+
+Stop here, pick one non-critical repo for a bounded Aider trial, or plan a
+separate repo/mirror cleanup slice using the inventory.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Strix vLLM local-agent validation checkpoint complete
 
 ## Current task
 
@@ -102,10 +186,6 @@ editing Open WebUI defaults, changing `model-dispatch`, or adding automation.
 
 Stop here or choose one non-critical repo for a real bounded
 `scripts/aider-code-test` edit, with manual diff review before commit.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - Aider compatibility planning
 
