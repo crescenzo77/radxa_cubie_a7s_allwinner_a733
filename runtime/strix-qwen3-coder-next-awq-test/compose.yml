@@ -1,0 +1,56 @@
+services:
+  vllm-strix-qwen3-coder-next-awq-test:
+    image: docker.io/kyuz0/vllm-therock-gfx1151:stable
+    container_name: vllm-strix-qwen3-coder-next-awq-test
+    restart: "no"
+    network_mode: host
+    ipc: host
+
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+
+    group_add:
+      - video
+      - render
+
+    security_opt:
+      - seccomp=unconfined
+
+    environment:
+      HF_HOME: /root/.cache/huggingface
+      HUGGINGFACE_HUB_CACHE: /root/.cache/huggingface/hub
+      TRANSFORMERS_CACHE: /root/.cache/huggingface/transformers
+      VLLM_CACHE_ROOT: /root/.cache/vllm
+
+    volumes:
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
+      - ${HOME}/.cache/vllm:/root/.cache/vllm
+
+    command:
+      - python
+      - -m
+      - vllm.entrypoints.openai.api_server
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8010"
+      - --model
+      - cyankiwi/Qwen3-Coder-Next-AWQ-4bit
+      - --served-model-name
+      - qwen3-coder-next-awq-agent-test
+      - --dtype
+      - float16
+      - --max-model-len
+      - "8192"
+      - --gpu-memory-utilization
+      - "0.70"
+      - --enforce-eager
+      - --generation-config
+      - vllm
+      - --enable-auto-tool-choice
+      - --tool-call-parser
+      - qwen3_xml
+      - --trust-remote-code
+      - --default-chat-template-kwargs
+      - '{"enable_thinking": false}'
