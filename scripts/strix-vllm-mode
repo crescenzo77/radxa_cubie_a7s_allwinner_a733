@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import subprocess
+import sys
+import time
+import urllib.request
+
+
+REPO = "/srv/projects/homelab"
+VLLM_MODELS_URL = "http://127.0.0.1:8010/v1/models"
+
+MODES = {
+    "tool": {
+        "name": "tool",
+        "label": "Qwen3.6 AWQ tool-test",
+        "compose": "runtime/strix-qwen36-awq-agent/compose.yml",
+        "other_compose": "runtime/strix-qwen3-coder-next-awq-test/compose.yml",
+        "served_model": "qwen36-awq-agent-test",
+        "smoke_model": "local/tool-test",
+    },
+    "code": {
+        "name": "code",
+        "label": "Qwen3-Coder-Next AWQ code-test",
+        "compose": "runtime/strix-qwen3-coder-next-awq-test/compose.yml",
+        "other_compose": "runtime/strix-qwen36-awq-agent/compose.yml",
+        "served_model": "qwen3-coder-next-awq-agent-test",
+        "smoke_model": "local/code-test",
+    },
+}
+
+
+def run(command, check=True):
+    print("+ " + " ".join(command), flush=True)
+    return subprocess.run(command, cwd=REPO, check=check)
+
+
+def output(command):
+    return subprocess.check_output(command, cwd=REPO, text=True).strip()
+
+
+def active_models():
+    try:
+        with urllib.request.urlopen(VLLM_MODELS_URL, timeout=5) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except Exception:
+        return []
+
+    return [item.get("id") for item in payload.get("data", []) if item.get("id")]
+
+
+def detect_mode():
+    models = set(active_models())
+    matches = [
+        mode["name"]
+        for mode in MODES.values()
+        if mode["served_model"] in models
+    ]
+
+    if len(matches) == 1:
+        return matches[0]
+    if matches:
+        return "mixed"
+    if models:
+        return "unknown"
+    return "none"
+
+
+def print_status():
+    print("=== containers ===")
+    run([
+        "docker",
+        "ps",
+        "-a",
+        "--format",
+        "table {{.Names}}\t{{.Status}}\t{{.Image}}",
+    ], check=False)
+
+    print()
+    print("=== vLLM models ===")
+    models = active_models()
+    if models:
+        for model in models:
+            print(model)
+    else:
+        print("no response from 127.0.0.1:8010")
+
+    print()
+    print(f"active_mode={detect_mode()}")
+
+
+def wait_for_model(served_model, timeout_seconds):
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        models = active_models()
+        if served_model in models:
+            print(f"ready: {served_model}")
+            return
+        time.sleep(5)
+
+    models = ", ".join(active_models()) or "none"
+    raise RuntimeError(
+        f"timed out waiting for {served_model}; active models: {models}"
+    )
+
+
+def switch_mode(mode_name, timeout_seconds):
+    mode = MODES[mode_name]
+
+    print(f"Switching Strix vLLM to {mode['label']}")
+    run(["docker", "compose", "-f", mode["other_compose"], "down"])
+    run(["docker", "compose", "-f", mode["compose"], "up", "-d"])
+    wait_for_model(mode["served_model"], timeout_seconds)
+    run(["scripts/model-tool-loop-smoke", "--model", mode["smoke_model"]])
+    print()
+    print(f"PASS: active_mode={mode_name}")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Switch or inspect the one-port Strix vLLM test runtime."
+    )
+    parser.add_argument(
+        "mode",
+        choices=["status", "tool", "code"],
+        help="Use status to inspect, tool for Qwen3.6, or code for Coder-Next.",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=900,
+        help="Seconds to wait for the selected vLLM model to become ready.",
+    )
+    args = parser.parse_args()
+
+    if args.mode == "status":
+        print_status()
+        return
+
+    switch_mode(args.mode, args.timeout)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as exc:
+        print(f"FAIL: {exc}", file=sys.stderr)
+        raise SystemExit(1)
