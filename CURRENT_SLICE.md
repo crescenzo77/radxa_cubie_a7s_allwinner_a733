@@ -1,8 +1,32 @@
 # Current Slice
 
-## Active: Local model role reset checkpoint complete
+## Active: Strix llama.cpp Aider validation checkpoint complete
 
 ## Current State
+
+The first bounded Aider edit through the restored Strix llama.cpp/GGUF
+Coder-Next endpoint is complete enough to preserve.
+
+Validated and pushed:
+
+- Strix `qwen3-coder` on `8082` was live and serving
+  `Qwen3-Coder-Next-UD-Q4_K_XL.gguf`.
+- Aider `0.86.2` edited one file in `/srv/projects/cubie-camera-node`.
+- The edit used direct endpoint `http://127.0.0.1:8082/v1`.
+- Aider edited only `README.md`.
+- Generated Aider history files were removed before commit.
+- `git diff --check` passed.
+- `cubie-camera-node` commit:
+  `8de720a clarify next hardware checklist step`
+- The commit was pushed to `thinkcentre:/srv/git/cubie-camera-node.git`.
+- Added repeatable helper:
+  `scripts/aider-strix-coder-llamacpp`
+
+Aider llama.cpp validation note:
+
+- `inventory/aider-strix-llamacpp-validation-2026-05-28.md`
+
+## Prior Current State
 
 The local model role reset is complete enough to preserve.
 
@@ -25,7 +49,7 @@ Role reset note:
 
 - `inventory/local-model-role-reset-2026-05-28.md`
 
-## Prior Current State
+## Earlier Current State
 
 The Strix concurrent model variant comparison is complete enough to preserve.
 
@@ -189,10 +213,10 @@ explicit slice selects that work.
 
 ## Recommended Next Choices
 
-1. Stop here and treat the four-model llama.cpp/GGUF arrangement as preserved.
-2. Revalidate Aider against `local/strix-coder` or the direct Strix
-   llama.cpp Coder-Next endpoint.
-3. Validate AMD `local/amd-coder` as the RTX 3090 agentic workhorse.
+1. Stop here and treat the Strix llama.cpp Aider path as preserved.
+2. Validate AMD `local/amd-coder` as the RTX 3090 agentic workhorse.
+3. Decide whether to point a model-dispatch alias or helper at the Strix
+   llama.cpp Aider path.
 4. Pick a concrete open-weight 7900 XT experiment model when one is available.
 
 ## Constraints

@@ -158,6 +158,49 @@ Keep this as a bounded evaluation proof. It does not promote Aider to default
 workflow, service edits, multi-file edits, broad repo-map use, auto-commits, or
 autonomous follow-up work.
 
+## Validated Strix llama.cpp Coder-Next Trial
+
+After returning Strix to the llama.cpp/GGUF multi-model harness, Aider passed a
+bounded one-file edit through the restored Coder-Next endpoint:
+
+```sh
+/home/enzo/.local/bin/aider README.md \
+  --model openai/Qwen3-Coder-Next-UD-Q4_K_XL.gguf \
+  --openai-api-base http://127.0.0.1:8082/v1 \
+  --openai-api-key dummy \
+  --edit-format diff \
+  --no-stream \
+  --map-tokens 0 \
+  --no-auto-commits \
+  --no-gitignore \
+  --yes-always \
+  --message "Edit README.md only. Make one narrow requested edit."
+```
+
+Result:
+
+- Endpoint: Strix `qwen3-coder` on `127.0.0.1:8082`.
+- Model: `Qwen3-Coder-Next-UD-Q4_K_XL.gguf`.
+- Repo: `/srv/projects/cubie-camera-node`.
+- Aider edited only `README.md`.
+- Generated Aider history files were removed before commit.
+- `git diff --check` passed.
+- Commit: `8de720a clarify next hardware checklist step`.
+- Push to `thinkcentre:/srv/git/cubie-camera-node.git` succeeded.
+
+Repeatable helper:
+
+```sh
+scripts/aider-strix-coder-llamacpp README.md --message "Make one narrow requested edit."
+```
+
+Run the helper from the target repository working tree. It refuses to run unless
+Strix Coder-Next is live on `127.0.0.1:8082`.
+
+Keep this as a bounded evaluation proof. It does not promote Aider to default
+workflow, service edits, multi-file edits, broad repo-map use, auto-commits, or
+autonomous follow-up work.
+
 ## Repeatable Helper
 
 Use this helper for the validated Coder-Next path after switching Strix to code

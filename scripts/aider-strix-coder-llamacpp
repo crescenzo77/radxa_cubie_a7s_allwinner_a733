@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+EXPECTED_MODEL="Qwen3-Coder-Next-UD-Q4_K_XL.gguf"
+LLAMACPP_MODELS_URL="${LLAMACPP_MODELS_URL:-http://127.0.0.1:8082/v1/models}"
+AIDER_BIN="${AIDER_BIN:-/home/enzo/.local/bin/aider}"
+AIDER_MODEL="${AIDER_STRIX_CODER_MODEL:-openai/Qwen3-Coder-Next-UD-Q4_K_XL.gguf}"
+AIDER_BASE_URL="${AIDER_STRIX_CODER_BASE_URL:-http://127.0.0.1:8082/v1}"
+AIDER_API_KEY="${AIDER_STRIX_CODER_API_KEY:-dummy}"
+
+if [ ! -x "$AIDER_BIN" ]; then
+  echo "FAIL: aider binary not found or not executable: $AIDER_BIN" >&2
+  exit 1
+fi
+
+models="$(curl -fsS --max-time 5 "$LLAMACPP_MODELS_URL" 2>/dev/null || true)"
+
+case "$models" in
+  *"$EXPECTED_MODEL"*) ;;
+  *)
+    echo "FAIL: Strix llama.cpp Coder-Next is not serving $EXPECTED_MODEL on 127.0.0.1:8082." >&2
+    echo "Expected container: qwen3-coder" >&2
+    exit 1
+    ;;
+esac
+
+exec "$AIDER_BIN" \
+  --model "$AIDER_MODEL" \
+  --openai-api-base "$AIDER_BASE_URL" \
+  --openai-api-key "$AIDER_API_KEY" \
+  --edit-format diff \
+  --no-stream \
+  --map-tokens 0 \
+  --no-auto-commits \
+  --no-gitignore \
+  "$@"

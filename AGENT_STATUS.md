@@ -2,7 +2,91 @@
 
 ## Current status
 
-The active slice is `Local model role reset checkpoint complete`.
+The active slice is `Strix llama.cpp Aider validation checkpoint complete`.
+
+## Current task
+
+Preserve the first bounded Aider validation through the restored Strix
+llama.cpp/GGUF Coder-Next endpoint.
+
+## What changed
+
+- Ran one bounded Aider edit through Strix `qwen3-coder` on `8082`.
+- Aider edited only `/srv/projects/cubie-camera-node/README.md`.
+- Removed generated Aider history files before commit.
+- Committed the target repo change as
+  `8de720a clarify next hardware checklist step`.
+- Pushed `cubie-camera-node` to `thinkcentre:/srv/git/cubie-camera-node.git`.
+- Added `scripts/aider-strix-coder-llamacpp`.
+- Added `inventory/aider-strix-llamacpp-validation-2026-05-28.md`.
+- Updated `DECISIONS.md` and `docs/aider-workflow.md`.
+- Updated `CURRENT_SLICE.md` for the completed checkpoint.
+- Preserved the prior local model role reset below as history.
+
+## What did not change
+
+- model-dispatch config was not edited.
+- Open WebUI config was not edited.
+- No systemd units, daemons, watchdogs, timers, or hidden automation were
+  added.
+- Aider was not promoted into the core workflow.
+- No broad repo map, multi-file edit, service edit, or autonomous coding
+  workflow was tested.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `DECISIONS.md`
+- `docs/aider-workflow.md`
+- `scripts/aider-strix-coder-llamacpp`
+- `inventory/aider-strix-llamacpp-validation-2026-05-28.md`
+
+## Checks run
+
+- Direct Strix `8082` `/v1/models`.
+- Aider direct endpoint edit against `/srv/projects/cubie-camera-node`.
+- `git status --short` in `cubie-camera-node`.
+- `git diff --check` in `cubie-camera-node`.
+- `git diff --stat` in `cubie-camera-node`.
+- Push verification for `cubie-camera-node`.
+- `bash -n scripts/aider-strix-coder-llamacpp`
+- `git diff --check` in homelab.
+- `git diff --stat` in homelab.
+- `git status --short` in homelab.
+
+## Results of checks
+
+- Strix `qwen3-coder` served `Qwen3-Coder-Next-UD-Q4_K_XL.gguf`.
+- Aider exited `0`.
+- Aider edited only the requested README file.
+- The target repo diff was one sentence.
+- Generated Aider history files were removed before commit.
+- Push to the ThinkCentre mirror succeeded.
+
+## Known risks or blockers
+
+- This validates only a tiny one-file documentation edit.
+- Aider remains unvalidated for broad repo maps, multi-file edits, service
+  edits, long context, and autonomous workflows.
+- The Strix llama.cpp path has not been validated for OpenAI-style tool calls.
+
+## User approval needed
+
+Approval is needed before promoting Aider into normal workflow, changing
+model-dispatch defaults, changing Open WebUI defaults, or using Aider for
+service/deployment work.
+
+## Recommended next action
+
+Stop here, or validate AMD `local/amd-coder` as the RTX 3090 agentic workhorse
+with a similarly bounded edit.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Local model role reset checkpoint complete
 
 ## Current task
 
@@ -88,10 +172,6 @@ helpers, or installing/testing new 7900 XT models.
 
 Stop here, revalidate Aider against `local/strix-coder`, or validate AMD
 `local/amd-coder` with a focused agentic coding workload.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - Strix concurrent model variant comparison checkpoint complete
 

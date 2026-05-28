@@ -1,5 +1,34 @@
 # Decisions
 
+## 2026-05-28 — Aider passes bounded edit through Strix llama.cpp Coder-Next
+
+Decision:
+Treat the restored Strix llama.cpp/GGUF Coder-Next endpoint as validated for
+one tiny bounded Aider documentation edit, while keeping Aider evaluation-only.
+
+Validated path:
+
+- Endpoint: `http://127.0.0.1:8082/v1`
+- Container: `qwen3-coder`
+- Harness: llama.cpp Vulkan
+- Model: `Qwen3-Coder-Next-UD-Q4_K_XL.gguf`
+- Aider model: `openai/Qwen3-Coder-Next-UD-Q4_K_XL.gguf`
+- Repo edited: `/srv/projects/cubie-camera-node`
+- Commit: `8de720a clarify next hardware checklist step`
+
+Rationale:
+This gives Strix an always-live Coder-Next Aider path without returning to the
+memory-heavy concurrent vLLM setup. It fits the restored four-model local menu:
+Strix handles long-context llama.cpp/GGUF models, AMD handles fast agentic work
+and experiments.
+
+Boundaries:
+
+- This validates only one tiny one-file documentation edit.
+- It does not validate broad repo maps, multi-file edits, service edits, or
+  autonomous coding workflows.
+- Aider remains evaluation-only until broader checks are deliberately selected.
+
 ## 2026-05-28 — Return Strix default to llama.cpp GGUF multi-model harness
 
 Decision:
