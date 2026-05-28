@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+EXPECTED_MODEL="qwen3-coder-next-awq-agent-test"
+VLLM_MODELS_URL="${VLLM_MODELS_URL:-http://127.0.0.1:8010/v1/models}"
+AIDER_BIN="${AIDER_BIN:-/home/enzo/.local/bin/aider}"
+AIDER_MODEL="${AIDER_CODE_TEST_MODEL:-openai/local/code-test}"
+AIDER_BASE_URL="${AIDER_CODE_TEST_BASE_URL:-http://192.168.50.225:4010/v1}"
+AIDER_API_KEY="${AIDER_CODE_TEST_API_KEY:-dummy}"
+
+if [ ! -x "$AIDER_BIN" ]; then
+  echo "FAIL: aider binary not found or not executable: $AIDER_BIN" >&2
+  exit 1
+fi
+
+models="$(curl -fsS --max-time 5 "$VLLM_MODELS_URL" 2>/dev/null || true)"
+
+case "$models" in
+  *"$EXPECTED_MODEL"*) ;;
+  *)
+    echo "FAIL: Strix is not serving $EXPECTED_MODEL on 127.0.0.1:8010." >&2
+    echo "Run this first from /srv/projects/homelab:" >&2
+    echo "  scripts/strix-vllm-mode code" >&2
+    exit 1
+    ;;
+esac
+
+exec "$AIDER_BIN" \
+  --model "$AIDER_MODEL" \
+  --openai-api-base "$AIDER_BASE_URL" \
+  --openai-api-key "$AIDER_API_KEY" \
+  --edit-format diff \
+  --no-stream \
+  --map-tokens 0 \
+  --no-auto-commits \
+  --no-gitignore \
+  "$@"

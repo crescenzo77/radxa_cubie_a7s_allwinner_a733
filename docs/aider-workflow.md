@@ -131,3 +131,22 @@ Result:
 Keep this as a minimal compatibility proof, not a default workflow. The
 existing `aider-strix-coder` launcher still points at the older `8082`
 llama.cpp/GGUF path and is not the validated vLLM Coder-Next path.
+
+## Repeatable Helper
+
+Use this helper for the validated Coder-Next path after switching Strix to code
+mode:
+
+```sh
+cd /srv/projects/homelab
+scripts/strix-vllm-mode code
+scripts/aider-code-test README.md --message "Make one narrow requested edit."
+```
+
+The helper refuses to start unless `qwen3-coder-next-awq-agent-test` is active
+on `127.0.0.1:8010`. It sets the validated local model, model-dispatch base URL,
+diff edit format, non-streaming mode, disabled repo map, disabled auto-commits,
+and disabled gitignore changes.
+
+It does not pass `--yes-always` by default. Add that flag explicitly only for a
+known throwaway or otherwise tightly bounded non-interactive trial.
