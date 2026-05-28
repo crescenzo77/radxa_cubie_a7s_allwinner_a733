@@ -1,8 +1,29 @@
 # Current Slice
 
-## Active: Real bounded Aider repo trial checkpoint complete
+## Active: Strix vLLM runtime mode strategy checkpoint complete
 
 ## Current State
+
+The Strix vLLM runtime mode strategy checkpoint is complete enough to
+preserve.
+
+Validated and pushed:
+
+- Live Strix and ThinkCentre state were checked before writing the strategy.
+- Strix remained in `tool` mode with `qwen36-awq-agent-test` active.
+- ThinkCentre `model-dispatch.service` remained active with
+  `Restart=on-failure`.
+- The current one-port mode design was documented.
+- Future options were compared without implementing any of them.
+- Recommendation: keep manual one-port switching for now.
+- No services, ports, Compose files, model-dispatch config, Open WebUI defaults,
+  Docker runtime state, or systemd units were changed.
+
+Strategy file:
+
+- `inventory/strix-vllm-runtime-mode-strategy-2026-05-28.md`
+
+## Prior Current State
 
 The first real bounded Aider trial in a non-critical repo is complete enough to
 preserve.
@@ -21,7 +42,7 @@ Validated and pushed:
   test.
 - Aider remains evaluation-only and is not promoted to the core workflow.
 
-## Prior Current State
+## Earlier Current State
 
 The repo and mirror inventory checkpoint is complete enough to preserve.
 
@@ -100,11 +121,11 @@ explicit slice selects that work.
 
 ## Recommended Next Choices
 
-1. Stop here and treat the real bounded Aider repo trial as preserved.
-2. Plan a second bounded Aider trial only if a specific low-risk target is
+1. Stop here and treat the Strix runtime mode strategy as preserved.
+2. Write a separate approval brief for a future two-port Strix concurrency
+   feasibility test.
+3. Plan a second bounded Aider trial only if a specific low-risk target is
    selected.
-3. Design, but do not yet automate, a clearer Strix runtime mode strategy if
-   `local/tool-test` and `local/code-test` both need to be live.
 4. Plan a separate repo/mirror cleanup slice using the inventory.
 
 ## Constraints

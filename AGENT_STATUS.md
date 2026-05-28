@@ -2,7 +2,87 @@
 
 ## Current status
 
-The active slice is `Real bounded Aider repo trial checkpoint complete`.
+The active slice is `Strix vLLM runtime mode strategy checkpoint complete`.
+
+## Current task
+
+Preserve a design-only Strix runtime mode strategy. Do not change services,
+ports, Compose files, model-dispatch, Open WebUI, or default routes.
+
+## What changed
+
+- Added `inventory/strix-vllm-runtime-mode-strategy-2026-05-28.md`.
+- Documented the current one-port Strix mode design.
+- Compared manual switching, two-port concurrent serving, dispatch-aware
+  single-backend behavior, and automatic mode switching.
+- Recommended keeping manual one-port switching as the current approved
+  operating strategy.
+- Updated `CURRENT_SLICE.md` for the completed design checkpoint.
+- Preserved the prior real bounded Aider trial checkpoint below as history.
+
+## What did not change
+
+- No Compose files were changed.
+- No ports were changed.
+- No containers were started, stopped, or restarted.
+- No model-dispatch config was changed.
+- No Open WebUI config was changed.
+- No systemd units, daemons, watchers, timers, or hidden automation were added.
+- Aider was not run.
+- Aider was not promoted into the core walking skeleton.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `inventory/strix-vllm-runtime-mode-strategy-2026-05-28.md`
+
+## Checks run
+
+- Live Strix checkpoint validation.
+- Live ThinkCentre model-dispatch validation.
+- Read `scripts/strix-vllm-mode`.
+- Read both Strix vLLM Compose files.
+- Read `runbooks/strix-vllm-qwen36-awq-agent.md`.
+- `git diff --check`
+- `git diff --stat`
+- `git status --short`
+
+## Results of checks
+
+- Strix was on `333ac63 document real bounded aider trial` before this update.
+- Strix active mode was `tool`.
+- Strix served model was `qwen36-awq-agent-test`.
+- ThinkCentre `model-dispatch.service` was active.
+- ThinkCentre `model-dispatch.service` still used `Restart=on-failure`.
+- The current design still uses one host port, `8010`, for both Strix vLLM
+  runtimes.
+
+## Known risks or blockers
+
+- `local/tool-test` and `local/code-test` remain one-port Strix modes, not
+  simultaneous services.
+- Concurrent serving is not proven and may exceed Strix memory or stability
+  limits.
+- Any two-port strategy would require a separate implementation slice with live
+  resource, routing, smoke, and rollback checks.
+
+## User approval needed
+
+Approval is needed before changing Compose files, ports, model-dispatch routes,
+Open WebUI defaults, systemd units, Docker runtime behavior, default routes, or
+adding automation.
+
+## Recommended next action
+
+Stop here, or write a separate approval brief for a future Strix two-port
+concurrency feasibility test.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Real bounded Aider repo trial checkpoint complete
 
 ## Current task
 
@@ -84,10 +164,6 @@ editing Open WebUI defaults, changing `model-dispatch`, or adding automation.
 
 Stop here, plan a second bounded Aider trial only for a specific low-risk
 target, or design a clearer Strix runtime mode strategy without automating it.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - Repo and mirror inventory checkpoint complete
 
