@@ -1,5 +1,44 @@
 # Decisions
 
+## 2026-05-28 — Aider passes bounded edit through local/code-test
+
+Decision:
+Treat Aider as validated for one narrow throwaway edit through `local/code-test` while the Strix Coder-Next runtime is active, but do not make it a default workflow yet.
+
+Validated path:
+
+- `scripts/strix-vllm-mode code`
+- model-dispatch alias `local/code-test`
+- served model `qwen3-coder-next-awq-agent-test`
+- Aider `0.86.2`
+- model argument `openai/local/code-test`
+- API base `http://192.168.50.225:4010/v1`
+- edit format `diff`
+- non-streaming request
+- repo map disabled with `--map-tokens 0`
+- throwaway repo under `/tmp`
+
+Validation passed:
+
+- Coder-Next mode switch completed.
+- `scripts/model-tool-loop-smoke --model local/code-test` passed before the Aider run.
+- Aider edited only `README.md` in the throwaway repo.
+- Aider received output tokens and exited `0`.
+- The resulting diff changed only `old line` to `aider local code test passed`.
+- The restore trap switched Strix back to `tool` mode.
+- `scripts/model-tool-loop-smoke --model local/tool-test` passed after restore.
+
+Important boundaries:
+
+- This validates only a tiny, explicit, one-file edit.
+- This does not validate Aider in the homelab repo.
+- This does not validate broad repo-map behavior, auto-commits, long context, multi-file edits, or autonomous coding-agent workflows.
+- Keep Aider off default workflows until a real bounded slice passes review in a non-critical repo.
+- The old `aider-strix-coder` launcher still points at `127.0.0.1:8082` and the GGUF/llama.cpp path; it is not the validated vLLM Coder-Next path.
+
+Rationale:
+The earlier Aider failure against Qwen3.6 showed that coding-agent protocol compatibility must be tested separately from the OpenAI tool-call loop. This result proves that the Coder-Next vLLM path can support a minimal Aider edit when configured directly and narrowly.
+
 ## 2026-05-28 — Strix Qwen3-Coder-Next AWQ test runtime preserved
 
 Decision:

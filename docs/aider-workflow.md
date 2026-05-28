@@ -95,3 +95,39 @@ with normal Git tools instead of asking Aider to broaden the task.
 - Decline requests to add unrelated context files.
 - Review the diff before committing.
 - Reject the run if Aider edits unrelated files.
+
+## Validated Local Code-Test Trial
+
+The first passing local Aider trial used the Strix Coder-Next vLLM runtime
+through model-dispatch:
+
+```sh
+scripts/strix-vllm-mode code
+```
+
+Then Aider ran in a throwaway repo with:
+
+```sh
+/home/enzo/.local/bin/aider README.md \
+  --model openai/local/code-test \
+  --openai-api-base http://192.168.50.225:4010/v1 \
+  --openai-api-key dummy \
+  --edit-format diff \
+  --no-stream \
+  --map-tokens 0 \
+  --no-auto-commits \
+  --no-gitignore \
+  --yes-always \
+  --message "Edit README.md only. Replace the line old line with the exact text: aider local code test passed. Do not change the heading."
+```
+
+Result:
+
+- Aider `0.86.2` edited only the requested file.
+- It received output tokens and exited `0`.
+- The test repo diff changed only the target line.
+- Strix was restored with `scripts/strix-vllm-mode tool` afterward.
+
+Keep this as a minimal compatibility proof, not a default workflow. The
+existing `aider-strix-coder` launcher still points at the older `8082`
+llama.cpp/GGUF path and is not the validated vLLM Coder-Next path.
