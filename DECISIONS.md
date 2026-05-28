@@ -1,5 +1,35 @@
 # Decisions
 
+## 2026-05-28 — Aider passes bounded edit through AMD local coder
+
+Decision:
+Treat AMD `local/amd-coder` as validated for one tiny bounded Aider
+documentation edit, while keeping Aider evaluation-only.
+
+Validated path:
+
+- Endpoint: `http://192.168.50.225:4010/v1`
+- model-dispatch alias: `local/amd-coder`
+- Container: `qwen3-coder-30b`
+- Harness: llama.cpp CUDA
+- Model: `Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+- Aider model: `openai/local/amd-coder`
+- Repo edited: `/srv/projects/cubie-camera-node`
+- Commit: `cd4b5a1 validate AMD coder bounded patch`
+
+Rationale:
+This proves the RTX 3090 AMD lane can participate in the same bounded
+patch-review workflow as the Strix Coder-Next path, through model-dispatch and
+without changing service defaults.
+
+Boundaries:
+
+- This validates only one tiny one-file documentation edit.
+- It does not validate broad repo maps, multi-file edits, service edits, or
+  autonomous coding workflows.
+- Aider remains evaluation-only until broader checks are deliberately selected.
+- No model-dispatch, Open WebUI, Docker, or systemd changes were made.
+
 ## 2026-05-28 — Use provider-neutral patch-review workflow
 
 Decision:

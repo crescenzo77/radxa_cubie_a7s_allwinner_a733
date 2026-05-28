@@ -1,8 +1,30 @@
 # Current Slice
 
-## Active: Provider-neutral patch-review workflow checkpoint complete
+## Active: AMD local coder bounded patch validation complete
 
 ## Current State
+
+The AMD `local/amd-coder` bounded patch-tool validation is complete enough to
+preserve.
+
+Validated and pushed:
+
+- AMD `qwen3-coder-30b` was live and healthy on port `8083`.
+- model-dispatch `local/amd-coder` returned a clean `ok`.
+- Aider `0.86.2` edited one file in `/srv/projects/cubie-camera-node`.
+- The edit used model-dispatch endpoint `http://192.168.50.225:4010/v1`.
+- Aider edited only `README.md`.
+- Aider history files were written outside the repo.
+- `git diff --check` passed.
+- `cubie-camera-node` commit:
+  `cd4b5a1 validate AMD coder bounded patch`
+- The commit was pushed to `thinkcentre:/srv/git/cubie-camera-node.git`.
+
+AMD Aider validation note:
+
+- `inventory/aider-amd-coder-validation-2026-05-28.md`
+
+## Prior Current State
 
 The provider-neutral patch-review workflow checkpoint is complete enough to
 preserve.

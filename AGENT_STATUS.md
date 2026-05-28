@@ -2,7 +2,92 @@
 
 ## Current status
 
-The active slice is `Provider-neutral patch-review workflow checkpoint complete`.
+The active slice is `AMD local coder bounded patch validation complete`.
+
+## Current task
+
+Preserve the first bounded Aider validation through AMD `local/amd-coder`.
+
+## What changed
+
+- Ran one bounded Aider edit through model-dispatch `local/amd-coder`.
+- Aider edited only `/srv/projects/cubie-camera-node/README.md`.
+- Aider history files were kept outside the repo.
+- Committed the target repo change as
+  `cd4b5a1 validate AMD coder bounded patch`.
+- Pushed `cubie-camera-node` to `thinkcentre:/srv/git/cubie-camera-node.git`.
+- Added `inventory/aider-amd-coder-validation-2026-05-28.md`.
+- Updated `DECISIONS.md` with the AMD bounded patch-tool validation.
+- Updated `CURRENT_SLICE.md` for the completed checkpoint.
+- Preserved the prior provider-neutral workflow checkpoint below as history.
+
+## What did not change
+
+- No live services were changed.
+- No model-dispatch config was changed.
+- No Open WebUI config was changed.
+- No model containers were changed.
+- No OpenCode install or trial was performed.
+- No Codex local-provider setup was attempted.
+- Aider was not promoted into the core workflow.
+- No broad repo map, multi-file edit, service edit, or autonomous coding
+  workflow was tested.
+
+## Files changed
+
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `DECISIONS.md`
+- `inventory/aider-amd-coder-validation-2026-05-28.md`
+
+## Checks run
+
+- Live homelab repo status.
+- Live Strix, ThinkCentre, and AMD container validation.
+- model-dispatch chat check for `local/amd-coder`.
+- Aider edit against `/srv/projects/cubie-camera-node`.
+- `git status --short` in `cubie-camera-node`.
+- `git diff --check` in `cubie-camera-node`.
+- `git diff --stat` in `cubie-camera-node`.
+- Push verification for `cubie-camera-node`.
+- `git diff --check`
+- `git diff --stat`
+- `git status --short`
+
+## Results of checks
+
+- AMD `qwen3-coder-30b` was healthy on port `8083`.
+- `local/amd-coder` returned clean `ok` through model-dispatch.
+- Aider exited `0`.
+- The target repo diff was one README sentence.
+- `git diff --check` passed.
+- Push to the ThinkCentre mirror succeeded.
+
+## Known risks or blockers
+
+- This validates only a tiny one-file documentation edit.
+- Aider remains unvalidated on AMD for broad repo maps, multi-file edits,
+  service edits, long context, and autonomous workflows.
+- OpenCode still needs installation/evaluation before it can become a local
+  coding-agent surface.
+- Codex with a local model on Strix is not proven.
+
+## User approval needed
+
+Approval is needed before installing OpenCode, configuring Codex local-provider
+profiles, changing model-dispatch defaults, changing Open WebUI defaults, or
+promoting any coding agent into normal workflow.
+
+## Recommended next action
+
+Stop here, or plan an OpenCode local-model evaluation slice under the same
+patch-review workflow.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Provider-neutral patch-review workflow checkpoint complete
 
 ## Current task
 
@@ -83,10 +168,6 @@ promoting any coding agent into normal workflow.
 
 Stop here, or plan an OpenCode local-model evaluation slice using the same
 patch-review workflow.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - Strix llama.cpp Aider validation checkpoint complete
 
