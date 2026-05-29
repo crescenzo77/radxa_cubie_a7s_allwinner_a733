@@ -2,11 +2,12 @@
 
 ## Purpose
 
-Aider is a bounded patch assistant for small repository edits after the slice is
-already planned.
+Aider is the preferred bounded patch executor for planned strict slices. Use it
+for small repository edits after the slice is already planned.
 
-Its job is to produce one narrow, reviewable Git diff. It is not the planner,
-operator, deployment tool, service controller, or architecture reviewer.
+Its job is to execute the coding/editing action and produce one narrow,
+reviewable Git diff. It is not the planner, operator, deployment tool, service
+controller, or architecture reviewer.
 
 ## When To Use Aider
 
@@ -42,10 +43,12 @@ Do not use Aider for:
 - Autonomous follow-up work.
 - Anything requiring user approval before the next command.
 
-Use Codex for planning, sequencing, approval briefs, and risky live-service
-steps. Use Claude Code as a strong frontier-code alternative or second opinion
-when needed. Keep OpenCode as the preferred next local-model coding-agent
-candidate to evaluate, Continue.dev as editor assist, and Cline sandbox-only.
+Use Codex Desktop or another selected planner surface for planning, sequencing,
+approval briefs, and risky live-service steps. Use Aider for the bounded patch
+execution step when the slice is already planned and the target files are clear.
+OpenCode is currently blocked for local model patching and must not replace
+Aider until a separate validation slice fixes and proves it. Keep Continue.dev
+as editor assist and Cline sandbox-only.
 
 For the full provider-neutral patch/review loop, see
 `docs/patch-review-workflow.md`.
@@ -180,9 +183,10 @@ Result:
 - Push to `thinkcentre:/srv/git/cubie-camera-node.git` succeeded.
 - Strix was restored to `tool` mode and `local/tool-test` passed afterward.
 
-Keep this as a bounded evaluation proof. It does not promote Aider to default
-workflow, service edits, multi-file edits, broad repo-map use, auto-commits, or
-autonomous follow-up work.
+Keep this as a bounded proof of Aider's patch-executor role. It promotes Aider
+only for planned strict slices with clear file scope; it does not promote Aider
+to planning, service edits, broad repo-map use, auto-commits, or autonomous
+follow-up work.
 
 ## Validated Strix llama.cpp Coder-Next Trial
 
@@ -223,9 +227,10 @@ scripts/aider-strix-coder-llamacpp README.md --message "Make one narrow requeste
 Run the helper from the target repository working tree. It refuses to run unless
 Strix Coder-Next is live on `127.0.0.1:8082`.
 
-Keep this as a bounded evaluation proof. It does not promote Aider to default
-workflow, service edits, multi-file edits, broad repo-map use, auto-commits, or
-autonomous follow-up work.
+Keep this as a bounded proof of Aider's patch-executor role. It promotes Aider
+only for planned strict slices with clear file scope; it does not promote Aider
+to planning, service edits, broad repo-map use, auto-commits, or autonomous
+follow-up work.
 
 ## Repeatable Helper
 

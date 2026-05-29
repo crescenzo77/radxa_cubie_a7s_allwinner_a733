@@ -1,5 +1,40 @@
 # Current Slice
 
+## Active: Clarify Aider preferred patch executor posture
+
+## Current State
+
+The workflow docs are being corrected to reflect the user's clarified tool
+choice:
+
+- Aider is the preferred bounded patch executor for planned strict slices.
+- Aider performs the coding/editing action after the planner defines the slice.
+- Aider must not become the planner, broaden scope, auto-commit, deploy, change
+  services, or become autonomous.
+- OpenCode remains blocked for local model patching and is not the preferred
+  next patch tool.
+- The active workflow now includes a `Start Here` order that begins with
+  `PLAN_INDEX.md`.
+
+This is a docs-only clarification slice.
+
+Do not:
+
+- change services, Docker, systemd, model-dispatch, Open WebUI, routing, or
+  deployment state
+- delete workflow, plan, history, or draft files
+- stage or commit without user approval
+
+Checks to preserve before commit:
+
+- `git status --short`
+- `git diff --check`
+- verify no docs still say OpenCode is the preferred next local-model coding
+  agent candidate
+- verify the active workflow points readers to `PLAN_INDEX.md` first
+
+## Prior Current State
+
 ## Active: Provider-neutral workflow plan tracking checkpoint
 
 ## Current State

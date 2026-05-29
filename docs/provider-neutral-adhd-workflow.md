@@ -27,6 +27,26 @@ The workflow is permanent.
 The provider/tool is swappable.
 ```
 
+## 1.0 Start Here
+
+Before following any workflow or plan document, use this order:
+
+1. Read `PLAN_INDEX.md`.
+2. Read the current plan named in `PLAN_INDEX.md`.
+3. Read `CURRENT_SLICE.md`.
+4. Read `AGENT_STATUS.md`.
+5. Act only inside the current slice.
+
+`PLAN_INDEX.md` is the source of truth for which plan is current, which plans
+are superseded, and which history files are protected. The protected
+long-context master history/evolution file is:
+
+- `docs/provider-neutral-adhd-workflow-evolution-2026-05-29.md`
+
+Do not delete protected history files. If a plan is replaced, preserve the old
+plan and update `PLAN_INDEX.md` in the same change.
+
+
 ## 1.1 Workflow Principle
 
 Roles stay stable. Tools may change per session.
@@ -298,12 +318,13 @@ Codex Desktop is preferred, not mandatory.
 
 ### 1.10.2 Aider
 
-Aider is one validated local patch tool.
+Aider is the preferred bounded patch executor for planned strict slices.
 
 Status: `Validated` for bounded local patches through Strix and AMD local
 models.
 
-Aider is not the workflow identity.
+Use Aider after the planner has defined the slice and the target files or file
+scope are clear. Aider is not the workflow identity.
 
 Aider must not:
 
@@ -397,7 +418,7 @@ next viable replacement for the same role. It should not silently switch tools.
 | Role | Best current tool | Local fallback | Free fallback | Current note |
 |---|---|---|---|---|
 | Planner | Codex Desktop / ChatGPT | Open WebUI local model | OpenRouter free | Local and free paths need workflow validation |
-| Patch tool | Codex Desktop or manual edits | Aider with local AMD/Strix model | Candidate CLI coder/free path | Aider is validated, not mandatory |
+| Patch tool | Aider for planned strict slices / Codex Desktop when selected | Aider with local AMD/Strix model | Candidate CLI coder/free path | Aider is the preferred bounded patch executor, not the planner |
 | Reviewer | Codex Desktop / ChatGPT | Open WebUI local model | OpenRouter free | Review-card validation still needed |
 | Operator | Codex Desktop or user terminal | user terminal with local prompts | none by default | Shell access remains explicit |
 | Resume keeper | Codex Desktop / ChatGPT | local model summary through Open WebUI | OpenRouter free | Resume notes protect context |

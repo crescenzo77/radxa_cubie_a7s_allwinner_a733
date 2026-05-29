@@ -45,10 +45,11 @@ The patch tool edits files and leaves a Git diff.
 
 Patch tool options:
 
-- Aider, for strict named-file edits only.
-- Codex desktop or Codex CLI, when the user explicitly selects it for patching.
-- OpenCode, as the preferred next local-model coding-agent candidate to
-  evaluate.
+- Aider, preferred for strict planned slices with named files or clear file
+  scope.
+- Codex Desktop or Codex CLI, when the user explicitly selects it for patching.
+- OpenCode, only after its local patching path is separately fixed and
+  validated.
 - Another coding agent, only after a bounded validation slice.
 
 Rules:
@@ -133,14 +134,16 @@ Open WebUI plus model-dispatch is enough for this review-only surface.
 A local model does need a coding harness if it is expected to edit files
 directly. Candidate harnesses:
 
-- Aider for strict patch mode.
-- OpenCode for local-model coding-agent evaluation.
+- Aider for strict patch mode; this is the current preferred bounded patch
+  executor.
+- OpenCode only as a blocked/candidate path until its local patching behavior is
+  fixed and validated.
 - Codex CLI only if a supported local-provider setup is proven separately.
 
 ## Current Tool Guidance
 
-Aider is conditionally allowed as a bounded patch assistant, not as a general
-autonomous coder.
+Aider is the preferred bounded patch executor for planned strict slices. It is
+not a planner or general autonomous coder.
 
 Use Aider when:
 
@@ -161,9 +164,9 @@ Do not use Aider for:
 - architecture decisions
 - long control/history docs
 
-OpenCode is the better next candidate for a local-model coding-agent trial
-because it can be evaluated separately from Aider while using the same
-patch-review workflow.
+OpenCode is currently blocked for local model patching. Do not treat it as the
+next patch tool until a separate debugging and validation slice proves usable
+edits.
 
 Codex desktop remains a strong planner and reviewer from the Mac mini. Running
 Codex on Strix with a local model is not currently proven in this homelab and

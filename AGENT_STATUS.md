@@ -2,6 +2,91 @@
 
 ## Current status
 
+The active slice is `Clarify Aider preferred patch executor posture`.
+
+## Current task
+
+Correct workflow docs so they state that Aider is the preferred bounded patch
+executor for planned strict slices, while OpenCode remains blocked for local
+model patching. Also make the active workflow start order point to
+`PLAN_INDEX.md` first.
+
+## What changed
+
+- Updated `docs/aider-workflow.md` to describe Aider as the preferred bounded
+  patch executor after planning.
+- Updated `docs/patch-review-workflow.md` so OpenCode is no longer described as
+  the preferred next local-model coding-agent candidate.
+- Updated `docs/provider-neutral-adhd-workflow.md` so the active workflow names
+  Aider as the preferred bounded patch executor for planned strict slices.
+- Added a `Start Here` order to `docs/provider-neutral-adhd-workflow.md` so
+  future sessions begin with `PLAN_INDEX.md`.
+- Updated `DECISIONS.md` with the clarified Aider patch-executor decision.
+- Updated `CURRENT_SLICE.md` for this clarification slice.
+
+## What did not change
+
+- No services were changed.
+- No model-dispatch config was changed.
+- No Open WebUI config was changed.
+- No Docker or systemd state was changed.
+- No routing, deployment, provider, or model runtime state was changed.
+- No files were deleted.
+- No files were staged or committed.
+
+## Files changed
+
+- `docs/aider-workflow.md`
+- `docs/patch-review-workflow.md`
+- `docs/provider-neutral-adhd-workflow.md`
+- `DECISIONS.md`
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+
+## Checks run
+
+- `git diff --check`
+- Active-doc grep for stale OpenCode preferred-next wording in:
+  - `docs/aider-workflow.md`
+  - `docs/patch-review-workflow.md`
+  - `docs/provider-neutral-adhd-workflow.md`
+- Active-doc grep for Aider preferred bounded patch executor wording.
+- Active workflow grep for `PLAN_INDEX.md` and `Start Here`.
+- `git status --short`
+- `git diff --stat`
+
+## Results of checks
+
+- `git diff --check` passed.
+- Active workflow docs no longer say OpenCode is the preferred next local-model
+  coding-agent candidate.
+- Active workflow docs now state that Aider is the preferred bounded patch
+  executor for planned strict slices.
+- Active workflow now points future sessions to `PLAN_INDEX.md` first.
+- Working tree contains docs-only changes.
+
+## Known risks or blockers
+
+- Older superseded docs and archived status history still contain historical
+  Aider/OpenCode language, but `PLAN_INDEX.md` marks those docs as superseded
+  or the sections as historical.
+
+## User approval needed
+
+User approved committing this docs clarification and pushing backups.
+
+## Recommended next action
+
+Commit this docs clarification and push it to the configured mirrors.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Provider-neutral workflow plan tracking checkpoint
+
+## Current status
+
 The active slice is `Provider-neutral workflow plan tracking checkpoint`.
 
 ## Current task
@@ -79,10 +164,6 @@ Approval is needed before staging or committing these docs.
 ## Recommended next action
 
 Inspect the diff, then choose Commit / Revise / Revert / Inspect more.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - AMD Aider tiny code patch validation complete
 

@@ -1,5 +1,27 @@
 # Decisions
 
+## 2026-05-29 — Use Aider as preferred bounded patch executor
+
+Decision:
+Use Aider as the preferred bounded patch executor for planned strict slices.
+Aider is the tool chosen to perform the coding/editing action while staying
+behind the slice boundary and not crossing into planning.
+
+Policy:
+
+- The planner defines the slice, scope, files, checks, and stop condition before
+  Aider runs.
+- Aider executes the bounded patch and stops after one reviewable diff.
+- Aider must not plan, broaden scope, auto-commit, deploy, change services, or
+  become autonomous.
+- OpenCode remains blocked for local model patching and must not be treated as
+  the next preferred patch tool until separately fixed and validated.
+
+Rationale:
+The user was instructed to use Aider because it best matches the desired role
+separation: it can perform the coding action for each strict slice while the
+planner and reviewer remain separate roles.
+
 ## 2026-05-29 — Preserve plans with canonical plan index
 
 Decision:
