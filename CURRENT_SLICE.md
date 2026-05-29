@@ -1,8 +1,39 @@
 # Current Slice
 
-## Active: OpenCode local-model preflight complete
+## Active: OpenCode local-model follow-up blocked
 
 ## Current State
+
+The OpenCode local-model follow-up is complete enough to preserve as a blocker.
+
+Validated:
+
+- The throwaway repo remained isolated at `/tmp/opencode-local-trial`.
+- Adding `limit.context: 32768` and `limit.output: 4096` to the AMD OpenCode
+  model config removed the earlier model-dispatch context rejection.
+- AMD `local/amd-coder` still produced no OpenCode edit and no visible
+  OpenCode model output.
+- Strix `local/strix-coder` also produced no visible OpenCode model output.
+- `opencode run --format json` for a plain "Reply exactly ok" prompt emitted
+  only `step_start` and `step_finish` events with zero recorded tokens for both
+  AMD and Strix.
+- Direct model-dispatch tool-loop smoke passed for both:
+  - `scripts/model-tool-loop-smoke --model local/amd-coder`
+  - `scripts/model-tool-loop-smoke --model local/strix-coder`
+
+Conclusion:
+
+- model-dispatch and the llama.cpp coder backends can do OpenAI-style tool
+  calls directly.
+- The current blocker is specific to OpenCode's local provider/run path.
+- OpenCode remains installed but not validated as a patch tool.
+- Aider remains the validated bounded patch-tool path.
+
+OpenCode follow-up note:
+
+- `inventory/opencode-local-model-followup-2026-05-28.md`
+
+## Prior Current State
 
 The first OpenCode local-model preflight is complete enough to preserve as a
 partial/negative checkpoint.

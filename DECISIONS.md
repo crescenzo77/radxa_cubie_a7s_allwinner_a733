@@ -1,5 +1,33 @@
 # Decisions
 
+## 2026-05-28 — OpenCode local provider path remains blocked
+
+Decision:
+Keep OpenCode out of the normal patch workflow. The local model provider path
+is installed and configurable, but it still does not produce usable model output
+or edits through `opencode run`.
+
+New findings:
+
+- Adding explicit AMD model limits removed the earlier context-size rejection.
+- OpenCode still produced no edit through AMD `local/amd-coder`.
+- Plain OpenCode chat through AMD and Strix emitted only step start/finish
+  events with zero recorded model tokens.
+- Direct model-dispatch tool-loop smoke passed for both `local/amd-coder` and
+  `local/strix-coder`.
+
+Conclusion:
+The blocker is specific to OpenCode's local provider/run path, not to the
+llama.cpp coder backends or model-dispatch OpenAI-style tool-call support.
+
+Policy:
+
+- Do not use OpenCode as the patch tool yet.
+- Do not change model-dispatch, Open WebUI, Docker, systemd, or routing to make
+  OpenCode work.
+- Use Aider as the currently validated bounded patch-tool path.
+- Treat any further OpenCode work as a separate debugging slice.
+
 ## 2026-05-28 — OpenCode local-model preflight is partial, not validated
 
 Decision:
