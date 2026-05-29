@@ -2,23 +2,25 @@
 
 ## Current status
 
-The active slice is `OpenCode local-model follow-up blocked`.
+The active slice is `AMD Aider tiny code patch validation complete`.
 
 ## Current task
 
-Preserve the OpenCode local-model follow-up as a blocker checkpoint.
+Preserve the first tiny code-file Aider validation through AMD
+`local/amd-coder`.
 
 ## What changed
 
-- Updated the throwaway OpenCode config to give AMD an explicit
-  `limit.context` and smaller `limit.output`.
-- Retested AMD `local/amd-coder` through OpenCode.
-- Retested plain OpenCode chat output through AMD and Strix.
-- Ran direct model-dispatch tool-loop smoke for AMD and Strix coder aliases.
-- Added `inventory/opencode-local-model-followup-2026-05-28.md`.
-- Updated `DECISIONS.md` with the OpenCode blocker result.
+- Ran one bounded Aider code edit through model-dispatch `local/amd-coder`.
+- Aider created only `/srv/projects/cubie-camera-node/scripts/cubie-node-summary`.
+- The helper prints fixed project/source/deployment status lines.
+- Committed the target repo change as
+  `d6246ef add Cubie node summary helper`.
+- Pushed `cubie-camera-node` to `thinkcentre:/srv/git/cubie-camera-node.git`.
+- Added `inventory/aider-amd-coder-code-validation-2026-05-28.md`.
+- Updated `DECISIONS.md` with the AMD Aider code-patch validation.
 - Updated `CURRENT_SLICE.md` for the completed checkpoint.
-- Preserved the prior OpenCode preflight below as history.
+- Preserved the prior OpenCode blocker checkpoint below as history.
 
 ## What did not change
 
@@ -27,8 +29,9 @@ Preserve the OpenCode local-model follow-up as a blocker checkpoint.
 - No Open WebUI config was changed.
 - No model containers were changed.
 - No Codex local-provider setup was attempted.
-- No real project repo was edited by OpenCode.
-- No OpenCode result was promoted into the normal workflow.
+- No Cubie deployment was performed.
+- No hidden daemon, watcher, auto-deploy job, or approval system was created.
+- No OpenCode work was resumed.
 - Aider was not promoted into the core workflow.
 
 ## Files changed
@@ -36,39 +39,38 @@ Preserve the OpenCode local-model follow-up as a blocker checkpoint.
 - `CURRENT_SLICE.md`
 - `AGENT_STATUS.md`
 - `DECISIONS.md`
-- `inventory/opencode-local-model-followup-2026-05-28.md`
+- `inventory/aider-amd-coder-code-validation-2026-05-28.md`
 
 ## Checks run
 
 - Live homelab repo status.
-- OpenCode AMD throwaway edit attempt after lowering output budget.
-- OpenCode AMD plain chat attempt with `--format json`.
-- OpenCode Strix plain chat attempt with `--format json`.
-- OpenCode session export for the AMD attempt.
-- `scripts/model-tool-loop-smoke --model local/amd-coder`.
-- `scripts/model-tool-loop-smoke --model local/strix-coder`.
-- `git status --short` in the throwaway repo.
-- `git diff --check` in the throwaway repo.
+- Live `cubie-camera-node` status.
+- Aider edit against `/srv/projects/cubie-camera-node`.
+- `git status --short` in `cubie-camera-node`.
+- `git diff --check` in `cubie-camera-node`.
+- `git diff --stat` in `cubie-camera-node`.
+- `bash -n scripts/cubie-node-summary`.
+- `scripts/cubie-node-summary`.
+- Push verification for `cubie-camera-node`.
 - `git diff --check`
 - `git diff --stat`
 - `git status --short`
 
 ## Results of checks
 
-- The AMD context-size rejection was removed by lowering OpenCode's configured
-  output budget.
-- AMD still produced no OpenCode edit.
-- Plain OpenCode chat through AMD and Strix emitted only `step_start` and
-  `step_finish` events, with zero recorded model tokens.
-- Direct model-dispatch tool-loop smoke passed for AMD and Strix coder aliases.
+- Aider exited `0`.
+- The target repo diff was one new executable shell script.
+- `bash -n` passed.
+- The helper printed the expected output.
+- `git diff --check` passed.
+- Push to the ThinkCentre mirror succeeded.
 
 ## Known risks or blockers
 
-- OpenCode is installed but not validated as a working local patch tool.
-- The remaining blocker appears specific to OpenCode's local provider/run path,
-  not to model-dispatch tool-call capability.
-- OpenCode may need upstream/provider configuration investigation before it is
-  worth testing against real repos.
+- This validates only a tiny one-file shell-script edit.
+- Aider remains unvalidated on AMD for multi-file code edits, tests, service
+  edits, long context, and autonomous workflows.
+- OpenCode remains blocked as a local patch tool.
 - Codex with a local model on Strix is not proven.
 
 ## User approval needed
@@ -80,12 +82,18 @@ profiles, or promoting any coding agent into normal workflow.
 
 ## Recommended next action
 
-Stop here. Use Aider for bounded patch-tool work unless explicitly selecting a
-deeper OpenCode provider/debugging investigation.
+Stop here, or document/update the Cubie repo's own slice files to reflect the
+new helper.
 
 ## Archived Status History
 
 Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - OpenCode local-model follow-up blocked
+
+## Current task
+
+Preserve the OpenCode local-model follow-up as a blocker checkpoint.
 
 ## Previous status - OpenCode local-model preflight complete
 

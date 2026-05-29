@@ -1,5 +1,36 @@
 # Decisions
 
+## 2026-05-28 — Aider passes tiny code edit through AMD local coder
+
+Decision:
+Treat AMD `local/amd-coder` as validated for one tiny bounded Aider code edit,
+while keeping Aider evaluation-only.
+
+Validated path:
+
+- Endpoint: `http://192.168.50.225:4010/v1`
+- model-dispatch alias: `local/amd-coder`
+- Container: `qwen3-coder-30b`
+- Harness: llama.cpp CUDA
+- Model: `Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf`
+- Aider model: `openai/local/amd-coder`
+- Repo edited: `/srv/projects/cubie-camera-node`
+- File created: `scripts/cubie-node-summary`
+- Commit: `d6246ef add Cubie node summary helper`
+
+Rationale:
+This extends the AMD validation from a one-line documentation edit to a tiny
+real code-file edit with syntax and runtime checks, without changing services
+or deployment state.
+
+Boundaries:
+
+- This validates only one tiny one-file shell-script edit.
+- It does not validate multi-file code edits, tests, service edits, or
+  autonomous coding workflows.
+- Aider remains a bounded patch tool, not a planner or default autonomous
+  coder.
+
 ## 2026-05-28 — OpenCode local provider path remains blocked
 
 Decision:

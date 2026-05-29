@@ -1,8 +1,31 @@
 # Current Slice
 
-## Active: OpenCode local-model follow-up blocked
+## Active: AMD Aider tiny code patch validation complete
 
 ## Current State
+
+The AMD `local/amd-coder` Aider code-patch validation is complete enough to
+preserve.
+
+Validated and pushed:
+
+- Aider `0.86.2` edited one code file in `/srv/projects/cubie-camera-node`.
+- The edit used model-dispatch endpoint `http://192.168.50.225:4010/v1`.
+- Aider model argument: `openai/local/amd-coder`.
+- Aider created only `scripts/cubie-node-summary`.
+- Aider history files were written outside the repo.
+- The helper passed `bash -n`.
+- Running the helper printed the expected three status lines.
+- `git diff --check` passed.
+- `cubie-camera-node` commit:
+  `d6246ef add Cubie node summary helper`
+- The commit was pushed to `thinkcentre:/srv/git/cubie-camera-node.git`.
+
+AMD Aider code validation note:
+
+- `inventory/aider-amd-coder-code-validation-2026-05-28.md`
+
+## Prior Current State
 
 The OpenCode local-model follow-up is complete enough to preserve as a blocker.
 
