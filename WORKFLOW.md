@@ -1,5 +1,8 @@
 # Workflow: Two Surfaces Plus `advisor-packet`
 
+NOTE: This is a superseded historical workflow reference. Before following workflow guidance, read `PLAN_INDEX.md`; the current operating plan is `docs/provider-neutral-adhd-workflow.md`.
+
+
 This describes the normal working loop for homelab coding projects.
 
 Last updated: 2026-05-23.

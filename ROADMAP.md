@@ -1,5 +1,8 @@
 # Roadmap: Two-Surface Homelab Workflow
 
+NOTE: This is a superseded historical roadmap reference. Before following roadmap or workflow guidance, read `PLAN_INDEX.md`; the current operating plan is `docs/provider-neutral-adhd-workflow.md`.
+
+
 This roadmap describes the path from the current setup to a practical
 human-reviewed homelab workflow.
 

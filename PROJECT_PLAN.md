@@ -1,6 +1,6 @@
 # Project Plan
 
-Build a practical two-surface homelab workflow.
+Build a practical provider-neutral homelab workflow with durable plan tracking.
 
 ## Goal
 
@@ -39,13 +39,14 @@ Create a stable workflow where:
 
 ## Current build stage
 
-Slice 19: Strix vLLM local-agent validation checkpoint.
+Current plan status is tracked in `PLAN_INDEX.md`. As of 2026-05-29, the active operating plan is `docs/provider-neutral-adhd-workflow.md`.
 
 ## How to use this repo
 
 Use this repo as the canonical source for homelab workflow state.
 
-- `PROJECT_PLAN.md` stores the broad goal, completed stages, and current build stage.
+- `PLAN_INDEX.md` identifies the current plan and preserves superseded, archived, or quarantined plans.
+- `PROJECT_PLAN.md` stores the broad goal and historical project stages.
 - `CURRENT_SLICE.md` stores the active task and its acceptance criteria.
 - `AGENT_STATUS.md` stores the current handoff/status summary.
 - `DECISIONS.md` stores durable decisions and rationale.

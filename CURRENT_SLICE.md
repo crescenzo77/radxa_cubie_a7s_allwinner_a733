@@ -1,8 +1,43 @@
 # Current Slice
 
-## Active: AMD Aider tiny code patch validation complete
+## Active: Provider-neutral workflow plan tracking checkpoint
 
 ## Current State
+
+The provider-neutral workflow and no-delete plan tracking slice is in progress.
+
+Current docs state:
+
+- `PLAN_INDEX.md` was added as the canonical registry for current, superseded,
+  archived, and quarantined plans.
+- `docs/provider-neutral-adhd-workflow.md` is the current active operating plan.
+- `docs/provider-neutral-adhd-workflow-evolution-2026-05-29.md` is the protected
+  long-context master history/evolution file. Do not delete it.
+- `docs/archive/local-agent-workflow-runbook-draft-2026-05-29.md` preserves the
+  first draft instead of deleting it.
+- `WORKFLOW.md`, `ROADMAP.md`, and `PROJECT_PLAN.md` are marked as superseded or
+  historical references through `PLAN_INDEX.md`.
+- `CODEX_CONTEXT.md` now requires future agents to read `PLAN_INDEX.md` before
+  selecting a workflow plan.
+
+This is a docs-only slice.
+
+Do not:
+
+- delete workflow, plan, history, or draft files
+- delete the long-context master history/evolution file
+- stage or commit without user approval
+- change services, Docker, systemd, model-dispatch, Open WebUI, routing, or
+  deployment state
+
+Checks to preserve before commit:
+
+- `git status --short`
+- `git diff --check`
+- trailing whitespace check for new untracked docs
+- verify `PLAN_INDEX.md` has exactly one `Current` plan
+
+## Prior Current State
 
 The AMD `local/amd-coder` Aider code-patch validation is complete enough to
 preserve.

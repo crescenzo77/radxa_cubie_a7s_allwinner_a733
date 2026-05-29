@@ -1,5 +1,37 @@
 # Decisions
 
+## 2026-05-29 — Preserve plans with canonical plan index
+
+Decision:
+Use `PLAN_INDEX.md` as the canonical registry for current, superseded,
+archived, and quarantined workflow plans. Do not delete old workflow, plan,
+history, or draft files when a new plan is created.
+
+Current active plan:
+
+- `docs/provider-neutral-adhd-workflow.md`
+
+Protected long-context master history/evolution file:
+
+- `docs/provider-neutral-adhd-workflow-evolution-2026-05-29.md`
+
+Policy:
+
+- Mark exactly one operating plan as `Current` unless the user explicitly wants
+  multiple active plans for different projects.
+- Preserve old plans by marking them `Superseded`, `Archived`, or `Quarantined`.
+- Use `docs/archive/` for useful old plans and drafts.
+- Use `docs/quarantine/` only for misleading or unsafe plans that should not be
+  followed without explicit review.
+- Record replacements and reasons in `PLAN_INDEX.md` in the same diff as the new
+  plan.
+- Never delete the protected long-context master history/evolution file.
+
+Rationale:
+The user wants to create new plans without losing the progression of discussion,
+decisions, and prior directions. A registry preserves history while making the
+current plan unmistakable for future agents.
+
 ## 2026-05-28 — Aider passes tiny code edit through AMD local coder
 
 Decision:

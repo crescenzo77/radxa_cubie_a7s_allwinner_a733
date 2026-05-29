@@ -9,9 +9,10 @@ Codex/Aider/OpenCode/Hermes must treat these files as project memory:
 - `CURRENT_SLICE.md` — current work item and boundaries
 - `AGENT_STATUS.md` — latest known state
 - `DECISIONS.md` — durable architectural decisions
+- `PLAN_INDEX.md` — canonical registry of current, superseded, archived, and quarantined plans
 - `HOMELAB_LAYOUT.md` — where systems live and why
-- `WORKFLOW.md` — how operator workflow is supposed to run
-- `ROADMAP.md` — prioritized future work
+- `WORKFLOW.md` — historical workflow reference unless `PLAN_INDEX.md` marks it current
+- `ROADMAP.md` — historical roadmap and future-work reference unless `PLAN_INDEX.md` marks it current
 
 ## Required behavior
 
@@ -19,21 +20,24 @@ Before making changes, the agent must read:
 
 1. `AGENTS.md`
 2. `CODEX_CONTEXT.md`
-3. `CURRENT_SLICE.md`
-4. `AGENT_STATUS.md`
+3. `PLAN_INDEX.md`
+4. `CURRENT_SLICE.md`
+5. `AGENT_STATUS.md`
 
 If the task touches architecture, routing, service placement, workflow, model selection, security posture, or migration strategy, the agent must also read:
 
-1. `HOMELAB_LAYOUT.md`
-2. `WORKFLOW.md`
-3. `ROADMAP.md`
-4. `DECISIONS.md`
+1. the current plan named by `PLAN_INDEX.md`
+2. `HOMELAB_LAYOUT.md`
+3. `WORKFLOW.md`
+4. `ROADMAP.md`
+5. `DECISIONS.md`
 
 ## Planning-change rule
 
 If the agent changes any of the following, it must update the relevant repo docs in the same diff before continuing:
 
 - plan
+- plan status or replacement
 - scope
 - architecture
 - acceptance criteria
@@ -46,7 +50,7 @@ If the agent changes any of the following, it must update the relevant repo docs
 - model routing
 - security posture
 
-A plan change that is not reflected in the repo is incomplete.
+A plan change that is not reflected in the repo is incomplete. A plan replacement that is not reflected in `PLAN_INDEX.md` is incomplete.
 
 ## Execution boundaries
 
@@ -86,10 +90,9 @@ Do not chain unrelated tasks in one run.
 
 ## Role split
 
-WebUI is the strategic supervisor.
+Follow the current operating plan named in `PLAN_INDEX.md`. Older role splits below are historical context unless the index marks them current.
 
-Codex is primary for planning, sequencing, approval briefs, and risky
-live-service work.
+Codex Desktop is the preferred current cockpit, not a mandatory provider.
 
 Aider is the bounded patch assistant for small, already-planned repo edits once
 compatibility is validated.

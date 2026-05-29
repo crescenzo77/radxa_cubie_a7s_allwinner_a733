@@ -2,6 +2,92 @@
 
 ## Current status
 
+The active slice is `Provider-neutral workflow plan tracking checkpoint`.
+
+## Current task
+
+Preserve the provider-neutral workflow as the current plan while keeping older
+plans and the long-context master history/evolution file available for review.
+
+## What changed
+
+- Added `PLAN_INDEX.md` as the canonical registry for current, superseded,
+  archived, and quarantined plans.
+- Marked `docs/provider-neutral-adhd-workflow.md` as the current active plan.
+- Marked `docs/provider-neutral-adhd-workflow-evolution-2026-05-29.md` as the
+  protected long-context master history/evolution file.
+- Preserved `docs/archive/local-agent-workflow-runbook-draft-2026-05-29.md` as
+  an archived first draft.
+- Updated `CODEX_CONTEXT.md` so future agents read `PLAN_INDEX.md` before
+  choosing a workflow plan.
+- Updated `PROJECT_PLAN.md`, `WORKFLOW.md`, `ROADMAP.md`, and
+  `HOMELAB_LAYOUT.md` with current-plan pointers or historical/superseded
+  notes.
+- Updated `CURRENT_SLICE.md` and `DECISIONS.md` for this checkpoint.
+
+## What did not change
+
+- No files were deleted.
+- The long-context master history/evolution file was not deleted.
+- No live services were changed.
+- No model-dispatch config was changed.
+- No Open WebUI config was changed.
+- No Docker or systemd state was changed.
+- No routing, deployment, provider, or model runtime state was changed.
+- No files were staged or committed.
+
+## Files changed
+
+- `PLAN_INDEX.md`
+- `CODEX_CONTEXT.md`
+- `PROJECT_PLAN.md`
+- `WORKFLOW.md`
+- `ROADMAP.md`
+- `HOMELAB_LAYOUT.md`
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `DECISIONS.md`
+- `docs/provider-neutral-adhd-workflow.md`
+- `docs/provider-neutral-adhd-workflow-evolution-2026-05-29.md`
+- `docs/archive/local-agent-workflow-runbook-draft-2026-05-29.md`
+
+## Checks run
+
+- Live homelab repo status.
+- `git diff --check` on modified tracked docs.
+- Trailing whitespace check across new and changed docs.
+- Verified `PLAN_INDEX.md` contains exactly one `Current` plan.
+
+## Results of checks
+
+- Whitespace checks passed.
+- `PLAN_INDEX.md` has exactly one current plan entry.
+- The working tree contains docs-only changes.
+
+## Known risks or blockers
+
+- The new tracking system is not committed yet.
+- Some older docs remain historical and can still be confusing if read without
+  first reading `PLAN_INDEX.md`.
+- The long-context master history/evolution file may grow over time and should
+  be preserved deliberately rather than rewritten casually.
+
+## User approval needed
+
+Approval is needed before staging or committing these docs.
+
+## Recommended next action
+
+Inspect the diff, then choose Commit / Revise / Revert / Inspect more.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - AMD Aider tiny code patch validation complete
+
+## Current status
+
 The active slice is `AMD Aider tiny code patch validation complete`.
 
 ## Current task
@@ -84,10 +170,6 @@ profiles, or promoting any coding agent into normal workflow.
 
 Stop here, or document/update the Cubie repo's own slice files to reflect the
 new helper.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - OpenCode local-model follow-up blocked
 

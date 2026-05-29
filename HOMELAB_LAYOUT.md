@@ -1,5 +1,8 @@
 # Homelab Layout: Two-Surface Workflow
 
+NOTE: This layout remains useful for host and service facts, but its workflow framing is historical. Before following workflow guidance, read `PLAN_INDEX.md`; the current operating plan is `docs/provider-neutral-adhd-workflow.md`.
+
+
 This is the architectural reference for the practical two-surface homelab workflow. It answers what runs where, which machines own which responsibilities, and what must not become infrastructure.
 
 Last updated: 2026-05-26.
