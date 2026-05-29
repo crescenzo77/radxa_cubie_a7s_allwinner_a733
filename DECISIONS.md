@@ -1,5 +1,24 @@
 # Decisions
 
+## 2026-05-29 — Align agent context with archive-first plan structure
+
+Decision:
+Update `CODEX_CONTEXT.md` so agent startup instructions match the current
+archive-first plan structure.
+
+Policy:
+
+- `PROJECT_PLAN.md`, `WORKFLOW.md`, `ROADMAP.md`, and `HOMELAB_LAYOUT.md` are
+  current entrypoint files.
+- Old versions of those files belong in `docs/archive/` or `docs/quarantine/`.
+- Agents must not edit old plan files in place to make them current.
+- Aider is the preferred bounded patch executor for planned strict slices.
+
+Rationale:
+After archiving the old top-level plan files and creating fresh entrypoints,
+the agent context contract needed to stop describing those entrypoints as
+historical and needed to repeat the archive-before-replacement rule.
+
 ## 2026-05-29 — Archive old plan files before replacement
 
 Decision:

@@ -10,9 +10,10 @@ Codex/Aider/OpenCode/Hermes must treat these files as project memory:
 - `AGENT_STATUS.md` — latest known state
 - `DECISIONS.md` — durable architectural decisions
 - `PLAN_INDEX.md` — canonical registry of current, superseded, archived, and quarantined plans
-- `HOMELAB_LAYOUT.md` — where systems live and why
-- `WORKFLOW.md` — historical workflow reference unless `PLAN_INDEX.md` marks it current
-- `ROADMAP.md` — historical roadmap and future-work reference unless `PLAN_INDEX.md` marks it current
+- `PROJECT_PLAN.md` — current project-plan entrypoint
+- `WORKFLOW.md` — current workflow entrypoint
+- `ROADMAP.md` — current roadmap entrypoint
+- `HOMELAB_LAYOUT.md` — current layout entrypoint and host/repo meanings
 
 ## Required behavior
 
@@ -52,6 +53,10 @@ If the agent changes any of the following, it must update the relevant repo docs
 
 A plan change that is not reflected in the repo is incomplete. A plan replacement that is not reflected in `PLAN_INDEX.md` is incomplete.
 
+Do not edit an old plan file in place to make it current. Archive or quarantine
+the old file first, then create a fresh current file at the stable entrypoint
+path if that path should remain current.
+
 ## Execution boundaries
 
 The agent must not perform live service changes unless explicitly instructed.
@@ -90,12 +95,12 @@ Do not chain unrelated tasks in one run.
 
 ## Role split
 
-Follow the current operating plan named in `PLAN_INDEX.md`. Older role splits below are historical context unless the index marks them current.
+Follow the current operating plan named in `PLAN_INDEX.md`. Old role splits belong in archived files unless the index marks them current.
 
 Codex Desktop is the preferred current cockpit, not a mandatory provider.
 
-Aider is the bounded patch assistant for small, already-planned repo edits once
-compatibility is validated.
+Aider is the preferred bounded patch executor for planned strict slices. It acts
+after the planner defines the slice and must not become the planner.
 
 vLLM is the preferred candidate serving layer for local coding/reasoning models
 on AMD and Strix, subject to explicit validation slices.

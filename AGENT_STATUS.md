@@ -2,6 +2,80 @@
 
 ## Current status
 
+The active slice is `Align agent context with archive-first plan structure`.
+
+## Current task
+
+Update `CODEX_CONTEXT.md` so future agents see the fresh top-level entrypoints
+as current, follow the archive-before-replacement rule, and treat Aider as the
+preferred bounded patch executor for planned strict slices.
+
+## What changed
+
+- Updated `CODEX_CONTEXT.md` to list `PROJECT_PLAN.md`, `WORKFLOW.md`,
+  `ROADMAP.md`, and `HOMELAB_LAYOUT.md` as current entrypoints.
+- Added the archive-or-quarantine-before-replacement rule to `CODEX_CONTEXT.md`.
+- Updated the Aider role wording in `CODEX_CONTEXT.md`.
+- Updated `DECISIONS.md` with the agent-context alignment decision.
+- Updated `CURRENT_SLICE.md` for this slice.
+
+## What did not change
+
+- No files were deleted.
+- No services were changed.
+- No model-dispatch config was changed.
+- No Open WebUI config was changed.
+- No Docker or systemd state was changed.
+- No routing, deployment, provider, or model runtime state was changed.
+- No files were staged or committed.
+
+## Files changed
+
+- `CODEX_CONTEXT.md`
+- `DECISIONS.md`
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+
+## Checks run
+
+- `git diff --check`
+- Grep check for stale `CODEX_CONTEXT.md` wording:
+  - `historical workflow reference`
+  - `historical roadmap`
+  - `compatibility is validated`
+  - `bounded patch assistant`
+- Reviewed updated `CODEX_CONTEXT.md`.
+- `git status --short`
+- `git diff --stat`
+
+## Results of checks
+
+- `git diff --check` passed.
+- `CODEX_CONTEXT.md` no longer describes current entrypoints as historical.
+- `CODEX_CONTEXT.md` now includes the archive-before-replacement rule.
+- `CODEX_CONTEXT.md` now says Aider is the preferred bounded patch executor for
+  planned strict slices.
+
+## Known risks or blockers
+
+- This correction is not committed yet.
+
+## User approval needed
+
+User approved making the recommended changes, committing, and backing up.
+
+## Recommended next action
+
+Run final checks, commit this docs correction, and push it to configured mirrors.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Archive superseded top-level plan files
+
+## Current status
+
 The active slice is `Archive superseded top-level plan files`.
 
 ## Current task
@@ -73,10 +147,6 @@ Approval is needed before staging or committing this docs correction.
 
 Run final checks, inspect the diff, then choose Commit / Revise / Revert /
 Inspect more.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - Clarify Aider preferred patch executor posture
 

@@ -1,5 +1,35 @@
 # Current Slice
 
+## Active: Align agent context with archive-first plan structure
+
+## Current State
+
+`CODEX_CONTEXT.md` is being aligned with the new plan-file structure:
+
+- top-level `PROJECT_PLAN.md`, `WORKFLOW.md`, `ROADMAP.md`, and
+  `HOMELAB_LAYOUT.md` are current entrypoints
+- old versions live in `docs/archive/`
+- agents must archive or quarantine old plans before creating replacements
+- Aider is the preferred bounded patch executor for planned strict slices
+
+This is a docs-only slice.
+
+Do not:
+
+- delete workflow, plan, history, or draft files
+- change services, Docker, systemd, model-dispatch, Open WebUI, routing, or
+  deployment state
+- stage or commit without user approval
+
+Checks to preserve before commit:
+
+- `git status --short`
+- `git diff --check`
+- verify `CODEX_CONTEXT.md` no longer describes current entrypoints as
+  historical workflow/roadmap references
+
+## Prior Current State
+
 ## Active: Archive superseded top-level plan files
 
 ## Current State
