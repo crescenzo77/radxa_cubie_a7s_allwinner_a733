@@ -2,6 +2,86 @@
 
 ## Current status
 
+The active slice is `Archive superseded top-level plan files`.
+
+## Current task
+
+Correct the plan-file procedure so old top-level plan files are archived before
+fresh current entrypoint files are created at the same stable paths.
+
+## What changed
+
+- Archived old `PROJECT_PLAN.md`, `WORKFLOW.md`, `ROADMAP.md`, and
+  `HOMELAB_LAYOUT.md` under `docs/archive/`.
+- Created fresh current entrypoint files at those original top-level paths.
+- Updated `PLAN_INDEX.md` with a `Current State Records` registry.
+- Updated `PLAN_INDEX.md` rules to say old plan files are not edited in place to
+  make them current.
+- Updated `DECISIONS.md` with the archive-before-replacement decision.
+- Updated `CURRENT_SLICE.md` for this slice.
+
+## What did not change
+
+- No files were deleted.
+- No services were changed.
+- No model-dispatch config was changed.
+- No Open WebUI config was changed.
+- No Docker or systemd state was changed.
+- No routing, deployment, provider, or model runtime state was changed.
+- No files were staged or committed.
+
+## Files changed
+
+- `PLAN_INDEX.md`
+- `PROJECT_PLAN.md`
+- `WORKFLOW.md`
+- `ROADMAP.md`
+- `HOMELAB_LAYOUT.md`
+- `DECISIONS.md`
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `docs/archive/project-plan-superseded-2026-05-29.md`
+- `docs/archive/workflow-two-surface-superseded-2026-05-29.md`
+- `docs/archive/roadmap-two-surface-superseded-2026-05-29.md`
+- `docs/archive/homelab-layout-two-surface-superseded-2026-05-29.md`
+
+## Checks run
+
+- `git status --short`
+- `git diff --check`
+- `git diff --stat`
+- Reviewed fresh top-level entrypoint files.
+- Verified archived superseded files exist under `docs/archive/`.
+- Reviewed `PLAN_INDEX.md` current state records and archive registry.
+
+## Results of checks
+
+- `git diff --check` passed.
+- Old top-level plan bodies were moved to `docs/archive/`.
+- Fresh current entrypoint files exist at the stable top-level paths.
+- `PLAN_INDEX.md` names the current state records and archive paths.
+
+## Known risks or blockers
+
+- This correction is not committed yet.
+
+## User approval needed
+
+Approval is needed before staging or committing this docs correction.
+
+## Recommended next action
+
+Run final checks, inspect the diff, then choose Commit / Revise / Revert /
+Inspect more.
+
+## Archived Status History
+
+Older status entries remain below for continuity. They are not the active task.
+
+## Previous status - Clarify Aider preferred patch executor posture
+
+## Current status
+
 The active slice is `Clarify Aider preferred patch executor posture`.
 
 ## Current task
@@ -78,10 +158,6 @@ User approved committing this docs clarification and pushing backups.
 ## Recommended next action
 
 Commit this docs clarification and push it to the configured mirrors.
-
-## Archived Status History
-
-Older status entries remain below for continuity. They are not the active task.
 
 ## Previous status - Provider-neutral workflow plan tracking checkpoint
 

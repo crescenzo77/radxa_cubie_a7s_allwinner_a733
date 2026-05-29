@@ -1,5 +1,30 @@
 # Decisions
 
+## 2026-05-29 — Archive old plan files before replacement
+
+Decision:
+Do not edit old plan files in place to make them current. When a plan file is
+superseded, move the old file into `docs/archive/` or `docs/quarantine/`, then
+create a fresh current file at the stable entrypoint path if that path should
+remain available.
+
+Applied now:
+
+- Archived old `PROJECT_PLAN.md` to
+  `docs/archive/project-plan-superseded-2026-05-29.md`.
+- Archived old `WORKFLOW.md` to
+  `docs/archive/workflow-two-surface-superseded-2026-05-29.md`.
+- Archived old `ROADMAP.md` to
+  `docs/archive/roadmap-two-surface-superseded-2026-05-29.md`.
+- Archived old `HOMELAB_LAYOUT.md` to
+  `docs/archive/homelab-layout-two-surface-superseded-2026-05-29.md`.
+- Created fresh current entrypoint files at the original top-level paths.
+- Updated `PLAN_INDEX.md` with current state records and archive paths.
+
+Rationale:
+This preserves the progression of plans without letting old file bodies continue
+acting like current guidance.
+
 ## 2026-05-29 — Use Aider as preferred bounded patch executor
 
 Decision:

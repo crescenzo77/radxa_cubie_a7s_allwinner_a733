@@ -20,15 +20,32 @@ place, archive it, or quarantine it, then record its status here.
 |---|---|---:|---:|---|---|
 | `Current` | `docs/provider-neutral-adhd-workflow.md` | 2026-05-29 | - | - | Active provider-neutral ADHD workflow. Roles are stable; providers/tools are swappable. |
 
+## Current State Records
+
+These are the official current entrypoints. Older versions with the same names
+must be archived before replacement.
+
+| File | Current purpose |
+|---|---|
+| `PLAN_INDEX.md` | Registry for current, superseded, archived, quarantined, and protected plan files |
+| `PROJECT_PLAN.md` | Current project-plan entrypoint |
+| `WORKFLOW.md` | Current workflow entrypoint |
+| `ROADMAP.md` | Current roadmap entrypoint |
+| `HOMELAB_LAYOUT.md` | Current layout entrypoint and host/repo meanings |
+| `CURRENT_SLICE.md` | Active task and boundaries |
+| `AGENT_STATUS.md` | Latest handoff/status |
+| `DECISIONS.md` | Durable decision log |
+
 ## Historical And Superseded Plans
 
 | Status | Plan | Created | Superseded | Replacement | Reason |
 |---|---|---:|---:|---|---|
 | `Archived` | `docs/provider-neutral-adhd-workflow-evolution-2026-05-29.md` | 2026-05-29 | - | `docs/provider-neutral-adhd-workflow.md` | Long-form history/evolution record, not the operating plan. |
 | `Archived` | `docs/archive/local-agent-workflow-runbook-draft-2026-05-29.md` | 2026-05-29 | 2026-05-29 | `docs/provider-neutral-adhd-workflow.md` | First local-agent runbook draft; archived instead of deleted. |
-| `Superseded` | `WORKFLOW.md` | 2026-05-05 | 2026-05-29 | `docs/provider-neutral-adhd-workflow.md` | Older two-surface workflow. Useful historical context, but not the current operating plan. |
-| `Superseded` | `ROADMAP.md` | 2026-05-05 | 2026-05-29 | `docs/provider-neutral-adhd-workflow.md` | Older roadmap centered on the two-surface walking skeleton. Keep for history and future reconciliation. |
-| `Superseded` | `PROJECT_PLAN.md` | 2026-05-05 | 2026-05-29 | `docs/provider-neutral-adhd-workflow.md` | Older broad project plan. Current plan status now lives in this index. |
+| `Archived` | `docs/archive/workflow-two-surface-superseded-2026-05-29.md` | 2026-05-05 | 2026-05-29 | `WORKFLOW.md` | Older two-surface workflow archived before creating the current workflow entrypoint. |
+| `Archived` | `docs/archive/roadmap-two-surface-superseded-2026-05-29.md` | 2026-05-05 | 2026-05-29 | `ROADMAP.md` | Older roadmap centered on the two-surface walking skeleton archived before creating the current roadmap entrypoint. |
+| `Archived` | `docs/archive/project-plan-superseded-2026-05-29.md` | 2026-05-05 | 2026-05-29 | `PROJECT_PLAN.md` | Older broad project plan archived before creating the current project-plan entrypoint. |
+| `Archived` | `docs/archive/homelab-layout-two-surface-superseded-2026-05-29.md` | 2026-05-26 | 2026-05-29 | `HOMELAB_LAYOUT.md` | Older two-surface layout/workflow framing archived before creating the current layout entrypoint. |
 
 ## Protected Long-Context File
 
@@ -47,7 +64,10 @@ new replacement here before using the replacement.
    multiple active plans for different projects.
 4. Mark replaced plans as `Superseded`, `Archived`, or `Quarantined`.
 5. Record the replacement plan and plain-language reason.
-6. Do not delete workflow/history files.
+6. Do not edit old plan files in place to make them current.
+7. Archive or quarantine the old file first, then create a new current file at
+   the stable path if that path should remain an entrypoint.
+8. Do not delete workflow/history files.
 
 ## Archive And Quarantine Policy
 

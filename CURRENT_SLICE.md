@@ -1,5 +1,44 @@
 # Current Slice
 
+## Active: Archive superseded top-level plan files
+
+## Current State
+
+The workflow procedure has been corrected:
+
+- Do not edit old plan files in place to make them current.
+- Archive or quarantine old plan files first.
+- Create fresh current files at stable entrypoint paths.
+- Keep `PLAN_INDEX.md` as the registry of current state records and archived
+  history.
+
+This slice archived old versions of:
+
+- `PROJECT_PLAN.md`
+- `WORKFLOW.md`
+- `ROADMAP.md`
+- `HOMELAB_LAYOUT.md`
+
+Fresh current entrypoints now exist at those same top-level paths.
+
+This is a docs-only slice.
+
+Do not:
+
+- delete workflow, plan, history, or draft files
+- change services, Docker, systemd, model-dispatch, Open WebUI, routing, or
+  deployment state
+- stage or commit without user approval
+
+Checks to preserve before commit:
+
+- `git status --short`
+- `git diff --check`
+- verify archived files exist under `docs/archive/`
+- verify current entrypoint files are short and point to `PLAN_INDEX.md`
+
+## Prior Current State
+
 ## Active: Clarify Aider preferred patch executor posture
 
 ## Current State
