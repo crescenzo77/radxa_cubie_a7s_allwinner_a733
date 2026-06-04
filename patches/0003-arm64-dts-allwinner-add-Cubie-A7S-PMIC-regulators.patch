@@ -1,0 +1,198 @@
+From 3bc3c5ec624bbf92e2d7bd89c613c2f8b9345b6a Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Thu, 4 Jun 2026 09:57:50 -0400
+Subject: [PATCH 3/3] arm64: dts: allwinner: add Cubie A7S PMIC regulators
+
+Signed-off-by: Enzo <enzo@homelab.local>
+---
+ .../dts/allwinner/sun60i-a733-cubie-a7s.dts   | 177 ++++++++++++++++++
+ 1 file changed, 177 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts b/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts
+index 5ea8ec4e983b..3e35e938acce 100644
+--- a/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts
++++ b/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts
+@@ -47,3 +47,180 @@ &uart0 {
+ 	pinctrl-0 = <&uart0_pb9_pb10_pins>;
+ 	status = "okay";
+ };
++
++&cpu0 { cpu-supply = <&reg_dcdc1>; };
++&cpu1 { cpu-supply = <&reg_dcdc1>; };
++&cpu2 { cpu-supply = <&reg_dcdc1>; };
++&cpu3 { cpu-supply = <&reg_dcdc1>; };
++&cpu4 { cpu-supply = <&reg_dcdc1>; };
++&cpu5 { cpu-supply = <&reg_dcdc1>; };
++&cpu6 { cpu-supply = <&reg_dcdc1_323>; };
++&cpu7 { cpu-supply = <&reg_dcdc1_323>; };
++
++&r_i2c0 {
++	status = "okay";
++
++	axp717: pmic@34 {
++		compatible = "x-powers,axp717";
++		reg = <0x34>;
++		interrupt-parent = <&nmi_intc>;
++		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++		interrupt-controller;
++		#interrupt-cells = <1>;
++
++		vin1-supply = <&reg_vcc3v3>;
++		vin2-supply = <&reg_vcc3v3>;
++		vin3-supply = <&reg_vcc3v3>;
++		vin4-supply = <&reg_vcc3v3>;
++		aldoin-supply = <&reg_vcc3v3>;
++		bldoin-supply = <&reg_vcc3v3>;
++		cldoin-supply = <&reg_vcc3v3>;
++
++		regulators {
++			reg_dcdc1: dcdc1 {
++				regulator-name = "vdd-cpul";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1160000>;
++				regulator-always-on;
++			};
++
++			reg_dcdc2: dcdc2 {
++				regulator-name = "vdd-gpu-sys";
++				regulator-min-microvolt = <920000>;
++				regulator-max-microvolt = <920000>;
++				regulator-always-on;
++			};
++
++			reg_dcdc3: dcdc3 {
++				regulator-name = "vdd-dram";
++				regulator-min-microvolt = <1100000>;
++				regulator-max-microvolt = <1100000>;
++				regulator-always-on;
++			};
++
++			reg_dcdc4: dcdc4 {
++				regulator-name = "vdd-io";
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-always-on;
++			};
++
++			reg_aldo1: aldo1 {
++				regulator-name = "vcc-aldo1";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++			};
++
++			reg_aldo2: aldo2 {
++				regulator-name = "vcc-pe";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++			};
++
++			reg_aldo3: aldo3 {
++				regulator-name = "vcc-pl-usb";
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-always-on;
++			};
++
++			reg_aldo4: aldo4 {
++				regulator-name = "vcc-pll-dxco-avcc";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++			};
++
++			reg_bldo1: bldo1 {
++				regulator-name = "vcc-pg-iowifi";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++			};
++
++			reg_bldo2: bldo2 {
++				regulator-name = "vcc-pm-lpddr4";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++			};
++
++			reg_bldo3: bldo3 {
++				regulator-name = "vcc-mipi-cam";
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++			};
++
++			reg_bldo4: bldo4 { };
++
++			reg_cldo1: cldo1 {
++				regulator-name = "vcc-pc";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++			};
++
++			reg_cldo2: cldo2 { };
++
++			reg_cldo3: cldo3 {
++				regulator-name = "vcc-io-mmc-spi-ana";
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-always-on;
++			};
++
++			reg_cldo4: cldo4 {
++				regulator-name = "vcc-pj-phy";
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++			};
++
++			reg_cpusldo: cpusldo {
++				regulator-name = "vdd-cpus";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <900000>;
++				regulator-always-on;
++			};
++		};
++	};
++
++	axp323: pmic@36 {
++		compatible = "x-powers,axp323";
++		reg = <0x36>;
++		interrupt-controller;
++		#interrupt-cells = <1>;
++
++		vin1-supply = <&reg_vcc3v3>;
++		vin2-supply = <&reg_vcc3v3>;
++		vin3-supply = <&reg_vcc3v3>;
++
++		regulators {
++			reg_dcdc1_323: dcdc1 {
++				regulator-name = "vdd-cpub";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1160000>;
++				regulator-always-on;
++			};
++
++			reg_dcdc2_323: dcdc2 {
++				regulator-name = "vdd-cpub-aux";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1160000>;
++				regulator-always-on;
++			};
++
++			reg_dcdc3_323: dcdc3 {
++				regulator-name = "vdd-dnr";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <900000>;
++				regulator-always-on;
++			};
++
++			reg_aldo1_323: aldo1 {
++				regulator-name = "vcc-mipi-dsi";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++			};
++
++			reg_dldo1_323: dldo1 { };
++		};
++	};
++};
+-- 
+2.53.0
+

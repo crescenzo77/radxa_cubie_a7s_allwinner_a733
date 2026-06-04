@@ -1,0 +1,46 @@
+From 8b3fd668378b651f11c9c0317b68dfc99cc72fe4 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Thu, 4 Jun 2026 09:57:50 -0400
+Subject: [PATCH 1/3] clk: sunxi-ng: add A733 R-CCU compatible
+
+Signed-off-by: Enzo <enzo@homelab.local>
+---
+ .../devicetree/bindings/clock/allwinner,sun55i-a523-ccu.yaml    | 2 ++
+ drivers/clk/sunxi-ng/ccu-sun55i-a523-r.c                        | 1 +
+ 2 files changed, 3 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/clock/allwinner,sun55i-a523-ccu.yaml b/Documentation/devicetree/bindings/clock/allwinner,sun55i-a523-ccu.yaml
+index 58be701a720e..39206463979b 100644
+--- a/Documentation/devicetree/bindings/clock/allwinner,sun55i-a523-ccu.yaml
++++ b/Documentation/devicetree/bindings/clock/allwinner,sun55i-a523-ccu.yaml
+@@ -21,6 +21,7 @@ properties:
+       - allwinner,sun55i-a523-ccu
+       - allwinner,sun55i-a523-mcu-ccu
+       - allwinner,sun55i-a523-r-ccu
++      - allwinner,sun60i-a733-r-ccu
+ 
+   reg:
+     maxItems: 1
+@@ -101,6 +102,7 @@ allOf:
+         compatible:
+           enum:
+             - allwinner,sun55i-a523-r-ccu
++            - allwinner,sun60i-a733-r-ccu
+ 
+     then:
+       properties:
+diff --git a/drivers/clk/sunxi-ng/ccu-sun55i-a523-r.c b/drivers/clk/sunxi-ng/ccu-sun55i-a523-r.c
+index db0e36d8838e..9c974a514c7e 100644
+--- a/drivers/clk/sunxi-ng/ccu-sun55i-a523-r.c
++++ b/drivers/clk/sunxi-ng/ccu-sun55i-a523-r.c
+@@ -245,6 +245,7 @@ static int sun55i_a523_r_ccu_probe(struct platform_device *pdev)
+ 
+ static const struct of_device_id sun55i_a523_r_ccu_ids[] = {
+ 	{ .compatible = "allwinner,sun55i-a523-r-ccu" },
++	{ .compatible = "allwinner,sun60i-a733-r-ccu" },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, sun55i_a523_r_ccu_ids);
+-- 
+2.53.0
+
