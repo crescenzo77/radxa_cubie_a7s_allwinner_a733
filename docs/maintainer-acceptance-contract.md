@@ -89,9 +89,9 @@ Ordering requirement:
 4. Enable board DTS nodes only when the device probes cleanly.
 
 For A733, this means the public candidate series needs formal bindings for the
-PIO controller, CCU, board compatible string, and later GMAC210/EMAC before the
-corresponding DTS content appears. The current pinctrl-only candidate satisfies
-only the PIO portion of this inventory.
+PIO controller, CCU, MMC compatible, board compatible string, and later
+GMAC210/EMAC before the corresponding DTS content appears. The current
+pinctrl-only candidate satisfies only the PIO portion of this inventory.
 
 ## Broken Hardware Nodes
 

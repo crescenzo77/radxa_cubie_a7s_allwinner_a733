@@ -80,8 +80,10 @@ Upstream-facing requirement:
 The A733 pinctrl binding now exists in the clean local candidate branch and has
 passed `dt_binding_check`. The Radxa Cubie A7S board-compatible binding now
 exists in `candidate/a733-board-binding-clean` and has passed
-`dt_binding_check`. The A733 GMAC210/EMAC binding is intentionally deferred
-until Ethernet behavior is proven.
+`dt_binding_check`. The A733 MMC compatible binding now exists in
+`candidate/a733-mmc-binding-clean` and has passed `dt_binding_check`. The A733
+GMAC210/EMAC binding is intentionally deferred until Ethernet behavior is
+proven.
 
 The A733 CCU binding/header/driver slice now exists in
 `candidate/a733-ccu-clean` and has passed `dt_binding_check`. It still needs

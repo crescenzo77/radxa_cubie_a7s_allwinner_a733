@@ -97,6 +97,7 @@ The minimum A733 binding inventory is:
 
 - pinctrl binding before PIO nodes or pin groups;
 - CCU binding and header IDs before clocks/resets appear in DTSI;
+- MMC binding before MMC nodes use an A733-specific compatible;
 - board compatible binding before Radxa Cubie A7S DTS publication;
 - GMAC210/EMAC binding before any Ethernet node is enabled or submitted.
 

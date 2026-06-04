@@ -26,6 +26,13 @@ sources/mainline-linux-a733-upstream
 candidate/a733-board-binding-clean
 ```
 
+Current MMC-compatible cleanup branch:
+
+```text
+sources/mainline-linux-a733-upstream
+candidate/a733-mmc-binding-clean
+```
+
 Current broader platform work branch:
 
 ```text
@@ -208,6 +215,42 @@ Current checkpatch findings:
 the temporary `/tmp/a733-dtschema-venv` environment, and a detached
 `/private/tmp` worktree. The run emitted unrelated global missing type
 definition warnings from other in-tree bindings, but no sunxi board-compatible
+binding error.
+
+## MMC-Compatible Cleanup Branch
+
+The `candidate/a733-mmc-binding-clean` branch isolates the MMC compatible
+binding change required before DTS users:
+
+- it contains only the
+  `Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml`
+  update;
+- it adds `allwinner,sun60i-a733-mmc` with fallback
+  `allwinner,sun20i-d1-mmc`;
+- it does not contain DTS files, driver changes, Ethernet, or diagnostics.
+
+Current branch shape:
+
+```text
+dt-bindings: mmc: add Allwinner A733 compatible
+```
+
+Checks run:
+
+```text
+git diff --check
+scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
+make dt_binding_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml
+```
+
+Current checkpatch findings:
+
+- `MISSING_SIGN_OFF`: expected until Enzo performs human DCO review.
+
+`make dt_binding_check` passed for the Allwinner MMC binding and example using
+Homebrew GNU Make 4.4.1, the temporary `/tmp/a733-dtschema-venv` environment,
+and a detached `/private/tmp` worktree. The run emitted unrelated global
+missing type definition warnings from other in-tree bindings, but no A733 MMC
 binding error.
 
 ## Checkpatch Status

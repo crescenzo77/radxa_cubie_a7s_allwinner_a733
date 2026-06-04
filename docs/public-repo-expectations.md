@@ -86,6 +86,7 @@ before its DTS users:
 - `allwinner,sun60i-a733-pinctrl` before PIO nodes and pin groups;
 - A733 CCU compatibles and clock/reset IDs before the SoC DTSI references
   them;
+- A733 MMC compatible before MMC nodes use it;
 - Radxa Cubie A7S board compatible before the board DTS;
 - A733 GMAC210/EMAC binding before Ethernet is enabled.
 

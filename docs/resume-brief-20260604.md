@@ -113,6 +113,22 @@ dt-bindings: arm: sunxi: add Radxa Cubie A7S
 It adds `radxa,cubie-a7s` with fallback `allwinner,sun60i-a733` and passed
 schema validation for `Documentation/devicetree/bindings/arm/sunxi.yaml`.
 
+Fourth clean branch:
+
+```text
+candidate/a733-mmc-binding-clean
+```
+
+This branch contains only the MMC compatible binding update:
+
+```text
+dt-bindings: mmc: add Allwinner A733 compatible
+```
+
+It adds `allwinner,sun60i-a733-mmc` with fallback
+`allwinner,sun20i-d1-mmc` and passed schema validation for the Allwinner MMC
+binding.
+
 Checks already run:
 
 ```text
@@ -152,6 +168,8 @@ Binding inventory:
   compile validation.
 - Radxa Cubie A7S board compatible binding now exists in
   `candidate/a733-board-binding-clean` and has passed schema validation.
+- A733 MMC compatible binding now exists in `candidate/a733-mmc-binding-clean`
+  and has passed schema validation.
 - A733 GMAC210/EMAC binding is deferred until Ethernet is proven.
 
 Known GMAC0 facts:
@@ -179,6 +197,6 @@ STMMAC glue code, not generic STMMAC core files.
    compiler.
 5. Keep candidate branches clean: no fixup commits, traces, generic subsystem
    hacks, or broken enabled DTS nodes.
-6. Only after pinctrl, CCU, and board-compatible slices are clean, build the
-   next isolated candidate slice, likely initial DTSI, following
+6. Only after pinctrl, CCU, board-compatible, and MMC binding slices are clean,
+   build the next isolated candidate slice, likely initial DTSI, following
    bindings-first order.

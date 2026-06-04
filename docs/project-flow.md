@@ -52,6 +52,7 @@ The required binding inventory for the first platform milestones is:
 
 - A733 pinctrl: required for PIO nodes and pin groups;
 - A733 CCU: required before any A733 clock/reset IDs appear in DTSI;
+- A733 MMC: required before MMC nodes use the A733-specific compatible;
 - Radxa Cubie A7S board compatible: required before the board DTS;
 - A733 GMAC210/EMAC: later only, required before any Ethernet DTS enablement.
 
