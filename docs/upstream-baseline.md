@@ -55,3 +55,4 @@ work. Keep it short. Do not add new governance Markdown.
 | Thermal / GPADC | Mainline Validated |
 | I2C / TWI | Mainline Validated |
 | UART | Mainline Validated |
+| Watchdog | Mainline Validated |
