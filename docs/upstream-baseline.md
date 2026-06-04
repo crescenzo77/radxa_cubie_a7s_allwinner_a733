@@ -58,4 +58,5 @@ work. Keep it short. Do not add new governance Markdown.
 | Watchdog | Mainline Validated |
 | PMIC / regulators | Mainline Validated |
 | PCK-600 power domains | Mainline Validated |
+| RTC | Mainline Validated |
 | DVFS / CPU OPP | Deferred; CPU PLL clock support needed |
