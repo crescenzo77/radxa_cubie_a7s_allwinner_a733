@@ -1,0 +1,38 @@
+From 6db116c4bf6eadc1f14d92c8813aa9d00edc9a13 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Thu, 4 Jun 2026 17:49:00 -0400
+Subject: [PATCH] arm64: dts: allwinner: add A733 PCK-600 power domains
+
+---
+ arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
+index e1d754dc3214..86da09277a38 100644
+--- a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
+@@ -5,6 +5,7 @@
+ #include <dt-bindings/reset/sun60i-a733-ccu.h>
+ #include <dt-bindings/clock/sun55i-a523-r-ccu.h>
+ #include <dt-bindings/reset/sun55i-a523-r-ccu.h>
++#include <dt-bindings/power/allwinner,sun60i-a733-pck-600.h>
+ 
+ / {
+ 	interrupt-parent = <&gic>;
+@@ -265,6 +266,13 @@ r_ccu: clock-controller@7010000 {
+ 			#reset-cells = <1>;
+ 		};
+ 
++		pck600: power-controller@7060000 {
++			compatible = "allwinner,sun60i-a733-pck-600";
++			reg = <0x07060000 0xb000>;
++			clocks = <&r_ccu CLK_BUS_R_PPU0>;
++			#power-domain-cells = <1>;
++		};
++
+ 		r_i2c0: i2c@7083000 {
+ 			compatible = "allwinner,sun60i-a733-i2c",
+ 				     "allwinner,sun8i-v536-i2c",
+-- 
+2.53.0
+

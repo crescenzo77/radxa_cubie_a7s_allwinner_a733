@@ -56,3 +56,6 @@ work. Keep it short. Do not add new governance Markdown.
 | I2C / TWI | Mainline Validated |
 | UART | Mainline Validated |
 | Watchdog | Mainline Validated |
+| PMIC / regulators | Mainline Validated |
+| PCK-600 power domains | Mainline Validated |
+| DVFS / CPU OPP | Deferred; CPU PLL clock support needed |
