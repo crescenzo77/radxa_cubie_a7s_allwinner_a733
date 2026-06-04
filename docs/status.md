@@ -79,7 +79,7 @@ Upstream-facing requirement:
 
 The A733 pinctrl binding now exists in the clean local candidate branch and has
 passed `dt_binding_check`, and the driver object now compile-tests cleanly with
-`W=1` in a remote Linux Docker build container. The Radxa Cubie A7S board-compatible
+`W=1` on a Linux development build host. The Radxa Cubie A7S board-compatible
 binding now exists in `candidate/a733-board-binding-clean` and has passed
 `dt_binding_check`. The A733 MMC compatible binding now exists in
 `candidate/a733-mmc-binding-clean` and has passed `dt_binding_check`. The A733
@@ -88,8 +88,7 @@ proven.
 
 The A733 CCU binding/header/driver slice now exists in
 `candidate/a733-ccu-clean` and has passed `dt_binding_check`. The driver
-object now compile-tests cleanly with `W=1` in a remote Linux Docker build
-container.
+object now compile-tests cleanly with `W=1` on a Linux development build host.
 
 The integrated non-Ethernet platform stack now exists in
 `candidate/a733-platform-clean`. It keeps Ethernet absent, splits A733 SoC DTSI
@@ -97,10 +96,10 @@ from Radxa Cubie A7S board DTS, and enables only UART0 and MMC0 on the board.
 It now builds arm64 `defconfig` and validates the Cubie A7S DTB through the
 kernel `CHECK_DTBS=y` path on a temporary case-sensitive APFS volume. The
 generated DTB also passes direct `dt-validate` against the processed in-tree
-schema. The integrated branch also compile-tests both A733 driver objects in a
-remote Linux Docker build container with `W=1` and an arm64 cross compiler, and
-the four binding checks pass in that same remote Linux flow. The integrated
-branch also builds a full arm64 defconfig `Image`.
+schema. The integrated branch also compile-tests both A733 driver objects with
+`W=1` and an arm64 cross compiler on `strix`, and the four binding checks pass
+in the validated schema flow. The integrated branch also builds a full arm64
+defconfig `Image` on `strix`.
 
 ## Public Code Branches
 

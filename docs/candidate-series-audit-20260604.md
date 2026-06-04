@@ -428,9 +428,20 @@ Native Linux compile recheck, 2026-06-04:
 - `make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- W=1
   drivers/clk/sunxi-ng/ccu-sun60i-a733.o
   drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o` passed.
+- `make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- Image` passed
+  natively on `strix`.
 - `strix` does not currently have the Python `dtschema` module installed, so
   binding validation still uses the local `/tmp/a733-dtschema-venv` or a Linux
   container path.
+
+Machine role note:
+
+- `strix` (`192.168.50.11`), `amd` (`192.168.50.252`), and `mac-mini`
+  (`192.168.50.164`) are the preferred development/build machines.
+- `mini-pc` (`192.168.50.76`) is a media server and LVM host only.
+- `thinkcentre` is a services host; previous Docker validation there remains
+  historical evidence, but new coding and build validation should prefer the
+  development machines.
 
 The integrated branch also passed a contract scan over the touched A733 files
 for forbidden diagnostic/debug terms and Ethernet/STMMAC enablement. No

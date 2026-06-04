@@ -49,12 +49,22 @@ case-insensitive macOS filesystem. Current validated Linux build hosts are:
 
 - `strix` for native Linux builds with GNU Make, flex, bison, gcc, and
   `aarch64-linux-gnu-gcc`;
-- `thinkcentre` for disposable Docker builds with GNU Make, flex, bison,
-  libssl, libelf, `dtschema`, and `gcc-aarch64-linux-gnu`.
+- `amd` and `mac-mini` for development work when their native toolchains fit
+  the task.
 
-Prefer `strix` for native object and Image compilation when it is reachable.
-Use `thinkcentre` Docker when an isolated container or a known `dtschema`
-container path is needed.
+Home network machine roles:
+
+- `strix`: `192.168.50.11`, development and native kernel build host;
+- `amd`: `192.168.50.252`, development and build host;
+- `mac-mini`: `192.168.50.164`, development host;
+- `mini-pc`: `192.168.50.76`, media server and LVM host only;
+- `thinkcentre`: services host only.
+
+Prefer the development machines (`strix`, `amd`, and `mac-mini`) for coding and
+kernel validation. Do not use `mini-pc` for general development work. Treat
+`thinkcentre` as service infrastructure; use it for build work only when the
+task specifically needs a service hosted there or no development machine can
+provide the required environment.
 
 Do not treat a kernel `CHECK_DTBS=y` run as successful merely because `make`
 returned zero: the kernel rule masks `dt-validate` failures with `|| true`.
