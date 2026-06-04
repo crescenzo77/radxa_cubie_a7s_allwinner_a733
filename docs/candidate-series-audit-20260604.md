@@ -269,6 +269,16 @@ the temporary `/tmp/a733-dtschema-venv` environment, and a detached
 definition warnings from other in-tree bindings, but no sunxi board-compatible
 binding error.
 
+Recheck note, 2026-06-04:
+
+- `candidate/a733-board-binding-clean` passed `git diff --check
+  public/master..HEAD`.
+- Per-patch `checkpatch.pl --no-tree --strict --show-types` reports only
+  `MISSING_SIGN_OFF`.
+- `Documentation/devicetree/bindings/arm/sunxi.yaml` passed
+  `dt_binding_check`.
+- The public Linux fork has this branch at commit `59b9687bc66c5`.
+
 ## MMC-Compatible Cleanup Branch
 
 The `candidate/a733-mmc-binding-clean` branch isolates the MMC compatible
@@ -304,6 +314,16 @@ Homebrew GNU Make 4.4.1, the temporary `/tmp/a733-dtschema-venv` environment,
 and a detached `/private/tmp` worktree. The run emitted unrelated global
 missing type definition warnings from other in-tree bindings, but no A733 MMC
 binding error.
+
+Recheck note, 2026-06-04:
+
+- `candidate/a733-mmc-binding-clean` passed `git diff --check
+  public/master..HEAD`.
+- Per-patch `checkpatch.pl --no-tree --strict --show-types` reports only
+  `MISSING_SIGN_OFF`.
+- `Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml` passed
+  `dt_binding_check`.
+- The public Linux fork has this branch at commit `0eb162672cbe`.
 
 ## Integrated Platform Branch
 
