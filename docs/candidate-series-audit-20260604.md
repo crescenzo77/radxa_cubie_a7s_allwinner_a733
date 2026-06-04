@@ -19,6 +19,13 @@ sources/mainline-linux-a733-upstream
 candidate/a733-ccu-clean
 ```
 
+Current board-compatible cleanup branch:
+
+```text
+sources/mainline-linux-a733-upstream
+candidate/a733-board-binding-clean
+```
+
 Current broader platform work branch:
 
 ```text
@@ -168,6 +175,40 @@ Compile validation remains unresolved. The macOS kernel `defconfig` target
 recursed until terminated. The available Linux `thinkcentre` host has GNU Make
 4.4.1 but no arm64 cross compiler or clang, so it could not compile the arm64
 CCU object.
+
+## Board-Compatible Cleanup Branch
+
+The `candidate/a733-board-binding-clean` branch isolates the Radxa Cubie A7S
+board-compatible binding change:
+
+- it contains only the `Documentation/devicetree/bindings/arm/sunxi.yaml`
+  update;
+- it adds `radxa,cubie-a7s` with fallback `allwinner,sun60i-a733`;
+- it does not contain DTS files, driver changes, Ethernet, or diagnostics.
+
+Current branch shape:
+
+```text
+dt-bindings: arm: sunxi: add Radxa Cubie A7S
+```
+
+Checks run:
+
+```text
+git diff --check
+scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
+make dt_binding_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/arm/sunxi.yaml
+```
+
+Current checkpatch findings:
+
+- `MISSING_SIGN_OFF`: expected until Enzo performs human DCO review.
+
+`make dt_binding_check` passed for `sunxi.yaml` using Homebrew GNU Make 4.4.1,
+the temporary `/tmp/a733-dtschema-venv` environment, and a detached
+`/private/tmp` worktree. The run emitted unrelated global missing type
+definition warnings from other in-tree bindings, but no sunxi board-compatible
+binding error.
 
 ## Checkpatch Status
 
