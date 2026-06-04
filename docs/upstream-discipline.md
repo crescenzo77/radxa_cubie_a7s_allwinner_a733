@@ -5,6 +5,9 @@ This project treats LKML and subsystem review as the target environment.
 The public branch appearance contract is recorded in
 [public-repo-expectations.md](public-repo-expectations.md).
 
+The definitive maintainer acceptance rules are recorded in
+[maintainer-acceptance-contract.md](maintainer-acceptance-contract.md).
+
 ## Repository Hygiene
 
 The public branch must not contain:
@@ -13,6 +16,8 @@ The public branch must not contain:
 - UART logs or compressed boot captures;
 - one-off operator scripts tied to local hostnames;
 - diagnostic register scans presented as production code;
+- generic subsystem edits that exist only to support A733 or Cubie A7S;
+- DTS nodes using undocumented properties or local-only clock/reset IDs;
 - commit messages that describe experiments as if they were upstream fixes.
 
 Generated files and local lab scripts belong outside the public branch.
@@ -31,6 +36,9 @@ Candidate patches must:
 - use named register macros for hardware offsets;
 - use `dev_dbg()` or existing tracepoints for optional debug messages;
 - include a human `Signed-off-by:` trailer only after human review.
+
+Patch branches with known fixup commits, unresolved split warnings, or missing
+binding/schema coverage are not public candidates.
 
 ## Subsystem Boundaries
 
@@ -69,6 +77,11 @@ Do not mark GMAC0 as `status = "okay"` in an upstream-facing Cubie A7S board
 DTS while the DMA software reset still times out. The SoC DTSI may describe the
 controller, but the board DTS must leave Ethernet disabled until clock, reset,
 wrapper, PHY, and MDIO behavior are proven.
+
+Local properties such as synthetic PHY clock dividers, local reset IDs, or
+vendor-only clock names must not appear in public DTS files unless a matching
+binding and mainline driver implementation are part of the same reviewed
+series.
 
 ## Commit Message Rules
 

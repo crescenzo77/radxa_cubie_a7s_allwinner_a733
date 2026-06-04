@@ -9,7 +9,7 @@ Current cleaned work branch:
 
 ```text
 sources/mainline-linux-a733-upstream
-a733-cubie-a7s-upstream-clean-20260604
+a733-cubie-a7s-series-v1-clean
 ```
 
 Baseline candidate inspected:
@@ -35,6 +35,9 @@ The candidate series still needs cleanup before submission:
 - Commit messages need to remove lab-history prose and stay focused on the
   problem and technical change.
 - Pinctrl must model the structural GPIO IRQ bank layout correctly.
+- The current `fixup: align A733 pinctrl IRQ bank count` commit must be folded
+  into the matching binding, driver, and DTS commits before the branch can be
+  treated as a candidate patch series.
 
 ## Pinctrl Correction
 
@@ -56,6 +59,9 @@ The change aligns the candidate with the A733/A523 GPIO IRQ layout:
 This is still a checkpoint, not a final patch shape. The binding, driver, and
 DTS changes must be split or folded into the right patches before any upstream
 submission.
+
+Public candidate branches must not contain `fixup:` commits. The fixup commit
+is acceptable only as local working state.
 
 ## Checkpatch Status
 

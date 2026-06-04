@@ -52,6 +52,8 @@ prototype-app workflow:
 See [docs/upstream-discipline.md](docs/upstream-discipline.md).
 See [docs/public-repo-expectations.md](docs/public-repo-expectations.md) for
 the public branch appearance contract.
+See [docs/maintainer-acceptance-contract.md](docs/maintainer-acceptance-contract.md)
+for the non-negotiable maintainer acceptance rules.
 
 ## Public Branch Policy
 

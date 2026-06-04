@@ -13,6 +13,9 @@ questions:
 It should not require maintainers to filter through experiments, generated
 files, failed attempts, or local-machine state.
 
+The stricter maintainer acceptance contract is recorded in
+[maintainer-acceptance-contract.md](maintainer-acceptance-contract.md).
+
 ## Public Branch Contents
 
 The public branch may contain:
@@ -31,6 +34,9 @@ The public branch must not contain:
 - local helper scripts tied to one workstation or board setup;
 - diagnostic printk patches;
 - register scanning loops used only for discovery;
+- generic subsystem hacks for board-specific behavior;
+- DTS files with undocumented properties or synthetic clock/reset IDs;
+- enabled nodes for devices that still fail probe or create boot-time noise;
 - failed patch attempts or mailbox files rejected by `git am`;
 - vendor BSP source dumps;
 - copied vendor DTS files presented as mainline work;
@@ -54,6 +60,9 @@ Candidate patches must:
 - avoid generic subsystem changes for board-specific behavior;
 - include only a human `Signed-off-by:` after human review.
 
+Patch branches containing fixup commits, unresolved checkpatch findings, or
+unvalidated Devicetree schema changes are not public candidates.
+
 Experimental work belongs on private lab branches, not public `main`.
 
 ## Devicetree Standard
@@ -62,6 +71,9 @@ Public DTS/DTSI content must describe hardware, not debugging strategy.
 
 New compatibles, clocks, resets, power domains, and properties require matching
 YAML bindings and accepted header definitions before board DTS files use them.
+
+The required order is bindings first, then driver/header support, then DTSI,
+then board enablement.
 
 Hardware that is known to fail during probe must remain disabled in
 upstream-facing board files. For Cubie A7S, GMAC0 stays disabled until the
