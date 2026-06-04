@@ -80,7 +80,8 @@ pinctrl: sunxi: add Allwinner A733 pin controller
 It avoids Ethernet, generic STMMAC edits, diagnostic traces, register scan
 loops, and DTS enablement. It adds a dedicated A733 pinctrl YAML binding and an
 A733 pinctrl driver using an eleven-slot IRQ bank model. The driver object now
-compile-tests cleanly in a Linux Docker build container on `thinkcentre`.
+compile-tests cleanly with `W=1` in a Linux Docker build container on
+`thinkcentre`.
 
 Second clean branch:
 
@@ -98,7 +99,7 @@ clk: sunxi-ng: add Allwinner A733 CCU support
 It avoids DTS users, Ethernet, generic STMMAC edits, diagnostics, and
 board-specific bring-up prose in production code. It adds a dedicated A733 CCU
 YAML binding, clock/reset header IDs, and an A733 CCU driver slice. The driver
-object now compile-tests cleanly in a Linux Docker build container on
+object now compile-tests cleanly with `W=1` in a Linux Docker build container on
 `thinkcentre`.
 
 Third clean branch:
@@ -152,7 +153,7 @@ checkpatch have been run. `git format-patch` output applies cleanly with
 through the kernel `CHECK_DTBS=y` path on a temporary case-sensitive APFS
 volume. The generated DTB also passes direct `dt-validate` against the
 processed in-tree schema. The integrated branch also compile-tests both A733
-driver objects cleanly in the remote Linux Docker build flow.
+driver objects cleanly with `W=1` in the remote Linux Docker build flow.
 
 Checks already run:
 

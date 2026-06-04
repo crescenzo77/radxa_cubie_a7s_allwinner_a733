@@ -128,6 +128,7 @@ scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
 make dt_binding_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- W=1 drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o
 ```
 
 Current checkpatch findings:
@@ -174,6 +175,7 @@ scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
 make dt_binding_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- drivers/clk/sunxi-ng/ccu-sun60i-a733.o
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- W=1 drivers/clk/sunxi-ng/ccu-sun60i-a733.o
 ```
 
 Current checkpatch findings:
@@ -297,6 +299,7 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-elf- defconfig
 make ARCH=arm64 CROSS_COMPILE=aarch64-elf- DT_SCHEMA_FILES=allwinner,sun60i-a733-pinctrl.yaml:allwinner,sun60i-a733-ccu.yaml:allwinner,sun4i-a10-mmc.yaml:arm/sunxi.yaml CHECK_DTBS=y allwinner/sun60i-a733-cubie-a7s.dtb
 dt-validate -u ./Documentation/devicetree/bindings -p ./Documentation/devicetree/bindings/processed-schema.json arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dtb
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- drivers/clk/sunxi-ng/ccu-sun60i-a733.o drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- W=1 drivers/clk/sunxi-ng/ccu-sun60i-a733.o drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o
 ```
 
 Current checkpatch findings:
@@ -332,6 +335,7 @@ the integrated branch using a temporary Docker Linux build container on
 `thinkcentre`. The container installed GNU Make, flex, bison, libssl, libelf,
 and `gcc-aarch64-linux-gnu`, then built arm64 `defconfig`, both A733 driver
 objects, and the focused Cubie A7S `CHECK_DTBS=y` target.
+Both A733 driver objects also pass the same remote build with `W=1`.
 
 ## Checkpatch Status
 
