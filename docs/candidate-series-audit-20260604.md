@@ -97,6 +97,7 @@ Checks run:
 ```text
 git diff --check
 scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
+make dt_binding_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml
 ```
 
 Current checkpatch findings:
@@ -105,8 +106,15 @@ Current checkpatch findings:
 - `FILE_PATH_CHANGES`: expected for new binding and driver files covered by
   existing Allwinner/sunxi maintainer patterns.
 
-`make dt_binding_check` was attempted but did not run on this Mac because the
-system `make` is GNU Make 3.81 and the kernel requires GNU Make 4.0 or newer.
+`make dt_binding_check` now runs using Homebrew GNU Make 4.4.1, a temporary
+`dtschema` virtual environment, and a detached `/tmp` worktree because the
+permanent project path contains spaces. The A733 pinctrl binding and example
+validated successfully. The schema run emitted unrelated global missing type
+definition warnings from other in-tree bindings, but no A733 binding error.
+
+An object build was attempted with `ARCH=arm64 LLVM=1`, but macOS hosted kernel
+`defconfig` recursed until terminated. Treat compile validation as still
+requiring a Linux build host or known-good cross-build environment.
 
 ## Checkpatch Status
 
@@ -135,3 +143,17 @@ Do not enable GMAC0 in an upstream-facing Cubie A7S board DTS until:
 - common STMMAC code receives a stable, clocked DWMAC core;
 - MDIO proves real external PHY communication;
 - probe no longer reports the DMA software reset timeout.
+
+## Feedback Enforcement Update
+
+The latest technical feedback reinforces the existing policy gap: candidate
+work must move from observing hardware to describing hardware. The public repo
+and local flow now enforce these points:
+
+- generic STMMAC core files are forbidden for A733-only Ethernet sequencing;
+- any W0C pinctrl behavior must be represented as a normal SoC quirk, not
+  diagnostic tracing;
+- A733 pinctrl, CCU, board-compatible, and later EMAC schemas must precede DTS
+  users;
+- diagnostic patch stacks must be rebuilt into clean atomic candidate series;
+- candidate code must be quiet during a normal boot.

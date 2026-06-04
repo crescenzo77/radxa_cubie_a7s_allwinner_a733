@@ -40,6 +40,7 @@ and WIP patch history.
 Key docs:
 
 - `docs/maintainer-acceptance-contract.md`
+- `docs/project-flow.md`
 - `docs/public-repo-expectations.md`
 - `docs/upstream-discipline.md`
 - `docs/status.md`
@@ -85,19 +86,39 @@ Checks already run:
 ```text
 git diff --check
 scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
+make dt_binding_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml
 ```
 
 Remaining expected issues:
 
 - no human `Signed-off-by` yet;
 - checkpatch new-file MAINTAINERS warnings;
-- `dt_binding_check` could not run on the Mac because system GNU Make is 3.81
-  and the kernel requires GNU Make 4.0 or newer.
+- compile validation still needs a Linux build host or known-good cross-build
+  environment. A macOS `ARCH=arm64 LLVM=1 defconfig` attempt recursed and was
+  terminated.
+
+Validation note:
+
+- Homebrew GNU Make 4.4.1 was installed as `gmake`;
+- `dt_binding_check` was run from a detached `/tmp` worktree because the
+  permanent project path contains spaces;
+- a temporary `/tmp/a733-dtschema-venv` Python environment supplied `dtschema`
+  and `yamllint`;
+- the A733 pinctrl binding and example passed schema validation.
 
 ## Technical Status
 
 Initial upstream milestone should be non-Ethernet A733/Cubie A7S support.
 Ethernet remains a later series.
+
+Binding inventory:
+
+- A733 pinctrl binding exists in the clean candidate branch and passed schema
+  validation.
+- A733 CCU binding/header work is still required before DTSI clock/reset users.
+- Radxa Cubie A7S board compatible binding is still required before board DTS
+  publication.
+- A733 GMAC210/EMAC binding is deferred until Ethernet is proven.
 
 Known GMAC0 facts:
 
@@ -116,10 +137,11 @@ STMMAC glue code, not generic STMMAC core files.
 
 1. Continue from `sources/mainline-linux-a733-upstream` on
    `candidate/a733-pinctrl-clean`.
-2. Install or use a host with GNU Make 4.0+ and run DT schema validation for
-   the A733 pinctrl binding.
-3. Address any real schema/checkpatch findings.
+2. Add human review and DCO signoff when Enzo accepts responsibility for the
+   pinctrl patches.
+3. Compile-test the pinctrl candidate on a Linux build host or known-good
+   cross-build environment.
 4. Keep candidate branches clean: no fixup commits, traces, generic subsystem
    hacks, or broken enabled DTS nodes.
 5. Only after pinctrl is clean, build the next isolated candidate slice
-   (likely CCU or initial DTS), following bindings-first order.
+   (likely CCU binding/header/driver work), following bindings-first order.

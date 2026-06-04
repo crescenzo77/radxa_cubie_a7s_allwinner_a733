@@ -38,6 +38,11 @@ The immediate enforcement path is:
 This avoids accumulating a larger cleanup debt while hardware bring-up
 continues.
 
+The day-to-day enforcement flow is recorded in
+[project-flow.md](project-flow.md). If a future handoff or review note proposes
+publishing diagnostic history directly, this contract and the project flow take
+precedence.
+
 ## Subsystem Boundaries
 
 The generic STMMAC core is not the place for A733-specific sequencing.
@@ -82,6 +87,11 @@ Ordering requirement:
 2. Add clock/reset/pinctrl driver support and headers.
 3. Add SoC DTSI nodes using those accepted interfaces.
 4. Enable board DTS nodes only when the device probes cleanly.
+
+For A733, this means the public candidate series needs formal bindings for the
+PIO controller, CCU, board compatible string, and later GMAC210/EMAC before the
+corresponding DTS content appears. The current pinctrl-only candidate satisfies
+only the PIO portion of this inventory.
 
 ## Broken Hardware Nodes
 
@@ -141,6 +151,14 @@ The accepted shape should be:
 
 Any write-one-to-clear or IRQ-bank behavior must become a normal SoC data
 quirk or clean register-layout rule, not a trace patch.
+
+If A733 IRQ acknowledge behavior requires write-zero-to-clear semantics after
+further validation, implement it as an explicit sunxi pinctrl framework quirk,
+such as a SoC data flag in `struct sunxi_pinctrl_desc`. The production code
+must not contain printk tracing; at most it may contain a concise comment
+explaining the hardware ordering requirement and any required posted-write
+flush. Do not add this quirk solely from diagnostic trace history; it must be a
+proven hardware requirement.
 
 ## Ethernet Standard
 

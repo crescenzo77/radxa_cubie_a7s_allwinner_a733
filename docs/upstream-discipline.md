@@ -8,6 +8,9 @@ The public branch appearance contract is recorded in
 The definitive maintainer acceptance rules are recorded in
 [maintainer-acceptance-contract.md](maintainer-acceptance-contract.md).
 
+The standing project execution flow is recorded in
+[project-flow.md](project-flow.md).
+
 ## Repository Hygiene
 
 The public branch must not contain:
@@ -43,7 +46,9 @@ binding/schema coverage are not public candidates.
 The local toolchain must be capable of running the required checks. In
 particular, kernel `make dt_binding_check` and `make dtbs_check` require GNU
 Make 4.0 or newer; a branch is not fully validated until those checks run on a
-suitable host.
+suitable host. Kernel make targets must also run from a source path without
+spaces or colons. If the permanent checkout path contains spaces, create a
+temporary detached worktree under `/tmp` for validation.
 
 ## Subsystem Boundaries
 
@@ -88,6 +93,13 @@ vendor-only clock names must not appear in public DTS files unless a matching
 binding and mainline driver implementation are part of the same reviewed
 series.
 
+The minimum A733 binding inventory is:
+
+- pinctrl binding before PIO nodes or pin groups;
+- CCU binding and header IDs before clocks/resets appear in DTSI;
+- board compatible binding before Radxa Cubie A7S DTS publication;
+- GMAC210/EMAC binding before any Ethernet node is enabled or submitted.
+
 ## Commit Message Rules
 
 Kernel commit messages should:
@@ -112,6 +124,9 @@ Expected final split for an initial non-Ethernet board milestone:
 5. `pinctrl: sunxi: add Allwinner A733 pin controller support`
 6. `arm64: dts: allwinner: add Allwinner A733 SoC`
 7. `arm64: dts: allwinner: add Radxa Cubie A7S`
+
+The exact order may be adjusted for subsystem routing, but DTS users must never
+precede their bindings and headers.
 
 Ethernet belongs in a later series unless it is fully proven:
 

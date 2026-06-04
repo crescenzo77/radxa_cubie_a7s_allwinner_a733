@@ -34,6 +34,8 @@ Upstream-facing requirement:
 - Represent the hardware bank layout explicitly.
 - Avoid lazy or accidental parent IRQ registration behavior.
 - Keep the final change small enough for pinctrl review.
+- Add any W0C IRQ acknowledge behavior only as a normal sunxi pinctrl quirk
+  after it is proven, with no diagnostic trace code.
 
 ## GMAC0 / Ethernet
 
@@ -73,6 +75,14 @@ Upstream-facing requirement:
 - Keep any upstream-facing Cubie A7S board DTS Ethernet node disabled until the
   DMA reset timeout and real external PHY communication are resolved.
 
+## Binding Inventory
+
+The A733 pinctrl binding now exists in the clean local candidate branch and has
+passed `dt_binding_check`. The remaining non-Ethernet platform work still needs
+formal A733 CCU and Radxa Cubie A7S board-compatible bindings before DTSI or
+board DTS publication. The A733 GMAC210/EMAC binding is intentionally deferred
+until Ethernet behavior is proven.
+
 ## Immediate Mainline Question
 
 Does the A733 GMAC0 DMA reset require Allwinner GMAC210 wrapper programming
@@ -90,3 +100,9 @@ and PHY reset/power behavior are proven.
 
 The latest local candidate-series audit is recorded in
 [candidate-series-audit-20260604.md](candidate-series-audit-20260604.md).
+
+The sustained project execution flow is recorded in
+[project-flow.md](project-flow.md). In short: lab branches may contain
+diagnostics, but candidate branches must be rebuilt as quiet, atomic,
+bindings-first kernel patches. Ethernet remains later and disabled until it is
+proven.

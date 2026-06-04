@@ -15,6 +15,7 @@ files, failed attempts, or local-machine state.
 
 The stricter maintainer acceptance contract is recorded in
 [maintainer-acceptance-contract.md](maintainer-acceptance-contract.md).
+The standing execution flow is recorded in [project-flow.md](project-flow.md).
 
 ## Public Branch Contents
 
@@ -79,6 +80,15 @@ YAML bindings and accepted header definitions before board DTS files use them.
 The required order is bindings first, then driver/header support, then DTSI,
 then board enablement.
 
+For A733, public candidate work must provide formal schemas for each subsystem
+before its DTS users:
+
+- `allwinner,sun60i-a733-pinctrl` before PIO nodes and pin groups;
+- A733 CCU compatibles and clock/reset IDs before the SoC DTSI references
+  them;
+- Radxa Cubie A7S board compatible before the board DTS;
+- A733 GMAC210/EMAC binding before Ethernet is enabled.
+
 Hardware that is known to fail during probe must remain disabled in
 upstream-facing board files. For Cubie A7S, GMAC0 stays disabled until the
 Allwinner GMAC210 wrapper, CCU clocking, reset ordering, MDIO bus, PHY reset,
@@ -89,6 +99,10 @@ and PHY power behavior are proven.
 A733-specific Ethernet sequencing must live in Allwinner STMMAC glue code. The
 public repo must not present generic STMMAC core edits as the solution for
 Cubie A7S-only behavior.
+
+Do not publish A733-only reset sequencing or DWMAC 5.20 matching changes in
+generic Synopsys files such as `stmmac_main.c`, `dwmac4_lib.c`, or
+`dwmac-generic.c`.
 
 Before Ethernet is represented as an upstream candidate, the project must have:
 
