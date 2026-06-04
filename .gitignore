@@ -1,0 +1,28 @@
+# Local build and lab state.  Do not publish generated artifacts on the
+# upstream-facing branch.
+/artifacts/
+/sources/
+/scripts_tmp_unused/
+
+# Kernel build outputs and boot-test payloads.
+*.dtb
+*.dtbo
+*.dtbo.S
+*.dts.tmp
+Image
+Image-*
+vmlinux
+System.map
+modules.order
+Module.symvers
+
+# Logs and captured consoles.
+*.log
+*.log.gz
+*.uart
+*.capture
+
+# Local editor and OS metadata.
+.DS_Store
+*~
+*.swp
