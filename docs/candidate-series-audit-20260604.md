@@ -359,6 +359,9 @@ eight-patch stack into ignored local audit artifacts. Per-patch checkpatch on
 the exported files still reports only the expected missing human signoff and
 new-file `FILE_PATH_CHANGES` warnings.
 
+The integrated branch has no drift from the validated subsystem slices for the
+pinctrl, CCU, board-compatible, and MMC-binding files.
+
 ## Checkpatch Status
 
 The checkpoint patch was checked with:
