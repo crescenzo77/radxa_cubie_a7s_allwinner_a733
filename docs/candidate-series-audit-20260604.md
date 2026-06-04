@@ -5,7 +5,14 @@ candidate kernel series. It does not publish patch files.
 
 ## Local Kernel Branches
 
-Current cleaned work branch:
+Current pinctrl-only cleanup branch:
+
+```text
+sources/mainline-linux-a733-upstream
+candidate/a733-pinctrl-clean
+```
+
+Current broader platform work branch:
 
 ```text
 sources/mainline-linux-a733-upstream
@@ -28,7 +35,7 @@ The non-Ethernet A733/Cubie A7S candidate series is the right near-term
 upstream milestone. It avoids claiming Ethernet while GMAC0 still has an
 unresolved DMA software reset timeout.
 
-The candidate series still needs cleanup before submission:
+The broader platform series still needs cleanup before submission:
 
 - DTS/driver/binding changes must be split so binding patches stand alone.
 - Human `Signed-off-by:` trailers must be added only after human review.
@@ -62,6 +69,44 @@ submission.
 
 Public candidate branches must not contain `fixup:` commits. The fixup commit
 is acceptable only as local working state.
+
+## Pinctrl-Only Cleanup Branch
+
+The `candidate/a733-pinctrl-clean` branch now enforces the maintainer contract
+for the first pinctrl slice:
+
+- it contains only a pinctrl binding patch and a pinctrl driver patch;
+- it does not touch generic STMMAC files;
+- it does not contain DTS Ethernet enablement;
+- it does not contain `pr_info()`, `printk()`, register scan loops, or local
+  trace strings;
+- it adds a dedicated
+  `Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml`
+  binding before the driver code;
+- it keeps the A733 eleven-slot IRQ bank model in normal SoC data.
+
+Current branch shape:
+
+```text
+dt-bindings: pinctrl: add Allwinner A733 pin controller
+pinctrl: sunxi: add Allwinner A733 pin controller
+```
+
+Checks run:
+
+```text
+git diff --check
+scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
+```
+
+Current checkpatch findings:
+
+- `MISSING_SIGN_OFF`: expected until Enzo performs human DCO review;
+- `FILE_PATH_CHANGES`: expected for new binding and driver files covered by
+  existing Allwinner/sunxi maintainer patterns.
+
+`make dt_binding_check` was attempted but did not run on this Mac because the
+system `make` is GNU Make 3.81 and the kernel requires GNU Make 4.0 or newer.
 
 ## Checkpatch Status
 
