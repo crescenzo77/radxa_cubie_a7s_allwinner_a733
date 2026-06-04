@@ -33,6 +33,13 @@ sources/mainline-linux-a733-upstream
 candidate/a733-mmc-binding-clean
 ```
 
+Current integrated non-Ethernet platform branch:
+
+```text
+sources/mainline-linux-a733-upstream
+candidate/a733-platform-clean
+```
+
 Current broader platform work branch:
 
 ```text
@@ -252,6 +259,56 @@ Homebrew GNU Make 4.4.1, the temporary `/tmp/a733-dtschema-venv` environment,
 and a detached `/private/tmp` worktree. The run emitted unrelated global
 missing type definition warnings from other in-tree bindings, but no A733 MMC
 binding error.
+
+## Integrated Platform Branch
+
+The `candidate/a733-platform-clean` branch stacks the clean non-Ethernet
+candidate slices and splits DTS into SoC and board patches:
+
+```text
+dt-bindings: arm: sunxi: add Radxa Cubie A7S
+dt-bindings: clock: add Allwinner A733 CCU
+clk: sunxi-ng: add Allwinner A733 CCU support
+dt-bindings: pinctrl: add Allwinner A733 pin controller
+pinctrl: sunxi: add Allwinner A733 pin controller
+dt-bindings: mmc: add Allwinner A733 compatible
+arm64: dts: allwinner: add Allwinner A733 SoC
+arm64: dts: allwinner: add Radxa Cubie A7S
+```
+
+Current contract status:
+
+- Ethernet is absent.
+- Generic STMMAC files are untouched.
+- PIO uses the eleven-parent-interrupt structural IRQ model.
+- DTS users appear only after matching bindings and headers.
+- Board DTS enables only UART0 and MMC0.
+- No diagnostic trace code or register scans are present.
+
+Checks run:
+
+```text
+git diff --check
+scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
+```
+
+Current checkpatch findings:
+
+- `MISSING_SIGN_OFF`: expected until Enzo performs human DCO review;
+- `FILE_PATH_CHANGES`: expected for new binding, driver, DTSI, and DTS files;
+- combined-mailbox `DT_SPLIT_BINDING_PATCH` warnings are expected when the whole
+  stack is checked at once, while per-patch checks keep bindings split from DTS.
+
+Direct local DT preprocessing and `dtc` produced a DTB for
+`sun60i-a733-cubie-a7s.dts`; direct `dtc` reported the common `/soc`
+`unit_address_vs_reg` warning seen when running outside the kernel make rules.
+
+Full `dtbs_check` is still pending. macOS kernel make recurses during
+`defconfig`, and the available Linux `thinkcentre` host lacks both `flex` and
+an arm64 compiler/clang. A direct full-schema `dt-validate` run also reported
+CPU schema noise for standard `arm,cortex-a55`/`arm,cortex-a76` CPU nodes, so
+the integrated DTS branch must still be validated with the kernel native
+`dtbs_check` flow on a complete Linux build host.
 
 ## Checkpatch Status
 

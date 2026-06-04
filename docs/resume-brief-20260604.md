@@ -129,6 +129,24 @@ It adds `allwinner,sun60i-a733-mmc` with fallback
 `allwinner,sun20i-d1-mmc` and passed schema validation for the Allwinner MMC
 binding.
 
+Integrated non-Ethernet platform branch:
+
+```text
+candidate/a733-platform-clean
+```
+
+This branch stacks the clean binding/driver slices and splits DTS into:
+
+```text
+arm64: dts: allwinner: add Allwinner A733 SoC
+arm64: dts: allwinner: add Radxa Cubie A7S
+```
+
+It keeps Ethernet absent, uses the eleven-parent-interrupt A733 PIO layout, and
+enables only UART0 and MMC0 in the board DTS. `git diff --check` and per-patch
+checkpatch have been run. Full `dtbs_check` is still pending on a complete
+Linux build host.
+
 Checks already run:
 
 ```text
@@ -195,8 +213,10 @@ STMMAC glue code, not generic STMMAC core files.
    cross-build environment.
 4. Compile-test the CCU candidate on a Linux host with clang or an arm64 cross
    compiler.
-5. Keep candidate branches clean: no fixup commits, traces, generic subsystem
+5. Run native `dtbs_check` for `candidate/a733-platform-clean` on a complete
+   Linux build host with GNU Make, flex, dt-schema, and an arm64-capable
+   compiler.
+6. Keep candidate branches clean: no fixup commits, traces, generic subsystem
    hacks, or broken enabled DTS nodes.
-6. Only after pinctrl, CCU, board-compatible, and MMC binding slices are clean,
-   build the next isolated candidate slice, likely initial DTSI, following
-   bindings-first order.
+7. After native `dtbs_check` is clean, prepare the non-Ethernet platform stack
+   for human DCO review and eventual patch-series export.
