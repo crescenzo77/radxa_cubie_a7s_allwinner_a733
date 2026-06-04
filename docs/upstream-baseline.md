@@ -38,7 +38,15 @@ work. Keep it short. Do not add new governance Markdown.
 
 ## Current Direction
 
-- Freeze Markdown policy work after this file.
+- Freeze Markdown policy churn. Only this file may carry terse status.
 - Shift from metadata to hardware description.
-- Next operation: generate physical `.patch` files from the local
-  `candidate/a733-pinctrl-clean` branch on `strix`.
+
+## Subsystem Status
+
+| Block | Status |
+| --- | --- |
+| Board compatible | Candidate Complete |
+| Pinctrl | Mainline Validated |
+| CCU | Mainline Validated |
+| MMC0 / storage DTS | Mainline Validated |
+| Ethernet / GMAC210 | Deferred Until Hardware Proven |
