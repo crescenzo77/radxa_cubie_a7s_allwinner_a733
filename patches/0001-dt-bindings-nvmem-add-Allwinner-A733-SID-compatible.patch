@@ -1,0 +1,24 @@
+From e616301600bbc7a4b68bf5573fb3745fbe923546 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Thu, 4 Jun 2026 18:34:06 -0400
+Subject: [PATCH 1/2] dt-bindings: nvmem: add Allwinner A733 SID compatible
+
+---
+ .../devicetree/bindings/nvmem/allwinner,sun4i-a10-sid.yaml       | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/nvmem/allwinner,sun4i-a10-sid.yaml b/Documentation/devicetree/bindings/nvmem/allwinner,sun4i-a10-sid.yaml
+index f67470b8a2ed..52de91285ebb 100644
+--- a/Documentation/devicetree/bindings/nvmem/allwinner,sun4i-a10-sid.yaml
++++ b/Documentation/devicetree/bindings/nvmem/allwinner,sun4i-a10-sid.yaml
+@@ -28,6 +28,7 @@ properties:
+               - allwinner,sun50i-a100-sid
+               - allwinner,sun50i-h616-sid
+               - allwinner,sun55i-a523-sid
++              - allwinner,sun60i-a733-sid
+           - const: allwinner,sun50i-a64-sid
+       - const: allwinner,sun50i-h5-sid
+       - const: allwinner,sun50i-h6-sid
+-- 
+2.53.0
+

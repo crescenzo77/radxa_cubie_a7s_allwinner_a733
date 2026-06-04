@@ -1,0 +1,31 @@
+From 940db015fc1f97c8f10c82bdc7b880aba0040d81 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Thu, 4 Jun 2026 18:34:06 -0400
+Subject: [PATCH 2/2] arm64: dts: allwinner: add A733 SID
+
+---
+ arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
+index 5f85fabbe8bc..754bf82a2fe7 100644
+--- a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
+@@ -385,6 +385,14 @@ uart6: serial@2506000 {
+ 			status = "disabled";
+ 		};
+ 
++		sid: efuse@3006000 {
++			compatible = "allwinner,sun60i-a733-sid",
++				     "allwinner,sun50i-a64-sid";
++			reg = <0x03006000 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++		};
++
+ 		gic: interrupt-controller@3400000 {
+ 			compatible = "arm,gic-v3";
+ 			#address-cells = <1>;
+-- 
+2.53.0
+
