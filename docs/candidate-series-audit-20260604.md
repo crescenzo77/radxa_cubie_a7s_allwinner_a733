@@ -288,6 +288,15 @@ Current contract status:
 - Board DTS enables only UART0 and MMC0.
 - No diagnostic trace code or register scans are present.
 
+Additional DTS evidence audit:
+
+- The A733 GICv3 redistributor range matches vendor `sun60iw2p1.dtsi` evidence.
+- The upstream A523 DTS uses a different GIC redistributor size and adds ITS
+  content that is not carried into the A733 candidate without A733-specific
+  evidence.
+- A focused grep of the files changed by the integrated branch found no WIP,
+  fixup, diagnostic, trace, printk, STMMAC, GMAC, or Ethernet candidate code.
+
 Checks run:
 
 ```text

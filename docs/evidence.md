@@ -53,6 +53,20 @@ The BSP GMAC210 definitions identify wrapper offset `0x00` as a configuration
 register containing interface and delay-chain fields. Any upstream driver work
 must translate this into clean named macros and reviewed binding properties.
 
+## A733 Core Interrupt Controller
+
+Vendor DT evidence from Orange Pi's `orange-pi-5.15-sun60iw2` branch describes
+the A733 GICv3 block as:
+
+```text
+reg = <0x0 0x03400000 0 0x10000>,
+      <0x0 0x03460000 0 0xFF004>
+```
+
+The clean integrated platform candidate keeps that redistributor size. This is
+evidence only; future cleanups should not replace it with A523-style sizing
+unless that change is justified by A733-specific documentation or testing.
+
 ## Negative Results
 
 The following local experiments did not clear the DWMAC DMA software reset
