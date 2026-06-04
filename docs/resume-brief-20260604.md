@@ -145,7 +145,9 @@ arm64: dts: allwinner: add Radxa Cubie A7S
 It keeps Ethernet absent, uses the eleven-parent-interrupt A733 PIO layout, and
 enables only UART0 and MMC0 in the board DTS. `git diff --check` and per-patch
 checkpatch have been run. `git format-patch` output applies cleanly with
-`git am`. Full `dtbs_check` is still pending on a complete Linux build host.
+`git am`. The branch now builds `defconfig` and the Cubie A7S DTB on a
+temporary case-sensitive APFS volume, and the generated DTB passes direct
+`dt-validate` against the processed in-tree schema.
 
 Checks already run:
 
@@ -159,9 +161,10 @@ Remaining expected issues:
 
 - no human `Signed-off-by` yet;
 - checkpatch new-file MAINTAINERS warnings;
-- compile validation still needs a Linux build host or known-good cross-build
-  environment. A macOS `ARCH=arm64 LLVM=1 defconfig` attempt recursed and was
-  terminated.
+- full native `dtbs_check` still needs a Linux build host or a `dtschema`
+  version compatible with the kernel's `dt-validate -l <schema>` invocation;
+- object compile validation still needs a Linux build host or known-good
+  cross-build environment.
 
 Validation note:
 
@@ -171,6 +174,12 @@ Validation note:
 - a temporary `/tmp/a733-dtschema-venv` Python environment supplied `dtschema`
   and `yamllint`;
 - the A733 pinctrl binding and example passed schema validation.
+- full Linux-tree materialization on macOS requires a temporary case-sensitive
+  APFS volume because the upstream kernel contains case-colliding paths;
+- `dtschema` 2026.4 works for direct `dt-validate`, but its CLI is not
+  compatible with the kernel make rule's masked `dt-validate -l <schema>` call;
+- macOS object compilation is blocked at host `scripts/sorttable.o` because the
+  host lacks a Linux-compatible `elf.h`.
 
 ## Technical Status
 

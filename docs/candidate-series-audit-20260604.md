@@ -292,6 +292,9 @@ git diff --check
 git format-patch
 git am
 scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
+make ARCH=arm64 CROSS_COMPILE=aarch64-elf- defconfig
+make ARCH=arm64 CROSS_COMPILE=aarch64-elf- CHECK_DTBS=y allwinner/sun60i-a733-cubie-a7s.dtb
+dt-validate -u ./Documentation/devicetree/bindings -p ./Documentation/devicetree/bindings/processed-schema.json arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dtb
 ```
 
 Current checkpatch findings:
@@ -309,12 +312,24 @@ Direct local DT preprocessing and `dtc` produced a DTB for
 and `git am` applied those patches cleanly onto the mainline base in a detached
 temporary worktree.
 
-Full `dtbs_check` is still pending. macOS kernel make recurses during
-`defconfig`, and the available Linux `thinkcentre` host lacks both `flex` and
-an arm64 compiler/clang. A direct full-schema `dt-validate` run also reported
-CPU schema noise for standard `arm,cortex-a55`/`arm,cortex-a76` CPU nodes, so
-the integrated DTS branch must still be validated with the kernel native
-`dtbs_check` flow on a complete Linux build host.
+The integrated branch now also builds a default arm64 config and the Cubie A7S
+DTB on a temporary case-sensitive APFS volume. That volume is required because
+the upstream Linux tree has case-colliding files that cannot be materialized
+cleanly on the default macOS case-insensitive filesystem. The generated DTB
+passes direct `dt-validate` against the processed in-tree schema.
+
+Kernel `CHECK_DTBS=y` invoked `dt-validate` through the kernel make flow, but
+the local `dtschema` 2026.4 command-line interface no longer accepts the
+kernel's `dt-validate -l <schema>` form and prints an argument error that the
+kernel make rule masks with `|| true`. Treat the direct `dt-validate` pass as
+useful evidence, but still keep full native `dtbs_check` on a Linux build host
+as a remaining publication gate.
+
+Object compile validation is still pending. On macOS, host tool compilation
+stops at `scripts/sorttable.o` because the host lacks a Linux-compatible
+`elf.h`. The available Linux `thinkcentre` host has GNU Make but lacks `flex`,
+`bison`, `dtc`, clang, and an arm64 cross compiler. The next compile gate needs
+a real Linux kernel build container or host with those dependencies installed.
 
 ## Checkpatch Status
 
