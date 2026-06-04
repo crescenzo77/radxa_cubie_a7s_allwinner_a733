@@ -1,0 +1,113 @@
+From ff20297bd42a6f533061a849107cadc560b56afd Mon Sep 17 00:00:00 2001
+From: Crescenzo <crescenzo@gmail.com>
+Date: Wed, 3 Jun 2026 21:18:20 -0400
+Subject: [PATCH 2/2] pinctrl: sunxi: add Allwinner A733 pin controller
+
+Add support for the A733 main PIO controller using the existing
+DT-described pin function path.
+
+The controller uses the newer register layout and has eleven
+structural IRQ bank slots. Port A is reserved by the IRQ register
+layout, but is not populated with pins.
+
+Assisted-by: OpenAI:GPT-5 Codex
+---
+ drivers/pinctrl/sunxi/Kconfig               | 10 ++++
+ drivers/pinctrl/sunxi/Makefile              |  1 +
+ drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c | 54 +++++++++++++++++++++
+ 3 files changed, 65 insertions(+)
+ create mode 100644 drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c
+
+diff --git a/drivers/pinctrl/sunxi/Kconfig b/drivers/pinctrl/sunxi/Kconfig
+index dc62eba96348..5f819cd03d58 100644
+--- a/drivers/pinctrl/sunxi/Kconfig
++++ b/drivers/pinctrl/sunxi/Kconfig
+@@ -141,4 +141,14 @@ config PINCTRL_SUN55I_A523_R
+ 	default ARM64 && ARCH_SUNXI
+ 	select PINCTRL_SUNXI
+ 
++config PINCTRL_SUN60I_A733
++	bool "Support for the Allwinner A733 PIO"
++	default ARM64 && ARCH_SUNXI
++	select PINCTRL_SUNXI
++	help
++	  Say y here to build support for the main pin controller found in
++	  the Allwinner A733 SoC. The controller uses the newer sunxi
++	  register layout and provides GPIO, pinmux, bias, drive strength,
++	  and interrupt support for the main PIO banks.
++
+ endif
+diff --git a/drivers/pinctrl/sunxi/Makefile b/drivers/pinctrl/sunxi/Makefile
+index 951b3f1e4b4f..3658c9d06b49 100644
+--- a/drivers/pinctrl/sunxi/Makefile
++++ b/drivers/pinctrl/sunxi/Makefile
+@@ -29,5 +29,6 @@ obj-$(CONFIG_PINCTRL_SUN50I_H616)	+= pinctrl-sun50i-h616.o
+ obj-$(CONFIG_PINCTRL_SUN50I_H616_R)	+= pinctrl-sun50i-h616-r.o
+ obj-$(CONFIG_PINCTRL_SUN55I_A523)	+= pinctrl-sun55i-a523.o
+ obj-$(CONFIG_PINCTRL_SUN55I_A523_R)	+= pinctrl-sun55i-a523-r.o
++obj-$(CONFIG_PINCTRL_SUN60I_A733)	+= pinctrl-sun60i-a733.o
+ obj-$(CONFIG_PINCTRL_SUN9I_A80)		+= pinctrl-sun9i-a80.o
+ obj-$(CONFIG_PINCTRL_SUN9I_A80_R)	+= pinctrl-sun9i-a80-r.o
+diff --git a/drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c b/drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c
+new file mode 100644
+index 000000000000..ebcc7af91b87
+--- /dev/null
++++ b/drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c
+@@ -0,0 +1,54 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Allwinner A733 SoC pinctrl driver.
++ */
++
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/pinctrl/pinctrl.h>
++#include <linux/platform_device.h>
++
++#include "pinctrl-sunxi.h"
++
++static const u8 a733_nr_bank_pins[SUNXI_PINCTRL_MAX_BANKS] =
++/*	  PA  PB  PC  PD  PE  PF  PG  PH  PI  PJ  PK */
++	{  0, 32, 19, 28, 16, 32, 31, 32, 17, 28, 26 };
++
++static const unsigned int a733_irq_bank_map[] = {
++	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
++};
++
++static const u8 a733_irq_bank_muxes[SUNXI_PINCTRL_MAX_BANKS] =
++/*	  PA  PB  PC  PD  PE  PF  PG  PH  PI  PJ  PK */
++	{  0, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
++
++static struct sunxi_pinctrl_desc a733_pinctrl_data = {
++	.irq_banks = ARRAY_SIZE(a733_irq_bank_map),
++	.irq_bank_map = a733_irq_bank_map,
++	.irq_read_needs_mux = true,
++	.io_bias_cfg_variant = BIAS_VOLTAGE_PIO_POW_MODE_SEL,
++};
++
++static int a733_pinctrl_probe(struct platform_device *pdev)
++{
++	return sunxi_pinctrl_dt_table_init(pdev, a733_nr_bank_pins,
++					   a733_irq_bank_muxes,
++					   &a733_pinctrl_data,
++					   SUNXI_PINCTRL_NEW_REG_LAYOUT |
++					   SUNXI_PINCTRL_ELEVEN_BANKS);
++}
++
++static const struct of_device_id a733_pinctrl_match[] = {
++	{ .compatible = "allwinner,sun60i-a733-pinctrl", },
++	{}
++};
++
++static struct platform_driver a733_pinctrl_driver = {
++	.probe	= a733_pinctrl_probe,
++	.driver	= {
++		.name		= "sun60i-a733-pinctrl",
++		.of_match_table	= a733_pinctrl_match,
++	},
++};
++builtin_platform_driver(a733_pinctrl_driver);
+-- 
+2.53.0
+
