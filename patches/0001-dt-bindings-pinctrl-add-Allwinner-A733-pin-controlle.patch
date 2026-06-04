@@ -1,5 +1,5 @@
 From af2057b70cb663b7a9896d6d6d37aa2cc10af9d7 Mon Sep 17 00:00:00 2001
-From: Crescenzo <crescenzo@gmail.com>
+From: Crescenzo <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 21:18:20 -0400
 Subject: [PATCH 1/2] dt-bindings: pinctrl: add Allwinner A733 pin controller
 

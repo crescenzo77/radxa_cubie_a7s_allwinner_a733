@@ -1,5 +1,5 @@
 From 617d46454f7fc326a82e0901372d5d1ee665758d Mon Sep 17 00:00:00 2001
-From: Crescenzo <crescenzo@gmail.com>
+From: Crescenzo <enzo.adriano.code@gmail.com>
 Date: Tue, 2 Jun 2026 01:50:48 -0400
 Subject: [PATCH 2/4] dt-bindings: net: add Allwinner A733 GMAC0 compatible
 
@@ -17,7 +17,7 @@ This only makes the compatible string schema-valid. It does not enable
 Ethernet on the Cubie A7S board, choose PHY reset wiring, or claim that the
 A733 delay values are tuned.
 
-Signed-off-by: Crescenzo <crescenzo@gmail.com>
+Signed-off-by: Crescenzo <enzo.adriano.code@gmail.com>
 ---
  .../devicetree/bindings/net/allwinner,sun8i-a83t-emac.yaml       | 1 +
  1 file changed, 1 insertion(+)

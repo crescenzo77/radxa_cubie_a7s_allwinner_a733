@@ -1,9 +1,9 @@
 From ddeb124942b766ee9c10443fc944de300a0cad4a Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 08:58:05 -0400
 Subject: [PATCH 2/3] watchdog: sunxi: add Allwinner A733 WDT compatible
 
-Signed-off-by: Enzo <enzo@homelab.local>
+Signed-off-by: Enzo <enzo.adriano.code@gmail.com>
 ---
  drivers/watchdog/sunxi_wdt.c | 1 +
  1 file changed, 1 insertion(+)

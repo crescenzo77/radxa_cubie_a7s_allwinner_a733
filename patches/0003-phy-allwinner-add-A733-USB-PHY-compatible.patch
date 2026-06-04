@@ -1,5 +1,5 @@
 From 43018b655f56087d3f5816b693d83e1c377cda45 Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 08:38:10 -0400
 Subject: [PATCH 3/4] phy: allwinner: add A733 USB PHY compatible
 

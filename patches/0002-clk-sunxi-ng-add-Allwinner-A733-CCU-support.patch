@@ -1,5 +1,5 @@
 From 957fb1ccaf7a00423ef3ece583356b7680627d42 Mon Sep 17 00:00:00 2001
-From: Crescenzo <crescenzo@gmail.com>
+From: Crescenzo <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 20:57:04 -0400
 Subject: [PATCH 2/2] clk: sunxi-ng: add Allwinner A733 CCU support
 

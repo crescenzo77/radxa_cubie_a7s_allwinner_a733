@@ -1,9 +1,9 @@
 From c90c91bccefceba13faa5ae8c53cb26ef4972e60 Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 08:48:30 -0400
 Subject: [PATCH 2/4] dt-bindings: thermal: add Allwinner A733 THS
 
-Signed-off-by: Enzo <enzo@homelab.local>
+Signed-off-by: Enzo <enzo.adriano.code@gmail.com>
 ---
  .../devicetree/bindings/thermal/allwinner,sun8i-a83t-ths.yaml   | 2 ++
  1 file changed, 2 insertions(+)

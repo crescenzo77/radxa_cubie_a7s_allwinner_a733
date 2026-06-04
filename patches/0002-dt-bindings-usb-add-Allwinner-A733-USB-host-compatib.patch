@@ -1,5 +1,5 @@
 From c7c194390c64fe566a3f5bca74a6089af8549ebd Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 08:37:53 -0400
 Subject: [PATCH 2/4] dt-bindings: usb: add Allwinner A733 USB host compatibles
 

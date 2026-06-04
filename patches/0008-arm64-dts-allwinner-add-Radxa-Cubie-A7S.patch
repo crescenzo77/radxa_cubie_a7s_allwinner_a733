@@ -1,5 +1,5 @@
 From c73b7fa0359f63923ff53d8d301312a55a6b244c Mon Sep 17 00:00:00 2001
-From: Crescenzo <crescenzo@gmail.com>
+From: Crescenzo <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 23:28:52 -0400
 Subject: [PATCH 8/8] arm64: dts: allwinner: add Radxa Cubie A7S
 

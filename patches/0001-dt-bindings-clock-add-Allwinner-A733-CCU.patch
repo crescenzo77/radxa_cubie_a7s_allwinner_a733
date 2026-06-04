@@ -1,5 +1,5 @@
 From a86dd19d72a3f1cae8f42388221fa7fa4f3246d3 Mon Sep 17 00:00:00 2001
-From: Crescenzo <crescenzo@gmail.com>
+From: Crescenzo <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 20:57:04 -0400
 Subject: [PATCH 1/2] dt-bindings: clock: add Allwinner A733 CCU
 

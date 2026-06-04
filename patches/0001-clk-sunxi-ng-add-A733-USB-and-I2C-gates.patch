@@ -1,5 +1,5 @@
 From b3a4f088f35b6086124bea410f8e420389a64af5 Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 08:37:53 -0400
 Subject: [PATCH 1/4] clk: sunxi-ng: add A733 USB and I2C gates
 

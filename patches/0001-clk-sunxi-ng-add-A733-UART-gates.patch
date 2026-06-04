@@ -1,9 +1,9 @@
 From ac4aaa2bf6f9fa22cfbc7d19fc0fe5420884c9b7 Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 08:54:43 -0400
 Subject: [PATCH 1/2] clk: sunxi-ng: add A733 UART gates
 
-Signed-off-by: Enzo <enzo@homelab.local>
+Signed-off-by: Enzo <enzo.adriano.code@gmail.com>
 ---
  drivers/clk/sunxi-ng/ccu-sun60i-a733.c      | 30 +++++++++++++++++++++
  include/dt-bindings/clock/sun60i-a733-ccu.h |  6 +++++

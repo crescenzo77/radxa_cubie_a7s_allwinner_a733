@@ -1,5 +1,5 @@
 From 34794a2fab35533495f8419e3d161c7353df0538 Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 08:38:01 -0400
 Subject: [PATCH 4/4] arm64: dts: allwinner: add disabled A733 USB host nodes
 

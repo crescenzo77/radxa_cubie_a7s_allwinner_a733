@@ -1,5 +1,5 @@
 From a5b1f1f02505b309d08475255016ea44debd64ed Mon Sep 17 00:00:00 2001
-From: Crescenzo <crescenzo@gmail.com>
+From: Crescenzo <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 20:57:25 -0400
 Subject: [PATCH 6/8] dt-bindings: mmc: add Allwinner A733 compatible
 

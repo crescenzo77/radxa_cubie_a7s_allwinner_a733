@@ -1,5 +1,5 @@
 From 2c8aceae78a01340388c2c176ae5cb4486fe55b7 Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 08:44:44 -0400
 Subject: [PATCH 2/2] arm64: dts: allwinner: add disabled A733 TWI nodes
 

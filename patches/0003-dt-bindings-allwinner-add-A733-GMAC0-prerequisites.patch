@@ -1,5 +1,5 @@
 From ca86257f9b4c95ae584c79e0049519d2f5c8b09a Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 01:57:36 -0400
 Subject: [PATCH 3/4] dt-bindings: allwinner: add A733 GMAC0 prerequisites
 

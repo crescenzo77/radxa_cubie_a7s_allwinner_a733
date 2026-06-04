@@ -1,9 +1,9 @@
 From 62b1c7fde45b6e7d84189a76db0136de399179b5 Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 08:48:30 -0400
 Subject: [PATCH 4/4] arm64: dts: allwinner: add A733 THS and thermal zones
 
-Signed-off-by: Enzo <enzo@homelab.local>
+Signed-off-by: Enzo <enzo.adriano.code@gmail.com>
 ---
  .../arm64/boot/dts/allwinner/sun60i-a733.dtsi | 40 +++++++++++++++++++
  1 file changed, 40 insertions(+)

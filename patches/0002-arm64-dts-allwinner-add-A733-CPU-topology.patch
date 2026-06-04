@@ -1,5 +1,5 @@
 From 3f570debaa281028efdf9c6c5e18f06b979591ad Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Sun, 31 May 2026 17:42:43 -0400
 Subject: [PATCH 2/2] arm64: dts: allwinner: add A733 CPU topology
 

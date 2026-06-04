@@ -1,5 +1,5 @@
 From 9a6722eeb23cec21fe71532c04c0cbe442aa5c26 Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 08:42:40 -0400
 Subject: [PATCH 2/3] dt-bindings: iio: adc: add Allwinner A733 GPADC
 

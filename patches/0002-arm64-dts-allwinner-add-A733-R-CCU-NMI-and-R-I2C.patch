@@ -1,9 +1,9 @@
 From b1793111f53635d5408040eb60aa4b9d5a4ab169 Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 09:57:50 -0400
 Subject: [PATCH 2/3] arm64: dts: allwinner: add A733 R-CCU NMI and R-I2C
 
-Signed-off-by: Enzo <enzo@homelab.local>
+Signed-off-by: Enzo <enzo.adriano.code@gmail.com>
 ---
  .../allwinner,sun7i-a20-sc-nmi.yaml           |  1 +
  .../arm64/boot/dts/allwinner/sun60i-a733.dtsi | 38 ++++++++++++++++++-

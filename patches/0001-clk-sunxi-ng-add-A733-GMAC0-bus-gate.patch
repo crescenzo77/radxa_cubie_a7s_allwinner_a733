@@ -1,5 +1,5 @@
 From 6c727d6a0102cf784b659ae5f506723e9bae5d00 Mon Sep 17 00:00:00 2001
-From: Crescenzo <crescenzo@gmail.com>
+From: Crescenzo <enzo.adriano.code@gmail.com>
 Date: Tue, 2 Jun 2026 01:43:18 -0400
 Subject: [PATCH 1/4] clk: sunxi-ng: add A733 GMAC0 bus gate
 
@@ -17,7 +17,7 @@ Do not add PHY, PTP, GMAC1, board enablement, delay properties, or PHY
 reset handling yet. Those still need separate evidence from schema,
 driver, and hardware tests.
 
-Signed-off-by: Crescenzo <crescenzo@gmail.com>
+Signed-off-by: Crescenzo <enzo.adriano.code@gmail.com>
 ---
  drivers/clk/sunxi-ng/ccu-sun60i-a733.c      | 5 +++++
  drivers/clk/sunxi-ng/ccu-sun60i-a733.h      | 2 +-

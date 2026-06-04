@@ -1,5 +1,5 @@
 From ff20297bd42a6f533061a849107cadc560b56afd Mon Sep 17 00:00:00 2001
-From: Crescenzo <crescenzo@gmail.com>
+From: Crescenzo <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 21:18:20 -0400
 Subject: [PATCH 2/2] pinctrl: sunxi: add Allwinner A733 pin controller
 

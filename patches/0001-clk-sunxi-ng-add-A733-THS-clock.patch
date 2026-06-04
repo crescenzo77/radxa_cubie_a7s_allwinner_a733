@@ -1,9 +1,9 @@
 From ae2cd1dd7ebfc58b6186f7d29a698806f28974b2 Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 08:48:30 -0400
 Subject: [PATCH 1/4] clk: sunxi-ng: add A733 THS clock
 
-Signed-off-by: Enzo <enzo@homelab.local>
+Signed-off-by: Enzo <enzo.adriano.code@gmail.com>
 ---
  drivers/clk/sunxi-ng/ccu-sun60i-a733.c      | 4 ++++
  include/dt-bindings/clock/sun60i-a733-ccu.h | 1 +

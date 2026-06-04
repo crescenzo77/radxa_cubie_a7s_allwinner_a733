@@ -1,9 +1,9 @@
 From 22457bd14f4a73f067bd21fb34e10d9b992969bb Mon Sep 17 00:00:00 2001
-From: Enzo <enzo@homelab.local>
+From: Enzo <enzo.adriano.code@gmail.com>
 Date: Thu, 4 Jun 2026 08:58:06 -0400
 Subject: [PATCH 3/3] arm64: dts: allwinner: add A733 watchdog
 
-Signed-off-by: Enzo <enzo@homelab.local>
+Signed-off-by: Enzo <enzo.adriano.code@gmail.com>
 ---
  arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi | 10 ++++++++++
  1 file changed, 10 insertions(+)
