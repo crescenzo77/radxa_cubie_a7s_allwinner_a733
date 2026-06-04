@@ -27,6 +27,8 @@ Current Ethernet blocker:
 - MDIO reads are not yet proof of real external PHY communication.
 - The Allwinner GMAC210 wrapper setup must be mapped into an upstreamable glue
   driver before any Ethernet patch is proposed.
+- Any upstream-facing Cubie A7S board DTS must leave Ethernet disabled until
+  that reset, clock, wrapper, MDIO, and PHY behavior is proven.
 
 See [docs/status.md](docs/status.md) for the current technical state.
 
@@ -38,6 +40,10 @@ prototype-app workflow:
 - No generated kernels, DTBs, UART logs, or binary artifacts are tracked here.
 - Diagnostic patches are not presented as upstream candidates.
 - Kernel patches must be small, reviewable, and split by subsystem.
+- A733-specific Ethernet sequencing belongs in an Allwinner STMMAC glue driver,
+  not in generic STMMAC core files.
+- DTS changes must follow accepted YAML bindings and accepted clock/reset
+  headers; synthetic local IDs are not acceptable upstream.
 - Register offsets must be named and justified, not scanned by ad hoc loops.
 - Final patches must pass kernel style, DT schema, and relevant build checks.
 - AI assistance, if used for a kernel contribution, must be disclosed with the

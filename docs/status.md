@@ -63,11 +63,15 @@ Local mainline diagnostics have shown:
 Upstream-facing requirement:
 
 - Do not submit generic debug traces or forced probe hacks.
-- Build a proper Allwinner GMAC210 glue driver or an extension of an accepted
-  Allwinner STMMAC glue driver.
+- Do not modify generic STMMAC core files for A733-specific sequencing.
+- Build a proper Allwinner GMAC210 glue driver, or extend an accepted
+  Allwinner STMMAC glue driver, so wrapper clocks and resets are prepared before
+  common STMMAC code runs.
 - Define wrapper registers with named macros.
 - Use standard DT binding names where possible.
 - Document any new compatible string and required clocks/resets.
+- Keep any upstream-facing Cubie A7S board DTS Ethernet node disabled until the
+  DMA reset timeout and real external PHY communication are resolved.
 
 ## Immediate Mainline Question
 
@@ -76,3 +80,10 @@ before the common STMMAC DWMAC 5.20 path runs?
 
 The next lab test should answer that question, but the public branch should not
 carry the diagnostic code as an upstream candidate.
+
+## Upstream Milestone Boundary
+
+The first acceptable public patch goal is initial A733/Cubie A7S platform
+support without claiming Ethernet. Ethernet enablement should be a separate
+series after the GMAC210 wrapper model, CCU clocks, reset ordering, MDIO bus,
+and PHY reset/power behavior are proven.
