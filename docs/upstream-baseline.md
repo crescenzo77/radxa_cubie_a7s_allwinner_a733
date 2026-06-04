@@ -60,4 +60,5 @@ work. Keep it short. Do not add new governance Markdown.
 | PCK-600 power domains | Mainline Validated |
 | RTC | Mainline Validated |
 | SID / efuse | Mainline Validated |
+| DMA | Mainline Validated |
 | DVFS / CPU OPP | Deferred; CPU PLL clock support needed |
