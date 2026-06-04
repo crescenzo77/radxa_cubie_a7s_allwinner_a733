@@ -220,6 +220,21 @@ binding error.
 The CCU driver object now compile-tests cleanly with an arm64 cross compiler
 inside a temporary Docker Linux build container on `thinkcentre`.
 
+Recheck note, 2026-06-04:
+
+- `candidate/a733-ccu-clean` was selected as the active kernel branch after
+  the pinctrl slice recheck.
+- `git diff --check public/master..HEAD` passed.
+- Per-patch `checkpatch.pl --no-tree --strict --show-types` still reports only
+  `MISSING_SIGN_OFF` and `FILE_PATH_CHANGES`.
+- Focused grep of the CCU candidate files found no WIP, fixup, diagnostic,
+  trace, printk, STMMAC, GMAC, or Ethernet code.
+- The A733 CCU binding passed `dt_binding_check`.
+- The A733 CCU driver object passed remote Linux Docker `W=1` arm64
+  cross-compile on `thinkcentre`.
+- The public Linux fork now has the exact `candidate/a733-ccu-clean` branch at
+  commit `152d6f578aeae`.
+
 ## Board-Compatible Cleanup Branch
 
 The `candidate/a733-board-binding-clean` branch isolates the Radxa Cubie A7S
