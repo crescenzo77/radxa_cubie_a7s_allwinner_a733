@@ -438,6 +438,11 @@ Machine role note:
 
 - `strix` (`192.168.50.11`), `amd` (`192.168.50.252`), and `mac-mini`
   (`192.168.50.164`) are the preferred development/build machines.
+- `strix` is currently the best validated arm64 kernel build host.
+- `amd` is reachable but lacks the arm64 cross compiler, flex, bison, and
+  `dtschema` in the default SSH path.
+- `mac-mini` SSH authentication from this workspace was not available during
+  this audit.
 - `mini-pc` (`192.168.50.76`) is a media server and LVM host only.
 - `thinkcentre` is a services host; previous Docker validation there remains
   historical evidence, but new coding and build validation should prefer the
