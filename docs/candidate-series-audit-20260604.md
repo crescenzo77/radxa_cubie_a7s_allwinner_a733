@@ -126,6 +126,8 @@ Checks run:
 git diff --check
 scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
 make dt_binding_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o
 ```
 
 Current checkpatch findings:
@@ -140,9 +142,8 @@ permanent project path contains spaces. The A733 pinctrl binding and example
 validated successfully. The schema run emitted unrelated global missing type
 definition warnings from other in-tree bindings, but no A733 binding error.
 
-An object build was attempted with `ARCH=arm64 LLVM=1`, but macOS hosted kernel
-`defconfig` recursed until terminated. Treat compile validation as still
-requiring a Linux build host or known-good cross-build environment.
+The pinctrl driver object now compile-tests cleanly with an arm64 cross
+compiler inside a temporary Docker Linux build container on `thinkcentre`.
 
 ## CCU-Only Cleanup Branch
 
@@ -171,6 +172,8 @@ Checks run:
 git diff --check
 scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
 make dt_binding_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- drivers/clk/sunxi-ng/ccu-sun60i-a733.o
 ```
 
 Current checkpatch findings:
@@ -185,10 +188,8 @@ and a detached `/private/tmp` worktree. The run emitted unrelated global
 missing type definition warnings from other in-tree bindings, but no A733 CCU
 binding error.
 
-Compile validation remains unresolved. The macOS kernel `defconfig` target
-recursed until terminated. The available Linux `thinkcentre` host has GNU Make
-4.4.1 but no arm64 cross compiler or clang, so it could not compile the arm64
-CCU object.
+The CCU driver object now compile-tests cleanly with an arm64 cross compiler
+inside a temporary Docker Linux build container on `thinkcentre`.
 
 ## Board-Compatible Cleanup Branch
 
@@ -295,6 +296,7 @@ scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
 make ARCH=arm64 CROSS_COMPILE=aarch64-elf- defconfig
 make ARCH=arm64 CROSS_COMPILE=aarch64-elf- DT_SCHEMA_FILES=allwinner,sun60i-a733-pinctrl.yaml:allwinner,sun60i-a733-ccu.yaml:allwinner,sun4i-a10-mmc.yaml:arm/sunxi.yaml CHECK_DTBS=y allwinner/sun60i-a733-cubie-a7s.dtb
 dt-validate -u ./Documentation/devicetree/bindings -p ./Documentation/devicetree/bindings/processed-schema.json arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dtb
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- drivers/clk/sunxi-ng/ccu-sun60i-a733.o drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o
 ```
 
 Current checkpatch findings:
@@ -325,11 +327,11 @@ space-separated list caused extra schema names to be passed as positional
 `dt-validate` arguments; that command is not a valid check result even though
 the kernel make rule masks validation failures with `|| true`.
 
-Object compile validation is still pending. On macOS, host tool compilation
-stops at `scripts/sorttable.o` because the host lacks a Linux-compatible
-`elf.h`. The available Linux `thinkcentre` host has GNU Make but lacks `flex`,
-`bison`, `dtc`, clang, and an arm64 cross compiler. The next compile gate needs
-a real Linux kernel build container or host with those dependencies installed.
+Object compile validation now passes for the A733 CCU and pinctrl drivers in
+the integrated branch using a temporary Docker Linux build container on
+`thinkcentre`. The container installed GNU Make, flex, bison, libssl, libelf,
+and `gcc-aarch64-linux-gnu`, then built arm64 `defconfig`, both A733 driver
+objects, and the focused Cubie A7S `CHECK_DTBS=y` target.
 
 ## Checkpatch Status
 

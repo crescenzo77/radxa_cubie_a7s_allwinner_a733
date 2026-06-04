@@ -79,7 +79,8 @@ pinctrl: sunxi: add Allwinner A733 pin controller
 
 It avoids Ethernet, generic STMMAC edits, diagnostic traces, register scan
 loops, and DTS enablement. It adds a dedicated A733 pinctrl YAML binding and an
-A733 pinctrl driver using an eleven-slot IRQ bank model.
+A733 pinctrl driver using an eleven-slot IRQ bank model. The driver object now
+compile-tests cleanly in a Linux Docker build container on `thinkcentre`.
 
 Second clean branch:
 
@@ -96,7 +97,9 @@ clk: sunxi-ng: add Allwinner A733 CCU support
 
 It avoids DTS users, Ethernet, generic STMMAC edits, diagnostics, and
 board-specific bring-up prose in production code. It adds a dedicated A733 CCU
-YAML binding, clock/reset header IDs, and an A733 CCU driver slice.
+YAML binding, clock/reset header IDs, and an A733 CCU driver slice. The driver
+object now compile-tests cleanly in a Linux Docker build container on
+`thinkcentre`.
 
 Third clean branch:
 
@@ -148,7 +151,8 @@ checkpatch have been run. `git format-patch` output applies cleanly with
 `git am`. The branch now builds `defconfig` and validates the Cubie A7S DTB
 through the kernel `CHECK_DTBS=y` path on a temporary case-sensitive APFS
 volume. The generated DTB also passes direct `dt-validate` against the
-processed in-tree schema.
+processed in-tree schema. The integrated branch also compile-tests both A733
+driver objects cleanly in the remote Linux Docker build flow.
 
 Checks already run:
 
@@ -162,8 +166,6 @@ Remaining expected issues:
 
 - no human `Signed-off-by` yet;
 - checkpatch new-file MAINTAINERS warnings;
-- object compile validation still needs a Linux build host or known-good
-  cross-build environment.
 
 Validation note:
 
@@ -178,7 +180,10 @@ Validation note:
 - focused kernel `CHECK_DTBS=y` passed with `dtschema` 2024.11 and a
   colon-separated `DT_SCHEMA_FILES` list;
 - macOS object compilation is blocked at host `scripts/sorttable.o` because the
-  host lacks a Linux-compatible `elf.h`.
+  host lacks a Linux-compatible `elf.h`;
+- remote `thinkcentre` Docker provides the current compile path with
+  `python:3.11-slim`, `gcc-aarch64-linux-gnu`, GNU Make, flex, bison, libssl,
+  and libelf.
 
 ## Technical Status
 
@@ -190,8 +195,8 @@ Binding inventory:
 - A733 pinctrl binding exists in the clean candidate branch and passed schema
   validation.
 - A733 CCU binding/header/driver work now exists in
-  `candidate/a733-ccu-clean` and has passed schema validation, but still needs
-  compile validation.
+  `candidate/a733-ccu-clean` and has passed schema and object-build
+  validation.
 - Radxa Cubie A7S board compatible binding now exists in
   `candidate/a733-board-binding-clean` and has passed schema validation.
 - A733 MMC compatible binding now exists in `candidate/a733-mmc-binding-clean`
@@ -217,13 +222,7 @@ STMMAC glue code, not generic STMMAC core files.
    `candidate/a733-pinctrl-clean`.
 2. Add human review and DCO signoff when Enzo accepts responsibility for the
    pinctrl patches.
-3. Compile-test the pinctrl candidate on a Linux build host or known-good
-   cross-build environment.
-4. Compile-test the CCU candidate on a Linux host with clang or an arm64 cross
-   compiler.
-5. Compile-test the integrated branch on a complete Linux build host with GNU
-   Make, flex, bison, dtc, and an arm64-capable compiler.
-6. Keep candidate branches clean: no fixup commits, traces, generic subsystem
+3. Keep candidate branches clean: no fixup commits, traces, generic subsystem
    hacks, or broken enabled DTS nodes.
-7. After native `dtbs_check` is clean, prepare the non-Ethernet platform stack
+4. After validation remains clean, prepare the non-Ethernet platform stack
    for human DCO review and eventual patch-series export.
