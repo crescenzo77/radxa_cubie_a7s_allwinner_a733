@@ -418,6 +418,20 @@ The four binding checks also pass in the same remote Linux Docker flow using
 `dtschema` 2024.11; the run reports only unrelated global missing type
 definition warnings from other in-tree bindings.
 
+Native Linux compile recheck, 2026-06-04:
+
+- `strix` is reachable over SSH and has GNU Make, flex, bison, gcc, and
+  `aarch64-linux-gnu-gcc`.
+- `candidate/a733-platform-clean` was exported with `git archive`, unpacked
+  under `/tmp` on `strix`, and built natively without Docker.
+- `make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig` passed.
+- `make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- W=1
+  drivers/clk/sunxi-ng/ccu-sun60i-a733.o
+  drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o` passed.
+- `strix` does not currently have the Python `dtschema` module installed, so
+  binding validation still uses the local `/tmp/a733-dtschema-venv` or a Linux
+  container path.
+
 The integrated branch also passed a contract scan over the touched A733 files
 for forbidden diagnostic/debug terms and Ethernet/STMMAC enablement. No
 candidate file in the non-Ethernet stack contains `pr_info`, `printk`,

@@ -43,12 +43,18 @@ project checkout lives under a path with spaces, create a temporary detached
 worktree under `/tmp` and run GNU Make 4.0 or newer there.
 
 For full-tree Linux kernel checks on macOS, use either a case-sensitive APFS
-temporary volume or the `thinkcentre` Docker path. The upstream kernel contains
+temporary volume or a Linux build host. The upstream kernel contains
 case-colliding paths that cannot be materialized safely on the default
-case-insensitive macOS filesystem. The current remote validation pattern is to
-export the candidate branch with `git archive`, unpack it under `/tmp` on
-`thinkcentre`, and run a disposable Linux container with GNU Make, flex, bison,
-libssl, libelf, `dtschema`, and `gcc-aarch64-linux-gnu`.
+case-insensitive macOS filesystem. Current validated Linux build hosts are:
+
+- `strix` for native Linux builds with GNU Make, flex, bison, gcc, and
+  `aarch64-linux-gnu-gcc`;
+- `thinkcentre` for disposable Docker builds with GNU Make, flex, bison,
+  libssl, libelf, `dtschema`, and `gcc-aarch64-linux-gnu`.
+
+Prefer `strix` for native object and Image compilation when it is reachable.
+Use `thinkcentre` Docker when an isolated container or a known `dtschema`
+container path is needed.
 
 Do not treat a kernel `CHECK_DTBS=y` run as successful merely because `make`
 returned zero: the kernel rule masks `dt-validate` failures with `|| true`.
