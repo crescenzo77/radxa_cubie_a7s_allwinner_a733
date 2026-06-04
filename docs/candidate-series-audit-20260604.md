@@ -233,7 +233,17 @@ Recheck note, 2026-06-04:
 - The A733 CCU driver object passed remote Linux Docker `W=1` arm64
   cross-compile on `thinkcentre`.
 - The public Linux fork now has the exact `candidate/a733-ccu-clean` branch at
-  commit `152d6f578aeae`.
+  commit `957fb1ccaf7a`.
+
+Correction note, 2026-06-04:
+
+- The A733 CCU clock header was corrected so `CLK_BUS_MMC0` uses ID `144`,
+  matching vendor `CLK_BUS_SMHC0` evidence. The earlier local value `147`
+  corresponded to `CLK_SMHC2` in that evidence and was not correct for MMC0.
+- The correction was folded into the CCU binding/header patch, keeping the
+  branch free of fixup commits.
+- `git diff --check`, per-patch checkpatch, the CCU binding check, and native
+  `strix` `W=1` object compilation passed after the correction.
 
 ## Board-Compatible Cleanup Branch
 
@@ -452,6 +462,10 @@ Machine role note:
 - `thinkcentre` is a services host; previous Docker validation there remains
   historical evidence, but new coding and build validation should prefer the
   development machines.
+
+The integrated public Linux branch was rebuilt after the `CLK_BUS_MMC0`
+correction and now points at commit `c73b7fa0359f`. The same correction is
+folded into the integrated CCU binding/header patch.
 
 The integrated branch also passed a contract scan over the touched A733 files
 for forbidden diagnostic/debug terms and Ethernet/STMMAC enablement. No
