@@ -123,8 +123,9 @@ Expected final split for an initial non-Ethernet board milestone:
 3. `clk: sunxi-ng: add Allwinner A733 CCU support`
 4. `dt-bindings: pinctrl: sunxi: add Allwinner A733 pin controller`
 5. `pinctrl: sunxi: add Allwinner A733 pin controller support`
-6. `arm64: dts: allwinner: add Allwinner A733 SoC`
-7. `arm64: dts: allwinner: add Radxa Cubie A7S`
+6. `dt-bindings: mmc: add Allwinner A733 compatible`
+7. `arm64: dts: allwinner: add Allwinner A733 SoC`
+8. `arm64: dts: allwinner: add Radxa Cubie A7S`
 
 The exact order may be adjusted for subsystem routing, but DTS users must never
 precede their bindings and headers.
