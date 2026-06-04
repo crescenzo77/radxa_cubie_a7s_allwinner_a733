@@ -1,0 +1,111 @@
+From ac4aaa2bf6f9fa22cfbc7d19fc0fe5420884c9b7 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Thu, 4 Jun 2026 08:54:43 -0400
+Subject: [PATCH 1/2] clk: sunxi-ng: add A733 UART gates
+
+Signed-off-by: Enzo <enzo@homelab.local>
+---
+ drivers/clk/sunxi-ng/ccu-sun60i-a733.c      | 30 +++++++++++++++++++++
+ include/dt-bindings/clock/sun60i-a733-ccu.h |  6 +++++
+ include/dt-bindings/reset/sun60i-a733-ccu.h |  6 +++++
+ 3 files changed, 42 insertions(+)
+
+diff --git a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+index f93c1cfc8901..ef6ca0a1e4e0 100644
+--- a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
++++ b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+@@ -31,6 +31,18 @@ static SUNXI_CCU_GATE_DATA(mmc0_clk, "mmc0", hosc, 0xd00, BIT(31), 0);
+ static SUNXI_CCU_GATE_DATA(bus_mmc0_clk, "bus-mmc0", hosc, 0xd0c, BIT(0), 0);
+ static SUNXI_CCU_GATE_HWS(bus_uart0_clk, "bus-uart0", apb_uart_hws,
+ 			  0xe00, BIT(0), 0);
++static SUNXI_CCU_GATE_HWS(bus_uart1_clk, "bus-uart1", apb_uart_hws,
++			  0xe00, BIT(1), 0);
++static SUNXI_CCU_GATE_HWS(bus_uart2_clk, "bus-uart2", apb_uart_hws,
++			  0xe00, BIT(2), 0);
++static SUNXI_CCU_GATE_HWS(bus_uart3_clk, "bus-uart3", apb_uart_hws,
++			  0xe00, BIT(3), 0);
++static SUNXI_CCU_GATE_HWS(bus_uart4_clk, "bus-uart4", apb_uart_hws,
++			  0xe00, BIT(4), 0);
++static SUNXI_CCU_GATE_HWS(bus_uart5_clk, "bus-uart5", apb_uart_hws,
++			  0xe00, BIT(5), 0);
++static SUNXI_CCU_GATE_HWS(bus_uart6_clk, "bus-uart6", apb_uart_hws,
++			  0xe00, BIT(6), 0);
+ static SUNXI_CCU_GATE_DATA(bus_i2c0_clk, "bus-i2c0", hosc, 0xe80, BIT(0), 0);
+ static SUNXI_CCU_GATE_DATA(bus_i2c1_clk, "bus-i2c1", hosc, 0xe80, BIT(1), 0);
+ static SUNXI_CCU_GATE_DATA(bus_i2c2_clk, "bus-i2c2", hosc, 0xe80, BIT(2), 0);
+@@ -66,6 +78,12 @@ static struct ccu_common *sun60i_a733_ccu_clks[] = {
+ 	&mmc0_clk.common,
+ 	&bus_mmc0_clk.common,
+ 	&bus_uart0_clk.common,
++	&bus_uart1_clk.common,
++	&bus_uart2_clk.common,
++	&bus_uart3_clk.common,
++	&bus_uart4_clk.common,
++	&bus_uart5_clk.common,
++	&bus_uart6_clk.common,
+ 	&bus_i2c0_clk.common,
+ 	&bus_i2c1_clk.common,
+ 	&bus_i2c2_clk.common,
+@@ -104,6 +122,12 @@ static struct clk_hw_onecell_data sun60i_a733_hw_clks = {
+ 		[CLK_MMC0]	= &mmc0_clk.common.hw,
+ 		[CLK_BUS_MMC0]	= &bus_mmc0_clk.common.hw,
+ 		[CLK_BUS_UART0]	= &bus_uart0_clk.common.hw,
++		[CLK_BUS_UART1]	= &bus_uart1_clk.common.hw,
++		[CLK_BUS_UART2]	= &bus_uart2_clk.common.hw,
++		[CLK_BUS_UART3]	= &bus_uart3_clk.common.hw,
++		[CLK_BUS_UART4]	= &bus_uart4_clk.common.hw,
++		[CLK_BUS_UART5]	= &bus_uart5_clk.common.hw,
++		[CLK_BUS_UART6]	= &bus_uart6_clk.common.hw,
+ 		[CLK_BUS_I2C0]	= &bus_i2c0_clk.common.hw,
+ 		[CLK_BUS_I2C1]	= &bus_i2c1_clk.common.hw,
+ 		[CLK_BUS_I2C2]	= &bus_i2c2_clk.common.hw,
+@@ -140,6 +164,12 @@ static struct clk_hw_onecell_data sun60i_a733_hw_clks = {
+ static struct ccu_reset_map sun60i_a733_ccu_resets[] = {
+ 	[RST_BUS_MMC0]	= { 0xd0c, BIT(16) },
+ 	[RST_BUS_UART0]	= { 0xe00, BIT(16) },
++	[RST_BUS_UART1]	= { 0xe00, BIT(17) },
++	[RST_BUS_UART2]	= { 0xe00, BIT(18) },
++	[RST_BUS_UART3]	= { 0xe00, BIT(19) },
++	[RST_BUS_UART4]	= { 0xe00, BIT(20) },
++	[RST_BUS_UART5]	= { 0xe00, BIT(21) },
++	[RST_BUS_UART6]	= { 0xe00, BIT(22) },
+ 	[RST_BUS_I2C0]	= { 0xe80, BIT(16) },
+ 	[RST_BUS_I2C1]	= { 0xe80, BIT(17) },
+ 	[RST_BUS_I2C2]	= { 0xe80, BIT(18) },
+diff --git a/include/dt-bindings/clock/sun60i-a733-ccu.h b/include/dt-bindings/clock/sun60i-a733-ccu.h
+index 8c582c5a248a..87944854fabc 100644
+--- a/include/dt-bindings/clock/sun60i-a733-ccu.h
++++ b/include/dt-bindings/clock/sun60i-a733-ccu.h
+@@ -8,6 +8,12 @@
+ #define CLK_MMC0		143
+ #define CLK_BUS_MMC0		144
+ #define CLK_BUS_UART0		154
++#define CLK_BUS_UART1		155
++#define CLK_BUS_UART2		156
++#define CLK_BUS_UART3		157
++#define CLK_BUS_UART4		158
++#define CLK_BUS_UART5		159
++#define CLK_BUS_UART6		160
+ #define CLK_BUS_I2C0		161
+ #define CLK_BUS_I2C1		162
+ #define CLK_BUS_I2C2		163
+diff --git a/include/dt-bindings/reset/sun60i-a733-ccu.h b/include/dt-bindings/reset/sun60i-a733-ccu.h
+index 3645e208274a..f944ef3195cf 100644
+--- a/include/dt-bindings/reset/sun60i-a733-ccu.h
++++ b/include/dt-bindings/reset/sun60i-a733-ccu.h
+@@ -5,6 +5,12 @@
+ 
+ #define RST_BUS_MMC0		35
+ #define RST_BUS_UART0		41
++#define RST_BUS_UART1		42
++#define RST_BUS_UART2		43
++#define RST_BUS_UART3		44
++#define RST_BUS_UART4		45
++#define RST_BUS_UART5		46
++#define RST_BUS_UART6		47
+ #define RST_BUS_I2C0		48
+ #define RST_BUS_I2C1		49
+ #define RST_BUS_I2C2		50
+-- 
+2.53.0
+
