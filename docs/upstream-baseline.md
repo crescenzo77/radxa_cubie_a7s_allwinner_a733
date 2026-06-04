@@ -52,5 +52,5 @@ work. Keep it short. Do not add new governance Markdown.
 | MMC0 / storage DTS | Mainline Validated |
 | Ethernet / GMAC210 | Disabled SoC Node Validated; Board Enable Deferred |
 | USB host / USB3 | USB host Mainline Validated; USB3 Discovery |
-| Thermal / GPADC | GPADC Mainline Validated; THS Discovery |
+| Thermal / GPADC | Mainline Validated |
 | I2C / TWI | Mainline Validated |
