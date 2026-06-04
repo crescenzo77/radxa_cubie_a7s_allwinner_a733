@@ -300,6 +300,10 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-elf- DT_SCHEMA_FILES=allwinner,sun60i-a733
 dt-validate -u ./Documentation/devicetree/bindings -p ./Documentation/devicetree/bindings/processed-schema.json arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dtb
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- drivers/clk/sunxi-ng/ccu-sun60i-a733.o drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- W=1 drivers/clk/sunxi-ng/ccu-sun60i-a733.o drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o
+make DT_SCHEMA_FILES=Documentation/devicetree/bindings/arm/sunxi.yaml dt_binding_check
+make DT_SCHEMA_FILES=Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml dt_binding_check
+make DT_SCHEMA_FILES=Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml dt_binding_check
+make DT_SCHEMA_FILES=Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml dt_binding_check
 ```
 
 Current checkpatch findings:
@@ -336,6 +340,9 @@ the integrated branch using a temporary Docker Linux build container on
 and `gcc-aarch64-linux-gnu`, then built arm64 `defconfig`, both A733 driver
 objects, and the focused Cubie A7S `CHECK_DTBS=y` target.
 Both A733 driver objects also pass the same remote build with `W=1`.
+The four binding checks also pass in the same remote Linux Docker flow using
+`dtschema` 2024.11; the run reports only unrelated global missing type
+definition warnings from other in-tree bindings.
 
 The integrated branch also passed a contract scan over the touched A733 files
 for forbidden diagnostic/debug terms and Ethernet/STMMAC enablement. No

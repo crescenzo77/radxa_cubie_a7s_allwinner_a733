@@ -98,7 +98,8 @@ It now builds arm64 `defconfig` and validates the Cubie A7S DTB through the
 kernel `CHECK_DTBS=y` path on a temporary case-sensitive APFS volume. The
 generated DTB also passes direct `dt-validate` against the processed in-tree
 schema. The integrated branch also compile-tests both A733 driver objects in a
-remote Linux Docker build container with `W=1` and an arm64 cross compiler.
+remote Linux Docker build container with `W=1` and an arm64 cross compiler, and
+the four binding checks pass in that same remote Linux flow.
 
 ## Immediate Mainline Question
 
