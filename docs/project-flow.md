@@ -42,6 +42,20 @@ On macOS, run kernel make targets from a path without spaces or colons. If the
 project checkout lives under a path with spaces, create a temporary detached
 worktree under `/tmp` and run GNU Make 4.0 or newer there.
 
+For full-tree Linux kernel checks on macOS, use either a case-sensitive APFS
+temporary volume or the `thinkcentre` Docker path. The upstream kernel contains
+case-colliding paths that cannot be materialized safely on the default
+case-insensitive macOS filesystem. The current remote validation pattern is to
+export the candidate branch with `git archive`, unpack it under `/tmp` on
+`thinkcentre`, and run a disposable Linux container with GNU Make, flex, bison,
+libssl, libelf, `dtschema`, and `gcc-aarch64-linux-gnu`.
+
+Do not treat a kernel `CHECK_DTBS=y` run as successful merely because `make`
+returned zero: the kernel rule masks `dt-validate` failures with `|| true`.
+Use a `dtschema` version compatible with the kernel invocation, pass multiple
+`DT_SCHEMA_FILES` filters as a colon-separated list, and inspect the validation
+output for real schema errors.
+
 ## Binding Inventory
 
 No DTS/DTSI patch may use an A733-specific compatible string, clock ID, reset
