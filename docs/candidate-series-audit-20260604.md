@@ -146,6 +146,18 @@ definition warnings from other in-tree bindings, but no A733 binding error.
 The pinctrl driver object now compile-tests cleanly with an arm64 cross
 compiler inside a temporary Docker Linux build container on `thinkcentre`.
 
+Recheck note, 2026-06-04:
+
+- `candidate/a733-pinctrl-clean` was reselected as the active kernel branch.
+- `git diff --check public/master..HEAD` passed.
+- Per-patch `checkpatch.pl --no-tree --strict --show-types` still reports only
+  `MISSING_SIGN_OFF` and `FILE_PATH_CHANGES`.
+- Focused grep of the pinctrl candidate files found no WIP, fixup, diagnostic,
+  trace, printk, STMMAC, GMAC, or Ethernet code.
+- The A733 pinctrl binding passed `dt_binding_check`.
+- The A733 pinctrl driver object passed remote Linux Docker `W=1` arm64
+  cross-compile on `thinkcentre`.
+
 ## CCU-Only Cleanup Branch
 
 The `candidate/a733-ccu-clean` branch isolates the second bindings-first slice:
