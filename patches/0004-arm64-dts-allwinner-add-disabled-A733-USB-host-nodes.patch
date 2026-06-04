@@ -1,0 +1,101 @@
+From 34794a2fab35533495f8419e3d161c7353df0538 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Thu, 4 Jun 2026 08:38:01 -0400
+Subject: [PATCH 4/4] arm64: dts: allwinner: add disabled A733 USB host nodes
+
+---
+ .../arm64/boot/dts/allwinner/sun60i-a733.dtsi | 78 +++++++++++++++++++
+ 1 file changed, 78 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
+index 6e935404f527..4a9a7453fe9e 100644
+--- a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
+@@ -244,6 +244,84 @@ syscon: syscon@3000000 {
+ 			ranges;
+ 		};
+ 
++		usb_otg: usb@4100000 {
++			compatible = "allwinner,sun8i-a33-musb";
++			reg = <0x04100000 0x400>;
++			interrupts = <GIC_SPI 156 IRQ_TYPE_LEVEL_HIGH>;
++			interrupt-names = "mc";
++			clocks = <&ccu CLK_BUS_OTG>;
++			resets = <&ccu RST_BUS_OTG>;
++			extcon = <&usbphy 0>;
++			phys = <&usbphy 0>;
++			phy-names = "usb";
++			status = "disabled";
++		};
++
++		usbphy: phy@4100400 {
++			compatible = "allwinner,sun60i-a733-usb-phy",
++				     "allwinner,sun20i-d1-usb-phy";
++			reg = <0x04100400 0x100>,
++			      <0x04101800 0x100>,
++			      <0x04200800 0x100>;
++			reg-names = "phy_ctrl", "pmu0", "pmu1";
++			clocks = <&osc24M>, <&osc24M>;
++			clock-names = "usb0_phy", "usb1_phy";
++			resets = <&ccu RST_USB_PHY0>, <&ccu RST_USB_PHY1>;
++			reset-names = "usb0_reset", "usb1_reset";
++			status = "disabled";
++			#phy-cells = <1>;
++		};
++
++		ehci0: usb@4101000 {
++			compatible = "allwinner,sun60i-a733-ehci",
++				     "generic-ehci";
++			reg = <0x04101000 0x100>;
++			interrupts = <GIC_SPI 157 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&ccu CLK_BUS_OHCI0>, <&ccu CLK_BUS_EHCI0>,
++				 <&ccu CLK_USB_OHCI0>;
++			resets = <&ccu RST_BUS_OHCI0>, <&ccu RST_BUS_EHCI0>;
++			phys = <&usbphy 0>;
++			phy-names = "usb";
++			status = "disabled";
++		};
++
++		ohci0: usb@4101400 {
++			compatible = "allwinner,sun60i-a733-ohci",
++				     "generic-ohci";
++			reg = <0x04101400 0x100>;
++			interrupts = <GIC_SPI 158 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&ccu CLK_BUS_OHCI0>, <&ccu CLK_USB_OHCI0>;
++			resets = <&ccu RST_BUS_OHCI0>;
++			phys = <&usbphy 0>;
++			phy-names = "usb";
++			status = "disabled";
++		};
++
++		ehci1: usb@4200000 {
++			compatible = "allwinner,sun60i-a733-ehci",
++				     "generic-ehci";
++			reg = <0x04200000 0x100>;
++			interrupts = <GIC_SPI 159 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&ccu CLK_BUS_OHCI1>, <&ccu CLK_BUS_EHCI1>,
++				 <&ccu CLK_USB_OHCI1>;
++			resets = <&ccu RST_BUS_OHCI1>, <&ccu RST_BUS_EHCI1>;
++			phys = <&usbphy 1>;
++			phy-names = "usb";
++			status = "disabled";
++		};
++
++		ohci1: usb@4200400 {
++			compatible = "allwinner,sun60i-a733-ohci",
++				     "generic-ohci";
++			reg = <0x04200400 0x100>;
++			interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&ccu CLK_BUS_OHCI1>, <&ccu CLK_USB_OHCI1>;
++			resets = <&ccu RST_BUS_OHCI1>;
++			phys = <&usbphy 1>;
++			phy-names = "usb";
++			status = "disabled";
++		};
++
+ 		mmc0: mmc@4020000 {
+ 			compatible = "allwinner,sun60i-a733-mmc",
+ 				     "allwinner,sun20i-d1-mmc";
+-- 
+2.53.0
+
