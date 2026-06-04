@@ -63,6 +63,10 @@ Candidate patches must:
 Patch branches containing fixup commits, unresolved checkpatch findings, or
 unvalidated Devicetree schema changes are not public candidates.
 
+Policy documents alone are not enough. Any branch whose code still contains
+generic subsystem hacks, diagnostic scaffolding, undocumented DTS properties, or
+known-broken enabled nodes must remain private or clearly marked as lab state.
+
 Experimental work belongs on private lab branches, not public `main`.
 
 ## Devicetree Standard

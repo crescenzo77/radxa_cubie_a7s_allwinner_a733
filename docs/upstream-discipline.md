@@ -40,6 +40,11 @@ Candidate patches must:
 Patch branches with known fixup commits, unresolved split warnings, or missing
 binding/schema coverage are not public candidates.
 
+The local toolchain must be capable of running the required checks. In
+particular, kernel `make dt_binding_check` and `make dtbs_check` require GNU
+Make 4.0 or newer; a branch is not fully validated until those checks run on a
+suitable host.
+
 ## Subsystem Boundaries
 
 Vendor-specific A733 behavior must stay out of generic STMMAC core files.

@@ -16,6 +16,28 @@ clean LKML patch series without first undoing lab history.
 7. Do disclose AI assistance for kernel patches when AI contributed to the
    final code, review, or commit text.
 
+## Code-Policy Gap Rule
+
+Documentation is not compliance. The candidate kernel code must obey this
+contract before it is treated as public-ready.
+
+If a branch contains code that violates this contract, mark the branch as
+private lab state or local working state. Do not describe it as a candidate
+series until the code, commit history, bindings, and checks match the policy.
+
+The immediate enforcement path is:
+
+1. isolate one subsystem at a time;
+2. rebuild the branch from a clean kernel base;
+3. copy only the final hardware description and driver logic;
+4. discard trace commits, fixup commits, failed experiments, and mailbox
+   failures;
+5. add or update YAML bindings before DTS users;
+6. run and record the required checks.
+
+This avoids accumulating a larger cleanup debt while hardware bring-up
+continues.
+
 ## Subsystem Boundaries
 
 The generic STMMAC core is not the place for A733-specific sequencing.
@@ -151,6 +173,9 @@ Do not publish:
 
 Use private branches for discovery. Before anything becomes public candidate
 work, rebuild it into atomic subsystem patches.
+
+Candidate branches must not contain `fixup!`, `squash!`, `WIP`, `try`, or
+diagnostic commits. If such commits exist, the branch is still a work branch.
 
 ## Required Checks Before Candidate Publication
 
