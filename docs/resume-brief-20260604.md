@@ -46,6 +46,7 @@ Key docs:
 - `docs/status.md`
 - `docs/evidence.md`
 - `docs/candidate-series-audit-20260604.md`
+- `docs/human-dco-review-checklist.md`
 
 ## Kernel Worktrees
 

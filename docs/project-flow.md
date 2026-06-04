@@ -58,17 +58,18 @@ Home network machine roles:
 - `amd`: `192.168.50.252`, development host; as of 2026-06-04 it has gcc and
   GNU Make visible over SSH, but not the arm64 cross compiler, flex, bison, or
   `dtschema` in the default path;
-- `mac-mini`: `192.168.50.164`, development host; SSH authentication from this
-  workspace was not available as of 2026-06-04;
+- `mac-mini`: `192.168.50.164`, current local Codex Desktop workstation and
+  development host;
 - `mini-pc`: `192.168.50.76`, media server and LVM host only;
 - `thinkcentre`: services host only.
 
-Prefer the development machines (`strix`, `amd`, and `mac-mini`) for coding and
-kernel validation. For arm64 kernel builds today, prefer `strix`. Do not use
-`mini-pc` for general development work. Treat `thinkcentre` as service
-infrastructure; use it for build work only when the task specifically needs a
-service hosted there or no development machine can provide the required
-environment.
+Prefer the development machines (`mac-mini`, `strix`, and `amd`) for coding and
+kernel validation. Use local mac-mini shell access directly; do not treat SSH
+to `192.168.50.164` as required for local work. For native Linux arm64 kernel
+builds today, prefer `strix`. Do not use `mini-pc` for general development
+work. Treat `thinkcentre` as service infrastructure; use it for build work only
+when the task specifically needs a service hosted there or no development
+machine can provide the required environment.
 
 Do not treat a kernel `CHECK_DTBS=y` run as successful merely because `make`
 returned zero: the kernel rule masks `dt-validate` failures with `|| true`.

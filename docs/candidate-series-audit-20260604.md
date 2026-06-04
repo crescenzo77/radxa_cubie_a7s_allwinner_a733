@@ -441,8 +441,8 @@ Machine role note:
 - `strix` is currently the best validated arm64 kernel build host.
 - `amd` is reachable but lacks the arm64 cross compiler, flex, bison, and
   `dtschema` in the default SSH path.
-- `mac-mini` SSH authentication from this workspace was not available during
-  this audit.
+- `mac-mini` is the current local Codex Desktop workstation at
+  `192.168.50.164`; SSH to that same LAN IP is not required for local work.
 - `mini-pc` (`192.168.50.76`) is a media server and LVM host only.
 - `thinkcentre` is a services host; previous Docker validation there remains
   historical evidence, but new coding and build validation should prefer the
