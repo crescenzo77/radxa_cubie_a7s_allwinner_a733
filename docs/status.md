@@ -79,9 +79,14 @@ Upstream-facing requirement:
 
 The A733 pinctrl binding now exists in the clean local candidate branch and has
 passed `dt_binding_check`. The remaining non-Ethernet platform work still needs
-formal A733 CCU and Radxa Cubie A7S board-compatible bindings before DTSI or
-board DTS publication. The A733 GMAC210/EMAC binding is intentionally deferred
-until Ethernet behavior is proven.
+a formal Radxa Cubie A7S board-compatible binding before board DTS
+publication. The A733 GMAC210/EMAC binding is intentionally deferred until
+Ethernet behavior is proven.
+
+The A733 CCU binding/header/driver slice now exists in
+`candidate/a733-ccu-clean` and has passed `dt_binding_check`. It still needs
+compile validation on a Linux host with clang or an arm64 cross compiler before
+it can be treated as publication-ready.
 
 ## Immediate Mainline Question
 

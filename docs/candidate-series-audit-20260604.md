@@ -12,6 +12,13 @@ sources/mainline-linux-a733-upstream
 candidate/a733-pinctrl-clean
 ```
 
+Current CCU-only cleanup branch:
+
+```text
+sources/mainline-linux-a733-upstream
+candidate/a733-ccu-clean
+```
+
 Current broader platform work branch:
 
 ```text
@@ -115,6 +122,52 @@ definition warnings from other in-tree bindings, but no A733 binding error.
 An object build was attempted with `ARCH=arm64 LLVM=1`, but macOS hosted kernel
 `defconfig` recursed until terminated. Treat compile validation as still
 requiring a Linux build host or known-good cross-build environment.
+
+## CCU-Only Cleanup Branch
+
+The `candidate/a733-ccu-clean` branch isolates the second bindings-first slice:
+
+- it contains only the A733 CCU binding/header patch and A733 CCU driver patch;
+- it does not contain DTS users;
+- it does not contain Ethernet or generic STMMAC changes;
+- it does not contain diagnostic traces, register scans, or board-specific
+  bring-up prose in production code;
+- it adds
+  `Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml`;
+- it adds clock/reset header IDs only for clocks and resets represented by the
+  candidate driver.
+
+Current branch shape:
+
+```text
+dt-bindings: clock: add Allwinner A733 CCU
+clk: sunxi-ng: add Allwinner A733 CCU support
+```
+
+Checks run:
+
+```text
+git diff --check
+scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
+make dt_binding_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml
+```
+
+Current checkpatch findings:
+
+- `MISSING_SIGN_OFF`: expected until Enzo performs human DCO review;
+- `FILE_PATH_CHANGES`: expected for new binding, header, and driver files
+  covered by existing Allwinner/sunxi maintainer patterns.
+
+`make dt_binding_check` passed for the A733 CCU binding and example using
+Homebrew GNU Make 4.4.1, the temporary `/tmp/a733-dtschema-venv` environment,
+and a detached `/private/tmp` worktree. The run emitted unrelated global
+missing type definition warnings from other in-tree bindings, but no A733 CCU
+binding error.
+
+Compile validation remains unresolved. The macOS kernel `defconfig` target
+recursed until terminated. The available Linux `thinkcentre` host has GNU Make
+4.4.1 but no arm64 cross compiler or clang, so it could not compile the arm64
+CCU object.
 
 ## Checkpatch Status
 
