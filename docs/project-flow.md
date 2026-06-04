@@ -71,6 +71,10 @@ work. Treat `thinkcentre` as service infrastructure; use it for build work only
 when the task specifically needs a service hosted there or no development
 machine can provide the required environment.
 
+For schema checks on `strix`, native Python 3.14 is currently not the preferred
+`dtschema` runtime. Use the local mac-mini `/tmp/a733-dtschema-venv` flow or a
+disposable `python:3.11-slim` Docker container on `strix`.
+
 Do not treat a kernel `CHECK_DTBS=y` run as successful merely because `make`
 returned zero: the kernel rule masks `dt-validate` failures with `|| true`.
 Use a `dtschema` version compatible with the kernel invocation, pass multiple

@@ -433,6 +433,11 @@ Native Linux compile recheck, 2026-06-04:
 - `strix` does not currently have the Python `dtschema` module installed, so
   binding validation still uses the local `/tmp/a733-dtschema-venv` or a Linux
   container path.
+- Native `strix` Python is currently 3.14, which tripped `dtschema` 2024.11
+  processing. Schema validation was rerun successfully on `strix` using a
+  disposable `python:3.11-slim` Docker container. The A733 board, CCU, pinctrl,
+  and MMC binding checks passed, with only unrelated global missing type
+  definition warnings from other in-tree bindings.
 
 Machine role note:
 
