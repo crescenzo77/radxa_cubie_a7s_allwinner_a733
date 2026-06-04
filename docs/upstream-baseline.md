@@ -61,4 +61,5 @@ work. Keep it short. Do not add new governance Markdown.
 | RTC | Mainline Validated |
 | SID / efuse | Mainline Validated |
 | DMA | Mainline Validated |
+| SPI | Mainline Validated |
 | DVFS / CPU OPP | Deferred; CPU PLL clock support needed |

@@ -1,0 +1,99 @@
+From 7453140a55e901f258fa0ee099b99d4b0fc2f5f9 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Thu, 4 Jun 2026 19:46:02 -0400
+Subject: [PATCH 3/3] arm64: dts: allwinner: add A733 SPI controllers
+
+---
+ .../arm64/boot/dts/allwinner/sun60i-a733.dtsi | 76 +++++++++++++++++++
+ 1 file changed, 76 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
+index 7485ade0d550..221264f0bd89 100644
+--- a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
+@@ -385,6 +385,82 @@ uart6: serial@2506000 {
+ 			status = "disabled";
+ 		};
+ 
++
++		spi0: spi@2540000 {
++			compatible = "allwinner,sun60i-a733-spi",
++				     "allwinner,sun8i-h3-spi";
++			reg = <0x02540000 0x1000>;
++			interrupts = <GIC_SPI 24 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&ccu CLK_BUS_SPI0>, <&ccu CLK_SPI0>;
++			clock-names = "ahb", "mod";
++			dmas = <&dma 23>, <&dma 23>;
++			dma-names = "rx", "tx";
++			resets = <&ccu RST_BUS_SPI0>;
++			status = "disabled";
++			#address-cells = <1>;
++			#size-cells = <0>;
++		};
++
++		spi1: spi@2541000 {
++			compatible = "allwinner,sun60i-a733-spi",
++				     "allwinner,sun8i-h3-spi";
++			reg = <0x02541000 0x1000>;
++			interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&ccu CLK_BUS_SPI1>, <&ccu CLK_SPI1>;
++			clock-names = "ahb", "mod";
++			dmas = <&dma 24>, <&dma 24>;
++			dma-names = "rx", "tx";
++			resets = <&ccu RST_BUS_SPI1>;
++			status = "disabled";
++			#address-cells = <1>;
++			#size-cells = <0>;
++		};
++
++		spi2: spi@2542000 {
++			compatible = "allwinner,sun60i-a733-spi",
++				     "allwinner,sun8i-h3-spi";
++			reg = <0x02542000 0x1000>;
++			interrupts = <GIC_SPI 26 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&ccu CLK_BUS_SPI2>, <&ccu CLK_SPI2>;
++			clock-names = "ahb", "mod";
++			dmas = <&dma 25>, <&dma 25>;
++			dma-names = "rx", "tx";
++			resets = <&ccu RST_BUS_SPI2>;
++			status = "disabled";
++			#address-cells = <1>;
++			#size-cells = <0>;
++		};
++
++		spi3: spi@2543000 {
++			compatible = "allwinner,sun60i-a733-spi",
++				     "allwinner,sun8i-h3-spi";
++			reg = <0x02543000 0x1000>;
++			interrupts = <GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&ccu CLK_BUS_SPI3>, <&ccu CLK_SPI3>;
++			clock-names = "ahb", "mod";
++			dmas = <&dma 26>, <&dma 26>;
++			dma-names = "rx", "tx";
++			resets = <&ccu RST_BUS_SPI3>;
++			status = "disabled";
++			#address-cells = <1>;
++			#size-cells = <0>;
++		};
++
++		spi4: spi@2544000 {
++			compatible = "allwinner,sun60i-a733-spi",
++				     "allwinner,sun8i-h3-spi";
++			reg = <0x02544000 0x1000>;
++			interrupts = <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&ccu CLK_BUS_SPI4>, <&ccu CLK_SPI4>;
++			clock-names = "ahb", "mod";
++			dmas = <&dma 54>, <&dma 54>;
++			dma-names = "rx", "tx";
++			resets = <&ccu RST_BUS_SPI4>;
++			status = "disabled";
++			#address-cells = <1>;
++			#size-cells = <0>;
++		};
++
+ 		dma: dma-controller@4601000 {
+ 			compatible = "allwinner,sun60i-a733-dma",
+ 				     "allwinner,sun50i-a100-dma";
+-- 
+2.53.0
+
