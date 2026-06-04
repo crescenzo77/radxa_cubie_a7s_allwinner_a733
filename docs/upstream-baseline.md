@@ -49,4 +49,4 @@ work. Keep it short. Do not add new governance Markdown.
 | Pinctrl | Mainline Validated |
 | CCU | Mainline Validated |
 | MMC0 / storage DTS | Mainline Validated |
-| Ethernet / GMAC210 | Deferred Until Hardware Proven |
+| Ethernet / GMAC210 | Disabled SoC Node Validated; Board Enable Deferred |
