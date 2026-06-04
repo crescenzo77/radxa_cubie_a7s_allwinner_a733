@@ -102,6 +102,24 @@ remote Linux Docker build container with `W=1` and an arm64 cross compiler, and
 the four binding checks pass in that same remote Linux flow. The integrated
 branch also builds a full arm64 defconfig `Image`.
 
+## Public Code Branches
+
+Clean candidate kernel branches are published in the Linux fork:
+
+```text
+https://github.com/crescenzo77/linux.git
+candidate/a733-pinctrl-clean
+candidate/a733-ccu-clean
+candidate/a733-board-binding-clean
+candidate/a733-mmc-binding-clean
+candidate/a733-platform-clean
+```
+
+The `patches/` directory in this documentation repository remains an
+intentionally clean, empty baseline. Do not claim that mailbox patches exist in
+that directory until they are generated from the clean kernel tree and written
+there.
+
 ## Immediate Mainline Question
 
 Does the A733 GMAC0 DMA reset require Allwinner GMAC210 wrapper programming

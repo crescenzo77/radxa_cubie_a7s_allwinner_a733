@@ -63,6 +63,21 @@ The non-Ethernet A733/Cubie A7S candidate series is the right near-term
 upstream milestone. It avoids claiming Ethernet while GMAC0 still has an
 unresolved DMA software reset timeout.
 
+Clean candidate branches are now published in the public Linux fork:
+
+```text
+https://github.com/crescenzo77/linux.git
+candidate/a733-pinctrl-clean
+candidate/a733-ccu-clean
+candidate/a733-board-binding-clean
+candidate/a733-mmc-binding-clean
+candidate/a733-platform-clean
+```
+
+The documentation repository's `patches/` directory remains an intentionally
+clean, empty baseline. Candidate patch files should not be claimed there until
+they are generated from the clean kernel tree and written to that directory.
+
 The broader platform series still needs cleanup before submission:
 
 - DTS/driver/binding changes must be split so binding patches stand alone.

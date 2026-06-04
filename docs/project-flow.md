@@ -134,3 +134,13 @@ Public `main` remains documentation-first until a candidate series is clean
 enough to be sent for review. Do not publish lab artifacts, generated files,
 diagnostic patches, rejected mailboxes, or patch histories that preserve
 trial-and-error discovery.
+
+Clean candidate code may be published as curated branches in the public Linux
+fork when the candidate gate is satisfied and the branch is clearly identified
+as a candidate branch. This is separate from the documentation repository's
+`patches/` directory.
+
+The documentation repository's `patches/` directory is an intentionally empty
+baseline until mailbox files are generated from a clean kernel tree, verified
+with `git am`, and written there. Do not imply that public patch files exist
+there before that happens.
