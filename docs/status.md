@@ -87,3 +87,6 @@ The first acceptable public patch goal is initial A733/Cubie A7S platform
 support without claiming Ethernet. Ethernet enablement should be a separate
 series after the GMAC210 wrapper model, CCU clocks, reset ordering, MDIO bus,
 and PHY reset/power behavior are proven.
+
+The latest local candidate-series audit is recorded in
+[candidate-series-audit-20260604.md](candidate-series-audit-20260604.md).
