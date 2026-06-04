@@ -154,7 +154,8 @@ through the kernel `CHECK_DTBS=y` path on a temporary case-sensitive APFS
 volume. The generated DTB also passes direct `dt-validate` against the
 processed in-tree schema. The integrated branch also compile-tests both A733
 driver objects cleanly with `W=1` in the remote Linux Docker build flow. The
-four binding checks also pass in that remote Linux flow.
+four binding checks also pass in that remote Linux flow, and the integrated
+branch builds a full arm64 defconfig `Image`.
 
 Checks already run:
 
