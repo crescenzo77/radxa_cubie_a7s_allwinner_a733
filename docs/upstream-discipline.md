@@ -2,6 +2,9 @@
 
 This project treats LKML and subsystem review as the target environment.
 
+The public branch appearance contract is recorded in
+[public-repo-expectations.md](public-repo-expectations.md).
+
 ## Repository Hygiene
 
 The public branch must not contain:

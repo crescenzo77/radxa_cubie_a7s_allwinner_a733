@@ -50,6 +50,8 @@ prototype-app workflow:
   kernel-documented `Assisted-by:` trailer.
 
 See [docs/upstream-discipline.md](docs/upstream-discipline.md).
+See [docs/public-repo-expectations.md](docs/public-repo-expectations.md) for
+the public branch appearance contract.
 
 ## Public Branch Policy
 
