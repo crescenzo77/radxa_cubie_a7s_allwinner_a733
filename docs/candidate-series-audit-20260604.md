@@ -337,6 +337,16 @@ and `gcc-aarch64-linux-gnu`, then built arm64 `defconfig`, both A733 driver
 objects, and the focused Cubie A7S `CHECK_DTBS=y` target.
 Both A733 driver objects also pass the same remote build with `W=1`.
 
+The integrated branch also passed a contract scan over the touched A733 files
+for forbidden diagnostic/debug terms and Ethernet/STMMAC enablement. No
+candidate file in the non-Ethernet stack contains `pr_info`, `printk`,
+diagnostic prose, fixup/WIP terms, or GMAC/STMMAC/Ethernet content.
+
+`scripts/get_maintainer.pl -f` on the integrated touched files reports the
+expected devicetree, ARM/sunxi, clock, MMC, pinctrl, reset, and kernel lists.
+That list is preparatory routing evidence only; no patch series has been
+published from this repository.
+
 ## Checkpatch Status
 
 The checkpoint patch was checked with:
