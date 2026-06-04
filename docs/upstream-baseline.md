@@ -54,3 +54,4 @@ work. Keep it short. Do not add new governance Markdown.
 | USB host / USB3 | Mainline Validated |
 | Thermal / GPADC | Mainline Validated |
 | I2C / TWI | Mainline Validated |
+| UART | Mainline Validated |
