@@ -145,9 +145,10 @@ arm64: dts: allwinner: add Radxa Cubie A7S
 It keeps Ethernet absent, uses the eleven-parent-interrupt A733 PIO layout, and
 enables only UART0 and MMC0 in the board DTS. `git diff --check` and per-patch
 checkpatch have been run. `git format-patch` output applies cleanly with
-`git am`. The branch now builds `defconfig` and the Cubie A7S DTB on a
-temporary case-sensitive APFS volume, and the generated DTB passes direct
-`dt-validate` against the processed in-tree schema.
+`git am`. The branch now builds `defconfig` and validates the Cubie A7S DTB
+through the kernel `CHECK_DTBS=y` path on a temporary case-sensitive APFS
+volume. The generated DTB also passes direct `dt-validate` against the
+processed in-tree schema.
 
 Checks already run:
 
@@ -161,8 +162,6 @@ Remaining expected issues:
 
 - no human `Signed-off-by` yet;
 - checkpatch new-file MAINTAINERS warnings;
-- full native `dtbs_check` still needs a Linux build host or a `dtschema`
-  version compatible with the kernel's `dt-validate -l <schema>` invocation;
 - object compile validation still needs a Linux build host or known-good
   cross-build environment.
 
@@ -176,8 +175,8 @@ Validation note:
 - the A733 pinctrl binding and example passed schema validation.
 - full Linux-tree materialization on macOS requires a temporary case-sensitive
   APFS volume because the upstream kernel contains case-colliding paths;
-- `dtschema` 2026.4 works for direct `dt-validate`, but its CLI is not
-  compatible with the kernel make rule's masked `dt-validate -l <schema>` call;
+- focused kernel `CHECK_DTBS=y` passed with `dtschema` 2024.11 and a
+  colon-separated `DT_SCHEMA_FILES` list;
 - macOS object compilation is blocked at host `scripts/sorttable.o` because the
   host lacks a Linux-compatible `elf.h`.
 
@@ -222,9 +221,8 @@ STMMAC glue code, not generic STMMAC core files.
    cross-build environment.
 4. Compile-test the CCU candidate on a Linux host with clang or an arm64 cross
    compiler.
-5. Run native `dtbs_check` for `candidate/a733-platform-clean` on a complete
-   Linux build host with GNU Make, flex, dt-schema, and an arm64-capable
-   compiler.
+5. Compile-test the integrated branch on a complete Linux build host with GNU
+   Make, flex, bison, dtc, and an arm64-capable compiler.
 6. Keep candidate branches clean: no fixup commits, traces, generic subsystem
    hacks, or broken enabled DTS nodes.
 7. After native `dtbs_check` is clean, prepare the non-Ethernet platform stack

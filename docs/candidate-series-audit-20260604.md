@@ -293,7 +293,7 @@ git format-patch
 git am
 scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
 make ARCH=arm64 CROSS_COMPILE=aarch64-elf- defconfig
-make ARCH=arm64 CROSS_COMPILE=aarch64-elf- CHECK_DTBS=y allwinner/sun60i-a733-cubie-a7s.dtb
+make ARCH=arm64 CROSS_COMPILE=aarch64-elf- DT_SCHEMA_FILES=allwinner,sun60i-a733-pinctrl.yaml:allwinner,sun60i-a733-ccu.yaml:allwinner,sun4i-a10-mmc.yaml:arm/sunxi.yaml CHECK_DTBS=y allwinner/sun60i-a733-cubie-a7s.dtb
 dt-validate -u ./Documentation/devicetree/bindings -p ./Documentation/devicetree/bindings/processed-schema.json arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dtb
 ```
 
@@ -312,18 +312,18 @@ Direct local DT preprocessing and `dtc` produced a DTB for
 and `git am` applied those patches cleanly onto the mainline base in a detached
 temporary worktree.
 
-The integrated branch now also builds a default arm64 config and the Cubie A7S
-DTB on a temporary case-sensitive APFS volume. That volume is required because
-the upstream Linux tree has case-colliding files that cannot be materialized
-cleanly on the default macOS case-insensitive filesystem. The generated DTB
-passes direct `dt-validate` against the processed in-tree schema.
+The integrated branch now also builds a default arm64 config and validates the
+Cubie A7S DTB through the kernel `CHECK_DTBS=y` path on a temporary
+case-sensitive APFS volume. That volume is required because the upstream Linux
+tree has case-colliding files that cannot be materialized cleanly on the
+default macOS case-insensitive filesystem. The generated DTB also passes direct
+`dt-validate` against the processed in-tree schema.
 
-Kernel `CHECK_DTBS=y` invoked `dt-validate` through the kernel make flow, but
-the local `dtschema` 2026.4 command-line interface no longer accepts the
-kernel's `dt-validate -l <schema>` form and prints an argument error that the
-kernel make rule masks with `|| true`. Treat the direct `dt-validate` pass as
-useful evidence, but still keep full native `dtbs_check` on a Linux build host
-as a remaining publication gate.
+The successful focused `CHECK_DTBS=y` run used `dtschema` 2024.11 and a
+colon-separated `DT_SCHEMA_FILES` list. A previous attempt with a
+space-separated list caused extra schema names to be passed as positional
+`dt-validate` arguments; that command is not a valid check result even though
+the kernel make rule masks validation failures with `|| true`.
 
 Object compile validation is still pending. On macOS, host tool compilation
 stops at `scripts/sorttable.o` because the host lacks a Linux-compatible

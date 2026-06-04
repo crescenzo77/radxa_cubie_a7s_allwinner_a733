@@ -93,11 +93,11 @@ it can be treated as publication-ready.
 The integrated non-Ethernet platform stack now exists in
 `candidate/a733-platform-clean`. It keeps Ethernet absent, splits A733 SoC DTSI
 from Radxa Cubie A7S board DTS, and enables only UART0 and MMC0 on the board.
-It now builds arm64 `defconfig` and the Cubie A7S DTB on a temporary
-case-sensitive APFS volume, and the generated DTB passes direct `dt-validate`
-against the processed in-tree schema. Full native `dtbs_check` and object
-compile validation still need a Linux build host or container with the kernel
-build dependencies and an arm64-capable compiler.
+It now builds arm64 `defconfig` and validates the Cubie A7S DTB through the
+kernel `CHECK_DTBS=y` path on a temporary case-sensitive APFS volume. The
+generated DTB also passes direct `dt-validate` against the processed in-tree
+schema. Object compile validation still needs a Linux build host or container
+with the kernel build dependencies and an arm64-capable compiler.
 
 ## Immediate Mainline Question
 
