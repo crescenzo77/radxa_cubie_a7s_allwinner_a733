@@ -1,0 +1,25 @@
+From ddeb124942b766ee9c10443fc944de300a0cad4a Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Thu, 4 Jun 2026 08:58:05 -0400
+Subject: [PATCH 2/3] watchdog: sunxi: add Allwinner A733 WDT compatible
+
+Signed-off-by: Enzo <enzo@homelab.local>
+---
+ drivers/watchdog/sunxi_wdt.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/watchdog/sunxi_wdt.c b/drivers/watchdog/sunxi_wdt.c
+index b6c761acc3de..4972315242c4 100644
+--- a/drivers/watchdog/sunxi_wdt.c
++++ b/drivers/watchdog/sunxi_wdt.c
+@@ -251,6 +251,7 @@ static const struct of_device_id sunxi_wdt_dt_ids[] = {
+ 	{ .compatible = "allwinner,sun6i-a31-wdt", .data = &sun6i_wdt_reg },
+ 	{ .compatible = "allwinner,sun20i-d1-wdt", .data = &sun20i_wdt_reg },
+ 	{ .compatible = "allwinner,sun55i-a523-wdt", .data = &sun55i_wdt_reg },
++	{ .compatible = "allwinner,sun60i-a733-wdt", .data = &sun55i_wdt_reg },
+ 	{ /* sentinel */ }
+ };
+ MODULE_DEVICE_TABLE(of, sunxi_wdt_dt_ids);
+-- 
+2.53.0
+
