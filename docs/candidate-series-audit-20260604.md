@@ -347,6 +347,11 @@ expected devicetree, ARM/sunxi, clock, MMC, pinctrl, reset, and kernel lists.
 That list is preparatory routing evidence only; no patch series has been
 published from this repository.
 
+`git format-patch --cover-letter --base=6f3ed7fec72fc` exports the integrated
+eight-patch stack into ignored local audit artifacts. Per-patch checkpatch on
+the exported files still reports only the expected missing human signoff and
+new-file `FILE_PATH_CHANGES` warnings.
+
 ## Checkpatch Status
 
 The checkpoint patch was checked with:
