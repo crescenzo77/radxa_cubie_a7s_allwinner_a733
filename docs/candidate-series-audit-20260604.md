@@ -289,6 +289,8 @@ Checks run:
 
 ```text
 git diff --check
+git format-patch
+git am
 scripts/checkpatch.pl --no-tree --strict --summary-file --show-types
 ```
 
@@ -302,6 +304,10 @@ Current checkpatch findings:
 Direct local DT preprocessing and `dtc` produced a DTB for
 `sun60i-a733-cubie-a7s.dts`; direct `dtc` reported the common `/soc`
 `unit_address_vs_reg` warning seen when running outside the kernel make rules.
+
+`git format-patch` exported the eight-patch stack to ignored local artifacts,
+and `git am` applied those patches cleanly onto the mainline base in a detached
+temporary worktree.
 
 Full `dtbs_check` is still pending. macOS kernel make recurses during
 `defconfig`, and the available Linux `thinkcentre` host lacks both `flex` and

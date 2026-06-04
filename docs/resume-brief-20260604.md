@@ -144,8 +144,8 @@ arm64: dts: allwinner: add Radxa Cubie A7S
 
 It keeps Ethernet absent, uses the eleven-parent-interrupt A733 PIO layout, and
 enables only UART0 and MMC0 in the board DTS. `git diff --check` and per-patch
-checkpatch have been run. Full `dtbs_check` is still pending on a complete
-Linux build host.
+checkpatch have been run. `git format-patch` output applies cleanly with
+`git am`. Full `dtbs_check` is still pending on a complete Linux build host.
 
 Checks already run:
 
