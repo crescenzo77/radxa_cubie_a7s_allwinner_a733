@@ -14,7 +14,7 @@ For Linux kernel patches:
 Example trailer for a future kernel patch, adjusted to the actual tools used:
 
 ```text
-Signed-off-by: Human Name <human@example.com>
+Signed-off-by: Crescenzo <crescenzo@gmail.com>
 Assisted-by: OpenAI:GPT-5 Codex
 ```
 
