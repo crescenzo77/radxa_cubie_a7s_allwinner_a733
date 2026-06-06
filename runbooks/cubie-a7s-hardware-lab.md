@@ -201,6 +201,13 @@ If Codex should wait while the human performs the root install, run
 installed/checksummed boot entry and starts the UART capture session only after
 that gate passes. It does not reboot or power-cycle the board.
 
+If the install should be driven from one interactive Codex terminal session, run
+`scripts/cubie-interactive-root-install-session`. It opens an SSH TTY to the
+verified staged board, lets the human type the sudo password directly into that
+TTY, then verifies the installed boot files and starts the UART capture helper.
+It refuses to run an install that needs interactive sudo without an interactive
+TTY.
+
 `scripts/cubie-uart-inventory-proposal` is also read-only. It emits a proposed
 board UART mapping only after a strong candidate exists; it never edits the
 inventory.
