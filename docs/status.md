@@ -93,9 +93,8 @@ Current local review consensus:
 ## Validation Record
 
 The current v4 patch files have been regenerated from
-`candidate/a733-platform-clean-v4`. The AMD proof IDs below still apply to the
-earlier v3 validation run and remain historical provenance only until the v4
-series is fully revalidated.
+`candidate/a733-platform-clean-v4`. The v4 proof IDs below were produced by
+the AMD validation container.
 
 Current v4 repository hygiene checks run during this cleanup:
 
@@ -116,14 +115,40 @@ Current v4 repository hygiene checks run during this cleanup:
 - MMC binding and DTS use the existing `allwinner,sun20i-d1-mmc` fallback:
   pass
 
-Not yet rerun for v4:
+AMD validation container proof records for v4 exact head
+`abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`:
+
+- environment version report: pass,
+  `a733-v4-public-version-report-83eafc55329b`,
+  SHA256 `fd3864ed1220cf094066c41deaa5ae7feb249c37fae460c72812ece8c065681a`
+- `git diff --check 6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5 HEAD`:
+  pass,
+  `a733-v4-public-git-diff-check-48177e45d386`,
+  SHA256 `9f91001a63989800a3b5ae57d143393e44d1415406f8384cf18647e44494c6ea`
+- `scripts/checkpatch.pl --strict --no-tree` over exported v4 patches:
+  fail, `0 errors` and MAINTAINERS new-file warnings only,
+  `a733-v4-public-checkpatch-strict-369568551e94`,
+  SHA256 `52818bb78265913cbbafe554fb5dab783e1b0bd9b2919b9c2f6c1ec0636eb53f`
+- touched-schema `dt_binding_check`: pass for `arm/sunxi.yaml`,
+  `clock/allwinner,sun60i-a733-ccu.yaml`,
+  `pinctrl/allwinner,sun60i-a733-pinctrl.yaml`, and
+  `mmc/allwinner,sun4i-a10-mmc.yaml`,
+  `a733-v4-public-dt-binding-check-04bd27078f58`,
+  SHA256 `dfd68a98032110c2c1bdf608bb6859ca70003db49b0a3964fc91db5a3ed86804`
+- Cubie A7S DTB schema check: pass,
+  `a733-v4-public-cubie-a7s-dtbs-check-3bebeb5a5294`,
+  SHA256 `d8d753535a31c30888f8e0a051f051d92e9f1eecd0b1fa8a8d84e555bbab4bb7`
+- `W=1` object build for `ccu-sun60i-a733.o` and
+  `pinctrl-sun60i-a733.o`: pass,
+  `a733-v4-public-object-build-0777f6143da5`,
+  SHA256 `cf20fb28f752c831cca03dcf0b2f1f69fc29822e406abdadf5856286fd631e95`
+
+Still required for v4:
 
 - `git am` of exported patches onto the recorded base in a temporary worktree
 - `scripts/get_maintainer.pl`
-- `scripts/checkpatch.pl --strict`
-- `make dt_binding_check`
-- `make ARCH=arm64 dtbs_check`
 - per-patch object builds and full bisectability checks
+- hardware boot/runtime evidence for the exact kernel and DTB
 
 Historical AMD validation container proof records for v3 exact head
 `3dc9e72c5ccdb19542f8dc068bd5a388d66fdc32`:
