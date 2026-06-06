@@ -21,8 +21,9 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
   Cubie3 at 115200 8N1.
 - `MAINLINE_RFC_V7_BOOT_STAGING_20260530.md`: older first-boot work proved
   the useful mainline milestone through a non-default extlinux label. It also
-  records that root writes required interactive sudo and that root SSH was
-  denied, matching the current root-install gate.
+  records that root writes required interactive sudo and that direct root SSH
+  was denied. That matches the current gate shape: user-space staging works,
+  while the final `/boot` install still requires the Cubie sudo password.
 - `VENDOR_UBOOT_DTB_HANDOFF_ANALYSIS_20260531.md`: clean mainline DTB handoff
   under vendor U-Boot was sensitive to the vendor DTB mutation path. The
   successful test used a temporary non-persistent `drm_debug=1` bootloader

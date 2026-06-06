@@ -28,8 +28,9 @@ Quick network observation:
 - `192.168.50.85` did not answer the same quick check.
 - 2026-06-06 follow-up: `192.168.50.95` still answered one ping;
   `192.168.50.85` still did not.
-- 2026-06-06 SSH probe: `192.168.50.95` has SSH reachable, but the current
-  key/user attempts were denied; `192.168.50.85` timed out on port 22.
+- 2026-06-06 initial SSH probe: `192.168.50.95` had port 22 reachable, but
+  the first key/user attempts were denied; `192.168.50.85` timed out on port
+  22.
 - 2026-06-06 refresh: `192.168.50.95` still answers ping and has port 22 open;
   `192.168.50.85` still does not answer ping.
 - 2026-06-06 passive neighbor-cache sweep across Mac, Strix, ThinkCentre, and
@@ -42,6 +43,9 @@ Quick network observation:
 - 2026-06-06 UART recheck: the 1.1 adapter answered with `cubie-3 login:`,
   confirming that path is Cubie3. The 1.2 adapter returned 0 bytes again and
   still did not reveal a Cubie2 IP address.
+- 2026-06-06 later bounded SSH discovery and boot-staging checks authenticated
+  to Cubie3 as an A733 target. User-space staging is present and checksummed;
+  only the `/boot` install remains gated on the Cubie sudo password.
 
 Treat reachability as a live lab condition, not a permanent fact.
 
@@ -184,6 +188,50 @@ entry, the expected status is `boot-selection-required` until a UART capture
 proves the selected mainline boot. Use `--json` for machine-readable output,
 and use `--strict` only when a non-zero exit should stop an automation until
 runtime proof is ready.
+
+## Current Cubie3 Root-Install Handoff
+
+Current status as of the latest generated runtime proof bundle:
+
+- bundle:
+  `task-packets/kernel/runtime-proof/cubie-runtime-proof-20260606T190204771023Z`
+- runtime gate: `root-install-required`
+- target: `cubie-3` at `192.168.50.95`
+- stage:
+  `kernel-boot-artifacts/a733-v4-abc8d07b0a63-20260606T152409Z`
+- temporary bootargs: `drm_debug=1`
+- sudo status: `password-required`
+- UART preflight: `ok` on Strix `192.168.50.11`
+- excluded kernel-work target remains `192.168.50.65`
+
+Run this from an interactive Codex terminal when the operator is ready to type
+the Cubie sudo password:
+
+```sh
+scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95
+```
+
+The helper prints the selected board and staged artifact path, opens an SSH TTY
+to `radxa@192.168.50.95`, and runs the staged root installer with `sudo`. After
+the install succeeds, it verifies the installed `/boot` files and starts the
+post-install UART capture helper.
+
+The exact dry-run handoff currently resolves to:
+
+```sh
+ssh -tt -o BatchMode=no -o ConnectTimeout=8 -i /Users/enzo/.ssh/id_ed25519 radxa@192.168.50.95 'cd kernel-boot-artifacts/a733-v4-abc8d07b0a63-20260606T152409Z && sudo ./install-extlinux-entry.sh'
+/Users/enzo/projects/homelab/scripts/cubie-root-install-handoff --wait 90 --interval 5.0 --run-capture
+```
+
+After the helper starts the capture, manually select this non-default U-Boot
+label over the confirmed Cubie3 UART:
+
+```text
+a733-v4-abc8d07b0a63-uart-proof
+```
+
+Do not use the board IP `192.168.50.65` for any kernel proof work, even if it
+appears reachable during discovery.
 
 `scripts/cubie-stage-boot-artifacts` writes only to the board user's staging
 directory. Its generated root installer copies `SHA256SUMS` into the
