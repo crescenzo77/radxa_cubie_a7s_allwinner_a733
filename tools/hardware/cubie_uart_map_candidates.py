@@ -30,6 +30,7 @@ BOOT_MARKER_RE = re.compile(
     r"OF:|devicetree|console|login:|panic|Oops|ERROR|WARNING)",
     re.IGNORECASE,
 )
+LOGIN_BOARD_RE = re.compile(r"\b(cubie)[-_ ]?([23])\s+login:", re.IGNORECASE)
 
 
 def utc_now() -> str:
@@ -102,6 +103,11 @@ def marker_lines(text: str, limit: int = 8) -> list[str]:
     return lines
 
 
+def detected_boards(text: str) -> list[str]:
+    boards = {f"{match.group(1).lower()}{match.group(2)}" for match in LOGIN_BOARD_RE.finditer(text)}
+    return sorted(boards)
+
+
 def extract_label(note: object) -> str:
     text = str(note or "")
     match = LABEL_RE.search(text)
@@ -129,6 +135,7 @@ def load_captures(log_dir: Path) -> list[dict[str, Any]]:
                 "bytes": log_path.stat().st_size if log_path.exists() else 0,
                 "sha256": sha256_file(log_path),
                 "markers": marker_lines(text),
+                "detected_boards": detected_boards(text),
                 "excerpt": text[:400],
                 "metadata_error": meta.get("metadata_error"),
             }
@@ -171,10 +178,18 @@ def session_events(events: list[dict[str, Any]]) -> dict[str, list[dict[str, Any
 
 def candidate_strength(captures: list[dict[str, Any]], events: list[dict[str, Any]]) -> str:
     non_empty = [item for item in captures if (item.get("bytes") or 0) > 0]
+    detected = {
+        board
+        for item in non_empty
+        for board in item.get("detected_boards", [])
+        if board in {"cubie2", "cubie3"}
+    }
     manual = [event for event in events if event.get("event_type") in MANUAL_EVENT_TYPES]
     boards = {event.get("board") for event in manual if event.get("board") in {"cubie2", "cubie3"}}
     if not non_empty:
         return "no-uart-output"
+    if len(detected) == 1:
+        return "strong-candidate"
     if len(non_empty) == 1 and len(boards) == 1:
         return "strong-candidate"
     if len(non_empty) == 1:
@@ -210,6 +225,14 @@ def build_report(
         non_empty = [item for item in label_captures if (item.get("bytes") or 0) > 0]
         manual = [event for event in label_events if event.get("event_type") in MANUAL_EVENT_TYPES]
         manual_boards = sorted({str(event.get("board")) for event in manual if event.get("board")})
+        detected = sorted(
+            {
+                board
+                for item in label_captures
+                for board in item.get("detected_boards", [])
+                if board in {"cubie2", "cubie3"}
+            }
+        )
         strength = candidate_strength(label_captures, label_events)
         for capture in non_empty or label_captures:
             adapter = adapters.get(str(capture.get("resolved_device"))) or adapters.get(str(capture.get("device"))) or {}
@@ -218,6 +241,7 @@ def build_report(
                     "label": label,
                     "strength": strength,
                     "manual_boards": manual_boards,
+                    "detected_boards": detected,
                     "capture_label": capture.get("label"),
                     "resolved_device": capture.get("resolved_device") or capture.get("device"),
                     "by_path": adapter.get("by_path", ""),
@@ -259,8 +283,8 @@ def build_report(
         "",
         "## Candidate Rows",
         "",
-        "| label | strength | manual_boards | capture_label | resolved_device | by_path | bytes | markers |",
-        "| --- | --- | --- | --- | --- | --- | ---: | --- |",
+        "| label | strength | manual_boards | detected_boards | capture_label | resolved_device | by_path | bytes | markers |",
+        "| --- | --- | --- | --- | --- | --- | --- | ---: | --- |",
     ]
 
     if not rows:
@@ -269,11 +293,13 @@ def build_report(
         for row in rows:
             markers = "; ".join(row["markers"]) or "-"
             boards = ",".join(row["manual_boards"]) or "-"
+            detected = ",".join(row.get("detected_boards", [])) or "-"
             lines.append(
                 "| "
                 f"{md_escape(row['label'])} | "
                 f"{md_escape(row['strength'])} | "
                 f"{md_escape(boards)} | "
+                f"{md_escape(detected)} | "
                 f"{md_escape(row['capture_label'])} | "
                 f"`{md_escape(row['resolved_device'])}` | "
                 f"`{md_escape(row['by_path'])}` | "

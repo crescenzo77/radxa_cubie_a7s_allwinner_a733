@@ -76,11 +76,18 @@ def network_summary(inventory_path: Path, timeout: float, port: int, skip: bool)
 def classify(captures: list[dict[str, Any]], mapping: dict[str, Any]) -> tuple[str, str]:
     non_empty = [item for item in captures if (item.get("local_bytes") or 0) > 0]
     marker_hits = [item for item in captures if item.get("markers")]
+    runtime_hits = [
+        item
+        for item in marker_hits
+        if any("login:" not in str(marker).lower() for marker in item.get("markers", []))
+    ]
     strong = mapping.get("strong_candidate_count", 0)
     candidates = mapping.get("candidate_count", 0)
 
-    if marker_hits and strong:
+    if runtime_hits and strong:
         return "runtime-ready", "boot markers and a strong board-to-UART candidate are present"
+    if marker_hits and strong:
+        return "uart-mapping-ready", "console identity is mapped, but no runtime boot proof is present"
     if marker_hits and candidates:
         return "mapping-needs-human-confirmation", "boot markers exist, but mapping candidate is not strong"
     if marker_hits:
@@ -138,6 +145,8 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
         return "fix the Cubie hardware inventory before relying on runtime evidence"
     if status == "runtime-ready":
         return "human should inspect the evidence packet before updating inventory or relying on the mapping"
+    if status == "uart-mapping-ready":
+        return "use the mapped UART for the next boot capture; do not claim mainline runtime proof yet"
     if status == "mapping-needs-human-confirmation":
         return "human should confirm which board was reset before updating inventory"
     if status == "boot-text-unmapped":

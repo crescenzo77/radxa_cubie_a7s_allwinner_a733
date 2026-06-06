@@ -14,6 +14,8 @@ Usage: scripts/cubie-uart ACTION [args]
 Actions:
   list                         List UART devices on the Strix host.
   capture DEVICE LABEL SECONDS Capture one UART stream for SECONDS.
+  prompt-probe DEVICE LABEL SECONDS
+                               Capture one UART stream and send one Enter.
   status                       Show recent remote UART logs.
   pull-logs                    Copy remote UART logs into tools/hardware-logs/.
 
@@ -25,6 +27,7 @@ Defaults:
 Examples:
   scripts/cubie-uart list
   scripts/cubie-uart capture /dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0 cubie3-boot-probe 30
+  scripts/cubie-uart prompt-probe /dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0 cubie2-prompt-probe 10
 
 This script does not power-cycle boards or guess board-to-UART mapping.
 USAGE
@@ -63,6 +66,7 @@ capture() {
   local device="${1:-}"
   local label="${2:-}"
   local seconds="${3:-}"
+  local send_enter="${4:-0}"
 
   if [ -z "${device}" ] || [ -z "${label}" ] || [ -z "${seconds}" ]; then
     usage >&2
@@ -94,6 +98,7 @@ capture() {
       UART_LABEL="${safe}" \
       UART_SECONDS="${seconds}" \
       UART_BAUD="${baud}" \
+      UART_SEND_ENTER="${send_enter}" \
       bash -s <<'REMOTE'
 set -euo pipefail
 
@@ -102,6 +107,7 @@ device="${UART_DEVICE}"
 label="${UART_LABEL}"
 seconds="${UART_SECONDS}"
 baud="${UART_BAUD}"
+send_enter="${UART_SEND_ENTER}"
 
 mkdir -p "${root}/logs"
 
@@ -119,8 +125,17 @@ stty -F "${device}" "${baud}" raw -echo -ixon -ixoff -crtscts 2>/dev/null \
   || stty -F "${device}" "${baud}" raw -echo -ixon -ixoff
 
 set +e
-timeout "${seconds}" cat "${device}" > "${log_path}"
-capture_code=$?
+if [ "${send_enter}" = "1" ]; then
+  timeout "${seconds}" cat "${device}" > "${log_path}" &
+  capture_pid=$!
+  sleep 0.5
+  printf '\r' > "${device}" 2>/dev/null
+  wait "${capture_pid}"
+  capture_code=$?
+else
+  timeout "${seconds}" cat "${device}" > "${log_path}"
+  capture_code=$?
+fi
 set -e
 
 if [ "${capture_code}" -ne 0 ] && [ "${capture_code}" -ne 124 ]; then
@@ -143,6 +158,7 @@ meta = {
     "label": "${label}",
     "baud": int("${baud}"),
     "seconds": int("${seconds}"),
+    "sent_enter": "${send_enter}" == "1",
     "capture_exit_code": int("${capture_code}"),
     "log_path": "${log_path}",
     "log_sha256": "${sha}",
@@ -184,6 +200,9 @@ case "${action}" in
     ;;
   capture)
     capture "$@"
+    ;;
+  prompt-probe)
+    capture "$@" 1
     ;;
   status)
     status

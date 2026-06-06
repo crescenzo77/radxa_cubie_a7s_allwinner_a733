@@ -71,12 +71,22 @@ def candidate_rows(inventory: dict[str, Any], inventory_path: Path, log_dir: Pat
 
 
 def proposal_for_row(row: dict[str, Any], inventory: dict[str, Any]) -> dict[str, Any] | None:
-    boards = [board for board in row.get("manual_boards", []) if board in {"cubie2", "cubie3"}]
+    boards = [
+        board
+        for board in (row.get("detected_boards") or row.get("manual_boards", []))
+        if board in {"cubie2", "cubie3"}
+    ]
     if len(boards) != 1:
         return None
     board_name = boards[0]
     board = board_by_name(inventory).get(board_name, {})
     current_uart = board.get("uart") if isinstance(board.get("uart"), dict) else {}
+    proposed_device = row.get("by_path") or row.get("resolved_device")
+    if (
+        current_uart.get("device") == proposed_device
+        and str(current_uart.get("mapping_status", "")).startswith("confirmed")
+    ):
+        return None
     adapter = (
         adapter_by_device(inventory).get(str(row.get("by_path")))
         or adapter_by_device(inventory).get(str(row.get("resolved_device")))
@@ -85,7 +95,7 @@ def proposal_for_row(row: dict[str, Any], inventory: dict[str, Any]) -> dict[str
     host = current_uart.get("host") or adapter.get("host") or inventory.get("uart_host") or "unknown"
     proposed_uart = {
         "host": host,
-        "device": row.get("by_path") or row.get("resolved_device"),
+        "device": proposed_device,
         "resolved_device": row.get("resolved_device"),
         "baud": current_uart.get("baud") or 115200,
         "mapping_status": "candidate-needs-human-confirmation",
