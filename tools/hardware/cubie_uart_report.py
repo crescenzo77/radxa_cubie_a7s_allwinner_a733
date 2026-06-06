@@ -138,7 +138,7 @@ def build_report(captures: list[dict[str, Any]], log_dir: Path, limit: int) -> s
         "",
         f"- captures: `{len(captures)}`",
         f"- non-empty captures: `{len(non_empty)}`",
-        f"- captures with boot/error markers: `{len(marker_hits)}`",
+        f"- captures with boot/login/error markers: `{len(marker_hits)}`",
         f"- local/metadata SHA256 mismatches: `{len(sha_mismatches)}`",
         "",
         "## Devices",

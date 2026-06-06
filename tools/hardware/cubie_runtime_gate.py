@@ -62,6 +62,9 @@ def mapping_summary(inventory: dict[str, Any], inventory_path: Path, log_dir: Pa
     return {
         "candidate_count": len(candidates),
         "strong_candidate_count": len(strong),
+        "boot_session_candidate_count": data.get("boot_session_candidate_count", 0),
+        "boot_marker_candidate_count": data.get("boot_marker_candidate_count", 0),
+        "runtime_marker_candidate_count": data.get("runtime_marker_candidate_count", 0),
         "rows": candidates[-6:],
     }
 
@@ -81,11 +84,25 @@ def classify(captures: list[dict[str, Any]], mapping: dict[str, Any]) -> tuple[s
         for item in marker_hits
         if any("login:" not in str(marker).lower() for marker in item.get("markers", []))
     ]
+    strong_runtime_rows = [
+        row
+        for row in mapping.get("rows", [])
+        if row.get("strength") == "strong-candidate"
+        and row.get("has_runtime_marker")
+        and not row.get("has_error_marker")
+    ]
+    strong_error_rows = [
+        row
+        for row in mapping.get("rows", [])
+        if row.get("strength") == "strong-candidate" and row.get("has_error_marker")
+    ]
     strong = mapping.get("strong_candidate_count", 0)
     candidates = mapping.get("candidate_count", 0)
 
-    if runtime_hits and strong:
-        return "runtime-ready", "boot markers and a strong board-to-UART candidate are present"
+    if runtime_hits and strong_runtime_rows:
+        return "runtime-ready", "runtime markers and a strong board-to-UART candidate are present without error markers"
+    if strong_error_rows:
+        return "runtime-log-needs-triage", "boot/error markers are present and must be inspected before claiming runtime proof"
     if marker_hits and strong:
         return "uart-mapping-ready", "console identity is mapped, but no runtime boot proof is present"
     if marker_hits and candidates:
@@ -153,6 +170,8 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
         return "record the manual action with label=... and rerun the mapping candidate report"
     if status == "uart-data-needs-triage":
         return "inspect non-empty UART excerpts for baud, wiring, or nonstandard boot text"
+    if status == "runtime-log-needs-triage":
+        return "inspect the UART log for panic, Oops, ERROR, or WARNING before claiming runtime proof"
     if status == "boot-selection-required":
         rows = (staging or {}).get("rows", [])
         installed = [row for row in rows if row.get("root_install_complete")]
@@ -257,9 +276,12 @@ def markdown(data: dict[str, Any]) -> str:
         "",
         f"- captures: `{captures['total']}`",
         f"- non-empty captures: `{captures['non_empty']}`",
-        f"- captures with boot markers: `{captures['with_boot_markers']}`",
+        f"- captures with boot/login/error markers: `{captures['with_boot_markers']}`",
         f"- mapping candidates: `{mapping['candidate_count']}`",
         f"- strong mapping candidates: `{mapping['strong_candidate_count']}`",
+        f"- boot-session candidates: `{mapping.get('boot_session_candidate_count', 0)}`",
+        f"- boot-marker candidates: `{mapping.get('boot_marker_candidate_count', 0)}`",
+        f"- runtime-marker candidates: `{mapping.get('runtime_marker_candidate_count', 0)}`",
         "",
         "## Network",
         "",
@@ -319,8 +341,8 @@ def markdown(data: dict[str, Any]) -> str:
             "",
             "## Mapping Candidates",
             "",
-            "| label | strength | manual_boards | resolved_device | by_path | bytes |",
-            "| --- | --- | --- | --- | --- | ---: |",
+            "| label | strength | evidence | manual_boards | resolved_device | by_path | bytes |",
+            "| --- | --- | --- | --- | --- | --- | ---: |",
         ]
     )
     rows = mapping.get("rows", [])
@@ -331,6 +353,7 @@ def markdown(data: dict[str, Any]) -> str:
                 "| "
                 f"{md_escape(row.get('label'))} | "
                 f"{md_escape(row.get('strength'))} | "
+                f"{md_escape(row.get('evidence_kind'))} | "
                 f"{md_escape(boards)} | "
                 f"`{md_escape(row.get('resolved_device'))}` | "
                 f"`{md_escape(row.get('by_path'))}` | "

@@ -174,6 +174,9 @@ def mapping_candidate_summary(
     ]
     return {
         "candidate_count": data.get("candidate_count", 0),
+        "boot_session_candidate_count": data.get("boot_session_candidate_count", 0),
+        "boot_marker_candidate_count": data.get("boot_marker_candidate_count", 0),
+        "runtime_marker_candidate_count": data.get("runtime_marker_candidate_count", 0),
         "non_empty_capture_count": data.get("non_empty_capture_count", 0),
         "session_count": data.get("session_count", 0),
         "rows": rows[-6:],
@@ -251,8 +254,8 @@ def next_safe_action(staging: dict[str, Any], inventory: dict[str, Any]) -> str:
 
 def mapping_rows(summary: dict[str, Any]) -> list[str]:
     lines = [
-        "| label | strength | manual_boards | resolved_device | by_path | bytes | markers |",
-        "| --- | --- | --- | --- | --- | ---: | --- |",
+        "| label | strength | evidence | manual_boards | resolved_device | by_path | bytes | markers |",
+        "| --- | --- | --- | --- | --- | --- | ---: | --- |",
     ]
     rows = summary.get("rows", [])
     if not rows:
@@ -265,6 +268,7 @@ def mapping_rows(summary: dict[str, Any]) -> list[str]:
             "| "
             f"{md_escape(row.get('label'))} | "
             f"{md_escape(row.get('strength'))} | "
+            f"{md_escape(row.get('evidence_kind'))} | "
             f"{md_escape(boards)} | "
             f"`{md_escape(row.get('resolved_device'))}` | "
             f"`{md_escape(row.get('by_path'))}` | "
@@ -382,6 +386,9 @@ def build_packet(
             f"- sessions scanned: `{mapping.get('session_count', 0)}`",
             f"- non-empty captures: `{mapping.get('non_empty_capture_count', 0)}`",
             f"- mapping candidates: `{mapping.get('candidate_count', 0)}`",
+            f"- boot-session candidates: `{mapping.get('boot_session_candidate_count', 0)}`",
+            f"- boot-marker candidates: `{mapping.get('boot_marker_candidate_count', 0)}`",
+            f"- runtime-marker candidates: `{mapping.get('runtime_marker_candidate_count', 0)}`",
             "",
             *mapping_rows(mapping),
             "",

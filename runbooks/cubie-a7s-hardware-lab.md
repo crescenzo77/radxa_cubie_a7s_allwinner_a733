@@ -108,6 +108,15 @@ board-to-tty mapping.
 Do not assume the 1.2 adapter is Cubie2 until boot or login text identifies the
 board. Confirm by capturing boot output from one board at a time.
 
+The evidence tools intentionally separate UART identity from runtime proof:
+
+- `login-prompt` means the console identified a board, but it is not a mainline
+  boot proof.
+- `boot-session candidates` and `boot-marker candidates` must be non-zero
+  before treating UART logs as boot-session evidence.
+- `runtime-ready` also requires runtime markers without `panic`, `Oops`,
+  `ERROR`, or `WARNING` markers.
+
 Use:
 
 ```sh

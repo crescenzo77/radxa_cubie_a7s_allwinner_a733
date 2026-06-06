@@ -19,6 +19,7 @@ DEFAULT_EVENT_LOG = REPO_ROOT / "tools" / "hardware-logs" / "cubie-events.jsonl"
 
 LABEL_RE = re.compile(r"(?:^|\s)label=([A-Za-z0-9_.-]+)")
 DURING_LABEL_RE = re.compile(r"\bduring\s+([A-Za-z0-9_.-]+)\b")
+UART_CAPTURE_SUFFIX_RE = re.compile(r"-uart[01]$")
 MANUAL_EVENT_TYPES = {
     "manual-reset",
     "manual-power-on",
@@ -30,6 +31,16 @@ BOOT_MARKER_RE = re.compile(
     r"OF:|devicetree|console|login:|panic|Oops|ERROR|WARNING)",
     re.IGNORECASE,
 )
+BOOT_SESSION_MARKER_RE = re.compile(
+    r"(U-Boot|SPL|DRAM|Starting kernel|Linux version|Kernel command line|"
+    r"OF:|devicetree|panic|Oops|ERROR|WARNING)",
+    re.IGNORECASE,
+)
+RUNTIME_MARKER_RE = re.compile(
+    r"(Starting kernel|Linux version|Kernel command line|OF:|devicetree|console)",
+    re.IGNORECASE,
+)
+ERROR_MARKER_RE = re.compile(r"(panic|Oops|ERROR|WARNING)", re.IGNORECASE)
 LOGIN_BOARD_RE = re.compile(r"\b(cubie)[-_ ]?([23])\s+login:", re.IGNORECASE)
 
 
@@ -108,6 +119,34 @@ def detected_boards(text: str) -> list[str]:
     return sorted(boards)
 
 
+def has_boot_session_marker(text: str) -> bool:
+    return bool(BOOT_SESSION_MARKER_RE.search(text))
+
+
+def has_runtime_marker(text: str) -> bool:
+    return bool(RUNTIME_MARKER_RE.search(text))
+
+
+def has_error_marker(text: str) -> bool:
+    return bool(ERROR_MARKER_RE.search(text))
+
+
+def has_login_prompt(text: str) -> bool:
+    return bool(LOGIN_BOARD_RE.search(text))
+
+
+def evidence_kind(capture: dict[str, Any]) -> str:
+    if (capture.get("bytes") or 0) <= 0:
+        return "no-uart-output"
+    if capture.get("has_runtime_marker"):
+        return "runtime-output"
+    if capture.get("has_boot_marker"):
+        return "boot-or-error-output"
+    if capture.get("has_login_prompt"):
+        return "login-prompt"
+    return "uart-data"
+
+
 def extract_label(note: object) -> str:
     text = str(note or "")
     match = LABEL_RE.search(text)
@@ -117,6 +156,10 @@ def extract_label(note: object) -> str:
     return match.group(1) if match else ""
 
 
+def session_label_for(label: str) -> str:
+    return UART_CAPTURE_SUFFIX_RE.sub("", label)
+
+
 def load_captures(log_dir: Path) -> list[dict[str, Any]]:
     captures: list[dict[str, Any]] = []
     for meta_path in sorted(log_dir.glob("*.uart.log.json")):
@@ -124,7 +167,7 @@ def load_captures(log_dir: Path) -> list[dict[str, Any]]:
         log_path = log_for_meta(meta_path)
         text = decode_log(log_path)
         label = str(meta.get("label") or "")
-        session_label = label.rsplit("-uart", 1)[0] if "-uart" in label else label
+        session_label = session_label_for(label)
         captures.append(
             {
                 "captured_at_utc": meta.get("captured_at_utc"),
@@ -136,6 +179,10 @@ def load_captures(log_dir: Path) -> list[dict[str, Any]]:
                 "sha256": sha256_file(log_path),
                 "markers": marker_lines(text),
                 "detected_boards": detected_boards(text),
+                "has_login_prompt": has_login_prompt(text),
+                "has_boot_marker": has_boot_session_marker(text),
+                "has_runtime_marker": has_runtime_marker(text),
+                "has_error_marker": has_error_marker(text),
                 "excerpt": text[:400],
                 "metadata_error": meta.get("metadata_error"),
             }
@@ -236,11 +283,14 @@ def build_report(
         strength = candidate_strength(label_captures, label_events)
         for capture in non_empty or label_captures:
             adapter = adapters.get(str(capture.get("resolved_device"))) or adapters.get(str(capture.get("device"))) or {}
+            kind = evidence_kind(capture)
             rows.append(
                 {
                     "label": label,
                     "strength": strength,
+                    "evidence_kind": kind,
                     "manual_boards": manual_boards,
+                    "manual_event_count": len(manual),
                     "detected_boards": detected,
                     "capture_label": capture.get("label"),
                     "resolved_device": capture.get("resolved_device") or capture.get("device"),
@@ -248,12 +298,22 @@ def build_report(
                     "bytes": capture.get("bytes"),
                     "markers": capture.get("markers", []),
                     "sha256": capture.get("sha256"),
+                    "has_login_prompt": bool(capture.get("has_login_prompt")),
+                    "has_boot_marker": bool(capture.get("has_boot_marker")),
+                    "has_runtime_marker": bool(capture.get("has_runtime_marker")),
+                    "has_error_marker": bool(capture.get("has_error_marker")),
+                    "boot_session_candidate": bool(
+                        (capture.get("bytes") or 0) > 0 and (capture.get("has_boot_marker") or manual)
+                    ),
                 }
             )
 
     candidate_rows = [
         row for row in rows if row["strength"] != "no-uart-output" and (row.get("bytes") or 0) > 0
     ]
+    boot_session_rows = [row for row in candidate_rows if row.get("boot_session_candidate")]
+    boot_marker_rows = [row for row in candidate_rows if row.get("has_boot_marker")]
+    runtime_marker_rows = [row for row in candidate_rows if row.get("has_runtime_marker")]
     data = {
         "generated_at_utc": utc_now(),
         "inventory": str(inventory_path),
@@ -263,6 +323,9 @@ def build_report(
         "capture_count": len(captures),
         "non_empty_capture_count": sum(1 for item in captures if (item.get("bytes") or 0) > 0),
         "candidate_count": len(candidate_rows),
+        "boot_session_candidate_count": len(boot_session_rows),
+        "boot_marker_candidate_count": len(boot_marker_rows),
+        "runtime_marker_candidate_count": len(runtime_marker_rows),
         "rows": rows,
     }
 
@@ -280,11 +343,14 @@ def build_report(
         f"- captures: `{data['capture_count']}`",
         f"- non-empty captures: `{data['non_empty_capture_count']}`",
         f"- mapping candidates: `{data['candidate_count']}`",
+        f"- boot-session candidates: `{data['boot_session_candidate_count']}`",
+        f"- boot-marker candidates: `{data['boot_marker_candidate_count']}`",
+        f"- runtime-marker candidates: `{data['runtime_marker_candidate_count']}`",
         "",
         "## Candidate Rows",
         "",
-        "| label | strength | manual_boards | detected_boards | capture_label | resolved_device | by_path | bytes | markers |",
-        "| --- | --- | --- | --- | --- | --- | --- | ---: | --- |",
+        "| label | strength | evidence | manual_boards | detected_boards | capture_label | resolved_device | by_path | bytes | markers |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- |",
     ]
 
     if not rows:
@@ -298,6 +364,7 @@ def build_report(
                 "| "
                 f"{md_escape(row['label'])} | "
                 f"{md_escape(row['strength'])} | "
+                f"{md_escape(row.get('evidence_kind'))} | "
                 f"{md_escape(boards)} | "
                 f"{md_escape(detected)} | "
                 f"{md_escape(row['capture_label'])} | "
