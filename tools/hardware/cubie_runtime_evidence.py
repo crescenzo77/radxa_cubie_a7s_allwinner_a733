@@ -8,11 +8,13 @@ import datetime as dt
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import cubie_network_status
+import cubie_boot_staging_status
 import cubie_event_log
 import cubie_uart_map_candidates
 import cubie_uart_report
@@ -78,19 +80,44 @@ def board_rows(inventory: dict[str, Any]) -> list[str]:
     return rows
 
 
+def excluded_rows(inventory: dict[str, Any]) -> list[str]:
+    rows = ["| ip | reason | rule |", "| --- | --- | --- |"]
+    excluded = inventory.get("excluded_kernel_work_ips", [])
+    if not isinstance(excluded, list) or not excluded:
+        rows.append("| none | none | none |")
+        return rows
+    for item in excluded:
+        if not isinstance(item, dict):
+            continue
+        rows.append(
+            "| "
+            f"`{md_escape(item.get('ip', 'unknown'))}` | "
+            f"{md_escape(item.get('reason', 'unknown'))} | "
+            f"{md_escape(item.get('rule', 'unknown'))} |"
+        )
+    if len(rows) == 2:
+        rows.append("| none | none | none |")
+    return rows
+
+
 def evidence_status(captures: list[dict[str, Any]], net: dict[str, Any]) -> tuple[str, list[str]]:
     non_empty = [item for item in captures if (item.get("local_bytes") or 0) > 0]
     marker_hits = [item for item in captures if item.get("markers")]
     ssh_open = [item for item in net.get("results", []) if item.get("tcp_status") == "open"]
     notes = []
     if non_empty:
-        status = "runtime-evidence-present"
-        notes.append(f"{len(non_empty)} UART capture(s) contain data.")
+        status = "uart-data-present-runtime-proof-unproven"
+        notes.append(
+            f"{len(non_empty)} UART capture(s) contain data, but this does not "
+            "by itself prove the staged mainline boot."
+        )
     else:
-        status = "runtime-evidence-missing"
+        status = "runtime-proof-missing"
         notes.append("No non-empty UART captures are available yet.")
     if marker_hits:
-        notes.append(f"{len(marker_hits)} capture(s) include boot/error markers.")
+        notes.append(
+            f"{len(marker_hits)} capture(s) include generic boot/login/error markers."
+        )
     else:
         notes.append("No UART boot/error markers have been observed.")
     if ssh_open:
@@ -131,6 +158,79 @@ def mapping_candidate_summary(
         "session_count": data.get("session_count", 0),
         "rows": rows[-6:],
     }
+
+
+def boot_staging_status() -> dict[str, Any]:
+    args = SimpleNamespace(
+        targets=",".join(cubie_boot_staging_status.DEFAULT_TARGETS),
+        stage=cubie_boot_staging_status.DEFAULT_STAGE,
+        user=cubie_boot_staging_status.DEFAULT_USER,
+        identity=cubie_boot_staging_status.DEFAULT_IDENTITY,
+        timeout=cubie_boot_staging_status.DEFAULT_TIMEOUT,
+        exclude_target=list(cubie_boot_staging_status.DEFAULT_EXCLUDED_TARGETS),
+        include_excluded=False,
+    )
+    return cubie_boot_staging_status.build_status(args)
+
+
+def boot_staging_rows(staging: dict[str, Any]) -> list[str]:
+    lines = [
+        "| ip | hostname | stage | sha256 | installer | boot entry | boot files | boot sha256 | ready |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    rows = staging.get("rows", [])
+    if not rows:
+        lines.append("| none | none | none | none | none | none | none | none | no |")
+        return lines
+    for row in rows:
+        lines.append(
+            "| "
+            f"`{md_escape(row.get('ip'))}` | "
+            f"{md_escape(row.get('hostname') or '-')} | "
+            f"{md_escape(row.get('stage_status'))} | "
+            f"{md_escape(row.get('sha256_status'))} | "
+            f"{md_escape(row.get('installer_syntax'))} | "
+            f"{md_escape(row.get('boot_entry_status'))} | "
+            f"{md_escape(row.get('boot_files_status'))} | "
+            f"{md_escape(row.get('boot_sha256_status'))} | "
+            f"{'yes' if row.get('ready_for_root_install') else 'no'} |"
+        )
+    return lines
+
+
+def next_safe_action(staging: dict[str, Any], inventory: dict[str, Any]) -> str:
+    excluded = [
+        str(item.get("ip"))
+        for item in inventory.get("excluded_kernel_work_ips", [])
+        if isinstance(item, dict) and item.get("ip")
+    ]
+    excluded_note = f" Do not use excluded IPs: {', '.join(excluded)}." if excluded else ""
+    rows = staging.get("rows", [])
+    installed = [row for row in rows if row.get("root_install_complete")]
+    ready = [row for row in rows if row.get("ready_for_root_install")]
+    if installed:
+        row = installed[0]
+        capture = row.get("capture_label") or "cubie-mainline-boot"
+        label = row.get("extlinux_label") or "the staged non-default label"
+        return (
+            f"Run `scripts/cubie-manual-boot-session 180 {md_escape(capture)}`, "
+            f"then manually reboot/reset Cubie3 and select `{md_escape(label)}` "
+            f"over UART.{excluded_note}"
+        )
+    if ready:
+        row = ready[0]
+        stage = row.get("stage") or cubie_boot_staging_status.DEFAULT_STAGE
+        capture = row.get("capture_label") or f"{Path(stage).name}-boot"
+        label = row.get("extlinux_label") or "the staged non-default label"
+        host = row.get("hostname") or "target board"
+        ip = row.get("ip") or "unknown IP"
+        return (
+            f"On `{md_escape(host)}` `{md_escape(ip)}`, run "
+            f"`cd {md_escape(stage)}` then `sudo ./install-extlinux-entry.sh`. "
+            f"After that, run `scripts/cubie-manual-boot-session 180 {md_escape(capture)}` "
+            f"and select `{md_escape(label)}` over UART.{excluded_note}"
+        )
+    return f"{md_escape(staging.get('next_action', 'repair staging before boot proof'))}.{excluded_note}"
 
 
 def mapping_rows(summary: dict[str, Any]) -> list[str]:
@@ -174,6 +274,7 @@ def build_packet(
     status, notes = evidence_status(captures, net)
     non_empty = [item for item in captures if (item.get("local_bytes") or 0) > 0]
     mapping = mapping_candidate_summary(inventory, inventory_path, log_dir, event_log)
+    staging = boot_staging_status()
 
     lines = [
         "# Cubie Runtime Evidence Packet",
@@ -187,6 +288,13 @@ def build_packet(
         "## Boards",
         "",
         *board_rows(inventory),
+        "",
+        "## Excluded Kernel-Work IPs",
+        "",
+        *excluded_rows(inventory),
+        "",
+        "Historical logs mentioning excluded IPs are evidence only; they are not "
+        "permission to probe, stage, boot, or prove kernel work on those hosts.",
         "",
         "## Network Check",
         "",
@@ -202,6 +310,19 @@ def build_packet(
             f"{item.get('tcp_port')} | "
             f"{item.get('tcp_status')} |"
         )
+
+    lines.extend(
+        [
+            "",
+            "## Boot Staging Gate",
+            "",
+            f"- ready for root install: `{staging.get('ready_count', 0)}/{staging.get('target_count', 0)}`",
+            f"- installed boot entry: `{staging.get('installed_count', 0)}/{staging.get('target_count', 0)}`",
+            "",
+            *boot_staging_rows(staging),
+            "",
+        ]
+    )
 
     lines.extend(["", "## UART Evidence", ""])
     for note in notes:
@@ -289,10 +410,7 @@ def build_packet(
             "",
             "## Next Safe Action",
             "",
-            "Run `scripts/cubie-manual-boot-session 120 cubie-manual-boot`, "
-            "then have the human operator manually reset or power exactly one "
-            "Cubie board. Do not automate power and do not assume UART mapping "
-            "until boot text identifies the board.",
+            next_safe_action(staging, inventory),
             "",
         ]
     )
