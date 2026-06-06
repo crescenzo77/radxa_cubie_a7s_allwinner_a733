@@ -380,6 +380,33 @@
                 }
             ],
             "conclusion": "A bounded SSH discovery sweep found Cubie3 as the only authenticated A733 candidate. Cubie2's old 192.168.50.85 entry remains stale, no replacement IP was confirmed, and 192.168.50.65 was excluded from probing."
+        },
+        {
+            "observed_at_utc": "2026-06-06T17:58:33Z",
+            "type": "cubie-ip-discovery-refresh",
+            "network": "192.168.50.0/24",
+            "excluded_ips": [
+                "192.168.50.65"
+            ],
+            "ssh_open_count": 10,
+            "a733_candidate_count": 1,
+            "a733_candidates": [
+                {
+                    "board": "cubie3",
+                    "ip": "192.168.50.95",
+                    "hostname": "cubie-3",
+                    "arch": "aarch64",
+                    "model": "sun60iw2",
+                    "mac": "08:51:49:dc:f6:6c"
+                }
+            ],
+            "stale_inventory_entries": [
+                {
+                    "board": "cubie2",
+                    "ip": "192.168.50.85"
+                }
+            ],
+            "conclusion": "A refreshed bounded SSH discovery sweep again found Cubie3 as the only authenticated A733 candidate. Cubie2's old 192.168.50.85 entry remains stale, no replacement IP was confirmed, and 192.168.50.65 was excluded from probing."
         }
     ],
   "rules": [
