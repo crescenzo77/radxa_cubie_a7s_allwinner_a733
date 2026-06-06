@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shlex
 import sys
 import time
 from pathlib import Path
@@ -37,17 +38,19 @@ def selected_row(staging: dict[str, Any], key: str) -> dict[str, Any] | None:
 def install_command(row: dict[str, Any], user: str) -> str:
     ip = row.get("ip") or "unknown-ip"
     stage = row.get("stage") or cubie_boot_staging_status.DEFAULT_STAGE
-    return f"ssh -t {user}@{ip} 'cd {stage} && sudo ./install-extlinux-entry.sh'"
+    target = shlex.quote(f"{user}@{ip}")
+    remote = f"cd {shlex.quote(stage)} && sudo ./install-extlinux-entry.sh"
+    return f"ssh -t {target} {shlex.quote(remote)}"
 
 
 def local_board_command(row: dict[str, Any]) -> str:
     stage = row.get("stage") or cubie_boot_staging_status.DEFAULT_STAGE
-    return f"cd {stage}\nsudo ./install-extlinux-entry.sh"
+    return f"cd {shlex.quote(stage)}\nsudo ./install-extlinux-entry.sh"
 
 
 def capture_command(row: dict[str, Any]) -> str:
     capture = row.get("capture_label") or f"{Path(row.get('stage') or cubie_boot_staging_status.DEFAULT_STAGE).name}-boot"
-    return f"scripts/cubie-manual-boot-session 180 {capture}"
+    return f"scripts/cubie-manual-boot-session 180 {shlex.quote(capture)}"
 
 
 def extlinux_label(row: dict[str, Any]) -> str:
