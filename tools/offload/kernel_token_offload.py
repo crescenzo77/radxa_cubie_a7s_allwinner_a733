@@ -27,6 +27,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CARD_DIR = REPO_ROOT / "task-packets" / "kernel" / "context-cards"
 DEFAULT_LEDGER = DEFAULT_CARD_DIR / "idle-review-ledger.json"
 DEFAULT_IDLE_ROOTS = ["task-packets/kernel/reviews", "task-packets/kernel/research"]
+DEFAULT_REVIEW_TARGETS = ["amd-fast", "amd-research", "strix-review"]
 
 TARGETS: dict[str, dict[str, Any]] = {
     "amd-research": {
@@ -672,7 +673,7 @@ def create_review_matrix_card(args: argparse.Namespace) -> tuple[Path, Path, dic
         target_names.extend([item.strip() for item in value.split(",") if item.strip()])
     target_names = list(dict.fromkeys(target_names))
     if not target_names:
-        raise SystemExit("review-matrix needs at least one target")
+        target_names = list(DEFAULT_REVIEW_TARGETS)
 
     lane_prompts = {
         "amd-fast": (
@@ -1200,7 +1201,7 @@ def build_parser() -> argparse.ArgumentParser:
     matrix.add_argument(
         "--targets",
         action="append",
-        default=["amd-fast,amd-research,strix-review"],
+        default=[],
         help="Comma-separated or repeated target names. Default uses 3090, 7900XT, and Strix.",
     )
     matrix.add_argument("--prompt", default="")
@@ -1221,7 +1222,7 @@ def build_parser() -> argparse.ArgumentParser:
     idle.add_argument(
         "--targets",
         action="append",
-        default=["amd-fast,amd-research,strix-review"],
+        default=[],
         help="Comma-separated or repeated target names.",
     )
     idle.add_argument("--max-tokens", type=int, default=600)
