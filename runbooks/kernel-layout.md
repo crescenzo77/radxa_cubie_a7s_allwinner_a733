@@ -108,6 +108,9 @@ The companion evidence-retrieval workflow is documented in
 The local hardware token-offload workflow is documented in
 `runbooks/kernel-token-offload.md`.
 
+The host install and readiness checklist is documented in
+`runbooks/kernel-machine-install-checklist.md`.
+
 Initial cortex proof is recorded in
 `task-packets/kernel/research/cortex-bringup-proof-20260606.md`.
 
