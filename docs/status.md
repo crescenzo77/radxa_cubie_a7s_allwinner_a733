@@ -143,7 +143,8 @@ Current v4 repository hygiene checks run during this cleanup:
 - `git apply --numstat patches/000[1-9]-*.patch`: pass, all exported patch
   files parse as patches
 - patch export scan for nonstandard metadata trailers and local author
-  aliases: pass, none present
+  aliases: pass, none present; the trailer gate proof records only Enzo
+  Adriano `Signed-off-by` trailers
 - patch export scan for `linux/of_device.h`, the previous GIC redistributor
   size, and third-party binding maintainer blocks in A733 files: pass, none
   present
@@ -174,6 +175,11 @@ Validation container proof records for v4 exact head
   pass with reviewed `FILE_PATH_CHANGES` warnings only,
   `a733-v4-public-warning-gate-checkpatch-warning-gate-0ec5ef46f018`,
   SHA256 `5e3d9dc3eeb86fab41bcfcb703db56eedad1befde6424607a77e3f3fa26fb6aa`
+- trailer gate over the same exported v4 patches:
+  pass, with only `Signed-off-by: Enzo Adriano
+  <enzo.adriano.code@gmail.com>` trailers present,
+  `a733-v4-public-trailer-gate-trailer-gate-cd952a1fede8`,
+  SHA256 `eba8e0ed190fb7dee37768b462bdc1089caaa1efdb21cdcdda2dd78c173ab90f`
 - touched-schema `dt_binding_check`: pass for `arm/sunxi.yaml`,
   `clock/allwinner,sun60i-a733-ccu.yaml`,
   `pinctrl/allwinner,sun60i-a733-pinctrl.yaml`, and
