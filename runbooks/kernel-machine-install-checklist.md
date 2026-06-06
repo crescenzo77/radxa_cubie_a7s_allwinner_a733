@@ -46,6 +46,7 @@ Use the workflow status aggregator when deciding what Codex should do next:
 scripts/kernel-workflow-status
 scripts/kernel-workflow-status --json
 scripts/kernel-workflow-status --strict
+scripts/kernel-workflow-status --next-action
 ```
 
 It combines machine readiness, local model offload status, idle review ledger

@@ -64,6 +64,20 @@ def git_status(repo: Path, remote: str) -> dict[str, Any]:
     }
 
 
+def missing_git_status(repo: Path, remote: str) -> dict[str, Any]:
+    return {
+        "path": str(repo),
+        "clean": False,
+        "status_short": "",
+        "head_short": "",
+        "head": "",
+        "remote": remote,
+        "remote_head": "",
+        "remote_matches": False,
+        "errors": ["missing repository"],
+    }
+
+
 def command_json(argv: list[str], timeout: int = DEFAULT_TIMEOUT) -> dict[str, Any]:
     proc = run(argv, cwd=REPO_ROOT, timeout=timeout)
     if not proc["ok"]:
@@ -154,8 +168,12 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     )
     return {
         "homelab": git_status(REPO_ROOT, "origin"),
-        "public_repo": git_status(PUBLIC_REPO, "public") if PUBLIC_REPO.exists() else {"clean": False, "error": "missing"},
-        "public_mirror": git_status(PUBLIC_REPO, "origin") if PUBLIC_REPO.exists() else {"clean": False, "error": "missing"},
+        "public_repo": git_status(PUBLIC_REPO, "public")
+        if PUBLIC_REPO.exists()
+        else missing_git_status(PUBLIC_REPO, "public"),
+        "public_mirror": git_status(PUBLIC_REPO, "origin")
+        if PUBLIC_REPO.exists()
+        else missing_git_status(PUBLIC_REPO, "origin"),
         "machine_readiness": machine,
         "local_offload": offload,
         "idle_ledger": ledger,
@@ -227,12 +245,19 @@ def strict_failed(data: dict[str, Any]) -> bool:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--next-action",
+        action="store_true",
+        help="Print only the current deterministic next action.",
+    )
     parser.add_argument("--strict", action="store_true")
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
     args = parser.parse_args()
 
     data = build_status(args)
-    if args.json:
+    if args.next_action:
+        print(data["cubie_runtime_gate"].get("next_action") or "none")
+    elif args.json:
         print(json.dumps(data, indent=2, sort_keys=True))
     else:
         print(markdown(data), end="")
