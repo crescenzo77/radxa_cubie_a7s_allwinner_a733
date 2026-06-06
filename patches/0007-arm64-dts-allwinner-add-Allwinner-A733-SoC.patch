@@ -1,5 +1,5 @@
 From 314acfbafe0e8ddce6e0a18d56d8b8b4e47dc24b Mon Sep 17 00:00:00 2001
-From: Crescenzo <enzo.adriano.code@gmail.com>
+From: Crescenzo <crescenzo@gmail.com>
 Date: Wed, 3 Jun 2026 23:28:50 -0400
 Subject: [PATCH 7/8] arm64: dts: allwinner: add Allwinner A733 SoC
 
@@ -17,7 +17,7 @@ Assisted-by: OpenAI:GPT-5 Codex
 
 diff --git a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
 new file mode 100644
-index 000000000000..8aec9ec23ee1
+index 0000000000000..8aec9ec23ee16
 --- /dev/null
 +++ b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
 @@ -0,0 +1,194 @@
@@ -216,5 +216,5 @@ index 000000000000..8aec9ec23ee1
 +	};
 +};
 -- 
-2.53.0
+2.50.1 (Apple Git-155)
 

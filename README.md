@@ -1,86 +1,70 @@
 # Radxa Cubie A7S / Allwinner A733 Mainline Linux Bring-up
 
-This repository tracks upstream-facing analysis for Radxa Cubie A7S support in
-mainline Linux. The target is clean kernel enablement for the Allwinner A733
-SoC and the Cubie A7S board.
+This repository is the public preparation record for upstream Linux work on
+the Radxa Cubie A7S board and the Allwinner A733 SoC.
 
-This branch is intentionally not a lab notebook, artifact store, or patch dump.
-It contains only submission-oriented documentation and policy for work that may
-eventually become Linux kernel patches.
+It is intentionally narrow. The public branch should help kernel maintainers
+answer three questions:
 
-## Current Status
+- what patch series is being prepared
+- what base and validation were used
+- what is, and is not, being claimed
 
-No Ethernet support is claimed.
+Local lab automation, raw model output, generated kernels, DTBs, UART captures,
+and private machine details do not belong on this branch.
 
-Known working areas:
+## Current Series
 
-- A733 boot and board identification have been exercised through local
-  mainline test kernels.
-- A733 pinctrl and GPIO interrupt layout have enough evidence to guide a clean
-  upstream design.
-- GMAC0 at `0x04500000` has been identified as a Synopsys DWMAC 5.20 instance
-  behind an Allwinner GMAC210 wrapper.
+The current candidate work is the 8-patch platform bring-up series exported in
+[patches/](patches/).
 
-Current Ethernet blocker:
+Authoritative development branches are in the Linux fork:
 
-- The DWMAC DMA software reset bit remains stuck during local tests.
-- MDIO reads are not yet proof of real external PHY communication.
-- The Allwinner GMAC210 wrapper setup must be mapped into an upstreamable glue
-  driver before any Ethernet patch is proposed.
-- Any upstream-facing Cubie A7S board DTS must leave Ethernet disabled until
-  that reset, clock, wrapper, MDIO, and PHY behavior is proven.
+- `candidate/a733-board-binding-clean`
+- `candidate/a733-ccu-clean`
+- `candidate/a733-pinctrl-clean`
+- `candidate/a733-mmc-binding-clean`
+- `candidate/a733-platform-clean`
 
-See [docs/status.md](docs/status.md) for the current technical state.
+The exported series currently covers:
 
-## Upstream Discipline
+- Radxa Cubie A7S board compatible
+- initial Allwinner A733 CCU binding and driver
+- A733 pinctrl binding and driver
+- A733 MMC compatible
+- initial A733 SoC DTSI
+- Cubie A7S DTS with UART0 console and MMC0 storage
 
-This repository follows the Linux kernel submission process rather than a
-prototype-app workflow:
+Ethernet is not enabled and no Ethernet support is claimed.
 
-- No generated kernels, DTBs, UART logs, or binary artifacts are tracked here.
-- Diagnostic patches are not presented as upstream candidates.
-- Kernel patches must be small, reviewable, and split by subsystem.
-- A733-specific Ethernet sequencing belongs in an Allwinner STMMAC glue driver,
-  not in generic STMMAC core files.
-- DTS changes must follow accepted YAML bindings and accepted clock/reset
-  headers; synthetic local IDs are not acceptable upstream.
-- Register offsets must be named and justified, not scanned by ad hoc loops.
-- Final patches must pass kernel style, DT schema, and relevant build checks.
-- AI assistance, if used for a kernel contribution, must be disclosed with the
-  kernel-documented `Assisted-by:` trailer.
+## Submission Discipline
 
-See [docs/upstream-discipline.md](docs/upstream-discipline.md).
-See [docs/public-repo-expectations.md](docs/public-repo-expectations.md) for
-the public branch appearance contract.
-See [docs/maintainer-acceptance-contract.md](docs/maintainer-acceptance-contract.md)
-for the non-negotiable maintainer acceptance rules.
-See [docs/mainline-cleanup-workflow.md](docs/mainline-cleanup-workflow.md) for
-the human workflow for moving from exploration to candidate patches.
-See [docs/resume-brief-20260604.md](docs/resume-brief-20260604.md) for the
-current compact handoff.
+This repository follows the Linux kernel submission process:
 
-## Public Branch Policy
+- patches must be small, reviewable, and split by subsystem
+- bindings and dt-binding headers must precede DTS users
+- DTS patches stay at the end of a series
+- every hardware value needs evidence that can be explained without private
+  lab history
+- generated artifacts and local debug output stay out of git
+- failed experiments are not presented as candidate patches
+- `Signed-off-by:` is added only by the human submitter after final review
+- if coding assistance contributed to final patch content or wording, the
+  patch records that with `Assisted-by:`
 
-The public `main` branch is kept as an upstream-facing project state. Local
-hardware logs, experimental scripts, and generated artifacts are preserved
-outside this branch.
+See [docs/upstream-baseline.md](docs/upstream-baseline.md),
+[docs/mainline-cleanup-workflow.md](docs/mainline-cleanup-workflow.md), and
+[docs/status.md](docs/status.md).
 
-The private lab history from before this cleanup is preserved in the local and
-private `origin` branch:
+## Primary Kernel References
 
-```text
-lab-history-20260604
-```
-
-That branch is intentionally not pushed to the public GitHub remote.
-
-## Useful References
-
-- Linux kernel AI assistant policy:
-  <https://docs.kernel.org/process/coding-assistants.html>
-- Kernel patch submission guide:
+- Linux patch submission guide:
   <https://docs.kernel.org/process/submitting-patches.html>
-- Kernel coding style:
-  <https://docs.kernel.org/process/coding-style.html>
-- Netdev maintainer handbook:
-  <https://docs.kernel.org/process/maintainer-netdev.html>
+- Linux coding assistant policy:
+  <https://docs.kernel.org/process/coding-assistants.html>
+- Devicetree binding submission rules:
+  <https://docs.kernel.org/devicetree/bindings/submitting-patches.html>
+- Devicetree schema guide:
+  <https://docs.kernel.org/devicetree/bindings/writing-schema.html>
+- SoC maintainer handbook:
+  <https://docs.kernel.org/process/maintainer-soc.html>

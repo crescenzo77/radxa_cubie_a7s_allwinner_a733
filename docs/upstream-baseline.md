@@ -1,65 +1,59 @@
 # Upstream Baseline
 
-This is the single standing policy file for A733/Cubie A7S upstream candidate
-work. Keep it short. Do not add new governance Markdown.
+This file is the standing policy for A733/Cubie A7S upstream candidate work.
+Keep public records concise, technical, and reproducible.
 
-## Host Roles
+## Scope
 
-- `mac-mini`: local workstation. Use for local repo editing, documentation, and
-  macOS-side git tracking. Do not attempt loopback SSH execution to this host.
-- `strix`: `192.168.50.11`, primary build host. Use for kernel object
-  compilation, full `Image` builds, `make W=1`, Docker validation, and
-  `dt_binding_check` loops.
-- `thinkcentre`: service infrastructure and local repository synchronization
-  host only. Do not use for routine development or kernel compilation.
-- `mini-pc`: media server and LVM host only. Do not touch or query.
+The public branch may contain:
 
-## Maintainer Constraints
+- submission-oriented documentation
+- generated patch files from clean Linux topic branches
+- concise validation summaries tied to exact commits
+- evidence summaries that explain hardware claims
 
-- Generic STMMAC core files must not carry A733-only sequencing, reset,
-  wrapper, delay-chain, clock, syscfg, PHY reference, or board workaround code.
-  A733 Ethernet behavior belongs in Allwinner STMMAC glue code.
-- Devicetree bindings and header IDs must land before DTS or DTSI users. New
-  compatibles, clock IDs, reset IDs, properties, and interrupt layouts require
-  matching YAML/header support first.
-- Candidate code must have zero logging noise: no printk storms, register-scan
-  loops, trace labels, diagnostic dumps, WIP comments, or lab-history prose.
-  Production success paths stay quiet.
-- Pinctrl quirks must be modeled as clean SoC driver data or reviewed framework
-  flags, including the A733 missing Port A / structural IRQ-bank layout. Do not
-  publish discovery traces as pinctrl behavior.
-- Public candidate history must be atomic and squashed. No `WIP`, `fixup!`,
-  `squash!`, `try`, diagnostic, failed mailbox, or trial-and-error commits may
-  be publicly visible.
-- DCO sign-off is human-only. AI agents must not add `Signed-off-by:` trailers.
-  Add human sign-off only after human review and responsibility for the patch.
-  Disclose AI help with `Assisted-by:` when AI contributed to final kernel
-  patch content, review, or commit text.
+The public branch must not contain:
+
+- generated kernels, modules, DTBs, images, or boot payloads
+- raw UART captures or uncurated build logs
+- private machine topology, SSH paths, credentials, or personal automation
+- raw model conversations, model-review dumps, or task packets
+- diagnostic patches presented as candidate patches
+- history that requires private lab context to understand
+
+## Maintainer Rules
+
+- Use the current Linux documentation and subsystem maintainer instructions as
+  the source of truth.
+- Bindings and dt-binding headers must precede DTS users.
+- DTS patches must be last in a mixed series unless a maintainer gives a
+  different dependency plan.
+- A patch must be reviewable, bisectable, and self-contained.
+- A commit message must explain why the change is correct, not how the local
+  lab discovered it.
+- A hardware value is acceptable only when it can be justified from public
+  code, public vendor material, measured hardware evidence, or a recorded
+  runtime observation.
+- A733-only Ethernet sequencing belongs in Allwinner STMMAC glue code, not in
+  generic STMMAC core code.
+- Ethernet remains disabled until reset, clocks, wrapper programming, MDIO,
+  PHY reset, PHY power, and link behavior are proven.
+- `Signed-off-by:` is human-only. Do not add it until the human submitter has
+  reviewed and accepted responsibility under the DCO.
+- Use `Assisted-by:` when coding assistance materially contributed to final
+  patch content, review, or commit wording. The documented form is
+  `Assisted-by: AGENT_NAME:MODEL_VERSION [TOOLS]`.
 
 ## Current Direction
 
-- Freeze Markdown policy churn. Only this file may carry terse status.
-- Shift from metadata to hardware description.
+The current clean series is platform bring-up only:
 
-## Subsystem Status
+- board compatible
+- minimal A733 CCU support needed by the DTS
+- A733 pinctrl support
+- MMC compatible
+- initial SoC and Cubie A7S DTS
 
-| Block | Status |
-| --- | --- |
-| Board compatible | Candidate Complete |
-| Pinctrl | Mainline Validated |
-| CCU | Mainline Validated |
-| CPU topology / PMU | Mainline Validated |
-| MMC0 / storage DTS | Mainline Validated |
-| Ethernet / GMAC210 | Disabled SoC Node Validated; Board Enable Deferred |
-| USB host / USB3 | Mainline Validated |
-| Thermal / GPADC | Mainline Validated |
-| I2C / TWI | Mainline Validated |
-| UART | Mainline Validated |
-| Watchdog | Mainline Validated |
-| PMIC / regulators | Mainline Validated |
-| PCK-600 power domains | Mainline Validated |
-| RTC | Mainline Validated |
-| SID / efuse | Mainline Validated |
-| DMA | Mainline Validated |
-| SPI | Mainline Validated |
-| DVFS / CPU OPP | Deferred; CPU PLL clock support needed |
+Do not expand the public series with additional peripherals until each
+peripheral has its own binding, driver dependency, validation record, and
+runtime evidence.

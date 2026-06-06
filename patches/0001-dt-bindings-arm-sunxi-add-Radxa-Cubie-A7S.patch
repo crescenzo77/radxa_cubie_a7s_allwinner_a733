@@ -1,5 +1,5 @@
 From 7bf05c9cfc976b3ddbd66b164b7bdf7c40c6f5cf Mon Sep 17 00:00:00 2001
-From: Crescenzo <enzo.adriano.code@gmail.com>
+From: Crescenzo <crescenzo@gmail.com>
 Date: Wed, 3 Jun 2026 20:57:24 -0400
 Subject: [PATCH 1/8] dt-bindings: arm: sunxi: add Radxa Cubie A7S
 
@@ -11,7 +11,7 @@ Assisted-by: OpenAI:GPT-5 Codex
  1 file changed, 5 insertions(+)
 
 diff --git a/Documentation/devicetree/bindings/arm/sunxi.yaml b/Documentation/devicetree/bindings/arm/sunxi.yaml
-index e6443c266fa1..9f603681c78e 100644
+index e6443c266fa1e..9f603681c78e9 100644
 --- a/Documentation/devicetree/bindings/arm/sunxi.yaml
 +++ b/Documentation/devicetree/bindings/arm/sunxi.yaml
 @@ -850,6 +850,11 @@ properties:
@@ -26,6 +26,8 @@ index e6443c266fa1..9f603681c78e 100644
        - description: Remix Mini PC
          items:
            - const: jide,remix-mini-pc
+
+base-commit: 6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5
 -- 
-2.53.0
+2.50.1 (Apple Git-155)
 

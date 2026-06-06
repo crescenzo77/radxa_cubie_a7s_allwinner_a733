@@ -1,7 +1,7 @@
-From a86dd19d72a3f1cae8f42388221fa7fa4f3246d3 Mon Sep 17 00:00:00 2001
-From: Crescenzo <enzo.adriano.code@gmail.com>
+From be12c4e465a3afaa71c20e712e8c0917e4107522 Mon Sep 17 00:00:00 2001
+From: Crescenzo <crescenzo@gmail.com>
 Date: Wed, 3 Jun 2026 20:57:04 -0400
-Subject: [PATCH 1/2] dt-bindings: clock: add Allwinner A733 CCU
+Subject: [PATCH 2/8] dt-bindings: clock: add Allwinner A733 CCU
 
 Add a binding for the main clock control unit found in the
 Allwinner A733 SoC.
@@ -18,7 +18,7 @@ Assisted-by: OpenAI:GPT-5 Codex
 
 diff --git a/Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml b/Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml
 new file mode 100644
-index 000000000000..afbe431fc1d9
+index 0000000000000..afbe431fc1d98
 --- /dev/null
 +++ b/Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml
 @@ -0,0 +1,58 @@
@@ -82,7 +82,7 @@ index 000000000000..afbe431fc1d9
 +...
 diff --git a/include/dt-bindings/clock/sun60i-a733-ccu.h b/include/dt-bindings/clock/sun60i-a733-ccu.h
 new file mode 100644
-index 000000000000..e24fbc94a4a3
+index 0000000000000..e24fbc94a4a36
 --- /dev/null
 +++ b/include/dt-bindings/clock/sun60i-a733-ccu.h
 @@ -0,0 +1,12 @@
@@ -100,7 +100,7 @@ index 000000000000..e24fbc94a4a3
 +#endif /* _DT_BINDINGS_CLK_SUN60I_A733_CCU_H_ */
 diff --git a/include/dt-bindings/reset/sun60i-a733-ccu.h b/include/dt-bindings/reset/sun60i-a733-ccu.h
 new file mode 100644
-index 000000000000..b975662439b2
+index 0000000000000..b975662439b21
 --- /dev/null
 +++ b/include/dt-bindings/reset/sun60i-a733-ccu.h
 @@ -0,0 +1,9 @@
@@ -114,5 +114,5 @@ index 000000000000..b975662439b2
 +
 +#endif /* _DT_BINDINGS_RST_SUN60I_A733_CCU_H_ */
 -- 
-2.53.0
+2.50.1 (Apple Git-155)
 

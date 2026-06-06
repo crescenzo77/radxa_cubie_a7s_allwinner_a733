@@ -1,7 +1,7 @@
-From af2057b70cb663b7a9896d6d6d37aa2cc10af9d7 Mon Sep 17 00:00:00 2001
-From: Crescenzo <enzo.adriano.code@gmail.com>
+From 075f95beceb9f2e8f28149fb57f9f9a2cd15fcdd Mon Sep 17 00:00:00 2001
+From: Crescenzo <crescenzo@gmail.com>
 Date: Wed, 3 Jun 2026 21:18:20 -0400
-Subject: [PATCH 1/2] dt-bindings: pinctrl: add Allwinner A733 pin controller
+Subject: [PATCH 4/8] dt-bindings: pinctrl: add Allwinner A733 pin controller
 
 Add a binding for the A733 main PIO controller.
 
@@ -16,7 +16,7 @@ Assisted-by: OpenAI:GPT-5 Codex
 
 diff --git a/Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml
 new file mode 100644
-index 000000000000..aba42e9d9d41
+index 0000000000000..aba42e9d9d41c
 --- /dev/null
 +++ b/Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml
 @@ -0,0 +1,136 @@
@@ -157,5 +157,5 @@ index 000000000000..aba42e9d9d41
 +        };
 +    };
 -- 
-2.53.0
+2.50.1 (Apple Git-155)
 

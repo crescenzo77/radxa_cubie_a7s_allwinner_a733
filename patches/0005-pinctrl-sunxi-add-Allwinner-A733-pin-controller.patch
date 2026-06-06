@@ -1,7 +1,7 @@
-From ff20297bd42a6f533061a849107cadc560b56afd Mon Sep 17 00:00:00 2001
-From: Crescenzo <enzo.adriano.code@gmail.com>
+From 9172745422786178ff675a4532886bbfd44154ec Mon Sep 17 00:00:00 2001
+From: Crescenzo <crescenzo@gmail.com>
 Date: Wed, 3 Jun 2026 21:18:20 -0400
-Subject: [PATCH 2/2] pinctrl: sunxi: add Allwinner A733 pin controller
+Subject: [PATCH 5/8] pinctrl: sunxi: add Allwinner A733 pin controller
 
 Add support for the A733 main PIO controller using the existing
 DT-described pin function path.
@@ -19,7 +19,7 @@ Assisted-by: OpenAI:GPT-5 Codex
  create mode 100644 drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c
 
 diff --git a/drivers/pinctrl/sunxi/Kconfig b/drivers/pinctrl/sunxi/Kconfig
-index dc62eba96348..5f819cd03d58 100644
+index dc62eba96348e..5f819cd03d58e 100644
 --- a/drivers/pinctrl/sunxi/Kconfig
 +++ b/drivers/pinctrl/sunxi/Kconfig
 @@ -141,4 +141,14 @@ config PINCTRL_SUN55I_A523_R
@@ -38,7 +38,7 @@ index dc62eba96348..5f819cd03d58 100644
 +
  endif
 diff --git a/drivers/pinctrl/sunxi/Makefile b/drivers/pinctrl/sunxi/Makefile
-index 951b3f1e4b4f..3658c9d06b49 100644
+index 951b3f1e4b4f1..3658c9d06b498 100644
 --- a/drivers/pinctrl/sunxi/Makefile
 +++ b/drivers/pinctrl/sunxi/Makefile
 @@ -29,5 +29,6 @@ obj-$(CONFIG_PINCTRL_SUN50I_H616)	+= pinctrl-sun50i-h616.o
@@ -50,7 +50,7 @@ index 951b3f1e4b4f..3658c9d06b49 100644
  obj-$(CONFIG_PINCTRL_SUN9I_A80_R)	+= pinctrl-sun9i-a80-r.o
 diff --git a/drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c b/drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c
 new file mode 100644
-index 000000000000..ebcc7af91b87
+index 0000000000000..ebcc7af91b873
 --- /dev/null
 +++ b/drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c
 @@ -0,0 +1,54 @@
@@ -109,5 +109,5 @@ index 000000000000..ebcc7af91b87
 +};
 +builtin_platform_driver(a733_pinctrl_driver);
 -- 
-2.53.0
+2.50.1 (Apple Git-155)
 

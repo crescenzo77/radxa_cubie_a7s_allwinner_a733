@@ -1,5 +1,5 @@
 From a5b1f1f02505b309d08475255016ea44debd64ed Mon Sep 17 00:00:00 2001
-From: Crescenzo <enzo.adriano.code@gmail.com>
+From: Crescenzo <crescenzo@gmail.com>
 Date: Wed, 3 Jun 2026 20:57:25 -0400
 Subject: [PATCH 6/8] dt-bindings: mmc: add Allwinner A733 compatible
 
@@ -12,7 +12,7 @@ Assisted-by: OpenAI:GPT-5 Codex
  1 file changed, 3 insertions(+)
 
 diff --git a/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml b/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml
-index 9f3b1edacaa0..9e9590521210 100644
+index 9f3b1edacaa02..9e95905212107 100644
 --- a/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml
 +++ b/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml
 @@ -58,6 +58,9 @@ properties:
@@ -26,5 +26,5 @@ index 9f3b1edacaa0..9e9590521210 100644
    reg:
      maxItems: 1
 -- 
-2.53.0
+2.50.1 (Apple Git-155)
 
