@@ -190,7 +190,8 @@ Validation issue fixed:
 
 Current checkpatch result:
 
-- `scripts/checkpatch.pl --strict --no-tree patches/000[1-9]-*.patch`:
+- run from the Linux tree root:
+  `scripts/checkpatch.pl --strict --no-tree /path/to/export/patches/000[1-9]-*.patch`:
   `0 errors, 6 warnings, 0 checks`
 - remaining warnings are the unconditional MAINTAINERS new-file questions
   emitted for new files in patches 2, 3, 4, 5, 7, and 8; patch 9 adds the

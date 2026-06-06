@@ -129,6 +129,12 @@ Run the relevant checks on the exact branch or exported patch files:
 - boot/runtime tests on named hardware when the patch claims runtime behavior
 - per-patch bisectability checks for mixed series
 
+Run `scripts/checkpatch.pl` from the Linux tree root and pass the exported
+patch files as patch inputs, for example
+`scripts/checkpatch.pl --strict --no-tree /path/to/export/patches/000[1-9]-*.patch`.
+Do not substitute a generic text-file whitespace scan for `checkpatch`'s patch
+parser; exported patch context lines are not source trailing whitespace.
+
 When passing multiple schemas to this kernel tree's DT validation targets, use
 a colon-separated `DT_SCHEMA_FILES` value, for example
 `foo.yaml:bar.yaml`. A space-separated list can break the `dtbs_check`
