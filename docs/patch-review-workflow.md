@@ -196,6 +196,17 @@ For exported kernel patch series, run the warning gate after plain
 `scripts/checkpatch.pl --strict`:
 
 ```sh
+scripts/kernel-proof warning-gate
+```
+
+The proof action exports the configured local series, stages only the exported
+patch files plus `MAINTAINERS` and `scripts/checkpatch.pl` into the configured
+validation workspace, and writes a hashed proof log. Override
+`WARNING_GATE_REPO`, `WARNING_GATE_BASE`, `WARNING_GATE_REF`, or
+`WARNING_GATE_CHECKPATCH_TREE` when checking a different series. To run the
+local classifier without creating a proof log:
+
+```sh
 scripts/kernel-checkpatch-warning-gate \
   --checkpatch-tree /path/to/linux-tree-with-scripts \
   --maintainers /path/to/candidate-tree/MAINTAINERS \

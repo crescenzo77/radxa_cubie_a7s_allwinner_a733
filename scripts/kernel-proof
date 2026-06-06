@@ -2,6 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+projects_root="$(cd "${repo_root}/.." && pwd)"
 
 validation_host="${VALIDATION_HOST:-192.168.50.252}"
 remote_root="${VALIDATION_REMOTE_ROOT:-/srv/projects/kernel-proof}"
@@ -20,6 +21,7 @@ Actions:
   build-image     Build the validation image on the Linux host.
   status          Show image and proof-log status on the Linux host.
   self-test       Run version, dummy PASS, and expected dummy FAIL proofs.
+  warning-gate    Export a local patch series and run the checkpatch warning gate.
   run [args]      Run kernel-proof-runner in the validation container.
   pull-logs       Copy remote proof logs into tools/proof-logs/.
 
@@ -122,6 +124,61 @@ self_test() {
   status
 }
 
+warning_gate_proof() {
+  local warning_repo="${WARNING_GATE_REPO:-${projects_root}/linux-a733-sparse}"
+  local warning_base="${WARNING_GATE_BASE:-6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5}"
+  local warning_ref="${WARNING_GATE_REF:-HEAD}"
+  local checkpatch_tree="${WARNING_GATE_CHECKPATCH_TREE:-${projects_root}/linux-a733}"
+  local task_id="${WARNING_GATE_TASK_ID:-a733-v4-public-warning-gate}"
+  local allow_dirty="${WARNING_GATE_ALLOW_DIRTY:-0}"
+
+  if [ ! -d "${warning_repo}/.git" ]; then
+    echo "missing warning gate repo: ${warning_repo}" >&2
+    exit 2
+  fi
+  if [ ! -x "${checkpatch_tree}/scripts/checkpatch.pl" ] && [ ! -f "${checkpatch_tree}/scripts/checkpatch.pl" ]; then
+    echo "missing checkpatch.pl in: ${checkpatch_tree}" >&2
+    exit 2
+  fi
+  if [ ! -f "${warning_repo}/MAINTAINERS" ]; then
+    echo "missing MAINTAINERS in: ${warning_repo}" >&2
+    exit 2
+  fi
+  if [ "${allow_dirty}" != "1" ] && [ -n "$(git -C "${warning_repo}" status --porcelain)" ]; then
+    echo "refusing to export dirty warning gate repo: ${warning_repo}" >&2
+    exit 2
+  fi
+
+  local head_sha short stamp work local_tmp
+  head_sha="$(git -C "${warning_repo}" rev-parse "${warning_ref}")"
+  short="${head_sha:0:12}"
+  stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  work="checkpatch-warning-gate-${short}-${stamp}"
+  local_tmp="$(mktemp -d)"
+  trap 'rm -rf "${local_tmp}"' RETURN
+
+  mkdir -p "${local_tmp}/${work}/scripts" "${local_tmp}/${work}/export-patches"
+  cp "${checkpatch_tree}/scripts/checkpatch.pl" "${local_tmp}/${work}/scripts/checkpatch.pl"
+  cp "${warning_repo}/MAINTAINERS" "${local_tmp}/${work}/MAINTAINERS"
+  git -C "${warning_repo}" format-patch -q -o "${local_tmp}/${work}/export-patches" "${warning_base}..${warning_ref}"
+  if ! compgen -G "${local_tmp}/${work}/export-patches/000*.patch" >/dev/null; then
+    echo "no exported patches for ${warning_base}..${warning_ref}" >&2
+    exit 2
+  fi
+
+  ssh_target "mkdir -p '${validation_workspace}'"
+  COPYFILE_DISABLE=1 tar --format ustar -C "${local_tmp}" -cf - "${work}" \
+    | ssh_target "tar -C '${validation_workspace}' -xf -"
+  echo "warning_gate_workspace=${validation_host}:${validation_workspace}/${work}"
+  echo "warning_gate_head=${head_sha}"
+  run_proof \
+    --task-id "${task_id}" \
+    --check checkpatch-warning-gate \
+    --workdir "/workspace/${work}" \
+    --stdout-excerpt-chars 8000 \
+    --stderr-excerpt-chars 4000
+}
+
 pull_logs() {
   local local_dir="${repo_root}/tools/proof-logs"
   mkdir -p "${local_dir}"
@@ -147,6 +204,9 @@ case "${action}" in
     ;;
   self-test)
     self_test
+    ;;
+  warning-gate)
+    warning_gate_proof "$@"
     ;;
   run)
     run_proof "$@"
