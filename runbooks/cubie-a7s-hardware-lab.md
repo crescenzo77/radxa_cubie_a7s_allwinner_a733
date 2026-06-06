@@ -37,6 +37,8 @@ Quick network observation:
   and Cubie3 `192.168.50.95`. The stale Cubie2 address `192.168.50.85`
   appeared only as incomplete/failed where present. No alternate Cubie2 IP was
   found passively.
+- 2026-06-06 read-only UART IP query on the Cubie2 candidate adapter returned
+  0 bytes. It did not reveal a Cubie2 IP address.
 
 Treat reachability as a live lab condition, not a permanent fact.
 
@@ -93,6 +95,8 @@ board-to-tty mapping.
 - `pci-0000:c3:00.4-usb-0:1.2:1.0-port0` returned 0 bytes after an Enter
   probe. It remains only a Cubie2 candidate until boot or login text identifies
   the board.
+- A fixed read-only hostname/IP query on the 1.2 adapter also returned 0
+  bytes, so UART has not revealed a Cubie2 IP address.
 
 Do not assume the board-to-tty mapping yet. Confirm by capturing boot output
 from one board at a time.
@@ -102,6 +106,7 @@ Use:
 ```sh
 scripts/cubie-uart list
 scripts/cubie-uart capture /dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0 cubie3-boot-probe 30
+scripts/cubie-uart readonly-ip-query /dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0 cubie2-ip-query 12
 scripts/cubie-uart pull-logs
 scripts/cubie-uart-report
 scripts/cubie-event-log list
