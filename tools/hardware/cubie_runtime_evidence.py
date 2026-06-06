@@ -55,6 +55,24 @@ def md_escape(value: object) -> str:
     return str(value if value is not None else "").replace("|", "/").replace("\n", " ")
 
 
+def excluded_ip_values(inventory: dict[str, Any]) -> list[str]:
+    excluded = inventory.get("excluded_kernel_work_ips", [])
+    if not isinstance(excluded, list):
+        return []
+    return [
+        str(item.get("ip"))
+        for item in excluded
+        if isinstance(item, dict) and item.get("ip")
+    ]
+
+
+def redact_excluded_text(value: object, excluded_ips: list[str]) -> str:
+    text = str(value if value is not None else "")
+    for ip in excluded_ips:
+        text = text.replace(ip, "[excluded-kernel-work-ip]")
+    return text
+
+
 def board_rows(inventory: dict[str, Any]) -> list[str]:
     rows = ["| board | ip | uart mapping | power switch |", "| --- | --- | --- | --- |"]
     boards = inventory.get("boards", [])
@@ -199,11 +217,7 @@ def boot_staging_rows(staging: dict[str, Any]) -> list[str]:
 
 
 def next_safe_action(staging: dict[str, Any], inventory: dict[str, Any]) -> str:
-    excluded = [
-        str(item.get("ip"))
-        for item in inventory.get("excluded_kernel_work_ips", [])
-        if isinstance(item, dict) and item.get("ip")
-    ]
+    excluded = excluded_ip_values(inventory)
     excluded_note = f" Do not use excluded IPs: {', '.join(excluded)}." if excluded else ""
     rows = staging.get("rows", [])
     installed = [row for row in rows if row.get("root_install_complete")]
@@ -267,6 +281,7 @@ def build_packet(
     generated_at: str,
 ) -> str:
     inventory = load_inventory(inventory_path)
+    excluded_ips = excluded_ip_values(inventory)
     boards = cubie_network_status.load_boards(inventory_path)
     net = cubie_network_status.check_boards(boards, network_timeout, port)
     captures = cubie_uart_report.load_captures(log_dir)
@@ -390,7 +405,7 @@ def build_packet(
                 f"{md_escape(event.get('board', 'unknown'))} | "
                 f"{md_escape(event.get('event_type', 'unknown'))} | "
                 f"{md_escape(event.get('actor', 'unknown'))} | "
-                f"{md_escape(event.get('note', ''))} |"
+                f"{md_escape(redact_excluded_text(event.get('note', ''), excluded_ips))} |"
             )
     else:
         lines.append("| none | none | none | none | none |")
@@ -400,7 +415,7 @@ def build_packet(
     for obs in latest_observations(inventory):
         observed_at = obs.get("observed_at_utc", "unknown")
         obs_type = obs.get("type", "unknown")
-        conclusion = obs.get("conclusion", "no conclusion")
+        conclusion = redact_excluded_text(obs.get("conclusion", "no conclusion"), excluded_ips)
         lines.append(f"- `{observed_at}` `{obs_type}`: {conclusion}")
     if not latest_observations(inventory):
         lines.append("- No inventory observations recorded.")
