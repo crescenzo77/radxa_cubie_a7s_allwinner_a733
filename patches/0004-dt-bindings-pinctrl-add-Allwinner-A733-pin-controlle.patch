@@ -1,14 +1,13 @@
-From a39c59e80631cc69bc16b5cd60585eb3e2ef1da3 Mon Sep 17 00:00:00 2001
+From 1be5396a5da9f12a407932bba59d78dcd550f652 Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 21:18:20 -0400
-Subject: [PATCH 4/8] dt-bindings: pinctrl: add Allwinner A733 pin controller
+Subject: [PATCH 4/9] dt-bindings: pinctrl: add Allwinner A733 pin controller
 
 Add a binding for the A733 main PIO controller.
 
 The controller has no physical Port A pins, but the IRQ register
 layout still reserves the first structural bank slot.
 
-Assisted-by: OpenAI:GPT-5 Codex
 Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
  .../allwinner,sun60i-a733-pinctrl.yaml        | 136 ++++++++++++++++++
@@ -17,7 +16,7 @@ Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 
 diff --git a/Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml
 new file mode 100644
-index 0000000000000..aba42e9d9d41c
+index 0000000000000..ce28849a40eaa
 --- /dev/null
 +++ b/Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml
 @@ -0,0 +1,136 @@
@@ -30,7 +29,7 @@ index 0000000000000..aba42e9d9d41c
 +title: Allwinner A733 Pin Controller
 +
 +maintainers:
-+  - Andre Przywara <andre.przywara@arm.com>
++  - Enzo Adriano <enzo.adriano.code@gmail.com>
 +
 +properties:
 +  "#gpio-cells":
@@ -157,6 +156,6 @@ index 0000000000000..aba42e9d9d41c
 +            bias-pull-up;
 +        };
 +    };
--- 
+--
 2.50.1 (Apple Git-155)
 

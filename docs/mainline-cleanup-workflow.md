@@ -21,6 +21,7 @@ Before calling a patch a candidate, record:
 - runtime evidence for every runtime claim
 - known limitations and deferred hardware blocks
 - in-flight RFC or patch-series search results for every touched subsystem
+- final human disclosure and trailer policy for the exact series being sent
 
 ## Preflight Gates
 
@@ -34,8 +35,16 @@ Run these gates before editing a candidate branch:
 - verify `get_maintainer.pl` coverage for every new path
 - check whether new SoC names need MAINTAINERS `N:` patterns in addition to
   existing `F:` path coverage
+- require a MAINTAINERS patch when a new SoC naming family is not matched by
+  existing `N:` patterns
+- reject binding maintainer blocks that list a third party without explicit
+  consent
 - reject BSP-only compatible strings such as internal `sun60iw*` names unless
   a binding maintainer explicitly asks for them
+- compare GICv3 distributor and redistributor regions against the CPU count
+  and the binding before exporting DTSI patches
+- require `capacity-dmips-mhz` for asymmetric CPU topologies unless the cover
+  letter documents why scheduler capacity data is deferred
 - classify IRQ, Ethernet, and VPU work before drafting patches; each has
   subsystem-specific rules below and must not be hidden inside board DTS work
 
@@ -53,6 +62,8 @@ Run these gates before editing a candidate branch:
 - Put DTS patches at the end of a mixed series.
 - Do not enable a board peripheral until the binding, clocks, resets, pinctrl,
   power, and runtime behavior are proven.
+- Do not add or keep automatic coding-assistance trailers in candidate
+  exports; make disclosure a final human review decision.
 - Each patch must be independently buildable on top of the previous patch.
   Validate bisectability by applying the series to the recorded base and
   building/checking each patch step, not only the final series.
@@ -146,10 +157,14 @@ known false positive before describing the series as ready.
 - `Signed-off-by:` is added only by the human submitter.
 - `Reviewed-by:`, `Acked-by:`, `Tested-by:`, and similar trailers require the
   named person's explicit authorization.
-- `Assisted-by:` records coding-assistant involvement when it contributed to
-  final patch content, review, or wording.
-- The documented form is `Assisted-by: AGENT_NAME:MODEL_VERSION [TOOLS]`.
-- Do not let tooling add trailers automatically.
+- Coding-assistance disclosure must be decided by the human submitter after
+  reviewing the current Linux coding-assistant documentation and the relevant
+  subsystem's expectations.
+- Do not let tooling add disclosure trailers automatically.
+- Draft/public-preparation exports may omit coding-assistance trailers to
+  avoid turning technical review prep into a policy discussion. Before any
+  mailed submission, record the final disclosure decision in the cover-letter
+  preparation notes.
 
 ## Stop Conditions
 
@@ -160,7 +175,12 @@ Stop and repair the smallest responsible slice if:
 - a patch does not apply to the recorded base
 - checkpatch, schema, dtbs, or build checks fail
 - a DTS node uses an undocumented compatible, clock ID, reset ID, or property
+- an asymmetric CPU topology lacks scheduler capacity data without a recorded
+  reason
+- a GICv3 region size is irregular for the CPU topology and lacks evidence
 - a patch mixes unrelated subsystems
+- a new binding volunteers another maintainer without explicit consent
+- a new SoC naming family lacks explicit MAINTAINERS coverage
 - an IRQ workaround bypasses irq_domain or standard irqchip/pinctrl operations
 - Ethernet uses only generic DWMAC fallback behavior where SoC glue is needed
 - VPU work mixes binding, clocks, media driver, and DTS in one patch
@@ -169,6 +189,8 @@ Stop and repair the smallest responsible slice if:
   does not explain the relationship
 - a patch requires private lab history to make sense
 - a patch contains unauthorized trailers
+- a patch contains automatic coding-assistance trailers that were not reviewed
+  and intentionally approved by the human submitter
 
 ## Submission Preparation
 
@@ -181,4 +203,5 @@ Before mailing:
    correct, especially for IRQ, GMAC, and media/VPU changes.
 5. Draft a cover letter with base, scope, validation, limitations, and
    dependency notes, including any in-flight RFC relationship.
-6. Send only after human review with the correct DCO sign-off.
+6. Record the final human decision for coding-assistance disclosure/trailers.
+7. Send only after human review with the correct DCO sign-off.

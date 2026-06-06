@@ -1,12 +1,11 @@
-From 6546a229c72d3417ddeaf1d9a0965ff2ba0e2e44 Mon Sep 17 00:00:00 2001
+From a7f4cf368a18afb7339833ab2e1136c20f066c02 Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 20:57:25 -0400
-Subject: [PATCH 6/8] dt-bindings: mmc: add Allwinner A733 compatible
+Subject: [PATCH 6/9] dt-bindings: mmc: add Allwinner A733 compatible
 
 Document the A733 MMC controller compatible with the existing D1-style
 fallback.
 
-Assisted-by: OpenAI:GPT-5 Codex
 Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
  .../devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml       | 3 +++
@@ -26,6 +25,6 @@ index 9f3b1edacaa02..9e95905212107 100644
  
    reg:
      maxItems: 1
--- 
+--
 2.50.1 (Apple Git-155)
 

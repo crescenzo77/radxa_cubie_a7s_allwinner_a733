@@ -15,14 +15,14 @@ and private machine details do not belong on this branch.
 
 ## Current Series
 
-The current candidate work is the 8-patch platform bring-up series exported in
+The current candidate work is the 9-patch platform bring-up series exported in
 [patches/](patches/).
 
 The current authoritative development branch is in the Linux fork:
 
 ```text
 https://github.com/crescenzo77/linux.git
-candidate/a733-platform-clean-v2
+candidate/a733-platform-clean-v3
 ```
 
 The exported series currently covers:
@@ -33,6 +33,7 @@ The exported series currently covers:
 - A733 MMC compatible
 - initial A733 SoC DTSI
 - Cubie A7S DTS with UART0 console and MMC0 storage
+- explicit Allwinner `sun60i` MAINTAINERS pattern
 
 Ethernet is not enabled and no Ethernet support is claimed.
 
@@ -51,8 +52,8 @@ This repository follows the Linux kernel submission process:
 - generated artifacts and local debug output stay out of git
 - failed experiments are not presented as candidate patches
 - `Signed-off-by:` is added only by the human submitter after final review
-- if coding assistance contributed to final patch content or wording, the
-  patch records that with `Assisted-by:`
+- coding-assistance disclosure and trailer decisions are final human review
+  items; tooling must not add those trailers automatically
 
 See [docs/upstream-baseline.md](docs/upstream-baseline.md),
 [docs/mainline-cleanup-workflow.md](docs/mainline-cleanup-workflow.md), and

@@ -1,7 +1,7 @@
-From e432f3dfdab95854fb5a4670d5afce5075ca5bb0 Mon Sep 17 00:00:00 2001
+From f7d691740037f020515322dc88c002d882b4e746 Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 20:57:04 -0400
-Subject: [PATCH 3/8] clk: sunxi-ng: add Allwinner A733 CCU support
+Subject: [PATCH 3/9] clk: sunxi-ng: add Allwinner A733 CCU support
 
 Add clock and reset definitions for the main clock control unit found
 in the Allwinner A733 SoC.
@@ -9,7 +9,6 @@ in the Allwinner A733 SoC.
 The controller provides clocks and resets used by devices in the main
 SoC domain.
 
-Assisted-by: OpenAI:GPT-5 Codex
 Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
  drivers/clk/sunxi-ng/Kconfig           | 11 +++
@@ -181,6 +180,6 @@ index 0000000000000..212c1a7fc801a
 +#define CLK_NUMBER		(CLK_BUS_UART0 + 1)
 +
 +#endif /* _CCU_SUN60I_A733_H_ */
--- 
+--
 2.50.1 (Apple Git-155)
 

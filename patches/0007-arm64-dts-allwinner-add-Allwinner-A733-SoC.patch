@@ -1,7 +1,7 @@
-From c1e182fe6f134f0a400822e2b3dd463fd3cb1d4c Mon Sep 17 00:00:00 2001
+From 187c17e96348bc30db607e109076ae644b9f43f3 Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 23:28:50 -0400
-Subject: [PATCH 7/8] arm64: dts: allwinner: add Allwinner A733 SoC
+Subject: [PATCH 7/9] arm64: dts: allwinner: add Allwinner A733 SoC
 
 Add the initial A733 SoC description with CPUs, timers, interrupt
 controller, clocks, pinctrl, UART0, and MMC0.
@@ -9,19 +9,18 @@ controller, clocks, pinctrl, UART0, and MMC0.
 Keep peripherals disabled by default. Board DTS files can enable only the
 devices that are proven on their hardware.
 
-Assisted-by: OpenAI:GPT-5 Codex
 Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
- .../arm64/boot/dts/allwinner/sun60i-a733.dtsi | 194 ++++++++++++++++++
- 1 file changed, 194 insertions(+)
+ .../arm64/boot/dts/allwinner/sun60i-a733.dtsi | 202 ++++++++++++++++++
+ 1 file changed, 202 insertions(+)
  create mode 100644 arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
 
 diff --git a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
 new file mode 100644
-index 0000000000000..8aec9ec23ee16
+index 0000000000000..e8d6d8f487f6b
 --- /dev/null
 +++ b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
-@@ -0,0 +1,194 @@
+@@ -0,0 +1,202 @@
 +// SPDX-License-Identifier: (GPL-2.0-only OR MIT)
 +
 +#include <dt-bindings/interrupt-controller/arm-gic.h>
@@ -42,6 +41,7 @@ index 0000000000000..8aec9ec23ee16
 +			device_type = "cpu";
 +			reg = <0x000>;
 +			enable-method = "psci";
++			capacity-dmips-mhz = <530>;
 +		};
 +
 +		cpu1: cpu@100 {
@@ -49,6 +49,7 @@ index 0000000000000..8aec9ec23ee16
 +			device_type = "cpu";
 +			reg = <0x100>;
 +			enable-method = "psci";
++			capacity-dmips-mhz = <530>;
 +		};
 +
 +		cpu2: cpu@200 {
@@ -56,6 +57,7 @@ index 0000000000000..8aec9ec23ee16
 +			device_type = "cpu";
 +			reg = <0x200>;
 +			enable-method = "psci";
++			capacity-dmips-mhz = <530>;
 +		};
 +
 +		cpu3: cpu@300 {
@@ -63,6 +65,7 @@ index 0000000000000..8aec9ec23ee16
 +			device_type = "cpu";
 +			reg = <0x300>;
 +			enable-method = "psci";
++			capacity-dmips-mhz = <530>;
 +		};
 +
 +		cpu4: cpu@400 {
@@ -70,6 +73,7 @@ index 0000000000000..8aec9ec23ee16
 +			device_type = "cpu";
 +			reg = <0x400>;
 +			enable-method = "psci";
++			capacity-dmips-mhz = <530>;
 +		};
 +
 +		cpu5: cpu@500 {
@@ -77,6 +81,7 @@ index 0000000000000..8aec9ec23ee16
 +			device_type = "cpu";
 +			reg = <0x500>;
 +			enable-method = "psci";
++			capacity-dmips-mhz = <530>;
 +		};
 +
 +		cpu6: cpu@600 {
@@ -84,6 +89,7 @@ index 0000000000000..8aec9ec23ee16
 +			device_type = "cpu";
 +			reg = <0x600>;
 +			enable-method = "psci";
++			capacity-dmips-mhz = <1024>;
 +		};
 +
 +		cpu7: cpu@700 {
@@ -91,6 +97,7 @@ index 0000000000000..8aec9ec23ee16
 +			device_type = "cpu";
 +			reg = <0x700>;
 +			enable-method = "psci";
++			capacity-dmips-mhz = <1024>;
 +		};
 +	};
 +
@@ -194,7 +201,7 @@ index 0000000000000..8aec9ec23ee16
 +			ranges;
 +			interrupt-controller;
 +			reg = <0x03400000 0x10000>,
-+			      <0x03460000 0xff004>;
++			      <0x03460000 0x100000>;
 +		};
 +
 +		mmc0: mmc@4020000 {
@@ -216,6 +223,6 @@ index 0000000000000..8aec9ec23ee16
 +		};
 +	};
 +};
--- 
+--
 2.50.1 (Apple Git-155)
 

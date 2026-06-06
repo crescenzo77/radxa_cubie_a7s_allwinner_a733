@@ -1,12 +1,11 @@
-From f1e51e0c968de813d5644be77201f6f062c9468b Mon Sep 17 00:00:00 2001
+From 91a5553ee05f54295355ca773d12a4fe388bba95 Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 20:57:04 -0400
-Subject: [PATCH 2/8] dt-bindings: clock: add Allwinner A733 CCU
+Subject: [PATCH 2/9] dt-bindings: clock: add Allwinner A733 CCU
 
 Add a binding for the main clock control unit found in the
 Allwinner A733 SoC.
 
-Assisted-by: OpenAI:GPT-5 Codex
 Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
  .../clock/allwinner,sun60i-a733-ccu.yaml      | 58 +++++++++++++++++++
@@ -19,7 +18,7 @@ Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 
 diff --git a/Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml b/Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml
 new file mode 100644
-index 0000000000000..afbe431fc1d98
+index 0000000000000..94696bb658ee5
 --- /dev/null
 +++ b/Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml
 @@ -0,0 +1,58 @@
@@ -32,7 +31,7 @@ index 0000000000000..afbe431fc1d98
 +title: Allwinner A733 Clock Control Unit
 +
 +maintainers:
-+  - Andre Przywara <andre.przywara@arm.com>
++  - Enzo Adriano <enzo.adriano.code@gmail.com>
 +
 +properties:
 +  "#clock-cells":
@@ -114,6 +113,6 @@ index 0000000000000..b975662439b21
 +#define RST_BUS_UART0		41
 +
 +#endif /* _DT_BINDINGS_RST_SUN60I_A733_CCU_H_ */
--- 
+--
 2.50.1 (Apple Git-155)
 

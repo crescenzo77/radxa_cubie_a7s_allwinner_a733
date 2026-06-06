@@ -1,7 +1,7 @@
-From 11db6033ce0040edd70cac3def158e1befc6ecb6 Mon Sep 17 00:00:00 2001
+From c233f1789d6cf8c1b4c5e0f9ab1919d667903b98 Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 23:28:52 -0400
-Subject: [PATCH 8/8] arm64: dts: allwinner: add Radxa Cubie A7S
+Subject: [PATCH 8/9] arm64: dts: allwinner: add Radxa Cubie A7S
 
 Add the Radxa Cubie A7S board description with serial console and SD card
 boot support.
@@ -9,7 +9,6 @@ boot support.
 Ethernet remains disabled until the GMAC210 wrapper, clocks, resets,
 MDIO, PHY reset, PHY power, and link behavior are proven.
 
-Assisted-by: OpenAI:GPT-5 Codex
 Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
  arch/arm64/boot/dts/allwinner/Makefile        |  1 +
@@ -84,6 +83,6 @@ index 0000000000000..5ea8ec4e983b2
 +	pinctrl-0 = <&uart0_pb9_pb10_pins>;
 +	status = "okay";
 +};
--- 
+--
 2.50.1 (Apple Git-155)
 
