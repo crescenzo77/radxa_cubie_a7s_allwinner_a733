@@ -170,6 +170,10 @@ Validation container proof records for v4 exact head
   fail, `0 errors` and MAINTAINERS new-file warnings only,
   `a733-v4-public-checkpatch-strict-369568551e94`,
   SHA256 `52818bb78265913cbbafe554fb5dab783e1b0bd9b2919b9c2f6c1ec0636eb53f`
+- deterministic warning gate over the same exported v4 patches:
+  pass with reviewed `FILE_PATH_CHANGES` warnings only,
+  `a733-v4-public-warning-gate-checkpatch-warning-gate-0ec5ef46f018`,
+  SHA256 `5e3d9dc3eeb86fab41bcfcb703db56eedad1befde6424607a77e3f3fa26fb6aa`
 - touched-schema `dt_binding_check`: pass for `arm/sunxi.yaml`,
   `clock/allwinner,sun60i-a733-ccu.yaml`,
   `pinctrl/allwinner,sun60i-a733-pinctrl.yaml`, and
@@ -345,6 +349,8 @@ Current checkpatch result:
   new-file questions
   emitted for new files in patches 2, 3, 4, 5, 7, and 8; patch 9 adds the
   explicit `N: sun60i` MAINTAINERS coverage
+- the deterministic warning gate records this as
+  `PASS_WITH_REVIEWED_WARNINGS`, not as a zero-warning `checkpatch` pass
 
 Validation still required before any upstream submission:
 
