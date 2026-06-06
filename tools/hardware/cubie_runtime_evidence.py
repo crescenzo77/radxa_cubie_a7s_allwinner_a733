@@ -247,8 +247,10 @@ def next_safe_action(staging: dict[str, Any], inventory: dict[str, Any]) -> str:
         label = row.get("extlinux_label") or "the staged non-default label"
         extra = row.get("extlinux_extra_args") or "none"
         if row.get("sudo_status") == "password-required":
+            ip = row.get("ip") or "TARGET_IP"
             return (
-                "Run `scripts/cubie-interactive-root-install-session` from an "
+                "Run `scripts/cubie-interactive-root-install-session "
+                f"--confirm-target-ip {md_escape(ip)}` from an "
                 "interactive terminal and enter the Cubie sudo password when "
                 "prompted. After the installer succeeds, use the capture it "
                 f"starts to select `{md_escape(label)}` over UART. Expected "

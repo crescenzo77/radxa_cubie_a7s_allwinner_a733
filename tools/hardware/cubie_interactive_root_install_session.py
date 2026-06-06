@@ -73,6 +73,15 @@ def shell_join(argv: list[str]) -> str:
     return " ".join(shlex.quote(part) for part in argv)
 
 
+def confirmation_error(row: dict[str, Any], confirm_target_ip: str) -> str:
+    ip = str(row.get("ip") or "")
+    if confirm_target_ip == ip:
+        return ""
+    if not confirm_target_ip:
+        return f"missing --confirm-target-ip {ip}"
+    return f"--confirm-target-ip {confirm_target_ip} does not match selected target {ip}"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--targets", default=",".join(cubie_boot_staging_status.DEFAULT_TARGETS))
@@ -85,6 +94,11 @@ def main() -> int:
     parser.add_argument("--interval", type=float, default=5.0)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-capture", action="store_true", help="Only run the interactive installer; skip post-install capture.")
+    parser.add_argument(
+        "--confirm-target-ip",
+        default="",
+        help="Required for a live root install; must match the selected target IP.",
+    )
     args = parser.parse_args()
 
     staging = cubie_boot_staging_status.build_status(staging_args(args))
@@ -110,12 +124,18 @@ def main() -> int:
         print("status=boot-selection-required")
     else:
         print("status=root-install-required")
+        print(f"required_confirmation=--confirm-target-ip {row.get('ip')}")
     print(f"install_command={shell_join(install_cmd)}")
     if not args.no_capture:
         print(f"post_install_command={shell_join(capture_cmd)}")
 
     if args.dry_run:
         return 0
+    if not already_installed:
+        error = confirmation_error(row, args.confirm_target_ip)
+        if error:
+            print(f"refusing live root install: {error}", file=sys.stderr)
+            return 2
     sudo_status = row.get("sudo_status")
     if not already_installed and sudo_status != "noninteractive-ok" and not sys.stdin.isatty():
         print(

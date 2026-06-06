@@ -204,8 +204,10 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
         label_hint = f" and select {labels[0]}" if labels else " and select the staged non-default boot label"
         if needs_interactive_sudo:
             selection = labels[0] if labels else "the staged non-default boot label"
+            target_ip = ready[0].get("ip") if ready else "TARGET_IP"
             return (
-                "run scripts/cubie-interactive-root-install-session from an interactive terminal; "
+                "run scripts/cubie-interactive-root-install-session "
+                f"--confirm-target-ip {target_ip} from an interactive terminal; "
                 "enter the Cubie sudo password when prompted, then use the capture it starts "
                 f"to select {selection}"
             )

@@ -61,6 +61,11 @@ def capture_command(row: dict[str, Any]) -> str:
     return f"scripts/cubie-manual-boot-session 180 {shlex.quote(capture)}"
 
 
+def interactive_install_command(row: dict[str, Any]) -> str:
+    ip = row.get("ip") or "unknown-ip"
+    return f"scripts/cubie-interactive-root-install-session --confirm-target-ip {shlex.quote(str(ip))}"
+
+
 def capture_argv(row: dict[str, Any]) -> list[str]:
     return [
         str(REPO_ROOT / "scripts" / "cubie-manual-boot-session"),
@@ -122,6 +127,12 @@ def render(staging: dict[str, Any], args: argparse.Namespace) -> str:
                 "",
                 f"Target: `{host}` `{ip}`",
                 f"Sudo preflight: `{ready.get('sudo_status', 'unknown')}`",
+                "",
+                "Preferred command from this repo:",
+                "",
+                "```sh",
+                interactive_install_command(ready),
+                "```",
                 "",
                 "Run on the board:",
                 "",

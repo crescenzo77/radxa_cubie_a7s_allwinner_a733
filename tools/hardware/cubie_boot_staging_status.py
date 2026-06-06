@@ -302,8 +302,10 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         next_action = f"start scripts/cubie-manual-boot-session 180 {capture_label}{label_hint}"
     elif ready and needs_interactive_sudo:
         selection = labels[0] if labels else "the staged non-default boot label"
+        target_ip = ready[0].get("ip") or "TARGET_IP"
         next_action = (
-            "run scripts/cubie-interactive-root-install-session from an interactive terminal; "
+            "run scripts/cubie-interactive-root-install-session "
+            f"--confirm-target-ip {target_ip} from an interactive terminal; "
             "enter the Cubie sudo password when prompted, then use the capture it starts "
             f"to select {selection}"
         )
