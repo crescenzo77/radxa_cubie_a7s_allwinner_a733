@@ -174,6 +174,12 @@ directory. Its generated root installer copies `SHA256SUMS` into the
 `/boot/mainline-a733-*` install directory, verifies the installed Image/DTB
 copy, updates extlinux, and runs `sync` before reporting success.
 
+Use `scripts/cubie-root-install-handoff` to print the current root-install
+handoff from verified staging state. It is read-only and reports the exact
+sudo/root install command plus the post-install UART capture command. With
+`--strict`, it returns non-zero until the installed boot files and checksums
+are detected.
+
 `scripts/cubie-uart-inventory-proposal` is also read-only. It emits a proposed
 board UART mapping only after a strong candidate exists; it never edits the
 inventory.
