@@ -245,3 +245,17 @@ private LAN addresses, private paths, lab host names, local model stack names,
 AI/provider metadata, and unrelated local automation terms. Override
 `PUBLIC_HYGIENE_REPO` or `PUBLIC_HYGIENE_REF` when checking a different public
 record.
+
+## Series Parse And Recipients
+
+Run these proof actions after exporting a candidate series:
+
+```sh
+scripts/kernel-proof patch-parse-gate
+scripts/kernel-proof get-maintainer-gate
+```
+
+The parse gate proves the exported patch files are parseable by
+`git apply --numstat`. The maintainer gate runs `scripts/get_maintainer.pl`
+with `--no-tree --nogit --nogit-fallback` against the exported patches and
+requires non-empty recipient output.

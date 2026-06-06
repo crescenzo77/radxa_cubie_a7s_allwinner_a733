@@ -25,6 +25,10 @@ Actions:
   self-test       Run version, dummy PASS, and expected dummy FAIL proofs.
   warning-gate    Export a local patch series and run the checkpatch warning gate.
   trailer-gate    Export a local patch series and run the trailer policy gate.
+  patch-parse-gate
+                  Export a local patch series and run git apply --numstat.
+  get-maintainer-gate
+                  Export a local patch series and run get_maintainer.pl.
   public-hygiene-gate
                   Archive the public-facing repo and scan for private/AI leaks.
   run [args]      Run kernel-proof-runner in the validation container.
@@ -145,6 +149,12 @@ series_gate_proof() {
     trailer-gate)
       task_id="${TRAILER_GATE_TASK_ID:-a733-v4-public-trailer-gate}"
       ;;
+    patch-parse-gate)
+      task_id="${PATCH_PARSE_TASK_ID:-a733-v4-public-patch-parse}"
+      ;;
+    get-maintainer-gate)
+      task_id="${GET_MAINTAINER_TASK_ID:-a733-v4-public-get-maintainer}"
+      ;;
     *)
       echo "unsupported series proof check: ${proof_check}" >&2
       exit 2
@@ -157,6 +167,10 @@ series_gate_proof() {
   fi
   if [ ! -x "${checkpatch_tree}/scripts/checkpatch.pl" ] && [ ! -f "${checkpatch_tree}/scripts/checkpatch.pl" ]; then
     echo "missing checkpatch.pl in: ${checkpatch_tree}" >&2
+    exit 2
+  fi
+  if [ "${proof_check}" = "get-maintainer-gate" ] && [ ! -f "${checkpatch_tree}/scripts/get_maintainer.pl" ]; then
+    echo "missing get_maintainer.pl in: ${checkpatch_tree}" >&2
     exit 2
   fi
   if [ ! -f "${warning_repo}/MAINTAINERS" ]; then
@@ -178,6 +192,9 @@ series_gate_proof() {
 
   mkdir -p "${local_tmp}/${work}/scripts" "${local_tmp}/${work}/export-patches"
   cp "${checkpatch_tree}/scripts/checkpatch.pl" "${local_tmp}/${work}/scripts/checkpatch.pl"
+  if [ -f "${checkpatch_tree}/scripts/get_maintainer.pl" ]; then
+    cp "${checkpatch_tree}/scripts/get_maintainer.pl" "${local_tmp}/${work}/scripts/get_maintainer.pl"
+  fi
   cp "${warning_repo}/MAINTAINERS" "${local_tmp}/${work}/MAINTAINERS"
   git -C "${warning_repo}" format-patch -q -o "${local_tmp}/${work}/export-patches" "${warning_base}..${warning_ref}"
   if ! compgen -G "${local_tmp}/${work}/export-patches/000*.patch" >/dev/null; then
@@ -204,6 +221,14 @@ warning_gate_proof() {
 
 trailer_gate_proof() {
   series_gate_proof trailer-gate
+}
+
+patch_parse_gate_proof() {
+  series_gate_proof patch-parse-gate
+}
+
+get_maintainer_gate_proof() {
+  series_gate_proof get-maintainer-gate
 }
 
 public_hygiene_gate_proof() {
@@ -271,6 +296,12 @@ case "${action}" in
     ;;
   trailer-gate)
     trailer_gate_proof "$@"
+    ;;
+  patch-parse-gate)
+    patch_parse_gate_proof "$@"
+    ;;
+  get-maintainer-gate)
+    get_maintainer_gate_proof "$@"
     ;;
   public-hygiene-gate)
     public_hygiene_gate_proof "$@"

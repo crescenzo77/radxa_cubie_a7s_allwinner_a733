@@ -90,6 +90,41 @@ set -euo pipefail
 public-hygiene-gate .
 """,
     ],
+    "patch-parse-gate": [
+        "bash",
+        "-lc",
+        r"""
+set -euo pipefail
+shopt -s nullglob
+patches=(export-patches/000*.patch)
+if [ "${#patches[@]}" -eq 0 ]; then
+  printf 'no exported patches found under export-patches/000*.patch\n' >&2
+  exit 2
+fi
+git apply --numstat "${patches[@]}"
+""",
+    ],
+    "get-maintainer-gate": [
+        "bash",
+        "-lc",
+        r"""
+set -euo pipefail
+shopt -s nullglob
+patches=(export-patches/000*.patch)
+if [ "${#patches[@]}" -eq 0 ]; then
+  printf 'no exported patches found under export-patches/000*.patch\n' >&2
+  exit 2
+fi
+if [ ! -f scripts/get_maintainer.pl ]; then
+  printf 'missing scripts/get_maintainer.pl\n' >&2
+  exit 2
+fi
+perl scripts/get_maintainer.pl --no-tree --nogit --nogit-fallback "${patches[@]}" | tee get-maintainer.out
+count="$(grep -E -c '[[:alnum:]._%+-]+@[[:alnum:].-]+' get-maintainer.out || true)"
+printf 'maintainer_entries=%s\n' "${count}"
+test "${count}" -gt 0
+""",
+    ],
     "cubie-a7s-dtbs-check": [
         "bash",
         "-lc",
@@ -110,6 +145,8 @@ ALLOWED_PREFIXES = {
     "checkpatch-warning-gate": [["checkpatch-warning-gate"]],
     "trailer-gate": [["trailer-gate"]],
     "public-hygiene-gate": [["public-hygiene-gate"]],
+    "patch-parse-gate": [["git", "apply", "--numstat"]],
+    "get-maintainer-gate": [["perl", "scripts/get_maintainer.pl"]],
 }
 
 VERSION_COMMANDS = {
