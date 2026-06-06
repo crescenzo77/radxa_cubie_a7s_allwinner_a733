@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import shlex
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -15,6 +16,9 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import cubie_boot_staging_status
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def staging_args(args: argparse.Namespace) -> SimpleNamespace:
@@ -48,9 +52,21 @@ def local_board_command(row: dict[str, Any]) -> str:
     return f"cd {shlex.quote(stage)}\nsudo ./install-extlinux-entry.sh"
 
 
+def capture_label(row: dict[str, Any]) -> str:
+    return str(row.get("capture_label") or f"{Path(row.get('stage') or cubie_boot_staging_status.DEFAULT_STAGE).name}-boot")
+
+
 def capture_command(row: dict[str, Any]) -> str:
-    capture = row.get("capture_label") or f"{Path(row.get('stage') or cubie_boot_staging_status.DEFAULT_STAGE).name}-boot"
+    capture = capture_label(row)
     return f"scripts/cubie-manual-boot-session 180 {shlex.quote(capture)}"
+
+
+def capture_argv(row: dict[str, Any]) -> list[str]:
+    return [
+        str(REPO_ROOT / "scripts" / "cubie-manual-boot-session"),
+        "180",
+        capture_label(row),
+    ]
 
 
 def extlinux_label(row: dict[str, Any]) -> str:
@@ -154,13 +170,24 @@ def main() -> int:
     parser.add_argument("--interval", type=float, default=5.0)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--strict", action="store_true", help="Exit non-zero until installed boot artifacts are verified.")
+    parser.add_argument(
+        "--run-capture",
+        action="store_true",
+        help="After installed artifacts are verified, run the UART capture session. This does not reboot or power-cycle.",
+    )
     args = parser.parse_args()
 
     staging = poll(args)
+    installed = selected_row(staging, "root_install_complete")
     if args.json:
         print(json.dumps(staging, indent=2, sort_keys=True))
     else:
         print(render(staging, args))
+    if args.run_capture:
+        if not installed:
+            print("capture_not_started=root-install-required", file=sys.stderr)
+            return 1
+        return subprocess.run(capture_argv(installed), check=False).returncode
     if args.strict and staging.get("installed_count", 0) == 0:
         return 1
     return 0

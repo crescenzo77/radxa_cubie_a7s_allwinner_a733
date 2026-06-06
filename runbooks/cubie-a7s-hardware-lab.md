@@ -180,6 +180,11 @@ sudo/root install command plus the post-install UART capture command. With
 `--strict`, it returns non-zero until the installed boot files and checksums
 are detected.
 
+If Codex should wait while the human performs the root install, run
+`scripts/cubie-root-install-handoff --wait 600 --run-capture`. It polls for the
+installed/checksummed boot entry and starts the UART capture session only after
+that gate passes. It does not reboot or power-cycle the board.
+
 `scripts/cubie-uart-inventory-proposal` is also read-only. It emits a proposed
 board UART mapping only after a strong candidate exists; it never edits the
 inventory.
