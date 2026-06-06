@@ -103,6 +103,8 @@ def main() -> int:
 
     print(f"target={row.get('hostname') or row.get('ip')} ip={row.get('ip')}")
     print(f"stage={row.get('stage') or args.stage}")
+    if row.get("extlinux_extra_args"):
+        print(f"extlinux_extra_args={row.get('extlinux_extra_args')}")
     print(f"sudo_status={row.get('sudo_status', 'unknown')}")
     if already_installed:
         print("status=boot-selection-required")
