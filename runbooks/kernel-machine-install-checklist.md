@@ -40,6 +40,19 @@ missing required tools, but optional helper packages are still absent on AMD,
 Strix, and ThinkCentre; all three Linux hosts require a sudo password for
 package repair.
 
+Use the workflow status aggregator when deciding what Codex should do next:
+
+```sh
+scripts/kernel-workflow-status
+scripts/kernel-workflow-status --json
+scripts/kernel-workflow-status --strict
+```
+
+It combines machine readiness, local model offload status, idle review ledger
+state, public repo backup state, and the Cubie runtime gate into one concise
+read-only report. Override `KERNEL_PUBLIC_REPO` when checking a different
+public-facing kernel checkout.
+
 ## Mac Dispatcher
 
 Do not install Docker Desktop or run local models on the Mac for this workflow.

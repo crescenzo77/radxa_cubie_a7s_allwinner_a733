@@ -83,6 +83,7 @@ unless a human explicitly approves broader exposure.
 scripts/kernel-layout init
 scripts/kernel-layout status
 scripts/kernel-layout scan
+scripts/kernel-workflow-status
 scripts/kernel-machine-readiness
 scripts/kernel-sync-strix-to-amd status
 scripts/kernel-sync-strix-to-amd dry-run
