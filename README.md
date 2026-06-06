@@ -13,10 +13,10 @@ answer three questions:
 Local lab automation, raw model output, generated kernels, DTBs, UART captures,
 and private machine details do not belong on this branch.
 
-## Current Series
+## Current Draft Export
 
-The current candidate work is the 9-patch platform bring-up series exported in
-[patches/](patches/).
+The current public artifact is a 9-patch draft review export in
+[patches/](patches/). It is not a sendable upstream candidate series.
 
 The current authoritative development branch is in the Linux fork:
 
@@ -25,7 +25,7 @@ https://github.com/crescenzo77/linux.git
 candidate/a733-platform-clean-v3
 ```
 
-The exported series currently covers:
+The draft export currently covers:
 
 - Radxa Cubie A7S board compatible
 - initial Allwinner A733 CCU binding and driver
@@ -37,8 +37,10 @@ The exported series currently covers:
 
 Ethernet is not enabled and no Ethernet support is claimed.
 
-The series is not ready to send upstream until the open items in
-[docs/status.md](docs/status.md) are resolved.
+The CCU/PRCM and pinctrl portions are blocked from upstream submission until
+their relationship to the in-flight Linux RFCs is resolved. The series is not
+ready to send upstream until the open items in [docs/status.md](docs/status.md)
+are resolved.
 
 ## Submission Discipline
 

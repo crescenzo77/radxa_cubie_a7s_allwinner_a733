@@ -72,7 +72,8 @@ The public branch must not contain:
 
 ## Current Direction
 
-The current clean series is platform bring-up only:
+The current public export is a draft platform bring-up review snapshot, not a
+sendable upstream series. It currently contains:
 
 - board compatible
 - minimal A733 CCU support needed by the DTS
@@ -80,6 +81,8 @@ The current clean series is platform bring-up only:
 - MMC compatible
 - initial SoC and Cubie A7S DTS
 
-Do not expand the public series with additional peripherals until each
+Do not send the CCU/PRCM or pinctrl portions until their relationship to the
+in-flight Linux RFCs is resolved. Do not expand the public series with
+additional peripherals until each
 peripheral has its own binding, driver dependency, validation record, and
 runtime evidence.

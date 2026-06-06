@@ -2,7 +2,7 @@
 
 Last updated: 2026-06-06.
 
-## Candidate Series
+## Draft Review Export
 
 - Linux fork: `https://github.com/crescenzo77/linux.git`
 - branch: `candidate/a733-platform-clean-v3`
@@ -14,9 +14,12 @@ Last updated: 2026-06-06.
 The base commit is reachable from the updated `torvalds/linux` `master` ref
 observed locally at `8e65320d91cdc3b241d4b94855c88459b91abf66`.
 
+This export is a public review snapshot only. It is not a sendable candidate
+series while the CCU/PRCM and pinctrl overlap questions remain unresolved.
+
 ## Scope
 
-The current public series prepares minimal platform support:
+The current public draft export prepares minimal platform support:
 
 - Radxa Cubie A7S board compatible
 - A733 CCU binding and initial driver support
@@ -63,6 +66,15 @@ in commit messages, and validated per patch.
 The CCU and pinctrl portions of this series must not be sent upstream until
 they are rebased on, coordinated with, or explicitly justified against that
 in-flight work.
+
+Current local review consensus:
+
+- A733 CCU/PRCM work is on hold because it overlaps the in-flight Linux RFC and
+  still depends on reviewed clock/reset evidence.
+- A733 pinctrl work is on hold because it overlaps the in-flight Linux RFC and
+  still needs hardware evidence for IRQ/bank behavior.
+- A733 GMAC remains out of scope until clock/reset identifiers, wrapper setup,
+  MDIO, PHY reset, PHY power, and link behavior are proven.
 
 ## Validation Record
 

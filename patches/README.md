@@ -4,7 +4,7 @@ This directory contains exported patch files for review preparation only. The
 authoritative code lives in the Linux fork branches named from the repository
 root README.
 
-Current export:
+Current draft export:
 
 - branch: `candidate/a733-platform-clean-v3`
 - base: `6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5`
@@ -24,11 +24,11 @@ Patch order:
 8. `arm64: dts: allwinner: add Radxa Cubie A7S`
 9. `MAINTAINERS: add Allwinner sun60i pattern`
 
-These files are not a mailed submission series. They now include the human
-DCO sign-off authorized for this public candidate export. They intentionally
-do not include automatic coding-assistance trailers; any final disclosure or
-trailer decision must be made by the human submitter using current kernel
-documentation and subsystem expectations.
+These files are not a mailed submission series or a sendable candidate. They
+now include the human DCO sign-off authorized for this public draft export.
+They intentionally do not include automatic coding-assistance trailers; any
+final disclosure or trailer decision must be made by the human submitter using
+current kernel documentation and subsystem expectations.
 
 The cover letter still marks the series as draft-only until the open items in
 `docs/status.md` are resolved.
