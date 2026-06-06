@@ -218,3 +218,16 @@ scripts/kernel-checkpatch-warning-gate \
 warnings where each newly added path has explicit non-fallback `MAINTAINERS`
 coverage. `THE REST` never counts as coverage. Any other warning, check, error,
 or missing coverage returns `FAIL` and sends the patch back to the repair loop.
+
+## Trailer Gate
+
+Run the trailer gate on exported patch series before publishing or mailing:
+
+```sh
+scripts/kernel-proof trailer-gate
+```
+
+By default it permits only `Signed-off-by: Enzo Adriano
+<enzo.adriano.code@gmail.com>` and rejects nonstandard or AI/provider metadata
+trailers. Override `WARNING_GATE_REPO`, `WARNING_GATE_BASE`, and
+`WARNING_GATE_REF` to check a different exported series.

@@ -39,7 +39,8 @@ RUN apt-get update \
 
 COPY proof_runner.py /usr/local/bin/kernel-proof-runner
 COPY checkpatch_warning_gate.py /usr/local/bin/checkpatch-warning-gate
-RUN chmod +x /usr/local/bin/kernel-proof-runner /usr/local/bin/checkpatch-warning-gate
+COPY trailer_gate.py /usr/local/bin/trailer-gate
+RUN chmod +x /usr/local/bin/kernel-proof-runner /usr/local/bin/checkpatch-warning-gate /usr/local/bin/trailer-gate
 
 WORKDIR /workspace
 ENTRYPOINT ["/usr/local/bin/kernel-proof-runner"]

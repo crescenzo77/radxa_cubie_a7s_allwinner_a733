@@ -11,6 +11,7 @@ image="${VALIDATION_IMAGE:-local/kernel-build-validate:20260606}"
 context_dir="${repo_root}/validation/build-validate"
 runner="${repo_root}/tools/validate/proof_runner.py"
 warning_gate="${repo_root}/tools/validate/checkpatch_warning_gate.py"
+trailer_gate="${repo_root}/tools/validate/trailer_gate.py"
 
 usage() {
   cat <<USAGE
@@ -22,6 +23,7 @@ Actions:
   status          Show image and proof-log status on the Linux host.
   self-test       Run version, dummy PASS, and expected dummy FAIL proofs.
   warning-gate    Export a local patch series and run the checkpatch warning gate.
+  trailer-gate    Export a local patch series and run the trailer policy gate.
   run [args]      Run kernel-proof-runner in the validation container.
   pull-logs       Copy remote proof logs into tools/proof-logs/.
 
@@ -43,7 +45,7 @@ deploy() {
   ssh_target "mkdir -p '${remote_root}/context' '${remote_root}/proof-logs' '${remote_root}/scratch'"
   COPYFILE_DISABLE=1 tar --format ustar -C "${context_dir}" -cf - Dockerfile \
     | ssh_target "tar -C '${remote_root}/context' -xf -"
-  COPYFILE_DISABLE=1 tar --format ustar -C "$(dirname "${runner}")" -cf - "$(basename "${runner}")" "$(basename "${warning_gate}")" \
+  COPYFILE_DISABLE=1 tar --format ustar -C "$(dirname "${runner}")" -cf - "$(basename "${runner}")" "$(basename "${warning_gate}")" "$(basename "${trailer_gate}")" \
     | ssh_target "tar -C '${remote_root}/context' -xf -"
   echo "deployed to ${validation_host}:${remote_root}/context"
 }
@@ -124,13 +126,27 @@ self_test() {
   status
 }
 
-warning_gate_proof() {
+series_gate_proof() {
+  local proof_check="$1"
   local warning_repo="${WARNING_GATE_REPO:-${projects_root}/linux-a733-sparse}"
   local warning_base="${WARNING_GATE_BASE:-6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5}"
   local warning_ref="${WARNING_GATE_REF:-HEAD}"
   local checkpatch_tree="${WARNING_GATE_CHECKPATCH_TREE:-${projects_root}/linux-a733}"
-  local task_id="${WARNING_GATE_TASK_ID:-a733-v4-public-warning-gate}"
+  local task_id
   local allow_dirty="${WARNING_GATE_ALLOW_DIRTY:-0}"
+
+  case "${proof_check}" in
+    checkpatch-warning-gate)
+      task_id="${WARNING_GATE_TASK_ID:-a733-v4-public-warning-gate}"
+      ;;
+    trailer-gate)
+      task_id="${TRAILER_GATE_TASK_ID:-a733-v4-public-trailer-gate}"
+      ;;
+    *)
+      echo "unsupported series proof check: ${proof_check}" >&2
+      exit 2
+      ;;
+  esac
 
   if [ ! -d "${warning_repo}/.git" ]; then
     echo "missing warning gate repo: ${warning_repo}" >&2
@@ -153,9 +169,9 @@ warning_gate_proof() {
   head_sha="$(git -C "${warning_repo}" rev-parse "${warning_ref}")"
   short="${head_sha:0:12}"
   stamp="$(date -u +%Y%m%dT%H%M%SZ)"
-  work="checkpatch-warning-gate-${short}-${stamp}"
+  work="${proof_check}-${short}-${stamp}"
   local_tmp="$(mktemp -d)"
-  trap 'rm -rf "${local_tmp}"' RETURN
+  trap 'if [ -n "${local_tmp:-}" ]; then rm -rf "${local_tmp}"; fi' RETURN
 
   mkdir -p "${local_tmp}/${work}/scripts" "${local_tmp}/${work}/export-patches"
   cp "${checkpatch_tree}/scripts/checkpatch.pl" "${local_tmp}/${work}/scripts/checkpatch.pl"
@@ -169,14 +185,22 @@ warning_gate_proof() {
   ssh_target "mkdir -p '${validation_workspace}'"
   COPYFILE_DISABLE=1 tar --format ustar -C "${local_tmp}" -cf - "${work}" \
     | ssh_target "tar -C '${validation_workspace}' -xf -"
-  echo "warning_gate_workspace=${validation_host}:${validation_workspace}/${work}"
-  echo "warning_gate_head=${head_sha}"
+  echo "series_gate_workspace=${validation_host}:${validation_workspace}/${work}"
+  echo "series_gate_head=${head_sha}"
   run_proof \
     --task-id "${task_id}" \
-    --check checkpatch-warning-gate \
+    --check "${proof_check}" \
     --workdir "/workspace/${work}" \
     --stdout-excerpt-chars 8000 \
     --stderr-excerpt-chars 4000
+}
+
+warning_gate_proof() {
+  series_gate_proof checkpatch-warning-gate
+}
+
+trailer_gate_proof() {
+  series_gate_proof trailer-gate
 }
 
 pull_logs() {
@@ -207,6 +231,9 @@ case "${action}" in
     ;;
   warning-gate)
     warning_gate_proof "$@"
+    ;;
+  trailer-gate)
+    trailer_gate_proof "$@"
     ;;
   run)
     run_proof "$@"

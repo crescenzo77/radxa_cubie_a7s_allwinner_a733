@@ -68,6 +68,20 @@ fi
 checkpatch-warning-gate --checkpatch-tree . --maintainers MAINTAINERS "${patches[@]}"
 """,
     ],
+    "trailer-gate": [
+        "bash",
+        "-lc",
+        r"""
+set -euo pipefail
+shopt -s nullglob
+patches=(export-patches/000*.patch)
+if [ "${#patches[@]}" -eq 0 ]; then
+  printf 'no exported patches found under export-patches/000*.patch\n' >&2
+  exit 2
+fi
+trailer-gate "${patches[@]}"
+""",
+    ],
     "cubie-a7s-dtbs-check": [
         "bash",
         "-lc",
@@ -86,6 +100,7 @@ ALLOWED_PREFIXES = {
     "git-diff-check": [["git", "diff", "--check"]],
     "checkpatch-strict": [["perl", "scripts/checkpatch.pl", "--strict"], ["scripts/checkpatch.pl", "--strict"]],
     "checkpatch-warning-gate": [["checkpatch-warning-gate"]],
+    "trailer-gate": [["trailer-gate"]],
 }
 
 VERSION_COMMANDS = {
