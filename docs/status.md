@@ -148,10 +148,52 @@ AMD validation container proof records for v4 exact head
   `pinctrl-sun60i-a733.o`: pass,
   `a733-v4-public-object-build-0777f6143da5`,
   SHA256 `cf20fb28f752c831cca03dcf0b2f1f69fc29822e406abdadf5856286fd631e95`
+- per-patch `git diff --check`: pass for patches 1 through 9:
+  `a733-v4-public-patch01-git-diff-check-e8b1f2d50862`,
+  `a733-v4-public-patch02-git-diff-check-526c99256dbb`,
+  `a733-v4-public-patch03-git-diff-check-b56a032d84ba`,
+  `a733-v4-public-patch04-git-diff-check-e1c456dd23f8`,
+  `a733-v4-public-patch05-git-diff-check-8b8edfce2761`,
+  `a733-v4-public-patch06-git-diff-check-2a901e46233c`,
+  `a733-v4-public-patch07-git-diff-check-bb451ee4cc7b`,
+  `a733-v4-public-patch08-git-diff-check-b68e0e137690`,
+  `a733-v4-public-patch09-git-diff-check-4787401b6ca3`
+- per-patch `make O=/workspace/.proof-build/... ARCH=arm64 defconfig`:
+  pass for patches 1 through 9:
+  `a733-v4-public-patch01-arm64-build-32e9ed47522c`,
+  `a733-v4-public-patch02-arm64-build-4fefd6c7aa59`,
+  `a733-v4-public-patch03-arm64-build-529f250399e1`,
+  `a733-v4-public-patch04-arm64-build-ffa063e1f7cf`,
+  `a733-v4-public-patch05-arm64-build-8a04b5990b78`,
+  `a733-v4-public-patch06-arm64-build-d04fa9d7ee31`,
+  `a733-v4-public-patch07-arm64-build-61de7246f283`,
+  `a733-v4-public-patch08-arm64-build-e8b98f369855`,
+  `a733-v4-public-patch09-arm64-build-7bfebb5fb756`
+- per-patch targeted CCU object builds: pass for patches 3 through 9:
+  `a733-v4-public-patch03-ccu-object-build-74301c4975ca`,
+  `a733-v4-public-patch04-ccu-object-build-270f9995187a`,
+  `a733-v4-public-patch05-ccu-object-build-95ac8b64af8f`,
+  `a733-v4-public-patch06-ccu-object-build-def494604ea5`,
+  `a733-v4-public-patch07-ccu-object-build-4932475da954`,
+  `a733-v4-public-patch08-ccu-object-build-fce01fc567ce`,
+  `a733-v4-public-patch09-ccu-object-build-7002ddde2ff5`
+- per-patch targeted pinctrl object builds: pass for patches 5 through 9:
+  `a733-v4-public-patch05-pinctrl-object-build-16c82eaf4392`,
+  `a733-v4-public-patch06-pinctrl-object-build-19855c97794a`,
+  `a733-v4-public-patch07-pinctrl-object-build-68d73d1161c2`,
+  `a733-v4-public-patch08-pinctrl-object-build-a20c85a8655c`,
+  `a733-v4-public-patch09-pinctrl-object-build-9cf0f191d304`
+- per-patch DT binding checks: pass for binding patches 1, 2, 4, and 6:
+  `a733-v4-public-patch01-dt-binding-dt-binding-check-9f091f3fa4b9`,
+  `a733-v4-public-patch02-dt-binding-dt-binding-check-3e0125bfc967`,
+  `a733-v4-public-patch04-dt-binding-dt-binding-check-3cd807c8b310`,
+  `a733-v4-public-patch06-dt-binding-dt-binding-check-02fab038785c`
+- per-patch Cubie A7S DTB checks: pass for patches 8 and 9:
+  `a733-v4-public-patch08-cubie-dtbs-cubie-a7s-dtbs-check-38869c67f5f0`,
+  `a733-v4-public-patch09-cubie-dtbs-cubie-a7s-dtbs-check-360c43564c2a`
 
 Still required for v4:
 
-- per-patch object builds and full bisectability checks
 - hardware boot/runtime evidence for the exact kernel and DTB
 
 Historical AMD validation container proof records for v3 exact head
