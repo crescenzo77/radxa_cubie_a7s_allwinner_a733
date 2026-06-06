@@ -213,8 +213,10 @@ scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95
 
 The helper prints the selected board and staged artifact path, opens an SSH TTY
 to `radxa@192.168.50.95`, and runs the staged root installer with `sudo`. After
-the install succeeds, it verifies the installed `/boot` files and starts the
-post-install UART capture helper.
+the install succeeds, it verifies the installed `/boot` files. The current
+Cubie3 extlinux menu has many old test labels before the clean v4 label, so use
+the interactive UART helper below for the boot selection rather than a passive
+capture-only helper.
 
 The exact dry-run handoff currently resolves to:
 
@@ -223,8 +225,20 @@ ssh -tt -o BatchMode=no -o ConnectTimeout=8 -i /Users/enzo/.ssh/id_ed25519 radxa
 /Users/enzo/projects/homelab/scripts/cubie-root-install-handoff --wait 90 --interval 5.0 --run-capture
 ```
 
-After the helper starts the capture, manually select this non-default U-Boot
-label over the confirmed Cubie3 UART:
+For the boot proof, run this from an interactive Codex terminal:
+
+```sh
+scripts/cubie-uart-interactive-boot-session a733-v4-abc8d07b0a63-20260606T152409Z-boot
+```
+
+In a second terminal, reboot Cubie3 only:
+
+```sh
+ssh radxa@192.168.50.95 'sudo reboot'
+```
+
+Then manually select this non-default U-Boot label over the confirmed Cubie3
+UART:
 
 ```text
 a733-v4-abc8d07b0a63-uart-proof
@@ -248,6 +262,13 @@ If Codex should wait while the human performs the root install, run
 `scripts/cubie-root-install-handoff --wait 600 --run-capture`. It polls for the
 installed/checksummed boot entry and starts the UART capture session only after
 that gate passes. It does not reboot or power-cycle the board.
+
+After the root install is already complete, prefer
+`scripts/cubie-uart-interactive-boot-session` for Cubie3. It opens `picocom` on
+Strix against `/dev/ttyUSB0`, records the same UART session to
+`/srv/projects/cubie-uart/logs`, pulls the log metadata back into this repo, and
+reruns the runtime evidence/gate reports after the session exits. It does not
+reboot or power-cycle the board.
 
 If the install should be driven from one interactive Codex terminal session, run
 `scripts/cubie-interactive-root-install-session`. It opens an SSH TTY to the

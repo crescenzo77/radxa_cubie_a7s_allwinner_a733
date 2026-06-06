@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+usage() {
+  cat <<USAGE
+Usage: scripts/cubie-uart-interactive-boot-session [LABEL]
+
+Open an interactive logged UART session on Strix for selecting a Cubie boot
+entry. This script does not reboot or power-cycle any board.
+USAGE
+}
+
+case "${1:-}" in
+  -h|--help|help)
+    usage
+    exit 0
+    ;;
+esac
+
+label="${1:-cubie-interactive-boot}"
+device="${CUBIE_UART_DEVICE:-/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1:1.0-port0}"
+uart_host="${UART_HOST:-192.168.50.11}"
+remote_root="${UART_REMOTE_ROOT:-/srv/projects/cubie-uart}"
+baud="${UART_BAUD:-115200}"
+
+safe_label="$(printf '%s' "${label}" | tr -cs 'A-Za-z0-9_.-' '-')"
+
+cat <<INTRO
+Cubie interactive UART boot session
+label=${safe_label}
+host=${uart_host}
+device=${device}
+baud=${baud}
+
+Use this for Cubie3 now:
+  1. Reboot Cubie3 from another terminal: ssh radxa@192.168.50.95 'sudo reboot'
+  2. In the U-Boot menu, select:
+     a733-v4-abc8d07b0a63-uart-proof
+  3. Let the boot log continue to a prompt, panic, or clear stop.
+  4. Exit picocom with Ctrl-a, then Ctrl-x.
+
+This script does not power-cycle or reboot any board.
+INTRO
+
+ssh -tt -o BatchMode=yes -o ConnectTimeout=10 "${uart_host}" \
+  env \
+    UART_REMOTE_ROOT="${remote_root}" \
+    UART_DEVICE="${device}" \
+    UART_LABEL="${safe_label}" \
+    UART_BAUD="${baud}" \
+    bash -s <<'REMOTE'
+set -euo pipefail
+
+root="${UART_REMOTE_ROOT}"
+device="${UART_DEVICE}"
+label="${UART_LABEL}"
+baud="${UART_BAUD}"
+
+mkdir -p "${root}/logs"
+
+if [ ! -e "${device}" ]; then
+  echo "FAIL: UART device does not exist: ${device}" >&2
+  exit 1
+fi
+
+if ! command -v picocom >/dev/null 2>&1; then
+  echo "FAIL: picocom is not installed on this UART host" >&2
+  exit 1
+fi
+
+timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+dev_name="$(basename "$(readlink -f "${device}")")"
+log_path="${root}/logs/${timestamp}-${label}-${dev_name}.uart.log"
+meta_path="${log_path}.json"
+
+echo "Logging UART session to ${log_path}"
+echo "Exit picocom with Ctrl-a, then Ctrl-x."
+echo
+
+set +e
+picocom --baud "${baud}" --flow n --parity n --databits 8 --stopbits 1 \
+  --logfile "${log_path}" "${device}"
+picocom_rc=$?
+set -e
+
+sha="$(sha256sum "${log_path}" | awk '{print $1}')"
+bytes="$(wc -c < "${log_path}" | tr -d ' ')"
+
+python3 - "${meta_path}" <<PY
+import json
+import sys
+
+meta = {
+    "schema_version": 1,
+    "host": "$(hostname)",
+    "device": "${device}",
+    "resolved_device": "$(readlink -f "${device}")",
+    "label": "${label}",
+    "baud": int("${baud}"),
+    "seconds": 0,
+    "interactive": True,
+    "capture_exit_code": int("${picocom_rc}"),
+    "log_path": "${log_path}",
+    "log_sha256": "${sha}",
+    "bytes": int("${bytes}"),
+    "captured_at_utc": "${timestamp}",
+}
+with open(sys.argv[1], "w", encoding="utf-8") as handle:
+    json.dump(meta, handle, indent=2, sort_keys=True)
+    handle.write("\n")
+print(json.dumps(meta, indent=2, sort_keys=True))
+PY
+
+exit "${picocom_rc}"
+REMOTE
+
+"${repo_root}/scripts/cubie-uart" pull-logs
+"${repo_root}/scripts/cubie-uart-report" --limit 8 || true
+"${repo_root}/scripts/cubie-runtime-evidence" || true
+"${repo_root}/scripts/cubie-runtime-gate" || true
