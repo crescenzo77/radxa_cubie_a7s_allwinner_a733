@@ -26,6 +26,20 @@ Read-only checks on 2026-06-06 showed the pre-repair state:
 
 All host commands below use IP addresses rather than local names.
 
+Run the read-only readiness gate before installing anything:
+
+```sh
+scripts/kernel-machine-readiness
+scripts/kernel-machine-readiness --json
+scripts/kernel-machine-readiness --strict
+```
+
+`--strict` fails only when a required current-workflow check is missing.
+Optional tools are reported separately. Latest read-only checks found no
+missing required tools, but optional helper packages are still absent on AMD,
+Strix, and ThinkCentre; all three Linux hosts require a sudo password for
+package repair.
+
 ## Mac Dispatcher
 
 Do not install Docker Desktop or run local models on the Mac for this workflow.
