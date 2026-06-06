@@ -3,6 +3,7 @@ set -u
 
 ok=0
 fail=0
+warn=0
 
 check_ssh_url() {
   local name="$1"
@@ -23,6 +24,82 @@ check_ssh_url() {
   rm -f /tmp/routing-health.$$ /tmp/routing-health.err.$$
 }
 
+check_ssh_url_warn() {
+  local name="$1"
+  local host="$2"
+  local url="$3"
+
+  if ssh -o BatchMode=yes -o ConnectTimeout=10 "$host" \
+    "curl -fsS --max-time 5 '$url'" >/tmp/routing-health.$$ 2>/tmp/routing-health.err.$$; then
+    printf '[OK]   %s\n' "$name"
+    ok=$((ok + 1))
+  else
+    printf '[WARN] %s\n' "$name"
+    printf '       %s %s\n' "$host" "$url"
+    sed 's/^/       /' /tmp/routing-health.err.$$ 2>/dev/null || true
+    warn=$((warn + 1))
+  fi
+
+  rm -f /tmp/routing-health.$$ /tmp/routing-health.err.$$
+}
+
+check_ssh_cmd_warn() {
+  local name="$1"
+  local host="$2"
+  local remote_cmd="$3"
+
+  if ssh -o BatchMode=yes -o ConnectTimeout=10 "$host" "$remote_cmd" \
+    >/tmp/routing-health.$$ 2>/tmp/routing-health.err.$$; then
+    printf '[OK]   %s\n' "$name"
+    ok=$((ok + 1))
+  else
+    printf '[WARN] %s\n' "$name"
+    sed 's/^/       /' /tmp/routing-health.err.$$ 2>/dev/null || true
+    warn=$((warn + 1))
+  fi
+
+  rm -f /tmp/routing-health.$$ /tmp/routing-health.err.$$
+}
+
+check_model_dispatch_chat_warn() {
+  local name="$1"
+  local host="$2"
+
+  if ssh -o BatchMode=yes -o ConnectTimeout=10 "$host" 'python3 - <<'"'"'PY'"'"'
+import json
+import sys
+import urllib.request
+
+payload = {
+    "model": "local/tool-test",
+    "messages": [{"role": "user", "content": "Reply with ok."}],
+    "max_tokens": 8,
+    "temperature": 0,
+}
+request = urllib.request.Request(
+    "http://127.0.0.1:4010/v1/chat/completions",
+    data=json.dumps(payload).encode("utf-8"),
+    headers={"Content-Type": "application/json"},
+    method="POST",
+)
+try:
+    with urllib.request.urlopen(request, timeout=20) as response:
+        response.read()
+except Exception as exc:
+    print(f"{type(exc).__name__}: {exc}", file=sys.stderr)
+    raise SystemExit(1)
+PY' >/tmp/routing-health.$$ 2>/tmp/routing-health.err.$$; then
+    printf '[OK]   %s\n' "$name"
+    ok=$((ok + 1))
+  else
+    printf '[WARN] %s\n' "$name"
+    sed 's/^/       /' /tmp/routing-health.err.$$ 2>/dev/null || true
+    warn=$((warn + 1))
+  fi
+
+  rm -f /tmp/routing-health.$$ /tmp/routing-health.err.$$
+}
+
 echo 'Homelab routing health'
 echo
 
@@ -30,9 +107,13 @@ check_ssh_url 'ThinkCentre Qdrant health' '192.168.50.225' 'http://127.0.0.1:633
 check_ssh_url 'AMD RTX 3090 coder models' '192.168.50.252' 'http://127.0.0.1:8001/v1/models'
 check_ssh_url 'AMD 7900 XT research models' '192.168.50.252' 'http://127.0.0.1:8092/v1/models'
 check_ssh_url 'Strix review models' '192.168.50.11' 'http://127.0.0.1:8082/v1/models'
+check_ssh_url_warn 'ThinkCentre model-dispatch models compatibility' '192.168.50.225' 'http://127.0.0.1:4010/v1/models'
+check_model_dispatch_chat_warn 'ThinkCentre model-dispatch chat compatibility' '192.168.50.225'
+check_ssh_cmd_warn 'ThinkCentre model-dispatch live path compatibility' '192.168.50.225' \
+  'for pid in $(pgrep -f "/srv/model-dispatch/app.py" || true); do cwd=$(readlink "/proc/$pid/cwd" 2>/dev/null || true); case "$cwd" in *"(deleted)"*) echo "model-dispatch pid=$pid cwd=$cwd" >&2; exit 1;; esac; done'
 
 echo
-printf 'Summary: %s ok, %s failed\n' "$ok" "$fail"
+printf 'Summary: %s ok, %s warning, %s failed\n' "$ok" "$warn" "$fail"
 
 if [ "$fail" -gt 0 ]; then
   exit 1

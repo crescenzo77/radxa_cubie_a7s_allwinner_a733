@@ -12,6 +12,13 @@ RTX 3090, RX 7900 XT, Strix, and ThinkCentre.
 
 ## What changed
 
+- Hardened `scripts/routing-health` so ThinkCentre `model-dispatch` `/models`,
+  `/chat/completions`, and deleted-live-path checks are visible as
+  compatibility warnings without failing the direct kernel offload lanes.
+- Current ThinkCentre `model-dispatch` process is stale: it advertises models
+  but drops chat requests, and PID 1812 is running from deleted
+  `/srv/model-dispatch`. Repair requires a separate operator-approved deploy or
+  service restart because it is shared infrastructure.
 - Added `runbooks/kernel-knowledge-cortex.md`.
 - Added ThinkCentre Qdrant compose and environment templates under
   `services/kernel-cortex/thinkcentre/`.
