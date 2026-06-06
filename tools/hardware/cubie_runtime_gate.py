@@ -108,6 +108,12 @@ def refine_status(status: str, reason: str, staging: dict[str, Any]) -> tuple[st
         return status, reason
     if staging.get("skipped"):
         return status, reason
+    installed_count = int(staging.get("installed_count") or 0)
+    if installed_count > 0:
+        return (
+            "boot-selection-required",
+            "boot entry is installed, but no boot capture exists yet",
+        )
     ready_count = int(staging.get("ready_count") or 0)
     if ready_count > 0:
         return (
@@ -131,6 +137,18 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
         return "record the manual action with label=... and rerun the mapping candidate report"
     if status == "uart-data-needs-triage":
         return "inspect non-empty UART excerpts for baud, wiring, or nonstandard boot text"
+    if status == "boot-selection-required":
+        rows = (staging or {}).get("rows", [])
+        installed = [row for row in rows if row.get("root_install_complete")]
+        targets = ", ".join(f"{row.get('hostname') or row.get('ip')}:{row.get('ip')}" for row in installed)
+        target_hint = f" while booting one installed board ({targets})" if targets else ""
+        stage = str((staging or {}).get("stage") or "")
+        if not stage and installed:
+            stage = str(installed[0].get("stage") or "")
+        capture_label = f"{Path(stage).name}-boot" if stage else "cubie-manual-boot"
+        labels = sorted({row.get("extlinux_label") for row in installed if row.get("extlinux_label")})
+        label_hint = f" and select {labels[0]}" if labels else " and select the staged non-default boot label"
+        return f"run scripts/cubie-manual-boot-session 180 {capture_label}{target_hint}{label_hint}"
     if status == "root-install-required":
         rows = (staging or {}).get("rows", [])
         ready = [row for row in rows if row.get("ready_for_root_install")]
@@ -196,6 +214,7 @@ def build_gate(args: argparse.Namespace) -> dict[str, Any]:
             "skipped": bool(staging.get("skipped")),
             "stage": staging.get("stage", ""),
             "ready_count": staging.get("ready_count", 0),
+            "installed_count": staging.get("installed_count", 0),
             "target_count": staging.get("target_count", 0),
             "rows": staging.get("rows", []),
         },
@@ -249,11 +268,15 @@ def markdown(data: dict[str, Any]) -> str:
             f"- ready for root install: `{staging.get('ready_count', 0)}/"
             f"{staging.get('target_count', 0)}`"
         )
+        lines.append(
+            f"- installed boot entry: `{staging.get('installed_count', 0)}/"
+            f"{staging.get('target_count', 0)}`"
+        )
         lines.extend(
             [
                 "",
-                "| ip | hostname | stage | sha256 | installer | ready |",
-                "| --- | --- | --- | --- | --- | --- |",
+                "| ip | hostname | stage | sha256 | installer | boot entry | boot files | ready |",
+                "| --- | --- | --- | --- | --- | --- | --- | --- |",
             ]
         )
         for row in staging.get("rows", []):
@@ -264,6 +287,8 @@ def markdown(data: dict[str, Any]) -> str:
                 f"{md_escape(row.get('stage_status'))} | "
                 f"{md_escape(row.get('sha256_status'))} | "
                 f"{md_escape(row.get('installer_syntax'))} | "
+                f"{md_escape(row.get('boot_entry_status'))} | "
+                f"{md_escape(row.get('boot_files_status'))} | "
                 f"{'yes' if row.get('ready_for_root_install') else 'no'} |"
             )
 

@@ -55,8 +55,48 @@ else
   printf 'sha256_status=unavailable\n'
 fi
 if [ -f install-extlinux-entry.sh ]; then
-  awk -F'"' '/^install_dir="/ { print "install_dir="$2; exit }' install-extlinux-entry.sh
-  awk -F'"' '/^label="/ { print "extlinux_label="$2; exit }' install-extlinux-entry.sh
+  install_dir="$(awk -F'"' '/^install_dir="/ { print $2; exit }' install-extlinux-entry.sh)"
+  extlinux_label="$(awk -F'"' '/^label="/ { print $2; exit }' install-extlinux-entry.sh)"
+  printf 'install_dir=%s\n' "$install_dir"
+  printf 'extlinux_label=%s\n' "$extlinux_label"
+  case "$extlinux_label" in
+    ""|*[!A-Za-z0-9_.-]*)
+      printf 'boot_entry_status=unexpected-label\n'
+      ;;
+    *)
+    if [ -r /boot/extlinux/extlinux.conf ] &&
+      grep -Fqx "label ${extlinux_label}" /boot/extlinux/extlinux.conf; then
+      printf 'boot_entry_status=installed\n'
+    elif [ -r /boot/extlinux/extlinux.conf ]; then
+      printf 'boot_entry_status=missing\n'
+    else
+      printf 'boot_entry_status=unreadable\n'
+    fi
+    ;;
+  esac
+  case "$install_dir" in
+    /boot/mainline-a733-*)
+      if [ -d "$install_dir" ]; then
+        missing=0
+        for file in Image sun60i-a733-cubie-a7s.dtb config manifest.txt; do
+          [ -e "${install_dir}/${file}" ] || missing=1
+        done
+        if [ "$missing" -eq 0 ]; then
+          printf 'boot_files_status=present\n'
+        else
+          printf 'boot_files_status=incomplete\n'
+        fi
+      else
+        printf 'boot_files_status=missing\n'
+      fi
+      ;;
+    "")
+      printf 'boot_files_status=unknown\n'
+      ;;
+    *)
+      printf 'boot_files_status=unexpected-install-dir\n'
+      ;;
+  esac
   if bash -n install-extlinux-entry.sh >/tmp/cubie-stage-bashn.out 2>/tmp/cubie-stage-bashn.err; then
     printf 'installer_syntax=ok\n'
   else
@@ -111,8 +151,14 @@ fi
         "stage_status": fields.get("stage_status", "unknown"),
         "install_dir": fields.get("install_dir", ""),
         "extlinux_label": fields.get("extlinux_label", ""),
+        "boot_entry_status": fields.get("boot_entry_status", "unknown"),
+        "boot_files_status": fields.get("boot_files_status", "unknown"),
         "sha256_status": fields.get("sha256_status", "unknown"),
         "installer_syntax": fields.get("installer_syntax", "unknown"),
+        "root_install_complete": (
+            fields.get("boot_entry_status") == "installed"
+            and fields.get("boot_files_status") == "present"
+        ),
         "ready_for_root_install": ok,
         "files": {
             key.removeprefix("file_"): value
@@ -127,21 +173,28 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     targets = [target.strip() for target in args.targets.split(",") if target.strip()]
     rows = [ssh_probe(ip, args.user, args.identity, args.stage, args.timeout) for ip in targets]
     ready = [row for row in rows if row["ready_for_root_install"]]
-    labels = sorted({row.get("extlinux_label") for row in ready if row.get("extlinux_label")})
+    installed = [row for row in rows if row["root_install_complete"]]
+    action_rows = installed or ready
+    labels = sorted({row.get("extlinux_label") for row in action_rows if row.get("extlinux_label")})
     capture_label = f"{Path(args.stage).name}-boot"
     label_hint = f" and select {labels[0]}" if labels else ""
+    if installed:
+        next_action = f"start scripts/cubie-manual-boot-session 180 {capture_label}{label_hint}"
+    elif ready:
+        next_action = (
+            "run the staged install-extlinux-entry.sh with sudo/root on the chosen board, "
+            f"then start scripts/cubie-manual-boot-session 180 {capture_label}{label_hint}"
+        )
+    else:
+        next_action = "stage or repair boot artifacts before attempting a hardware boot proof"
     return {
         "stage": args.stage,
         "targets": targets,
         "ready_count": len(ready),
+        "installed_count": len(installed),
         "target_count": len(rows),
         "rows": rows,
-        "next_action": (
-            "run the staged install-extlinux-entry.sh with sudo/root on the chosen board, "
-            f"then start scripts/cubie-manual-boot-session 180 {capture_label}{label_hint}"
-            if ready
-            else "stage or repair boot artifacts before attempting a hardware boot proof"
-        ),
+        "next_action": next_action,
     }
 
 
@@ -151,9 +204,10 @@ def markdown(data: dict[str, Any]) -> str:
         "",
         f"Stage: `{data['stage']}`",
         f"Ready for root install: `{data['ready_count']}/{data['target_count']}`",
+        f"Installed boot entry: `{data.get('installed_count', 0)}/{data['target_count']}`",
         "",
-        "| ip | hostname | model | stage | sha256 | installer | ready |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
+        "| ip | hostname | model | stage | sha256 | installer | boot entry | boot files | ready |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for row in data["rows"]:
         lines.append(
@@ -164,6 +218,8 @@ def markdown(data: dict[str, Any]) -> str:
             f"{row['stage_status']} | "
             f"{row['sha256_status']} | "
             f"{row['installer_syntax']} | "
+            f"{row['boot_entry_status']} | "
+            f"{row['boot_files_status']} | "
             f"{'yes' if row['ready_for_root_install'] else 'no'} |"
         )
     lines.extend(["", "## Next Action", "", data["next_action"], ""])
