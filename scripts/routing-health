@@ -4,16 +4,18 @@ set -u
 ok=0
 fail=0
 
-check_url() {
+check_ssh_url() {
   local name="$1"
-  local url="$2"
+  local host="$2"
+  local url="$3"
 
-  if curl -fsS --max-time 5 "$url" >/tmp/routing-health.$$ 2>/tmp/routing-health.err.$$; then
+  if ssh -o BatchMode=yes -o ConnectTimeout=10 "$host" \
+    "curl -fsS --max-time 5 '$url'" >/tmp/routing-health.$$ 2>/tmp/routing-health.err.$$; then
     printf '[OK]   %s\n' "$name"
     ok=$((ok + 1))
   else
     printf '[FAIL] %s\n' "$name"
-    printf '       %s\n' "$url"
+    printf '       %s %s\n' "$host" "$url"
     sed 's/^/       /' /tmp/routing-health.err.$$ 2>/dev/null || true
     fail=$((fail + 1))
   fi
@@ -24,11 +26,10 @@ check_url() {
 echo 'Homelab routing health'
 echo
 
-check_url 'LiteLLM models on thinkcentre' 'http://192.168.50.225:4000/v1/models'
-check_url 'AMD 3090 local coder models' 'http://192.168.50.252:8083/v1/models'
-check_url 'AMD 7900 XT backup models' 'http://192.168.50.252:8084/v1/models'
-check_url 'Strix reasoning models' 'http://192.168.50.11:8081/v1/models'
-check_url 'Strix coder testbed models' 'http://192.168.50.11:8082/v1/models'
+check_ssh_url 'ThinkCentre Qdrant health' '192.168.50.225' 'http://127.0.0.1:6333/healthz'
+check_ssh_url 'AMD RTX 3090 coder models' '192.168.50.252' 'http://127.0.0.1:8001/v1/models'
+check_ssh_url 'AMD 7900 XT research models' '192.168.50.252' 'http://127.0.0.1:8092/v1/models'
+check_ssh_url 'Strix review models' '192.168.50.11' 'http://127.0.0.1:8082/v1/models'
 
 echo
 printf 'Summary: %s ok, %s failed\n' "$ok" "$fail"
