@@ -44,7 +44,7 @@ power, and link behavior are proven.
 
 The current exported series does not contain:
 
-- automatic coding-assistance trailers
+- nonstandard metadata trailers
 - deferred parent IRQ registration or an irq_domain bypass
 - Ethernet nodes, generic DWMAC fallback enablement, or STMMAC glue changes
 - VPU, Cedrus, media-driver, or VPU clock/DTS changes
@@ -134,7 +134,7 @@ Current v4 repository hygiene checks run during this cleanup:
   `git format-patch --base`
 - `git apply --numstat patches/000[1-9]-*.patch`: pass, all exported patch
   files parse as patches
-- patch export scan for automatic coding-assistance trailers and local author
+- patch export scan for nonstandard metadata trailers and local author
   aliases: pass, none present
 - patch export scan for `linux/of_device.h`, the previous GIC redistributor
   size, and third-party binding maintainer blocks in A733 files: pass, none
@@ -346,5 +346,5 @@ Validation still required before any upstream submission:
   current per-patch diff hygiene, `defconfig`, targeted object, and binding
   proofs, plus Cubie DTB checks for patches where the board DTB exists
 - coordination/rebase decision for the in-flight CCU and pinctrl RFCs
-- final human decision on coding-assistance disclosure/trailer policy
+- final human review of trailers, recipients, and cover-letter claims
 - final non-draft cover letter

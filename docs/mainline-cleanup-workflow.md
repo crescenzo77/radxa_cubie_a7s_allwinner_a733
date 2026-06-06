@@ -21,7 +21,7 @@ Before calling a patch a candidate, record:
 - runtime evidence for every runtime claim
 - known limitations and deferred hardware blocks
 - in-flight RFC or patch-series search results for every touched subsystem
-- final human disclosure and trailer policy for the exact series being sent
+- final human trailer policy for the exact series being sent
 
 ## Preflight Gates
 
@@ -74,8 +74,8 @@ Run these gates before editing a candidate branch:
 - Put DTS patches at the end of a mixed series.
 - Do not enable a board peripheral until the binding, clocks, resets, pinctrl,
   power, and runtime behavior are proven.
-- Do not add or keep automatic coding-assistance trailers in candidate
-  exports; make disclosure a final human review decision.
+- Do not add or keep nonstandard metadata trailers in candidate exports unless
+  the human submitter explicitly approves them for the exact series.
 - Each patch must be independently buildable on top of the previous patch.
   Validate bisectability by applying the series to the recorded base and
   building/checking each patch step, not only the final series.
@@ -225,13 +225,11 @@ known false positive before describing the series as ready.
 - `Signed-off-by:` is added only by the human submitter.
 - `Reviewed-by:`, `Acked-by:`, `Tested-by:`, and similar trailers require the
   named person's explicit authorization.
-- Coding-assistance disclosure must be decided by the human submitter after
-  reviewing the current Linux coding-assistant documentation and the relevant
-  subsystem's expectations.
-- Do not let tooling add disclosure trailers automatically.
-- Draft/public-preparation exports may omit coding-assistance trailers to
-  avoid turning technical review prep into a policy discussion. Before any
-  mailed submission, record the final disclosure decision in the cover-letter
+- Nonstandard trailers must be decided by the human submitter after reviewing
+  current kernel documentation and the relevant subsystem's expectations.
+- Do not let tooling add nonstandard trailers automatically.
+- Draft/public-preparation exports may omit nonstandard trailers. Before any
+  mailed submission, record the final trailer decision in the cover-letter
   preparation notes.
 
 ## Stop Conditions
@@ -265,8 +263,8 @@ Stop and repair the smallest responsible slice if:
   the intended path is to stack board support on external prerequisites
 - a patch requires private lab history to make sense
 - a patch contains unauthorized trailers
-- a patch contains automatic coding-assistance trailers that were not reviewed
-  and intentionally approved by the human submitter
+- a patch contains nonstandard metadata trailers that were not reviewed and
+  intentionally approved by the human submitter
 
 ## Submission Preparation
 
@@ -279,5 +277,5 @@ Before mailing:
    correct, especially for IRQ, GMAC, and media/VPU changes.
 5. Draft a cover letter with base, scope, validation, limitations, and
    dependency notes, including any in-flight RFC relationship.
-6. Record the final human decision for coding-assistance disclosure/trailers.
+6. Record the final human decision for nonstandard trailers.
 7. Send only after human review with the correct DCO sign-off.

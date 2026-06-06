@@ -80,10 +80,10 @@ The public branch must not contain:
   delimiter is `:`.
 - `Signed-off-by:` is human-only. Do not add it until the human submitter has
   reviewed and accepted responsibility under the DCO.
-- Coding-assistance disclosure and trailer decisions are final human review
-  items. Tooling must not automatically add disclosure trailers to exported
-  patches. Before mailing, review the current kernel coding-assistant
-  documentation and the expectations of the relevant subsystem maintainers.
+- Trailer decisions are final human review items. Tooling must not
+  automatically add nonstandard trailers to exported patches. Before mailing,
+  review current kernel documentation and the expectations of the relevant
+  subsystem maintainers.
 
 ## Current Direction
 

@@ -32,11 +32,11 @@ Known blockers before upstream submission:
   maintainers ask for a different dependency plan.
 - A hardware boot/runtime record is still required for the exact kernel,
   DTB, board, and command line before runtime claims are made.
-- Final human review must decide the submission disclosure/trailer policy
-  according to current kernel documentation and subsystem expectations.
+- Final human review must verify all trailers and recipients against current
+  kernel documentation and subsystem expectations.
 
 This export addresses the current public-review cleanup issues by removing
-automatic coding-assistance trailers, adding the missing MAINTAINERS pattern,
+nonstandard metadata trailers, adding the missing MAINTAINERS pattern,
 using the author's contact in new binding maintainer blocks, adding asymmetric
 CPU capacities, and replacing the irregular GICv3 redistributor size with a
 normal 8-core window.

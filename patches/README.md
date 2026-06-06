@@ -26,9 +26,9 @@ Patch order:
 
 These files are not a mailed submission series or a sendable candidate. They
 now include the human DCO sign-off authorized for this public draft export.
-They intentionally do not include automatic coding-assistance trailers; any
-final disclosure or trailer decision must be made by the human submitter using
-current kernel documentation and subsystem expectations.
+They intentionally do not include nonstandard metadata trailers; any final
+trailer decision must be made by the human submitter using current kernel
+documentation and subsystem expectations.
 
 This directory was regenerated from the v4 candidate branch after public-review
 cleanup. Before any upstream submission, regenerate the patches again from the

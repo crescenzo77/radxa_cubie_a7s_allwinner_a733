@@ -64,8 +64,8 @@ This repository follows the Linux kernel submission process:
 - generated artifacts and local debug output stay out of git
 - failed experiments are not presented as candidate patches
 - `Signed-off-by:` is added only by the human submitter after final review
-- coding-assistance disclosure and trailer decisions are final human review
-  items; tooling must not add those trailers automatically
+- all trailers are final human review items; tooling must not invent or add
+  nonstandard trailers automatically
 
 See [docs/upstream-baseline.md](docs/upstream-baseline.md),
 [docs/mainline-cleanup-workflow.md](docs/mainline-cleanup-workflow.md), and
@@ -75,8 +75,6 @@ See [docs/upstream-baseline.md](docs/upstream-baseline.md),
 
 - Linux patch submission guide:
   <https://docs.kernel.org/process/submitting-patches.html>
-- Linux coding assistant policy:
-  <https://docs.kernel.org/process/coding-assistants.html>
 - Devicetree binding submission rules:
   <https://docs.kernel.org/devicetree/bindings/submitting-patches.html>
 - Devicetree schema guide:
