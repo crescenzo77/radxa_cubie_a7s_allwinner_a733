@@ -24,6 +24,8 @@ DEFAULT_COMMAND = (
     'if [ -r /proc/device-tree/model ]; then '
     'printf "\\nmodel="; tr "\\000" "\\n" </proc/device-tree/model; fi'
 )
+DEFAULT_USER = "radxa"
+DEFAULT_IDENTITY = "~/.ssh/id_ed25519"
 
 
 def load_inventory(path: Path) -> dict[str, Any]:
@@ -53,6 +55,18 @@ def tcp_open(ip: str, port: int, timeout: float) -> bool:
         return sock.connect_ex((ip, port)) == 0
     finally:
         sock.close()
+
+
+def split_csv(value: str) -> list[str]:
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def is_a733_cubie(model: str, hostname: str, arch: str, returncode: int) -> bool:
+    return returncode == 0 and (
+        "sun60iw2" in model.lower()
+        or "a733" in model.lower()
+        or (hostname.startswith("cubie") and arch == "aarch64")
+    )
 
 
 def arp_table() -> dict[str, str]:
@@ -113,19 +127,57 @@ def ssh_probe(
     model = fields.get("model", "")
     hostname = fields.get("hostname", "")
     arch = fields.get("arch", "")
-    is_a733 = proc.returncode == 0 and (
-        "sun60iw2" in model.lower()
-        or "a733" in model.lower()
-        or (hostname.startswith("cubie") and arch == "aarch64")
-    )
+    lines = text.strip().splitlines()
     return {
         "ip": ip,
+        "user": user,
         "ssh_returncode": proc.returncode,
         "hostname": hostname,
         "arch": arch,
         "model": model,
-        "is_a733_cubie_candidate": is_a733,
-        "error": "" if proc.returncode == 0 else text.strip().splitlines()[-1:],
+        "is_a733_cubie_candidate": is_a733_cubie(model, hostname, arch, proc.returncode),
+        "error": "" if proc.returncode == 0 else (lines[-1] if lines else ""),
+    }
+
+
+def classify_target(
+    ip: str,
+    users: list[str],
+    identity: str,
+    port: int,
+    timeout: float,
+    ssh_timeout: int,
+    known_hosts: str,
+) -> dict[str, Any]:
+    port_open = tcp_open(ip, port, timeout)
+    probes: list[dict[str, Any]] = []
+    if port_open:
+        probes = [ssh_probe(ip, user, identity, ssh_timeout, known_hosts) for user in users]
+    successful = [probe for probe in probes if probe.get("ssh_returncode") == 0]
+    candidates = [probe for probe in successful if probe.get("is_a733_cubie_candidate")]
+    if candidates:
+        classification = "a733-cubie-candidate"
+        selected = candidates[0]
+    elif successful:
+        classification = "not-a733-cubie"
+        selected = successful[0]
+    elif port_open:
+        classification = "ssh-auth-blocked"
+        selected = probes[0] if probes else {}
+    else:
+        classification = "ssh-closed-or-filtered"
+        selected = {}
+    return {
+        "ip": ip,
+        "tcp_port": port,
+        "tcp_status": "open" if port_open else "closed-or-filtered",
+        "classification": classification,
+        "hostname": selected.get("hostname", ""),
+        "arch": selected.get("arch", ""),
+        "model": selected.get("model", ""),
+        "selected_user": selected.get("user", ""),
+        "is_a733_cubie_candidate": bool(candidates),
+        "probes": probes,
     }
 
 
@@ -147,6 +199,39 @@ def scan_network(network: str, port: int, timeout: float, workers: int) -> list[
 def discover(args: argparse.Namespace) -> dict[str, Any]:
     inventory = load_inventory(Path(args.inventory))
     known_inventory_ips = inventory_ips(inventory)
+    target_ips = list(getattr(args, "target", []) or [])
+    if target_ips:
+        default_user = getattr(args, "user", DEFAULT_USER) or DEFAULT_USER
+        users = split_csv(getattr(args, "probe_users", "")) or [default_user]
+        arp = arp_table()
+        with tempfile.NamedTemporaryFile(prefix="cubie-known-hosts-") as known_hosts:
+            targets = [
+                classify_target(
+                    ip,
+                    users,
+                    args.identity,
+                    args.port,
+                    args.timeout,
+                    args.ssh_timeout,
+                    known_hosts.name,
+                )
+                for ip in target_ips
+            ]
+        for target in targets:
+            target["inventory_name"] = known_inventory_ips.get(target["ip"], "")
+            target["mac"] = arp.get(target["ip"], "")
+        candidates = [target for target in targets if target["is_a733_cubie_candidate"]]
+        return {
+            "mode": "target",
+            "network": args.network,
+            "inventory": str(Path(args.inventory)),
+            "ssh_open_count": sum(1 for target in targets if target["tcp_status"] == "open"),
+            "a733_candidate_count": len(candidates),
+            "a733_candidates": candidates,
+            "target_results": targets,
+            "stale_inventory_entries": [],
+            "ssh_open_ips": [target["ip"] for target in targets if target["tcp_status"] == "open"],
+        }
     open_ips = scan_network(args.network, args.port, args.timeout, args.workers)
     arp = arp_table()
     with tempfile.NamedTemporaryFile(prefix="cubie-known-hosts-") as known_hosts:
@@ -163,12 +248,15 @@ def discover(args: argparse.Namespace) -> dict[str, Any]:
         if ip not in open_ips
     ]
     candidates = [probe for probe in probes if probe["is_a733_cubie_candidate"]]
+    non_candidates = [probe for probe in probes if not probe["is_a733_cubie_candidate"]]
     return {
+        "mode": "network",
         "network": args.network,
         "inventory": str(Path(args.inventory)),
         "ssh_open_count": len(open_ips),
         "a733_candidate_count": len(candidates),
         "a733_candidates": candidates,
+        "non_a733_ssh_hosts": non_candidates,
         "stale_inventory_entries": stale,
         "ssh_open_ips": open_ips,
     }
@@ -200,6 +288,49 @@ def markdown(data: dict[str, Any]) -> str:
         )
     if not data["a733_candidates"]:
         lines.append("| none | - | - | - | - | - |")
+    if data.get("target_results"):
+        lines.extend(
+            [
+                "",
+                "## Target Results",
+                "",
+                "| ip | inventory | classification | user | hostname | arch | model | mac |",
+                "| --- | --- | --- | --- | --- | --- | --- | --- |",
+            ]
+        )
+        for row in data["target_results"]:
+            lines.append(
+                "| "
+                f"`{row['ip']}` | "
+                f"{row.get('inventory_name') or '-'} | "
+                f"{row['classification']} | "
+                f"{row.get('selected_user') or '-'} | "
+                f"{row.get('hostname') or '-'} | "
+                f"{row.get('arch') or '-'} | "
+                f"{row.get('model') or '-'} | "
+                f"`{row.get('mac') or '-'}` |"
+            )
+    elif data.get("non_a733_ssh_hosts"):
+        lines.extend(
+            [
+                "",
+                "## SSH-Open Non-Candidates",
+                "",
+                "| ip | inventory | ssh_rc | hostname | arch | model | mac |",
+                "| --- | --- | ---: | --- | --- | --- | --- |",
+            ]
+        )
+        for row in data["non_a733_ssh_hosts"]:
+            lines.append(
+                "| "
+                f"`{row['ip']}` | "
+                f"{row.get('inventory_name') or '-'} | "
+                f"{row['ssh_returncode']} | "
+                f"{row.get('hostname') or '-'} | "
+                f"{row.get('arch') or '-'} | "
+                f"{row.get('model') or '-'} | "
+                f"`{row.get('mac') or '-'}` |"
+            )
     lines.extend(["", "## Stale Inventory Entries", ""])
     if data["stale_inventory_entries"]:
         for row in data["stale_inventory_entries"]:
@@ -214,8 +345,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--network", default="192.168.50.0/24")
     parser.add_argument("--inventory", default=str(DEFAULT_INVENTORY))
-    parser.add_argument("--user", default="radxa")
-    parser.add_argument("--identity", default="~/.ssh/id_ed25519")
+    parser.add_argument("--user", default=DEFAULT_USER)
+    parser.add_argument(
+        "--probe-users",
+        default="",
+        help="Comma-separated users for --target probes. Defaults to --user.",
+    )
+    parser.add_argument("--identity", default=DEFAULT_IDENTITY)
+    parser.add_argument("--target", action="append", default=[], help="Probe a specific IP instead of scanning.")
     parser.add_argument("--port", type=int, default=22)
     parser.add_argument("--timeout", type=float, default=0.2)
     parser.add_argument("--ssh-timeout", type=int, default=4)
