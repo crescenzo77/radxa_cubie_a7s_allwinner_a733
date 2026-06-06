@@ -32,6 +32,11 @@ Quick network observation:
   key/user attempts were denied; `192.168.50.85` timed out on port 22.
 - 2026-06-06 refresh: `192.168.50.95` still answers ping and has port 22 open;
   `192.168.50.85` still does not answer ping.
+- 2026-06-06 passive neighbor-cache sweep across Mac, Strix, ThinkCentre, and
+  AMD found Radxa-like MAC prefix `08:51:49` only at excluded `192.168.50.65`
+  and Cubie3 `192.168.50.95`. The stale Cubie2 address `192.168.50.85`
+  appeared only as incomplete/failed where present. No alternate Cubie2 IP was
+  found passively.
 
 Treat reachability as a live lab condition, not a permanent fact.
 
@@ -80,6 +85,14 @@ Observed serial devices on `192.168.50.11`:
 
 This confirms the devices exist and are readable, but it does not establish the
 board-to-tty mapping.
+
+2026-06-06 prompt probe:
+
+- `pci-0000:c3:00.4-usb-0:1.1:1.0-port0` returned `cubie-3 login:` and is
+  confirmed as Cubie3.
+- `pci-0000:c3:00.4-usb-0:1.2:1.0-port0` returned 0 bytes after an Enter
+  probe. It remains only a Cubie2 candidate until boot or login text identifies
+  the board.
 
 Do not assume the board-to-tty mapping yet. Confirm by capturing boot output
 from one board at a time.

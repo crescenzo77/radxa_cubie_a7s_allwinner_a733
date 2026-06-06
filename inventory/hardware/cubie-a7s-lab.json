@@ -275,6 +275,34 @@
                 }
             ],
             "conclusion": "The 1.1 by-path adapter is Cubie3. The 1.2 by-path adapter remains only a Cubie2 candidate; it did not produce console text from a single Enter probe."
+        },
+        {
+            "observed_at_utc": "2026-06-06T16:24:00Z",
+            "type": "passive-neighbor-cache-sweep",
+            "hosts_checked": [
+                "mac-mini",
+                "192.168.50.11",
+                "192.168.50.225",
+                "192.168.50.252"
+            ],
+            "results": [
+                {
+                    "ip": "192.168.50.65",
+                    "mac": "08:51:49:dc:30:a6",
+                    "status": "excluded-from-kernel-work"
+                },
+                {
+                    "ip": "192.168.50.95",
+                    "mac": "08:51:49:dc:f6:6c",
+                    "status": "cubie3"
+                },
+                {
+                    "ip": "192.168.50.85",
+                    "mac": null,
+                    "status": "incomplete-or-failed"
+                }
+            ],
+            "conclusion": "Passive caches showed Radxa-like MAC prefix 08:51:49 only for excluded 192.168.50.65 and Cubie3 192.168.50.95. No alternate Cubie2 IP was found."
         }
     ],
   "rules": [
