@@ -78,7 +78,11 @@ The public branch must not contain:
   require a boot/runtime record for the exact kernel and DTB before submission.
 - The boot/runtime record must identify the board, kernel commit, kernel
   configuration source, DTB checksum, UART capture or proof ID, command line,
-  and observed boot/runtime behavior.
+  bootloader environment or temporary bootloader-only arguments used during the
+  test, and observed boot/runtime behavior.
+- Temporary bootloader workarounds used for lab testing must not be converted
+  into upstream DTS properties unless they prove a Linux-facing hardware
+  requirement.
 - Multiple `DT_SCHEMA_FILES` entries must be passed to DT validation using the
   delimiter expected by the kernel tree under test; for the current base, that
   delimiter is `:`.

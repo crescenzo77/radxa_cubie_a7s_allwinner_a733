@@ -99,6 +99,8 @@ The runtime record must include:
 - kernel `Image` checksum when available
 - DTB path and checksum
 - boot medium and command line
+- bootloader environment changes or temporary bootloader-only arguments used
+  during the test
 - UART capture source, timestamp, and proof-log identifier
 - boot log evidence showing the kernel version, machine model, command line,
   CPU bring-up, interrupt controller, pinctrl or GPIO probe status, clock
@@ -216,6 +218,8 @@ known false positive before describing the series as ready.
   matching boot/runtime record before the cover letter may claim the board was
   tested.
 - Do not use a log from one branch or DTB to support a different branch or DTB.
+- Do not use a temporary bootloader workaround as evidence for an upstream DTS
+  property unless the workaround exposes a Linux-facing hardware requirement.
 - Do not replace missing evidence with confidence, model output, or a summary.
 - If the claim cannot be independently understood by a reviewer, narrow the
   claim.
