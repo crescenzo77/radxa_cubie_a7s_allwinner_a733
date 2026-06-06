@@ -29,6 +29,18 @@ Ethernet is intentionally out of scope. The public series must not claim
 Ethernet support until reset, clocking, wrapper setup, MDIO, PHY reset, PHY
 power, and link behavior are proven.
 
+## Issue-Class Audit
+
+The current exported series does not contain:
+
+- deferred parent IRQ registration or an irq_domain bypass
+- Ethernet nodes, generic DWMAC fallback enablement, or STMMAC glue changes
+- VPU, Cedrus, media-driver, or VPU clock/DTS changes
+
+Future IRQ, Ethernet, or VPU work is blocked by the workflow rules in
+`docs/mainline-cleanup-workflow.md` until it is split by subsystem, justified
+in commit messages, and validated per patch.
+
 ## External Work To Coordinate
 
 - Junhui Liu posted an RFC A733 CCU/PRCM series:
@@ -85,6 +97,7 @@ Current checkpatch result:
 Validation still required before any upstream submission:
 
 - hardware boot/runtime record for the exact kernel and DTB
+- per-patch bisectability record for the exported series
 - decision on whether MAINTAINERS should gain an explicit `sun60i` pattern or
   file entries despite existing directory coverage
 - coordination/rebase decision for the in-flight CCU and pinctrl RFCs

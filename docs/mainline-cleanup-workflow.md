@@ -36,6 +36,8 @@ Run these gates before editing a candidate branch:
   existing `F:` path coverage
 - reject BSP-only compatible strings such as internal `sun60iw*` names unless
   a binding maintainer explicitly asks for them
+- classify IRQ, Ethernet, and VPU work before drafting patches; each has
+  subsystem-specific rules below and must not be hidden inside board DTS work
 
 ## Candidate Branch Rules
 
@@ -51,6 +53,57 @@ Run these gates before editing a candidate branch:
 - Put DTS patches at the end of a mixed series.
 - Do not enable a board peripheral until the binding, clocks, resets, pinctrl,
   power, and runtime behavior are proven.
+- Each patch must be independently buildable on top of the previous patch.
+  Validate bisectability by applying the series to the recorded base and
+  building/checking each patch step, not only the final series.
+
+## IRQ Rules
+
+IRQ handling must stay inside normal Linux IRQ and pinctrl infrastructure.
+
+Do not submit:
+
+- deferred parent IRQ registration used to avoid boot stalls
+- code that bypasses the normal irq_domain hierarchy
+- board-specific IRQ masking or clearing outside the SoC pinctrl/irqchip path
+- register-status workarounds without a documented hardware reason
+
+If A733 has latched status or bank-specific IRQ behavior, model it as a clean
+SoC quirk in the standard initialization, mask, unmask, ack, or set-type paths.
+The commit message must explain why the quirk is needed and how it preserves
+the standard irqchip hierarchy.
+
+## Ethernet Rules
+
+Do not upstream A733 Ethernet by relying only on generic Synopsys DWMAC
+fallbacks or legacy bindings.
+
+Before any Ethernet enablement patch is a candidate, record:
+
+- the A733/GMAC210 wrapper programming model
+- the syscon or clock routing needed by GMAC0
+- reset sequencing for the MAC and external PHY
+- PHY power/reset GPIO behavior
+- MDIO evidence from the real external PHY
+- link-up evidence from the exact kernel and DTB
+
+A proper upstream series should split binding, clock/reset, glue driver, SoC
+DTS, and board DTS work as separate patches. A733-specific sequencing belongs
+in Allwinner DWMAC glue, not in generic STMMAC core code.
+
+## VPU Rules
+
+VPU/Cedrus work must be atomic across subsystems:
+
+- DT binding updates in their own patch
+- clock/reset support in clock patches
+- media/Cedrus driver support in media patches
+- DTS nodes after bindings and driver dependencies
+- board enablement only after runtime evidence
+
+Do not combine DT binding, clock, media driver, and DTS changes into one
+monolithic commit. Coordinate with incoming community Cedrus work before
+carrying local A733 VPU patches.
 
 ## Validation Floor
 
@@ -63,6 +116,7 @@ Run the relevant checks on the exact branch or exported patch files:
 - `make ARCH=arm64 dtbs_check DT_SCHEMA_FILES=<touched schemas>`
 - relevant object builds with `W=1`
 - boot/runtime tests on named hardware when the patch claims runtime behavior
+- per-patch bisectability checks for mixed series
 
 When passing multiple schemas to this kernel tree's DT validation targets, use
 a colon-separated `DT_SCHEMA_FILES` value, for example
@@ -77,6 +131,8 @@ known false positive before describing the series as ready.
 - A validation record must name the exact commit or patch files checked.
 - A runtime record must name the kernel image, DTB, command line, board, and
   observed behavior.
+- A bisectability record must show that each patch applies and builds or
+  validates at the level appropriate for its subsystem.
 - A board DTS that enables UART, MMC, regulators, or other peripherals needs a
   matching boot/runtime record before the cover letter may claim the board was
   tested.
@@ -105,6 +161,9 @@ Stop and repair the smallest responsible slice if:
 - checkpatch, schema, dtbs, or build checks fail
 - a DTS node uses an undocumented compatible, clock ID, reset ID, or property
 - a patch mixes unrelated subsystems
+- an IRQ workaround bypasses irq_domain or standard irqchip/pinctrl operations
+- Ethernet uses only generic DWMAC fallback behavior where SoC glue is needed
+- VPU work mixes binding, clocks, media driver, and DTS in one patch
 - a runtime claim lacks matching runtime evidence
 - public RFCs already cover the same driver or binding and the cover letter
   does not explain the relationship
@@ -118,6 +177,8 @@ Before mailing:
 1. Regenerate patches from the clean candidate branch.
 2. Re-run validation on the regenerated patches.
 3. Run `scripts/get_maintainer.pl` for every patch.
-4. Draft a cover letter with base, scope, validation, limitations, and
+4. Confirm each commit message explains why the change is architecturally
+   correct, especially for IRQ, GMAC, and media/VPU changes.
+5. Draft a cover letter with base, scope, validation, limitations, and
    dependency notes, including any in-flight RFC relationship.
-5. Send only after human review with the correct DCO sign-off.
+6. Send only after human review with the correct DCO sign-off.

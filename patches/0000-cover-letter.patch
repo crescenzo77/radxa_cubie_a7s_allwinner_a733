@@ -9,6 +9,10 @@ This series adds initial mainline support for the Allwinner A733 SoC and the
 Radxa Cubie A7S board. The initial board DTS enables only UART0 and MMC0.
 Ethernet is intentionally left out of scope.
 
+This draft does not include Ethernet, VPU/Cedrus, or any deferred parent IRQ
+registration workaround. Those areas need separate subsystem-specific series
+and evidence before they can be proposed.
+
 Known in-flight work:
 
 - Junhui Liu posted an RFC for A733 CCU and PRCM support:
@@ -34,6 +38,7 @@ Validation completed locally:
 Open items before submission:
 
 - record a hardware boot log from a Cubie A7S using this exact kernel and DTB
+- record per-patch bisectability checks for the exported series
 - verify whether MAINTAINERS needs explicit sun60i patterns or file entries
 - decide how this series relates to the in-flight CCU and pinctrl RFCs
 - regenerate this cover letter without the draft/no-send language

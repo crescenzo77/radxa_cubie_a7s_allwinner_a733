@@ -34,6 +34,9 @@ The public branch must not contain:
 - A patch must be reviewable, bisectable, and self-contained.
 - A commit message must explain why the change is correct, not how the local
   lab discovered it.
+- IRQ quirks must be represented through standard irqchip or pinctrl driver
+  operations. Do not bypass irq_domain setup or defer parent IRQ registration
+  as an upstream workaround.
 - A hardware value is acceptable only when it can be justified from public
   code, public vendor material, measured hardware evidence, or a recorded
   runtime observation.
@@ -41,6 +44,8 @@ The public branch must not contain:
   generic STMMAC core code.
 - Ethernet remains disabled until reset, clocks, wrapper programming, MDIO,
   PHY reset, PHY power, and link behavior are proven.
+- VPU/Cedrus work must be split by subsystem. Binding, clock/reset, media
+  driver, SoC DTS, and board DTS changes must not be collapsed into one patch.
 - Board DTS patches that enable UART, MMC, regulators, or other peripherals
   require a boot/runtime record for the exact kernel and DTB before submission.
 - Multiple `DT_SCHEMA_FILES` entries must be passed to DT validation using the
