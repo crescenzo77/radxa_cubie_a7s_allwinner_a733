@@ -1,6 +1,7 @@
 # Local build and lab state.  Do not publish generated artifacts on the
 # upstream-facing branch.
 /artifacts/
+/boot-artifacts/
 /sources/
 /scripts_tmp_unused/
 
