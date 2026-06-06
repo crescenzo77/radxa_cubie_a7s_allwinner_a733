@@ -162,10 +162,17 @@ scripts/cubie-runtime-proof-bundle
 ```
 
 `scripts/cubie-runtime-gate` classifies the current state without model
-judgment. Current expected status before a real manual boot is
-`manual-capture-required`. Use `--json` for machine-readable output, and use
-`--strict` only when a non-zero exit should stop an automation until runtime
-proof is ready.
+judgment. Current expected status before the Cubie3 sudo/root install is
+`root-install-required`. After the installer adds the non-default extlinux
+entry, the expected status is `boot-selection-required` until a UART capture
+proves the selected mainline boot. Use `--json` for machine-readable output,
+and use `--strict` only when a non-zero exit should stop an automation until
+runtime proof is ready.
+
+`scripts/cubie-stage-boot-artifacts` writes only to the board user's staging
+directory. Its generated root installer copies `SHA256SUMS` into the
+`/boot/mainline-a733-*` install directory, verifies the installed Image/DTB
+copy, updates extlinux, and runs `sync` before reporting success.
 
 `scripts/cubie-uart-inventory-proposal` is also read-only. It emits a proposed
 board UART mapping only after a strong candidate exists; it never edits the

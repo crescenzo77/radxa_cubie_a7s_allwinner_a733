@@ -44,6 +44,7 @@ def excluded_row(ip: str, stage: str) -> dict[str, Any]:
         "metadata_status": "excluded",
         "boot_entry_status": "excluded",
         "boot_files_status": "excluded",
+        "boot_sha256_status": "excluded",
         "sha256_status": "excluded",
         "installer_syntax": "excluded",
         "root_install_complete": False,
@@ -151,6 +152,20 @@ if [ -f install-extlinux-entry.sh ]; then
       printf 'boot_files_status=unexpected-install-dir\n'
       ;;
   esac
+  if [ -n "$install_dir" ] && [ -d "$install_dir" ]; then
+    if command -v sha256sum >/dev/null 2>&1 && [ -f "${install_dir}/SHA256SUMS" ]; then
+      if (cd "$install_dir" && sha256sum -c SHA256SUMS >/tmp/cubie-boot-sha256.out 2>/tmp/cubie-boot-sha256.err); then
+        printf 'boot_sha256_status=ok\n'
+      else
+        printf 'boot_sha256_status=fail\n'
+        sed 's/^/boot_sha256_error=/' /tmp/cubie-boot-sha256.err | head -5
+      fi
+    else
+      printf 'boot_sha256_status=missing\n'
+    fi
+  else
+    printf 'boot_sha256_status=not-installed\n'
+  fi
   if bash -n install-extlinux-entry.sh >/tmp/cubie-stage-bashn.out 2>/tmp/cubie-stage-bashn.err; then
     printf 'installer_syntax=ok\n'
   else
@@ -209,11 +224,13 @@ fi
         "metadata_status": fields.get("metadata_status", "unknown"),
         "boot_entry_status": fields.get("boot_entry_status", "unknown"),
         "boot_files_status": fields.get("boot_files_status", "unknown"),
+        "boot_sha256_status": fields.get("boot_sha256_status", "unknown"),
         "sha256_status": fields.get("sha256_status", "unknown"),
         "installer_syntax": fields.get("installer_syntax", "unknown"),
         "root_install_complete": (
             fields.get("boot_entry_status") == "installed"
             and fields.get("boot_files_status") == "present"
+            and fields.get("boot_sha256_status") == "ok"
         ),
         "ready_for_root_install": ok,
         "files": {
@@ -275,8 +292,8 @@ def markdown(data: dict[str, Any]) -> str:
         f"Installed boot entry: `{data.get('installed_count', 0)}/{data['target_count']}`",
         f"Excluded targets: `{', '.join(data.get('excluded_targets', [])) or 'none'}`",
         "",
-        "| ip | hostname | model | stage | metadata | sha256 | installer | boot entry | boot files | ready |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| ip | hostname | model | stage | metadata | sha256 | installer | boot entry | boot files | boot sha256 | ready |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for row in data["rows"]:
         lines.append(
@@ -290,6 +307,7 @@ def markdown(data: dict[str, Any]) -> str:
             f"{row['installer_syntax']} | "
             f"{row['boot_entry_status']} | "
             f"{row['boot_files_status']} | "
+            f"{row['boot_sha256_status']} | "
             f"{'yes' if row['ready_for_root_install'] else 'no'} |"
         )
     lines.extend(["", "## Next Action", "", data["next_action"], ""])
