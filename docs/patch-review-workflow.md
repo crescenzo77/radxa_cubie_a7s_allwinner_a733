@@ -189,3 +189,21 @@ should be treated as a separate investigation, not an assumed workflow.
 5. Reviewer explains the diff in layman's terms.
 6. User decides Commit, Revise, Revert, or Inspect more.
 7. Commit only after proof.
+
+## Checkpatch Warning Gate
+
+For exported kernel patch series, run the warning gate after plain
+`scripts/checkpatch.pl --strict`:
+
+```sh
+scripts/kernel-checkpatch-warning-gate \
+  --checkpatch-tree /path/to/linux-tree-with-scripts \
+  --maintainers /path/to/candidate-tree/MAINTAINERS \
+  /path/to/exported/patches/000*.patch
+```
+
+`PASS` means checkpatch reported no errors, warnings, or checks.
+`PASS_WITH_REVIEWED_WARNINGS` is only acceptable for `FILE_PATH_CHANGES`
+warnings where each newly added path has explicit non-fallback `MAINTAINERS`
+coverage. `THE REST` never counts as coverage. Any other warning, check, error,
+or missing coverage returns `FAIL` and sends the patch back to the repair loop.
