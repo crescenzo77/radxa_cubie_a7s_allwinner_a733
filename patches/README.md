@@ -30,6 +30,11 @@ They intentionally do not include automatic coding-assistance trailers; any
 final disclosure or trailer decision must be made by the human submitter using
 current kernel documentation and subsystem expectations.
 
+This directory also contains public-record cleanup edits for review hygiene.
+Before any upstream submission, regenerate the patches from a clean kernel
+candidate branch so the source branch, cover letter, diffstats, and validation
+proofs all describe the same code.
+
 The cover letter still marks the series as draft-only until the open items in
 `docs/status.md` are resolved.
 

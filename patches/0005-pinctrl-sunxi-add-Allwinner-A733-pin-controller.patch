@@ -14,8 +14,8 @@ Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
  drivers/pinctrl/sunxi/Kconfig               | 10 ++++
  drivers/pinctrl/sunxi/Makefile              |  1 +
- drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c | 54 +++++++++++++++++++++
- 3 files changed, 65 insertions(+)
+ drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c | 53 +++++++++++++++++++++
+ 3 files changed, 64 insertions(+)
  create mode 100644 drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c
 
 diff --git a/drivers/pinctrl/sunxi/Kconfig b/drivers/pinctrl/sunxi/Kconfig
@@ -53,7 +53,7 @@ new file mode 100644
 index 0000000000000..ebcc7af91b873
 --- /dev/null
 +++ b/drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,53 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Allwinner A733 SoC pinctrl driver.
@@ -61,7 +61,6 @@ index 0000000000000..ebcc7af91b873
 +
 +#include <linux/module.h>
 +#include <linux/of.h>
-+#include <linux/of_device.h>
 +#include <linux/pinctrl/pinctrl.h>
 +#include <linux/platform_device.h>
 +
@@ -110,4 +109,3 @@ index 0000000000000..ebcc7af91b873
 +builtin_platform_driver(a733_pinctrl_driver);
 --
 2.50.1 (Apple Git-155)
-

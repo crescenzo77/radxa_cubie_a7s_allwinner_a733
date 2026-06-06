@@ -42,6 +42,12 @@ their relationship to the in-flight Linux RFCs is resolved. The series is not
 ready to send upstream until the open items in [docs/status.md](docs/status.md)
 are resolved.
 
+The expected sendable direction is to carry only the board/SoC DTS work that
+depends on CCU and pinctrl support, stacked on the accepted or current RFC
+prerequisites, unless subsystem maintainers ask for a different plan. Any
+exported patches must be regenerated from a clean kernel branch after this
+decision is made.
+
 ## Submission Discipline
 
 This repository follows the Linux kernel submission process:

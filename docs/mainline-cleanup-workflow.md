@@ -32,6 +32,8 @@ Run these gates before editing a candidate branch:
 - record any competing or prerequisite RFCs in the cover letter
 - decide whether to rebase on in-flight work, coordinate with its author, or
   explicitly justify a different approach
+- when in-flight CCU or pinctrl work exists, default to a board/SoC DTS series
+  stacked on those prerequisites instead of carrying competing local drivers
 - verify `get_maintainer.pl` coverage for every new path
 - check whether new SoC names need MAINTAINERS `N:` patterns in addition to
   existing `F:` path coverage
@@ -43,8 +45,12 @@ Run these gates before editing a candidate branch:
   a binding maintainer explicitly asks for them
 - compare GICv3 distributor and redistributor regions against the CPU count
   and the binding before exporting DTSI patches
+- reject GIC nodes that carry unused child-bus properties such as
+  `#address-cells`, `#size-cells`, or `ranges` when there are no child nodes
 - require `capacity-dmips-mhz` for asymmetric CPU topologies unless the cover
   letter documents why scheduler capacity data is deferred
+- reject deprecated kernel headers in new driver files when narrower headers
+  provide the required declarations
 - classify IRQ, Ethernet, and VPU work before drafting patches; each has
   subsystem-specific rules below and must not be hidden inside board DTS work
 
@@ -193,6 +199,8 @@ Stop and repair the smallest responsible slice if:
 - a runtime claim lacks matching runtime evidence
 - public RFCs already cover the same driver or binding and the cover letter
   does not explain the relationship
+- local CCU or pinctrl patches are still present in a proposed submission when
+  the intended path is to stack board support on external prerequisites
 - a patch requires private lab history to make sense
 - a patch contains unauthorized trailers
 - a patch contains automatic coding-assistance trailers that were not reviewed

@@ -17,6 +17,13 @@ observed locally at `8e65320d91cdc3b241d4b94855c88459b91abf66`.
 This export is a public review snapshot only. It is not a sendable candidate
 series while the CCU/PRCM and pinctrl overlap questions remain unresolved.
 
+The patch files also include public-record cleanup edits after the recorded
+kernel branch head. Those edits remove a deprecated pinctrl include, remove
+unused child-bus properties from the GIC node, and tighten the RFC dependency
+language. Before any submission, regenerate the series from a clean kernel
+candidate branch and rerun validation so the source branch, patch files, and
+proof records describe the same code.
+
 ## Scope
 
 The current public draft export prepares minimal platform support:
@@ -51,6 +58,9 @@ Review-blocker cleanup now present in v3:
 - A733 Cortex-A76 CPU nodes use `capacity-dmips-mhz = <1024>`
 - the GICv3 redistributor region is `0x100000`, not the previous irregular
   `0xff004`
+- the GICv3 node omits unused child-bus properties because it has no child
+  nodes
+- the A733 pinctrl draft does not include deprecated `linux/of_device.h`
 
 Future IRQ, Ethernet, or VPU work is blocked by the workflow rules in
 `docs/mainline-cleanup-workflow.md` until it is split by subsystem, justified
@@ -67,6 +77,10 @@ The CCU and pinctrl portions of this series must not be sent upstream until
 they are rebased on, coordinated with, or explicitly justified against that
 in-flight work.
 
+The expected sendable direction is a smaller board/SoC DTS series stacked on
+accepted or current CCU and pinctrl prerequisites, unless subsystem maintainers
+ask for a different dependency plan.
+
 Current local review consensus:
 
 - A733 CCU/PRCM work is on hold because it overlaps the in-flight Linux RFC and
@@ -77,6 +91,11 @@ Current local review consensus:
   MDIO, PHY reset, PHY power, and link behavior are proven.
 
 ## Validation Record
+
+The proof IDs below apply to the recorded `candidate/a733-platform-clean-v3`
+branch and the earlier v3 export. Because the public patch files now include
+small cleanup edits, these records are historical provenance only until the
+series is regenerated from a clean kernel branch and revalidated.
 
 Repository hygiene checks run during this cleanup:
 

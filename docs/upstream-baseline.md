@@ -31,6 +31,9 @@ The public branch must not contain:
 - Do not send a series when an overlapping RFC already exists unless the
   cover letter explains whether this work is rebased on, coordinated with, or
   intentionally different from that RFC.
+- When overlapping CCU or pinctrl RFCs exist, the default submission shape is
+  board/SoC DTS support stacked on those prerequisites, not duplicate local
+  driver patches.
 - Bindings and dt-binding headers must precede DTS users.
 - DTS patches must be last in a mixed series unless a maintainer gives a
   different dependency plan.
@@ -52,6 +55,8 @@ The public branch must not contain:
   reason it is deferred.
 - GICv3 distributor and redistributor regions must be checked against the
   CPU topology and the GIC binding before export.
+- GIC nodes without child nodes should not carry child-bus properties such as
+  `#address-cells`, `#size-cells`, or `ranges`.
 - A733-only Ethernet sequencing belongs in Allwinner STMMAC glue code, not in
   generic STMMAC core code.
 - Ethernet remains disabled until reset, clocks, wrapper programming, MDIO,
@@ -82,7 +87,8 @@ sendable upstream series. It currently contains:
 - initial SoC and Cubie A7S DTS
 
 Do not send the CCU/PRCM or pinctrl portions until their relationship to the
-in-flight Linux RFCs is resolved. Do not expand the public series with
-additional peripherals until each
-peripheral has its own binding, driver dependency, validation record, and
-runtime evidence.
+in-flight Linux RFCs is resolved. The expected sendable path is to regenerate
+a smaller series on top of accepted or current CCU and pinctrl prerequisites,
+unless maintainers request a different dependency plan. Do not expand the
+public series with additional peripherals until each peripheral has its own
+binding, driver dependency, validation record, and runtime evidence.
