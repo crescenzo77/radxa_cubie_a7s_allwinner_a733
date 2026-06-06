@@ -74,6 +74,17 @@ deploy its `config.json` as-is without first deciding whether
 A live repair for the kernel workflow requires a later source commit whose
 `config.json` has been reconciled and reviewed.
 
+The route audit in `inventory/model-dispatch-route-audit-2026-06-06.md`
+currently shows that the direct kernel lanes are not reachable from
+ThinkCentre as ordinary LAN URLs. If those services remain bound to
+host-local `127.0.0.1`, repair must choose one explicit access pattern before
+`model-dispatch` can participate in the kernel workflow:
+
+- expose the selected model services on reviewed LAN bindings,
+- create reviewed tunnels from ThinkCentre to each host-local endpoint, or
+- keep `model-dispatch` out of the kernel workflow and continue using the
+  direct SSH-assisted offload helpers.
+
 ## Proposed Repair Block - Not Run
 
 The following block is a future operator-approved repair outline. It was not

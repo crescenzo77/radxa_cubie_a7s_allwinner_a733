@@ -12,6 +12,12 @@ RTX 3090, RX 7900 XT, Strix, and ThinkCentre.
 
 ## What changed
 
+- Added `scripts/model-dispatch-route-audit` and
+  `tools/offload/model_dispatch_route_audit.py`; generated
+  `inventory/model-dispatch-route-audit-2026-06-06.md`. The audit probes from
+  ThinkCentre's viewpoint and currently reports `needs-reconciliation` because
+  the direct kernel model lanes are not reachable from ThinkCentre as ordinary
+  LAN URLs.
 - Added `inventory/model-dispatch-repair-brief-2026-06-06.md` for the current
   ThinkCentre `model-dispatch` failure mode: `/srv/model-dispatch` is absent,
   PID 1812 is running from a deleted cwd, `/v1/models` responds, and chat
