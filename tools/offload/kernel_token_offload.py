@@ -763,6 +763,27 @@ def iter_review_matrix_cards(out_dir: str) -> list[Path]:
     return sorted(root.glob("review-matrix-*.json"))
 
 
+def latest_matrix_file_records(out_dir: str) -> tuple[dict[str, dict[str, Any]], dict[str, int]]:
+    latest: dict[str, dict[str, Any]] = {}
+    stats = {
+        "matrix_cards": 0,
+        "file_cards": 0,
+        "skipped": 0,
+    }
+    for card_path in iter_review_matrix_cards(out_dir):
+        stats["matrix_cards"] += 1
+        key, record, reason = matrix_card_to_ledger_record(card_path)
+        if not key or record is None:
+            stats["skipped"] += 1
+            continue
+        stats["file_cards"] += 1
+        marker = (record.get("reviewed_at") or "", str(card_path))
+        existing = latest.get(key)
+        if not existing or marker > existing["marker"]:
+            latest[key] = {"record": record, "marker": marker}
+    return latest, stats
+
+
 def load_ledger(path: str) -> dict[str, Any]:
     ledger_path = Path(path)
     if not ledger_path.exists():
@@ -795,6 +816,8 @@ def matrix_card_to_ledger_record(path: Path) -> tuple[str | None, dict[str, Any]
     source = data.get("source", {})
     source_path = source.get("source_path")
     source_sha = source.get("source_sha256")
+    if source_path == "-":
+        return None, None, "non-file-source"
     if not source_path or not source_sha:
         return None, None, "non-file-source"
 
@@ -826,20 +849,17 @@ def backfill_idle_ledger(ledger_path: str, out_dir: str) -> dict[str, int]:
         "skipped": 0,
     }
     now = utc_now()
-    for card_path in iter_review_matrix_cards(out_dir):
-        stats["matrix_cards"] += 1
-        key, record, reason = matrix_card_to_ledger_record(card_path)
-        if not key or record is None:
-            stats["skipped"] += 1
-            continue
-
-        stats["file_cards"] += 1
+    latest, scan_stats = latest_matrix_file_records(out_dir)
+    stats["matrix_cards"] = scan_stats["matrix_cards"]
+    stats["file_cards"] = scan_stats["file_cards"]
+    stats["skipped"] = scan_stats["skipped"]
+    for key, item in latest.items():
+        record = item["record"]
         existing = artifacts.get(key, {})
-        preserved = {
-            field: existing[field]
-            for field in ("consumed_by_codex_at", "consumed_note", "started_at")
-            if existing.get(field)
-        }
+        preserve_fields = ("consumed_by_codex_at", "consumed_note", "started_at")
+        preserved = {}
+        if existing.get("source_sha256") == record.get("source_sha256"):
+            preserved = {field: existing[field] for field in preserve_fields if existing.get(field)}
         merged = dict(existing)
         merged.update(record)
         merged.update(preserved)
@@ -876,13 +896,12 @@ def ledger_status(ledger_path: str, out_dir: str, roots: list[str]) -> dict[str,
     matrix_cards = 0
     matrix_file_cards = 0
     skipped_non_file = 0
-    for card_path in iter_review_matrix_cards(out_dir):
-        matrix_cards += 1
-        key, record, reason = matrix_card_to_ledger_record(card_path)
-        if not key or record is None:
-            skipped_non_file += 1
-            continue
-        matrix_file_cards += 1
+    latest, scan_stats = latest_matrix_file_records(out_dir)
+    matrix_cards = scan_stats["matrix_cards"]
+    matrix_file_cards = scan_stats["file_cards"]
+    skipped_non_file = scan_stats["skipped"]
+    for key, item in latest.items():
+        record = item["record"]
         existing = artifacts.get(key, {})
         if existing.get("source_sha256") != record.get("source_sha256") or not existing.get("card_manifest"):
             backfillable += 1
