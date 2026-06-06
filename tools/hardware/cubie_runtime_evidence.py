@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import re
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -69,7 +70,8 @@ def excluded_ip_values(inventory: dict[str, Any]) -> list[str]:
 def redact_excluded_text(value: object, excluded_ips: list[str]) -> str:
     text = str(value if value is not None else "")
     for ip in excluded_ips:
-        text = text.replace(ip, "[excluded-kernel-work-ip]")
+        pattern = rf"(?<![0-9A-Za-z_.]){re.escape(ip)}(?![0-9A-Za-z_.])"
+        text = re.sub(pattern, "[excluded-kernel-work-ip]", text)
     return text
 
 
