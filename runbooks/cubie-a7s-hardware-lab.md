@@ -241,10 +241,17 @@ documentation for prior Cubie A7S patch work.
 
 Relevant Mac-local history:
 
+- `/Users/enzo/Downloads/mainline-cleanup-workflow.md`
 - `/Users/enzo/projects/Home Lab/research/kernel-llm-bench/round-11-first-controlled-real-run.md`
+- `/Users/enzo/projects/Home Lab/research/kernel-llm-bench/round-12-two-agent-loop.md`
 - `/Users/enzo/projects/Home Lab/research/kernel-llm-bench/round-13-review-bundle-enhancement.md`
 - `/Users/enzo/projects/Home Lab/research/kernel-llm-bench/round-14-full-read-review-bundle-enhancement.md`
 - `/Users/enzo/projects/Home Lab/research/kernel-llm-bench/round-15-enforced-two-agent-doc-loop.md`
+- `/Users/enzo/projects/Home Lab/research/kernel-llm-bench/round-5-openhands-hil-viability.md`
+- `/Users/enzo/projects/Home Lab/research/kernel-llm-bench/round-6-openhands-safety-harness.md`
+- `/Users/enzo/projects/Home Lab/research/kernel-llm-bench/round-7-agent-bakeoff.md`
+- `/Users/enzo/projects/Home Lab/research/kernel-llm-bench/round-8-qwen-code-goose-bakeoff.md`
+- `/Users/enzo/projects/Home Lab/research/kernel-llm-bench/round-9-mcp-safety-harness.md`
 
 Mac-local workflow lessons:
 
@@ -252,6 +259,10 @@ Mac-local workflow lessons:
 - review bundles must prove required files were fully read, not just opened
 - typed patch/edit tools are safer than raw model-generated diffs
 - reviewer output with caveats is not a pass for upstream-facing work
+- local agent harnesses must stay behind bounded tools; unrestricted default
+  modes failed earlier safety tests
+- the mainline lane requires evidence-bound patch admission, trailer hygiene,
+  and publication scans before public or upstream-facing output
 
 Relevant ThinkCentre history:
 
@@ -272,19 +283,39 @@ ThinkCentre workflow lessons:
 
 Relevant Strix history:
 
+- `/srv/projects/cubie-a7s-local-agent/A733_PROGRESS_ACTION_PLAN_20260530.md`
 - `/srv/projects/cubie-a7s-local-agent/UPSTREAM_SUBMISSION_DISCIPLINE.md`
 - `/srv/projects/cubie-a7s-local-agent/A733_UNCERTAINTY_REGISTER_20260530.md`
 - `/srv/projects/cubie-a7s-local-agent/A733_ETHERNET_ENABLEMENT_NOTES.md`
+- `/srv/projects/cubie-a7s-local-agent/CURRENT_TEST_TOPOLOGY.md`
+- `/srv/projects/cubie-a7s-local-agent/FIRST_BOOT_EXECUTION_CHECKLIST_20260530.md`
+- `/srv/projects/cubie-a7s-local-agent/LIVE_VENDOR_EVIDENCE_20260530.md`
+- `/srv/projects/cubie-a7s-local-agent/PUBLIC_REPOSITORY_STAGING.md`
+- `/srv/projects/cubie-a7s-local-agent/UART0_PINCTRL_EVIDENCE_20260529.md`
+- `/srv/projects/cubie-a7s-local-agent/UART_BOOT_CAPTURE_20260530.md`
 - `/srv/projects/cubie-a7s-local-agent/VENDOR_UBOOT_DTB_HANDOFF_ANALYSIS_20260531.md`
 - `/srv/projects/cubie-a7s-local-agent/VENDOR_UBOOT_SOURCE_INSPECTION_20260601.md`
 - `/srv/projects/cubie-a7s-local-agent/MAINLINE_RFC_V7_BOOT_STAGING_20260530.md`
 - `/srv/projects/cubie-a7s-local-agent/MAINLINE_RFC_V7_REBASE_VALIDATION_20260531.md`
 - `/srv/projects/cubie-a7s-local-agent/PUBLICATION_PRIVACY_AUDIT_20260602.md`
 - `/srv/projects/cubie-a7s-local-agent/patches/mainline-a733/eth-prep/README.md`
+- `/srv/projects/cubie-a7s-local-agent/patches/mainline-a733/rfc-v5/README.md`
+- `/srv/projects/cubie-a7s-local-agent/patches/mainline-a733/rfc-v6/README.md`
 - `/srv/projects/cubie-a7s-local-agent/patches/mainline-a733/rfc-v7/README.md`
 
 Strix workflow lessons:
 
+- an older first-boot checklist already identified the same root-write/reboot
+  blocker: noninteractive SSH could not write `/boot`, root SSH was denied,
+  and there was no confirmed noninteractive reset/power path
+- historical UART logs show prior RFC v7 hybrid DTB work reached an
+  interactive mainline serial REPL on `/dev/ttyS0`; treat that as design
+  evidence, not as proof for the current public artifacts
+- after writing extlinux or initrd changes, run `sync` before any power cut or
+  reset; one older test booted a stale entry after a rapid power cut
+- the older storage-aware REPL reached userspace but did not expose MMC block
+  nodes, so fresh runtime proof must explicitly cover SDMMC0/root device
+  behavior before making storage claims
 - prior `no-PIO-IRQ`, IRQ-bank-map, and pinctrl trace branches are diagnostic
   evidence only; they must not be promoted into an upstream patch series
 - the GMAC0 path has evidence for address, Port H RGMII pins, MDIO address 1,
@@ -297,3 +328,6 @@ Strix workflow lessons:
   constraint, not evidence that vendor-only node names belong in upstream DTS
 - public-facing output must be scanned for private paths, lab IPs, AI/tool
   trailers, placeholder identities, and unverified claims before publication
+- older Strix public-staging notes mention a different public Linux fork and an
+  older identity; do not reuse those submission details for the current public
+  repo or current sign-off identity
