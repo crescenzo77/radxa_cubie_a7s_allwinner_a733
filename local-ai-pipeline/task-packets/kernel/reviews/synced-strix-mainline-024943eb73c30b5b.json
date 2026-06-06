@@ -1,0 +1,79 @@
+{
+  "changed_files": [
+    "Documentation/devicetree/bindings/arm/sunxi.yaml",
+    "Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml",
+    "Documentation/devicetree/bindings/net/allwinner,sun8i-a83t-emac.yaml",
+    "Documentation/devicetree/bindings/pinctrl/allwinner,sun55i-a523-pinctrl.yaml",
+    "arch/arm64/boot/dts/allwinner/Makefile",
+    "arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts",
+    "arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi",
+    "drivers/clk/sunxi-ng/Kconfig",
+    "drivers/clk/sunxi-ng/Makefile",
+    "drivers/clk/sunxi-ng/ccu-sun60i-a733.c",
+    "drivers/clk/sunxi-ng/ccu-sun60i-a733.h",
+    "drivers/pinctrl/sunxi/Kconfig",
+    "drivers/pinctrl/sunxi/Makefile",
+    "drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c",
+    "drivers/pinctrl/sunxi/pinctrl-sunxi.c",
+    "include/dt-bindings/clock/sun60i-a733-ccu.h",
+    "include/dt-bindings/reset/sun60i-a733-ccu.h"
+  ],
+  "created_at": "2026-06-06T01:15:48.950291Z",
+  "diff_truncated": false,
+  "human_gate": {
+    "apply_patch_allowed": false,
+    "candidate_branch_promotion_allowed": false,
+    "send_email_allowed": false,
+    "signed_off_by_allowed": false
+  },
+  "maintainers": "scripts/get_maintainer.pl: file 'Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml' not found in version control \nscripts/get_maintainer.pl: file 'arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts' not found in version control \nscripts/get_maintainer.pl: file 'arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi' not found in version control \nscripts/get_maintainer.pl: file 'drivers/clk/sunxi-ng/ccu-sun60i-a733.c' not found in version control \nscripts/get_maintainer.pl: file 'drivers/clk/sunxi-ng/ccu-sun60i-a733.h' not found in version control \nscripts/get_maintainer.pl: file 'drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c' not found in version control \nscripts/get_maintainer.pl: file 'include/dt-bindings/clock/sun60i-a733-ccu.h' not found in version control \nscripts/get_maintainer.pl: file 'include/dt-bindings/reset/sun60i-a733-ccu.h' not found in version control \nRob Herring <robh@kernel.org>\nKrzysztof Kozlowski <krzk+dt@kernel.org>\nConor Dooley <conor+dt@kernel.org>\nChen-Yu Tsai <wens@kernel.org>\nJernej Skrabec <jernej.skrabec@gmail.com>\nSamuel Holland <samuel@sholland.org>\nMichael Turquette <mturquette@baylibre.com>\nStephen Boyd <sboyd@kernel.org>\nBrian Masney <bmasney@redhat.com>\nAndrew Lunn <andrew+netdev@lunn.ch>\n\"David S. Miller\" <davem@davemloft.net>\nEric Dumazet <edumazet@google.com>\nJakub Kicinski <kuba@kernel.org>\nPaolo Abeni <pabeni@redhat.com>\nLinus Walleij <linusw@kernel.org>\nPhilipp Zabel <p.zabel@pengutronix.de>\nMaxime Ripard <mripard@kernel.org>\nAndre Przywara <andre.przywara@arm.com>\ndevicetree@vger.kernel.org\nlinux-arm-kernel@lists.infradead.org\nlinux-sunxi@lists.linux.dev\nlinux-kernel@vger.kernel.org\nlinux-clk@vger.kernel.org\nnetdev@vger.kernel.org\nlinux-gpio@vger.kernel.org",
+  "payload_manifest": "task-packets/kernel/reviews/synced-strix-mainline-024943eb73c30b5b.json",
+  "payload_markdown": "task-packets/kernel/reviews/synced-strix-mainline-024943eb73c30b5b.md",
+  "payload_sha256": "024943eb73c30b5b4b9b13c0f46f0624934eacd27428fb1ee42b9064fd4be0b6",
+  "proofs": [
+    {
+      "check": "git-diff-check",
+      "command_display": "git diff --check",
+      "ended_at": "2026-06-06T01:04:28.716425Z",
+      "exit_code": 0,
+      "proof_id": "synced-strix-mainline-git-diff-check-584ac4f56f72",
+      "record_sha256": "af46dddb93bf31f2552d94affb067c9576bf82233c56fd7cb2d3bebaa76e057c",
+      "result": "PASS",
+      "started_at": "2026-06-06T01:04:28.689190Z",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "check": "checkpatch-current-diff-strict",
+      "command_display": "bash -lc '\nset -euo pipefail\npatch_file=\"$(mktemp)\"\ntrap '\"'\"'rm -f \"$patch_file\"'\"'\"' EXIT\ngit diff --no-ext-diff --binary -- > \"$patch_file\"\ngit ls-files --others --exclude-standard | while IFS= read -r path; do\n  git diff --no-index -- /dev/null \"$path\" >> \"$patch_file\" || true\ndone\nif [ ! -s \"$patch_file\" ]; then\n  printf '\"'\"'no current diff\\n'\"'\"'\n  exit 0\nfi\nperl scripts/checkpatch.pl --strict \"$patch_file\"\n'",
+      "ended_at": "2026-06-06T01:15:03.592409Z",
+      "exit_code": 1,
+      "proof_id": "synced-strix-mainline-checkpatch-current-diff-strict-4c6a137383fe",
+      "record_sha256": "9dc092f9d9128d4dae1041b1b97ea5b49ee042c36386ede6a5a33ffc119b7ebb",
+      "result": "FAIL",
+      "started_at": "2026-06-06T01:15:00.164238Z",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "a271ca84f635db09f4df5b59132455c870ee0722f5400f457db1d84abdc60dcc"
+    }
+  ],
+  "review_prompt": "Find three reasons a Linux kernel maintainer would reject this code.",
+  "schema_version": 1,
+  "task_id": "synced-strix-mainline",
+  "tree": {
+    "branch": "",
+    "head": "8fde5d1d47f69db6082dfa34500c27f8485389a5",
+    "host": "192.168.50.252",
+    "path": "/srv/projects/kernel-work/scratch/strix-mainline-linux",
+    "short_status": "M Documentation/devicetree/bindings/arm/sunxi.yaml\n M Documentation/devicetree/bindings/net/allwinner,sun8i-a83t-emac.yaml\n M Documentation/devicetree/bindings/pinctrl/allwinner,sun55i-a523-pinctrl.yaml\n M arch/arm64/boot/dts/allwinner/Makefile\n M drivers/clk/sunxi-ng/Kconfig\n M drivers/clk/sunxi-ng/Makefile\n M drivers/pinctrl/sunxi/Kconfig\n M drivers/pinctrl/sunxi/Makefile\n M drivers/pinctrl/sunxi/pinctrl-sunxi.c\n?? Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml\n?? arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts\n?? arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi\n?? drivers/clk/sunxi-ng/ccu-sun60i-a733.c\n?? drivers/clk/sunxi-ng/ccu-sun60i-a733.h\n?? drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c\n?? include/dt-bindings/clock/sun60i-a733-ccu.h\n?? include/dt-bindings/reset/sun60i-a733-ccu.h"
+  },
+  "untracked_files": [
+    "Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml",
+    "arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts",
+    "arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi",
+    "drivers/clk/sunxi-ng/ccu-sun60i-a733.c",
+    "drivers/clk/sunxi-ng/ccu-sun60i-a733.h",
+    "drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c",
+    "include/dt-bindings/clock/sun60i-a733-ccu.h",
+    "include/dt-bindings/reset/sun60i-a733-ccu.h"
+  ]
+}

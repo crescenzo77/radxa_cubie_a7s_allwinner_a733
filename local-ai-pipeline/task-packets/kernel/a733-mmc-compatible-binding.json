@@ -1,0 +1,62 @@
+{
+  "affected_subsystem": "devicetree bindings / mmc",
+  "ai_provenance": {
+    "dispatcher": "Codex Desktop",
+    "local_endpoints": [
+      "192.168.50.252:127.0.0.1:8001",
+      "192.168.50.11:127.0.0.1:8082"
+    ],
+    "models_allowed": []
+  },
+  "allowed_path_set": [
+    "Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml",
+    "arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi"
+  ],
+  "base_commit": "8fde5d1d47f6",
+  "board": {
+    "ip": "192.168.50.95",
+    "name": "cubie3"
+  },
+  "created_at": "2026-06-06T01:33:53.971167Z",
+  "evidence_sources": [
+    "proof:a733-mmc-compatible-binding-dt-binding-check-562c5187dab1",
+    "proof:a733-defer-unproven-gmac-cubie-a7s-dtbs-check-94d5f0714c56"
+  ],
+  "expected_maintainer_route": "",
+  "expected_proof_commands": [
+    "make ARCH=arm64 dt_binding_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml",
+    "make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CHECK_DTBS=y allwinner/sun60i-a733-cubie-a7s.dtb"
+  ],
+  "explicit_non_goals": [
+    "Do not claim SD/MMC runtime behavior beyond schema and DTB validation.",
+    "Do not add Signed-off-by or create a submission series."
+  ],
+  "hardware_affected": [
+    "cubie3"
+  ],
+  "human_gate": {
+    "candidate_branch_promotion_allowed": false,
+    "send_email_allowed": false,
+    "signed_off_by_allowed": false
+  },
+  "max_repair_attempts": 2,
+  "problem_statement": "",
+  "schema_version": 1,
+  "series_scope": "single patch unless updated by human",
+  "status": "draft",
+  "stop_conditions": [
+    "hardware value lacks evidence",
+    "subsystem placement is uncertain",
+    "patch split is unclear",
+    "validation failure persists after max_repair_attempts",
+    "UART or power evidence conflicts with the code change"
+  ],
+  "target_branch": "",
+  "target_files": [
+    "Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml",
+    "arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi"
+  ],
+  "task_id": "a733-mmc-compatible-binding",
+  "title": "Document A733 MMC compatible against the existing D1 fallback schema",
+  "user_visible_or_abi_impact": ""
+}

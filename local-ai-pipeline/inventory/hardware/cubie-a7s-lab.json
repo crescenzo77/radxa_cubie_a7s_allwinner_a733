@@ -1,0 +1,53 @@
+{
+  "boards": [
+    {
+      "name": "cubie2",
+      "ip": "192.168.50.85",
+      "model": "Radxa Cubie A7S",
+      "power_switch": null,
+      "uart": {
+        "host": "192.168.50.11",
+        "device": null,
+        "baud": 115200,
+        "mapping_status": "unconfirmed"
+      }
+    },
+    {
+      "name": "cubie3",
+      "ip": "192.168.50.95",
+      "model": "Radxa Cubie A7S",
+      "power_switch": null,
+      "uart": {
+        "host": "192.168.50.11",
+        "device": null,
+        "baud": 115200,
+        "mapping_status": "unconfirmed"
+      }
+    }
+  ],
+  "power_switches": [
+    {
+      "id": "switch-a",
+      "ip": null,
+      "controls_board": null,
+      "api": null,
+      "automation_enabled": false,
+      "mapping_status": "unconfirmed"
+    },
+    {
+      "id": "switch-b",
+      "ip": null,
+      "controls_board": null,
+      "api": null,
+      "automation_enabled": false,
+      "mapping_status": "unconfirmed"
+    }
+  ],
+  "rules": [
+    "Do not automate power control until switch IPs, API, and board mapping are confirmed.",
+    "Require explicit human approval before power-off, power-on, or power-cycle.",
+    "Log every power event with timestamp, board, switch, reason, and operator.",
+    "Do not assume UART device mapping until boot output confirms it."
+  ],
+  "uart_host": "192.168.50.11"
+}

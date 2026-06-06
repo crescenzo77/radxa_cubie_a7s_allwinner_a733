@@ -1,0 +1,115 @@
+{
+  "check": "dtbs-check",
+  "command": [
+    "make",
+    "ARCH=arm64",
+    "CROSS_COMPILE=aarch64-linux-gnu-",
+    "CHECK_DTBS=y",
+    "allwinner/sun60i-a733-cubie-a7s.dtb"
+  ],
+  "command_display": "make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CHECK_DTBS=y allwinner/sun60i-a733-cubie-a7s.dtb",
+  "duration_seconds": 2.619654554175213,
+  "ended_at": "2026-06-06T01:20:12.104917Z",
+  "exit_code": 2,
+  "hostname": "0e0df66a6af2",
+  "platform": "Linux-7.0.0-15-generic-x86_64-with-glibc2.39",
+  "proof_id": "synced-strix-mainline-dtbs-check-b6e4c7ddfccf",
+  "python": "3.12.3",
+  "record_sha256": "e211e046d73fa20716dc9e857efffdf5309ed143c5dfbb488848e0c75bf6d142",
+  "recorded_env": {},
+  "result": "FAIL",
+  "schema_version": 1,
+  "started_at": "2026-06-06T01:20:09.485268Z",
+  "stderr": "Lexical error: arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi:219.19-32 Unexpected 'CLK_BUS_GMAC0'\nLexical error: arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi:221.19-32 Unexpected 'RST_BUS_GMAC0'\nFATAL ERROR: Syntax error parsing input tree\nmake[3]: *** [scripts/Makefile.dtbs:140: arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dtb] Error 1\nmake[2]: *** [scripts/Makefile.build:548: arch/arm64/boot/dts/allwinner] Error 2\nmake[1]: *** [/workspace/Makefile:1592: allwinner/sun60i-a733-cubie-a7s.dtb] Error 2\nmake: *** [Makefile:248: __sub-make] Error 2\n",
+  "stdout": "  SYNC    include/config/auto.conf.cmd\n  HOSTCC  scripts/kconfig/conf.o\n  HOSTCC  scripts/kconfig/confdata.o\n  HOSTCC  scripts/kconfig/expr.o\n  LEX     scripts/kconfig/lexer.lex.c\n  YACC    scripts/kconfig/parser.tab.[ch]\n  HOSTCC  scripts/kconfig/lexer.lex.o\n  HOSTCC  scripts/kconfig/menu.o\n  HOSTCC  scripts/kconfig/parser.tab.o\n  HOSTCC  scripts/kconfig/preprocess.o\n  HOSTCC  scripts/kconfig/symbol.o\n  HOSTCC  scripts/kconfig/util.o\n  HOSTLD  scripts/kconfig/conf\n  DTC [C] arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dtb\n",
+  "task_id": "synced-strix-mainline",
+  "tool_versions": {
+    "aarch64_gcc": {
+      "command": [
+        "bash",
+        "-lc",
+        "aarch64-linux-gnu-gcc --version | sed -n '1p'"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "aarch64-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0"
+    },
+    "dtc": {
+      "command": [
+        "dtc",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "Version: DTC 1.7.0"
+    },
+    "dtschema": {
+      "command": [
+        "bash",
+        "-lc",
+        "dt-validate --version 2>/dev/null || python3 -m pip show dtschema | sed -n 's/^Version: //p'"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "2026.4"
+    },
+    "git": {
+      "command": [
+        "git",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "git version 2.43.0"
+    },
+    "make": {
+      "command": [
+        "bash",
+        "-lc",
+        "make --version | sed -n '1p'"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "GNU Make 4.3"
+    },
+    "perl": {
+      "command": [
+        "bash",
+        "-lc",
+        "perl -e 'printf \"%vd\\n\", $^V'"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "5.38.2"
+    },
+    "python": {
+      "command": [
+        "python3",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "Python 3.12.3"
+    },
+    "sparse": {
+      "command": [
+        "bash",
+        "-lc",
+        "sparse --version 2>/dev/null || true"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "0.6.4 (Ubuntu: 0.6.4-4ubuntu3)"
+    },
+    "yamllint": {
+      "command": [
+        "yamllint",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "yamllint 1.33.0"
+    }
+  },
+  "workdir": "/workspace"
+}

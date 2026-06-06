@@ -54,6 +54,8 @@ See [docs/public-repo-expectations.md](docs/public-repo-expectations.md) for
 the public branch appearance contract.
 See [docs/maintainer-acceptance-contract.md](docs/maintainer-acceptance-contract.md)
 for the non-negotiable maintainer acceptance rules.
+See [docs/mainline-cleanup-workflow.md](docs/mainline-cleanup-workflow.md) for
+the human workflow for moving from exploration to candidate patches.
 See [docs/resume-brief-20260604.md](docs/resume-brief-20260604.md) for the
 current compact handoff.
 

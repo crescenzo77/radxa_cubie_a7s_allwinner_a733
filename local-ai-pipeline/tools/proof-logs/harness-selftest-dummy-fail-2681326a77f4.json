@@ -1,0 +1,113 @@
+{
+  "check": "dummy-fail",
+  "command": [
+    "bash",
+    "-lc",
+    "printf 'dummy proof failure\\n' >&2; exit 7"
+  ],
+  "command_display": "bash -lc 'printf '\"'\"'dummy proof failure\\n'\"'\"' >&2; exit 7'",
+  "duration_seconds": 0.0027354268822818995,
+  "ended_at": "2026-06-06T00:47:21.684212Z",
+  "exit_code": 7,
+  "hostname": "6561daf0df79",
+  "platform": "Linux-7.0.0-15-generic-x86_64-with-glibc2.39",
+  "proof_id": "harness-selftest-dummy-fail-2681326a77f4",
+  "python": "3.12.3",
+  "record_sha256": "a255dc564f477fc4f050e4e0eaa121718e03119fc43096d3f596773549dcdca2",
+  "recorded_env": {},
+  "result": "FAIL",
+  "schema_version": 1,
+  "started_at": "2026-06-06T00:47:21.681480Z",
+  "stderr": "dummy proof failure\n",
+  "stdout": "",
+  "task_id": "harness-selftest",
+  "tool_versions": {
+    "aarch64_gcc": {
+      "command": [
+        "bash",
+        "-lc",
+        "aarch64-linux-gnu-gcc --version | sed -n '1p'"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "aarch64-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0"
+    },
+    "dtc": {
+      "command": [
+        "dtc",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "Version: DTC 1.7.0"
+    },
+    "dtschema": {
+      "command": [
+        "bash",
+        "-lc",
+        "dt-validate --version 2>/dev/null || python3 -m pip show dtschema | sed -n 's/^Version: //p'"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "2026.4"
+    },
+    "git": {
+      "command": [
+        "git",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "git version 2.43.0"
+    },
+    "make": {
+      "command": [
+        "bash",
+        "-lc",
+        "make --version | sed -n '1p'"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "GNU Make 4.3"
+    },
+    "perl": {
+      "command": [
+        "bash",
+        "-lc",
+        "perl -e 'printf \"%vd\\n\", $^V'"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "5.38.2"
+    },
+    "python": {
+      "command": [
+        "python3",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "Python 3.12.3"
+    },
+    "sparse": {
+      "command": [
+        "bash",
+        "-lc",
+        "sparse --version 2>/dev/null || true"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "0.6.4 (Ubuntu: 0.6.4-4ubuntu3)"
+    },
+    "yamllint": {
+      "command": [
+        "yamllint",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "yamllint 1.33.0"
+    }
+  },
+  "workdir": "/workspace"
+}
