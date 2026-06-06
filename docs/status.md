@@ -142,6 +142,9 @@ Current v4 repository hygiene checks run during this cleanup:
   `git format-patch --base`
 - `git apply --numstat patches/000[1-9]-*.patch`: pass, all exported patch
   files parse as patches
+- public hygiene scan over tracked public-facing files: pass, no private lab
+  addresses, local paths, local model stack names, or AI/provider metadata
+  found
 - patch export scan for nonstandard metadata trailers and local author
   aliases: pass, none present; the trailer gate proof records only Enzo
   Adriano `Signed-off-by` trailers
@@ -180,6 +183,10 @@ Validation container proof records for v4 exact head
   <enzo.adriano.code@gmail.com>` trailers present,
   `a733-v4-public-trailer-gate-trailer-gate-cd952a1fede8`,
   SHA256 `eba8e0ed190fb7dee37768b462bdc1089caaa1efdb21cdcdda2dd78c173ab90f`
+- public hygiene gate over the tracked public-facing repository files:
+  pass, `15` files scanned with `0` matches,
+  `public-repo-hygiene-public-hygiene-gate-edde9d72d5bc`,
+  SHA256 `e18f23d54c383af5d63ba83785298ee5d2611f563fb53fb5d2fcd994acaa7b26`
 - touched-schema `dt_binding_check`: pass for `arm/sunxi.yaml`,
   `clock/allwinner,sun60i-a733-ccu.yaml`,
   `pinctrl/allwinner,sun60i-a733-pinctrl.yaml`, and
