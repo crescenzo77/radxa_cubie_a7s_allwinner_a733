@@ -117,6 +117,20 @@ AMD validation container proof records for exact head
 
 The per-patch diff hygiene proofs do not replace full per-patch build and DT
 validation for bisectability.
+- per-patch `make O=/workspace/.proof-build/... ARCH=arm64 defconfig`: pass
+  for patches 1 through 9:
+  `a733-v3-public-patch01-defconfig-arm64-build-536dcbfa0035`,
+  `a733-v3-public-patch02-defconfig-arm64-build-d734ec4f9857`,
+  `a733-v3-public-patch03-defconfig-arm64-build-965929279a91`,
+  `a733-v3-public-patch04-defconfig-arm64-build-bc71fabb400a`,
+  `a733-v3-public-patch05-defconfig-arm64-build-54fb98c6ec5d`,
+  `a733-v3-public-patch06-defconfig-arm64-build-f74528d95f38`,
+  `a733-v3-public-patch07-defconfig-arm64-build-1ea5d66aa955`,
+  `a733-v3-public-patch08-defconfig-arm64-build-b69edd5bd066`,
+  `a733-v3-public-patch09-defconfig-arm64-build-f9eda2075f2a`
+
+The per-patch `defconfig` proofs confirm Kconfig/default-config generation,
+not full object builds or DT validation at each patch.
 - environment version report: pass,
   `a733-v3-version-report-bf0065764dd3`,
   SHA256 `c7045daf779e498eed5d523fc4cc03174c376598dc968a843ce0f0bdc73736ca`
@@ -159,7 +173,8 @@ Current checkpatch result:
 Validation still required before any upstream submission:
 
 - hardware boot/runtime record for the exact kernel and DTB
-- per-patch bisectability record for the exported series
+- full per-patch bisectability record for the exported series, beyond the
+  current per-patch diff hygiene and `defconfig` proofs
 - coordination/rebase decision for the in-flight CCU and pinctrl RFCs
 - final human decision on coding-assistance disclosure/trailer policy
 - final non-draft cover letter
