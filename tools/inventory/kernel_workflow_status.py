@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shlex
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -145,6 +146,7 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
             "status": "unknown",
             "next_action": data.get("error", "cubie gate failed"),
             "next_command": "",
+            "next_shell": "",
         }
     gate = data["data"]
     status = gate.get("status")
@@ -164,6 +166,7 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
         "reason": gate.get("reason"),
         "next_action": gate.get("next_action"),
         "next_command": next_command,
+        "next_shell": f"cd {shlex.quote(str(REPO_ROOT))} && {next_command}" if next_command else "",
     }
 
 
@@ -223,7 +226,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"| local offload | ok={md_bool(offload.get('ok'))} |",
         f"| idle review ledger | idle_candidates={ledger.get('values', {}).get('idle_review_candidates', 'unknown')}, unconsumed={ledger.get('values', {}).get('unconsumed_reviewed', 'unknown')} |",
         f"| Cubie runtime gate | `{cubie.get('status')}` |",
-        f"| next command | `{cubie.get('next_command') or 'none'}` |",
+        f"| next command | `{cubie.get('next_shell') or cubie.get('next_command') or 'none'}` |",
         "",
         "## Machine Readiness",
         "",
@@ -273,12 +276,19 @@ def main() -> int:
         action="store_true",
         help="Print only the current runnable next command when one is known.",
     )
+    parser.add_argument(
+        "--next-shell",
+        action="store_true",
+        help="Print a copy-pasteable shell line for the current next command.",
+    )
     parser.add_argument("--strict", action="store_true")
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
     args = parser.parse_args()
 
     data = build_status(args)
-    if args.next_command:
+    if args.next_shell:
+        print(data["cubie_runtime_gate"].get("next_shell") or "none")
+    elif args.next_command:
         print(data["cubie_runtime_gate"].get("next_command") or "none")
     elif args.next_action:
         print(data["cubie_runtime_gate"].get("next_action") or "none")
