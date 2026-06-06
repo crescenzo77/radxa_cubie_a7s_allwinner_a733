@@ -190,6 +190,7 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
         targets = ", ".join(f"{row.get('hostname') or row.get('ip')}:{row.get('ip')}" for row in ready)
         target_hint = f" on one staged board ({targets})" if targets else " on one staged board"
         sudo_statuses = sorted({row.get("sudo_status") for row in ready if row.get("sudo_status")})
+        needs_interactive_sudo = "password-required" in sudo_statuses
         sudo_hint = ""
         if "password-required" in sudo_statuses:
             sudo_hint = " using interactive sudo password entry"
@@ -201,6 +202,13 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
         capture_label = capture_label_for(stage, ready)
         labels = sorted({row.get("extlinux_label") for row in ready if row.get("extlinux_label")})
         label_hint = f" and select {labels[0]}" if labels else " and select the staged non-default boot label"
+        if needs_interactive_sudo:
+            selection = labels[0] if labels else "the staged non-default boot label"
+            return (
+                "run scripts/cubie-interactive-root-install-session from an interactive terminal; "
+                "enter the Cubie sudo password when prompted, then use the capture it starts "
+                f"to select {selection}"
+            )
         return (
             "run the staged install-extlinux-entry.sh"
             f"{sudo_hint}"

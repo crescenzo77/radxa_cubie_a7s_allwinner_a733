@@ -285,6 +285,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     capture_labels = sorted({row.get("capture_label") for row in action_rows if row.get("capture_label")})
     labels = sorted({row.get("extlinux_label") for row in action_rows if row.get("extlinux_label")})
     sudo_statuses = sorted({row.get("sudo_status") for row in ready if row.get("sudo_status")})
+    needs_interactive_sudo = "password-required" in sudo_statuses
     sudo_hint = ""
     if "password-required" in sudo_statuses:
         sudo_hint = " using interactive sudo password entry"
@@ -294,6 +295,13 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     label_hint = f" and select {labels[0]}" if labels else ""
     if installed:
         next_action = f"start scripts/cubie-manual-boot-session 180 {capture_label}{label_hint}"
+    elif ready and needs_interactive_sudo:
+        selection = labels[0] if labels else "the staged non-default boot label"
+        next_action = (
+            "run scripts/cubie-interactive-root-install-session from an interactive terminal; "
+            "enter the Cubie sudo password when prompted, then use the capture it starts "
+            f"to select {selection}"
+        )
     elif ready:
         next_action = (
             "run the staged install-extlinux-entry.sh"
