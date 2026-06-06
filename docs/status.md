@@ -114,6 +114,12 @@ Current v4 repository hygiene checks run during this cleanup:
   present
 - MMC binding and DTS use the existing `allwinner,sun20i-d1-mmc` fallback:
   pass
+- exported v4 patches applied cleanly with `git am --3way` onto the recorded
+  base in an AMD temporary worktree; the resulting tree matched v4 head
+  `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
+- `scripts/get_maintainer.pl --no-tree --nogit --nogit-fallback` over the
+  exported v4 patches: pass, produced 21 maintainer/list entries including
+  the Devicetree, Allwinner, clock, MMC, pinctrl, and reset recipients
 
 AMD validation container proof records for v4 exact head
 `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`:
@@ -145,8 +151,6 @@ AMD validation container proof records for v4 exact head
 
 Still required for v4:
 
-- `git am` of exported patches onto the recorded base in a temporary worktree
-- `scripts/get_maintainer.pl`
 - per-patch object builds and full bisectability checks
 - hardware boot/runtime evidence for the exact kernel and DTB
 
