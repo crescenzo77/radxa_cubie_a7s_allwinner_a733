@@ -113,6 +113,7 @@ def render(staging: dict[str, Any], args: argparse.Namespace) -> str:
                 "Status: `root-install-required`",
                 "",
                 f"Target: `{host}` `{ip}`",
+                f"Sudo preflight: `{ready.get('sudo_status', 'unknown')}`",
                 "",
                 "Run on the board:",
                 "",

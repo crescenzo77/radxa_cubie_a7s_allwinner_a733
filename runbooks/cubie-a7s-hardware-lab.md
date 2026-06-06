@@ -192,9 +192,9 @@ copy, updates extlinux, and runs `sync` before reporting success.
 
 Use `scripts/cubie-root-install-handoff` to print the current root-install
 handoff from verified staging state. It is read-only and reports the exact
-sudo/root install command plus the post-install UART capture command. With
-`--strict`, it returns non-zero until the installed boot files and checksums
-are detected.
+sudo/root install command, whether non-interactive sudo is available, and the
+post-install UART capture command. With `--strict`, it returns non-zero until
+the installed boot files and checksums are detected.
 
 If Codex should wait while the human performs the root install, run
 `scripts/cubie-root-install-handoff --wait 600 --run-capture`. It polls for the

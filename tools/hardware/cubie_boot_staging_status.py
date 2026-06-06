@@ -47,6 +47,7 @@ def excluded_row(ip: str, stage: str) -> dict[str, Any]:
         "boot_sha256_status": "excluded",
         "sha256_status": "excluded",
         "installer_syntax": "excluded",
+        "sudo_status": "excluded",
         "root_install_complete": False,
         "ready_for_root_install": False,
         "excluded_from_kernel_work": True,
@@ -61,7 +62,9 @@ set -u
 stage="$1"
 boot_sha256_out=""
 boot_sha256_err=""
-trap 'rm -f "${boot_sha256_out:-}" "${boot_sha256_err:-}"' EXIT
+sudo_out=""
+sudo_err=""
+trap 'rm -f "${boot_sha256_out:-}" "${boot_sha256_err:-}" "${sudo_out:-}" "${sudo_err:-}"' EXIT
 printf 'hostname='; hostname
 printf 'arch='; uname -m
 if [ -r /proc/device-tree/model ]; then
@@ -181,6 +184,20 @@ if [ -f install-extlinux-entry.sh ]; then
 else
   printf 'installer_syntax=missing\n'
 fi
+if command -v sudo >/dev/null 2>&1; then
+  sudo_out="$(mktemp)"
+  sudo_err="$(mktemp)"
+  if sudo -n true >"$sudo_out" 2>"$sudo_err"; then
+    printf 'sudo_status=noninteractive-ok\n'
+  elif grep -qi 'password' "$sudo_err" 2>/dev/null; then
+    printf 'sudo_status=password-required\n'
+  else
+    printf 'sudo_status=noninteractive-fail\n'
+    sed 's/^/sudo_error=/' "$sudo_err" | head -5
+  fi
+else
+  printf 'sudo_status=missing\n'
+fi
 """
     cmd = [
         "ssh",
@@ -233,6 +250,7 @@ fi
         "boot_sha256_status": fields.get("boot_sha256_status", "unknown"),
         "sha256_status": fields.get("sha256_status", "unknown"),
         "installer_syntax": fields.get("installer_syntax", "unknown"),
+        "sudo_status": fields.get("sudo_status", "unknown"),
         "root_install_complete": (
             fields.get("boot_entry_status") == "installed"
             and fields.get("boot_files_status") == "present"
@@ -266,13 +284,20 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     action_rows = installed or ready
     capture_labels = sorted({row.get("capture_label") for row in action_rows if row.get("capture_label")})
     labels = sorted({row.get("extlinux_label") for row in action_rows if row.get("extlinux_label")})
+    sudo_statuses = sorted({row.get("sudo_status") for row in ready if row.get("sudo_status")})
+    sudo_hint = ""
+    if "password-required" in sudo_statuses:
+        sudo_hint = " using interactive sudo password entry"
+    elif "noninteractive-ok" in sudo_statuses:
+        sudo_hint = " using non-interactive sudo"
     capture_label = capture_labels[0] if capture_labels else f"{Path(args.stage).name}-boot"
     label_hint = f" and select {labels[0]}" if labels else ""
     if installed:
         next_action = f"start scripts/cubie-manual-boot-session 180 {capture_label}{label_hint}"
     elif ready:
         next_action = (
-            "run the staged install-extlinux-entry.sh with sudo/root on the chosen board, "
+            "run the staged install-extlinux-entry.sh"
+            f"{sudo_hint} on the chosen board, "
             f"then start scripts/cubie-manual-boot-session 180 {capture_label}{label_hint}"
         )
     else:
@@ -298,8 +323,8 @@ def markdown(data: dict[str, Any]) -> str:
         f"Installed boot entry: `{data.get('installed_count', 0)}/{data['target_count']}`",
         f"Excluded targets: `{', '.join(data.get('excluded_targets', [])) or 'none'}`",
         "",
-        "| ip | hostname | model | stage | metadata | sha256 | installer | boot entry | boot files | boot sha256 | ready |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| ip | hostname | model | stage | metadata | sha256 | installer | sudo | boot entry | boot files | boot sha256 | ready |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for row in data["rows"]:
         lines.append(
@@ -311,6 +336,7 @@ def markdown(data: dict[str, Any]) -> str:
             f"{row['metadata_status']} | "
             f"{row['sha256_status']} | "
             f"{row['installer_syntax']} | "
+            f"{row['sudo_status']} | "
             f"{row['boot_entry_status']} | "
             f"{row['boot_files_status']} | "
             f"{row['boot_sha256_status']} | "

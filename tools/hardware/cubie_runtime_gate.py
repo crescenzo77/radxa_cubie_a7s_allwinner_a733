@@ -189,6 +189,12 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
         ready = [row for row in rows if row.get("ready_for_root_install")]
         targets = ", ".join(f"{row.get('hostname') or row.get('ip')}:{row.get('ip')}" for row in ready)
         target_hint = f" on one staged board ({targets})" if targets else " on one staged board"
+        sudo_statuses = sorted({row.get("sudo_status") for row in ready if row.get("sudo_status")})
+        sudo_hint = ""
+        if "password-required" in sudo_statuses:
+            sudo_hint = " using interactive sudo password entry"
+        elif "noninteractive-ok" in sudo_statuses:
+            sudo_hint = " using non-interactive sudo"
         stage = str((staging or {}).get("stage") or "")
         if not stage and ready:
             stage = str(ready[0].get("stage") or "")
@@ -196,7 +202,8 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
         labels = sorted({row.get("extlinux_label") for row in ready if row.get("extlinux_label")})
         label_hint = f" and select {labels[0]}" if labels else " and select the staged non-default boot label"
         return (
-            "run the staged install-extlinux-entry.sh with sudo/root"
+            "run the staged install-extlinux-entry.sh"
+            f"{sudo_hint}"
             f"{target_hint}, then run scripts/cubie-manual-boot-session 180 "
             f"{capture_label}{label_hint}"
         )
@@ -318,8 +325,8 @@ def markdown(data: dict[str, Any]) -> str:
         lines.extend(
             [
                 "",
-                "| ip | hostname | stage | metadata | sha256 | installer | boot entry | boot files | ready |",
-                "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+                "| ip | hostname | stage | metadata | sha256 | installer | sudo | boot entry | boot files | ready |",
+                "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
             ]
         )
         for row in staging.get("rows", []):
@@ -331,6 +338,7 @@ def markdown(data: dict[str, Any]) -> str:
                 f"{md_escape(row.get('metadata_status'))} | "
                 f"{md_escape(row.get('sha256_status'))} | "
                 f"{md_escape(row.get('installer_syntax'))} | "
+                f"{md_escape(row.get('sudo_status'))} | "
                 f"{md_escape(row.get('boot_entry_status'))} | "
                 f"{md_escape(row.get('boot_files_status'))} | "
                 f"{'yes' if row.get('ready_for_root_install') else 'no'} |"

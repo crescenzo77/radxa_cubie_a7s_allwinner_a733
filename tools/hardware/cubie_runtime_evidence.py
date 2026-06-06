@@ -198,12 +198,12 @@ def boot_staging_status() -> dict[str, Any]:
 
 def boot_staging_rows(staging: dict[str, Any]) -> list[str]:
     lines = [
-        "| ip | hostname | stage | sha256 | installer | boot entry | boot files | boot sha256 | ready |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| ip | hostname | stage | sha256 | installer | sudo | boot entry | boot files | boot sha256 | ready |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     rows = staging.get("rows", [])
     if not rows:
-        lines.append("| none | none | none | none | none | none | none | none | no |")
+        lines.append("| none | none | none | none | none | none | none | none | none | no |")
         return lines
     for row in rows:
         lines.append(
@@ -213,6 +213,7 @@ def boot_staging_rows(staging: dict[str, Any]) -> list[str]:
             f"{md_escape(row.get('stage_status'))} | "
             f"{md_escape(row.get('sha256_status'))} | "
             f"{md_escape(row.get('installer_syntax'))} | "
+            f"{md_escape(row.get('sudo_status'))} | "
             f"{md_escape(row.get('boot_entry_status'))} | "
             f"{md_escape(row.get('boot_files_status'))} | "
             f"{md_escape(row.get('boot_sha256_status'))} | "
@@ -243,9 +244,15 @@ def next_safe_action(staging: dict[str, Any], inventory: dict[str, Any]) -> str:
         label = row.get("extlinux_label") or "the staged non-default label"
         host = row.get("hostname") or "target board"
         ip = row.get("ip") or "unknown IP"
+        sudo_hint = (
+            " using interactive sudo password entry"
+            if row.get("sudo_status") == "password-required"
+            else ""
+        )
         return (
             f"On `{md_escape(host)}` `{md_escape(ip)}`, run "
-            f"`cd {md_escape(stage)}` then `sudo ./install-extlinux-entry.sh`. "
+            f"`cd {md_escape(stage)}` then `sudo ./install-extlinux-entry.sh`"
+            f"{sudo_hint}. "
             f"After that, run `scripts/cubie-manual-boot-session 180 {md_escape(capture)}` "
             f"and select `{md_escape(label)}` over UART.{excluded_note}"
         )
