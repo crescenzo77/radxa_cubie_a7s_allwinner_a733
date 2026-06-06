@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shlex
 import subprocess
@@ -19,6 +20,7 @@ import cubie_root_install_handoff
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_INVENTORY = REPO_ROOT / "inventory" / "hardware" / "cubie-a7s-lab.json"
 
 
 def staging_args(args: argparse.Namespace) -> SimpleNamespace:
@@ -82,18 +84,108 @@ def confirmation_error(row: dict[str, Any], confirm_target_ip: str) -> str:
     return f"--confirm-target-ip {confirm_target_ip} does not match selected target {ip}"
 
 
+def load_inventory(path: str) -> dict[str, Any]:
+    inventory_path = Path(path)
+    if not inventory_path.is_absolute():
+        inventory_path = (REPO_ROOT / inventory_path).resolve()
+    return json.loads(inventory_path.read_text(encoding="utf-8"))
+
+
+def uart_devices_for_target(row: dict[str, Any], inventory: dict[str, Any]) -> tuple[str, list[str]]:
+    ip = str(row.get("ip") or "")
+    for board in inventory.get("boards", []):
+        if str(board.get("ip") or "") != ip:
+            continue
+        uart = board.get("uart") if isinstance(board.get("uart"), dict) else {}
+        host = str(uart.get("host") or inventory.get("uart_host") or "")
+        devices = []
+        device = str(uart.get("device") or "")
+        if device:
+            devices.append(device)
+        return host, devices
+    return "", []
+
+
+def capture_window_devices(inventory: dict[str, Any]) -> tuple[str, list[str]]:
+    host = str(inventory.get("uart_host") or "")
+    devices = []
+    for adapter in inventory.get("uart_adapters", []):
+        if not isinstance(adapter, dict):
+            continue
+        adapter_host = str(adapter.get("host") or host)
+        if host and adapter_host != host:
+            continue
+        if not host:
+            host = adapter_host
+        device = str(adapter.get("by_path") or adapter.get("device") or "")
+        if device and device not in devices:
+            devices.append(device)
+    return host, devices
+
+
+def uart_preflight(row: dict[str, Any], args: argparse.Namespace) -> dict[str, Any]:
+    if args.no_capture or args.skip_uart_preflight:
+        return {"status": "skipped", "host": "", "devices": [], "error": ""}
+    try:
+        inventory = load_inventory(args.inventory)
+    except Exception as exc:
+        return {"status": "failed", "host": "", "devices": [], "error": f"inventory: {exc}"}
+
+    target_host, target_devices = uart_devices_for_target(row, inventory)
+    window_host, window_devices = capture_window_devices(inventory)
+    host = target_host or window_host
+    devices = []
+    for device in target_devices + window_devices:
+        if device and device not in devices:
+            devices.append(device)
+    if not host or not devices:
+        return {"status": "failed", "host": host, "devices": devices, "error": "no confirmed UART capture devices"}
+
+    remote = "\n".join(
+        [
+            "set -eu",
+            *[
+                (
+                    f"test -e {shlex.quote(device)} && "
+                    f"test -r {shlex.quote(device)} && "
+                    f"test -w {shlex.quote(device)}"
+                )
+                for device in devices
+            ],
+        ]
+    )
+    proc = subprocess.run(
+        ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=8", host, remote],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=12,
+    )
+    if proc.returncode != 0:
+        return {
+            "status": "failed",
+            "host": host,
+            "devices": devices,
+            "error": (proc.stderr or proc.stdout).strip() or f"ssh rc={proc.returncode}",
+        }
+    return {"status": "ok", "host": host, "devices": devices, "error": ""}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--targets", default=",".join(cubie_boot_staging_status.DEFAULT_TARGETS))
     parser.add_argument("--stage", default=cubie_boot_staging_status.DEFAULT_STAGE)
     parser.add_argument("--user", default=cubie_boot_staging_status.DEFAULT_USER)
     parser.add_argument("--identity", default=cubie_boot_staging_status.DEFAULT_IDENTITY)
+    parser.add_argument("--inventory", default=str(DEFAULT_INVENTORY))
     parser.add_argument("--timeout", type=int, default=cubie_boot_staging_status.DEFAULT_TIMEOUT)
     parser.add_argument("--exclude-target", action="append", default=list(cubie_boot_staging_status.DEFAULT_EXCLUDED_TARGETS))
     parser.add_argument("--wait", type=int, default=90, help="Seconds to wait for installed boot artifacts after sudo install.")
     parser.add_argument("--interval", type=float, default=5.0)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-capture", action="store_true", help="Only run the interactive installer; skip post-install capture.")
+    parser.add_argument("--skip-uart-preflight", action="store_true", help="Do not verify UART capture devices before install.")
     parser.add_argument(
         "--confirm-target-ip",
         default="",
@@ -114,12 +206,20 @@ def main() -> int:
     already_installed = bool(row.get("root_install_complete"))
     install_cmd = install_argv(row, args)
     capture_cmd = verify_capture_argv(args)
+    uart_status = uart_preflight(row, args)
 
     print(f"target={row.get('hostname') or row.get('ip')} ip={row.get('ip')}")
     print(f"stage={row.get('stage') or args.stage}")
     if row.get("extlinux_extra_args"):
         print(f"extlinux_extra_args={row.get('extlinux_extra_args')}")
     print(f"sudo_status={row.get('sudo_status', 'unknown')}")
+    print(f"uart_preflight_status={uart_status['status']}")
+    if uart_status.get("host"):
+        print(f"uart_preflight_host={uart_status['host']}")
+    if uart_status.get("devices"):
+        print(f"uart_preflight_devices={','.join(uart_status['devices'])}")
+    if uart_status.get("error"):
+        print(f"uart_preflight_error={uart_status['error']}")
     if already_installed:
         print("status=boot-selection-required")
     else:
@@ -136,6 +236,12 @@ def main() -> int:
         if error:
             print(f"refusing live root install: {error}", file=sys.stderr)
             return 2
+    if not already_installed and not args.no_capture and uart_status["status"] != "ok":
+        print(
+            f"refusing live root install: UART preflight {uart_status['status']}",
+            file=sys.stderr,
+        )
+        return 2
     sudo_status = row.get("sudo_status")
     if not already_installed and sudo_status != "noninteractive-ok" and not sys.stdin.isatty():
         print(
