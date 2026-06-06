@@ -22,7 +22,7 @@ The current authoritative development branch is in the Linux fork:
 
 ```text
 https://github.com/crescenzo77/linux.git
-candidate/a733-platform-clean-v3
+candidate/a733-platform-clean-v4
 ```
 
 The draft export currently covers:

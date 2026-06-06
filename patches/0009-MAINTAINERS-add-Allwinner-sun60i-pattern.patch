@@ -1,4 +1,4 @@
-From 3dc9e72c5ccdb19542f8dc068bd5a388d66fdc32 Mon Sep 17 00:00:00 2001
+From abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Fri, 5 Jun 2026 23:44:44 -0400
 Subject: [PATCH 9/9] MAINTAINERS: add Allwinner sun60i pattern
@@ -12,15 +12,17 @@ Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 9ec290e38b44a..7452b92768bd0 100644
+index 9ec290e38b44..7452b92768bd 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2416,5 +2416,6 @@ F:	drivers/clk/sunxi-ng/
+@@ -2416,6 +2416,7 @@ F:	drivers/clk/sunxi-ng/
  F:	drivers/pinctrl/sunxi/
  F:	drivers/soc/sunxi/
  N:	allwinner
 +N:	sun60i
  N:	sun[x456789]i
  N:	sun[25]0i
---
+ 
+-- 
 2.50.1 (Apple Git-155)
+

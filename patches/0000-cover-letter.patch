@@ -1,4 +1,4 @@
-From 3dc9e72c5ccdb19542f8dc068bd5a388d66fdc32 Mon Sep 17 00:00:00 2001
+From abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Fri, 5 Jun 2026 23:47:13 -0400
 Subject: [PATCH 0/9] arm64: dts: allwinner: add initial A733/Cubie A7S support

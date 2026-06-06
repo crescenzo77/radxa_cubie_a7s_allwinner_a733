@@ -16,7 +16,7 @@ Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 
 diff --git a/Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml
 new file mode 100644
-index 0000000000000..ce28849a40eaa
+index 000000000000..ce28849a40ea
 --- /dev/null
 +++ b/Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml
 @@ -0,0 +1,136 @@
@@ -156,6 +156,6 @@ index 0000000000000..ce28849a40eaa
 +            bias-pull-up;
 +        };
 +    };
---
+-- 
 2.50.1 (Apple Git-155)
 

@@ -1,4 +1,4 @@
-From a7f4cf368a18afb7339833ab2e1136c20f066c02 Mon Sep 17 00:00:00 2001
+From 607c0b7b52c85e4db644f539eb497e135696a610 Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 20:57:25 -0400
 Subject: [PATCH 6/9] dt-bindings: mmc: add Allwinner A733 compatible
@@ -12,7 +12,7 @@ Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
  1 file changed, 3 insertions(+)
 
 diff --git a/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml b/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml
-index 9f3b1edacaa02..9e95905212107 100644
+index 9f3b1edacaa0..9e9590521210 100644
 --- a/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml
 +++ b/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml
 @@ -58,6 +58,9 @@ properties:
@@ -25,6 +25,6 @@ index 9f3b1edacaa02..9e95905212107 100644
  
    reg:
      maxItems: 1
---
+-- 
 2.50.1 (Apple Git-155)
 

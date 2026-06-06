@@ -5,10 +5,10 @@ Last updated: 2026-06-06.
 ## Draft Review Export
 
 - Linux fork: `https://github.com/crescenzo77/linux.git`
-- branch: `candidate/a733-platform-clean-v3`
+- branch: `candidate/a733-platform-clean-v4`
 - base: `6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5`
 - base subject: `Merge tag 'for-7.1/dm-fixes-3' of git://git.kernel.org/pub/scm/linux/kernel/git/device-mapper/linux-dm`
-- head: `3dc9e72c5ccdb19542f8dc068bd5a388d66fdc32`
+- head: `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
 - head subject: `MAINTAINERS: add Allwinner sun60i pattern`
 
 The base commit is reachable from the updated `torvalds/linux` `master` ref
@@ -17,12 +17,12 @@ observed locally at `8e65320d91cdc3b241d4b94855c88459b91abf66`.
 This export is a public review snapshot only. It is not a sendable candidate
 series while the CCU/PRCM and pinctrl overlap questions remain unresolved.
 
-The patch files also include public-record cleanup edits after the recorded
-kernel branch head. Those edits remove a deprecated pinctrl include, remove
-unused child-bus properties from the GIC node, and tighten the RFC dependency
-language. Before any submission, regenerate the series from a clean kernel
-candidate branch and rerun validation so the source branch, patch files, and
-proof records describe the same code.
+The patch files were regenerated from the v4 candidate branch after removing a
+deprecated pinctrl include, removing unused child-bus properties from the GIC
+node, and tightening the RFC dependency language. Before any submission,
+regenerate the series again from the final clean kernel candidate branch and
+rerun validation so the source branch, patch files, and proof records describe
+the same code.
 
 ## Scope
 
@@ -49,7 +49,7 @@ The current exported series does not contain:
 - Ethernet nodes, generic DWMAC fallback enablement, or STMMAC glue changes
 - VPU, Cedrus, media-driver, or VPU clock/DTS changes
 
-Review-blocker cleanup now present in v3:
+Review-blocker cleanup now present in v4:
 
 - new CCU and pinctrl binding maintainer blocks list
   `Enzo Adriano <enzo.adriano.code@gmail.com>`
@@ -92,31 +92,40 @@ Current local review consensus:
 
 ## Validation Record
 
-The proof IDs below apply to the recorded `candidate/a733-platform-clean-v3`
-branch and the earlier v3 export. Because the public patch files now include
-small cleanup edits, these records are historical provenance only until the
-series is regenerated from a clean kernel branch and revalidated.
+The current v4 patch files have been regenerated from
+`candidate/a733-platform-clean-v4`. The AMD proof IDs below still apply to the
+earlier v3 validation run and remain historical provenance only until the v4
+series is fully revalidated.
 
-Repository hygiene checks run during this cleanup:
+Current v4 repository hygiene checks run during this cleanup:
 
-- `git diff --check public/master..HEAD` in the clean Linux branch: pass
-- public patch directory regenerated from `public/master..HEAD`
-- `git am` of exported patches onto the recorded base in a temporary worktree:
-  pass
-- `scripts/get_maintainer.pl --no-tree --nogit --nogit-fallback`: pass
-- `scripts/get_maintainer.pl --no-tree --nogit --nogit-fallback -f` for new
-  clock, pinctrl, and DTS files: pass; Allwinner coverage is provided by
-  existing `F:` directory patterns and the new `N: sun60i` pattern
-- patch export scan for BSP-only `sun60iw2`/`sun60iw2p1` compatibles: pass,
-  none present
+- source branch `candidate/a733-platform-clean-v4` pushed to
+  `https://github.com/crescenzo77/linux.git` at
+  `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
+- `git diff --check 6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5..HEAD` in
+  the sparse v4 Linux branch: pass
+- public patch directory regenerated from the v4 branch with
+  `git format-patch --base`
+- `git apply --numstat patches/000[1-9]-*.patch`: pass, all exported patch
+  files parse as patches
 - patch export scan for automatic coding-assistance trailers and local author
   aliases: pass, none present
-- patch export scan for the previous GIC redistributor size `0xff004`: pass,
-  none present
+- patch export scan for `linux/of_device.h`, the previous GIC redistributor
+  size, and third-party binding maintainer blocks in A733 files: pass, none
+  present
 - MMC binding and DTS use the existing `allwinner,sun20i-d1-mmc` fallback:
   pass
 
-AMD validation container proof records for exact head
+Not yet rerun for v4:
+
+- `git am` of exported patches onto the recorded base in a temporary worktree
+- `scripts/get_maintainer.pl`
+- `scripts/checkpatch.pl --strict`
+- `make dt_binding_check`
+- `make ARCH=arm64 dtbs_check`
+- per-patch object builds and full bisectability checks
+
+Historical AMD validation container proof records for v3 exact head
 `3dc9e72c5ccdb19542f8dc068bd5a388d66fdc32`:
 
 - `git diff --check 6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5 HEAD`:
