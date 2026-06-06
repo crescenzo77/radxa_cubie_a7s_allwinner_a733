@@ -140,13 +140,30 @@ def ledger_summary(text: dict[str, Any]) -> dict[str, Any]:
 
 def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
     if not data.get("ok"):
-        return {"ok": False, "status": "unknown", "next_action": data.get("error", "cubie gate failed")}
+        return {
+            "ok": False,
+            "status": "unknown",
+            "next_action": data.get("error", "cubie gate failed"),
+            "next_command": "",
+        }
     gate = data["data"]
+    status = gate.get("status")
+    next_command = ""
+    staging = gate.get("staging") if isinstance(gate.get("staging"), dict) else {}
+    rows = staging.get("rows") if isinstance(staging.get("rows"), list) else []
+    if status == "root-install-required":
+        ready = [row for row in rows if row.get("ready_for_root_install")]
+        if ready and ready[0].get("ip"):
+            next_command = (
+                "scripts/cubie-interactive-root-install-session "
+                f"--confirm-target-ip {ready[0]['ip']}"
+            )
     return {
-        "ok": gate.get("status") == "runtime-ready",
-        "status": gate.get("status"),
+        "ok": status == "runtime-ready",
+        "status": status,
         "reason": gate.get("reason"),
         "next_action": gate.get("next_action"),
+        "next_command": next_command,
     }
 
 
@@ -206,6 +223,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"| local offload | ok={md_bool(offload.get('ok'))} |",
         f"| idle review ledger | idle_candidates={ledger.get('values', {}).get('idle_review_candidates', 'unknown')}, unconsumed={ledger.get('values', {}).get('unconsumed_reviewed', 'unknown')} |",
         f"| Cubie runtime gate | `{cubie.get('status')}` |",
+        f"| next command | `{cubie.get('next_command') or 'none'}` |",
         "",
         "## Machine Readiness",
         "",
@@ -250,12 +268,19 @@ def main() -> int:
         action="store_true",
         help="Print only the current deterministic next action.",
     )
+    parser.add_argument(
+        "--next-command",
+        action="store_true",
+        help="Print only the current runnable next command when one is known.",
+    )
     parser.add_argument("--strict", action="store_true")
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
     args = parser.parse_args()
 
     data = build_status(args)
-    if args.next_action:
+    if args.next_command:
+        print(data["cubie_runtime_gate"].get("next_command") or "none")
+    elif args.next_action:
         print(data["cubie_runtime_gate"].get("next_action") or "none")
     elif args.json:
         print(json.dumps(data, indent=2, sort_keys=True))
