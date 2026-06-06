@@ -42,11 +42,12 @@ their relationship to the in-flight Linux RFCs is resolved. The series is not
 ready to send upstream until the open items in [docs/status.md](docs/status.md)
 are resolved.
 
-The expected sendable direction is to carry only the board/SoC DTS work that
-depends on CCU and pinctrl support, stacked on the accepted or current RFC
-prerequisites, unless subsystem maintainers ask for a different plan. Any
-exported patches must be regenerated from a clean kernel branch after this
-decision is made.
+The expected sendable direction is to carry only the SoC DTSI and Cubie A7S
+board DTS work that depends on CCU and pinctrl support, stacked on the accepted
+or current prerequisite branches, unless subsystem maintainers ask for a
+different plan. Any exported patches must be regenerated from a clean kernel
+branch after this decision is made, and the exact kernel/DTB must be booted on
+the target Cubie A7S hardware before runtime claims are made.
 
 ## Submission Discipline
 
@@ -57,6 +58,9 @@ This repository follows the Linux kernel submission process:
 - DTS patches stay at the end of a series
 - every hardware value needs evidence that can be explained without private
   lab history
+- board enablement needs a boot/runtime proof for the exact kernel and DTB
+- final submission shape must be checked against current CCU/PRCM and pinctrl
+  prerequisite status
 - generated artifacts and local debug output stay out of git
 - failed experiments are not presented as candidate patches
 - `Signed-off-by:` is added only by the human submitter after final review

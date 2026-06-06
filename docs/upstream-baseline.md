@@ -34,6 +34,13 @@ The public branch must not contain:
 - When overlapping CCU or pinctrl RFCs exist, the default submission shape is
   board/SoC DTS support stacked on those prerequisites, not duplicate local
   driver patches.
+- A real upstream-ready Cubie A7S branch must be rebased onto the accepted or
+  current CCU/PRCM and pinctrl prerequisite work before patch export. If those
+  prerequisites are still RFC-only, the cover letter must say so and the series
+  must not pretend to be independent.
+- Local CCU and pinctrl patches may be kept as research or validation evidence,
+  but they are not part of the expected mailing-list submission unless the
+  relevant maintainers explicitly ask for that shape.
 - Bindings and dt-binding headers must precede DTS users.
 - DTS patches must be last in a mixed series unless a maintainer gives a
   different dependency plan.
@@ -65,6 +72,9 @@ The public branch must not contain:
   driver, SoC DTS, and board DTS changes must not be collapsed into one patch.
 - Board DTS patches that enable UART, MMC, regulators, or other peripherals
   require a boot/runtime record for the exact kernel and DTB before submission.
+- The boot/runtime record must identify the board, kernel commit, kernel
+  configuration source, DTB checksum, UART capture or proof ID, command line,
+  and observed boot/runtime behavior.
 - Multiple `DT_SCHEMA_FILES` entries must be passed to DT validation using the
   delimiter expected by the kernel tree under test; for the current base, that
   delimiter is `:`.
@@ -92,3 +102,8 @@ a smaller series on top of accepted or current CCU and pinctrl prerequisites,
 unless maintainers request a different dependency plan. Do not expand the
 public series with additional peripherals until each peripheral has its own
 binding, driver dependency, validation record, and runtime evidence.
+
+Before this work can be described as a real upstream submission candidate, the
+Cubie A7S DTS patches must have a hardware boot/runtime proof from the exact
+kernel and DTB, and the DTS branch must be rebased on the accepted or current
+CCU/PRCM and pinctrl prerequisite work.

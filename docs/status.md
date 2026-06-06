@@ -73,13 +73,30 @@ in commit messages, and validated per patch.
 - Andre Przywara posted an RFC A733 pinctrl series:
   `https://lore.kernel.org/r/20250821004232.8134-1-andre.przywara@arm.com`
 
+Dependency evidence checked on 2026-06-06:
+
+- CCU/PRCM: public archives show Junhui Liu's 8-patch RFC series,
+  `[PATCH RFC 0/8] clk: sunxi-ng: Add support for Allwinner A733 CCU and
+  PRCM`, including main CCU, PRCM/R-CCU, PLLs, module clocks, bus gates, reset
+  lines, and an RTC dependency.
+  Reference: `https://patchew.org/linux/20260310-a733-clk-v1-0-36b4e9b24457%40pigmoral.tech/`
+- pinctrl: public archives show Andre Przywara's 9-patch RFC series,
+  `[RFC PATCH 0/9] pinctrl: sunxi: Allwinner A733 support`, based on
+  `v6.17-rc1`. The cover letter says the author lacked suitable hardware and
+  asked for testing, especially around IRQ number to pin mapping.
+  Reference: `https://lore-kernel.gnuweeb.org/linux-sunxi/20250821004232.8134-1-andre.przywara%40arm.com/`
+- pinctrl binding review: Conor Dooley acked the A733 pinctrl binding
+  compatible in the RFC thread.
+  Reference: `https://www.spinics.net/lists/linux-gpio/msg118661.html`
+
 The CCU and pinctrl portions of this series must not be sent upstream until
 they are rebased on, coordinated with, or explicitly justified against that
 in-flight work.
 
-The expected sendable direction is a smaller board/SoC DTS series stacked on
-accepted or current CCU and pinctrl prerequisites, unless subsystem maintainers
-ask for a different dependency plan.
+The expected sendable direction is a smaller SoC DTSI plus Cubie A7S board DTS
+series stacked on accepted or current CCU/PRCM and pinctrl prerequisites,
+unless subsystem maintainers ask for a different dependency plan. Local
+CCU/PRCM and pinctrl driver patches are draft evidence only for that path.
 
 Current local review consensus:
 
@@ -89,6 +106,16 @@ Current local review consensus:
   still needs hardware evidence for IRQ/bank behavior.
 - A733 GMAC remains out of scope until clock/reset identifiers, wrapper setup,
   MDIO, PHY reset, PHY power, and link behavior are proven.
+
+Real upstream-readiness blockers:
+
+- capture a boot/runtime proof on `cubie2` or `cubie3` using the exact kernel
+  image, configuration, command line, and DTB that would support the DTS
+  enablement claim
+- after hardware proof exists, build a DTS-only candidate branch rebased on
+  the accepted or current CCU/PRCM and pinctrl prerequisite work
+- regenerate the patch export from that branch and rerun validation,
+  maintainer, bisectability, and runtime checks
 
 ## Validation Record
 
@@ -299,6 +326,8 @@ Current checkpatch result:
 Validation still required before any upstream submission:
 
 - hardware boot/runtime record for the exact kernel and DTB
+- DTS-only candidate branch rebased on accepted or current CCU/PRCM and
+  pinctrl prerequisites
 - full per-patch bisectability record for the exported series, beyond the
   current per-patch diff hygiene, `defconfig`, targeted object, and binding
   proofs, plus Cubie DTB checks for patches where the board DTB exists

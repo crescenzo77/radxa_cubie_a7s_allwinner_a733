@@ -34,6 +34,12 @@ Run these gates before editing a candidate branch:
   explicitly justify a different approach
 - when in-flight CCU or pinctrl work exists, default to a board/SoC DTS series
   stacked on those prerequisites instead of carrying competing local drivers
+- before claiming a series is upstream-ready, record whether the prerequisite
+  CCU and pinctrl work is accepted, current RFC-only, superseded, or blocked
+- if CCU or pinctrl prerequisites are not accepted yet, do not mail a final
+  Cubie A7S enablement series unless the cover letter explicitly marks the
+  dependency and maintainers have a reason to review it before the dependency
+  lands
 - verify `get_maintainer.pl` coverage for every new path
 - check whether new SoC names need MAINTAINERS `N:` patterns in addition to
   existing `F:` path coverage
@@ -73,6 +79,54 @@ Run these gates before editing a candidate branch:
 - Each patch must be independently buildable on top of the previous patch.
   Validate bisectability by applying the series to the recorded base and
   building/checking each patch step, not only the final series.
+- For the expected A733 upstream path, build a submission branch that contains
+  only the SoC DTSI and Cubie A7S board DTS changes on top of the accepted or
+  current CCU and pinctrl prerequisite branches. Local CCU and pinctrl driver
+  patches are draft evidence only unless the relevant maintainers request that
+  they be carried.
+
+## Hardware Runtime Gate
+
+Do not describe a board DTS series as ready for upstream until a runtime proof
+record exists for the exact candidate kernel and DTB.
+
+The runtime record must include:
+
+- board name and lab identifier, for example `cubie2` or `cubie3`
+- board IP address if networking is expected to work
+- kernel commit hash and branch
+- kernel configuration source and checksum when available
+- kernel `Image` checksum when available
+- DTB path and checksum
+- boot medium and command line
+- UART capture source, timestamp, and proof-log identifier
+- boot log evidence showing the kernel version, machine model, command line,
+  CPU bring-up, interrupt controller, pinctrl or GPIO probe status, clock
+  controller status, MMC probe status, and any runtime failures
+- post-boot runtime observation, such as shell access, `uname -a`, mounted root
+  filesystem, or the precise reason post-boot shell access was unavailable
+
+If the proof log cannot be shared publicly, keep the raw capture out of this
+repository and publish a concise summary that includes hashes, proof IDs, and
+the observations needed to support the cover-letter claims.
+
+## Prerequisite Rebase Gate
+
+Before preparing the real mailing-list series:
+
+- check public archives and maintainer branches for newer A733 CCU, PRCM,
+  pinctrl, RTC, or regulator prerequisites
+- record the exact prerequisite source, message ID or branch, base commit, and
+  status
+- rebase the SoC DTSI and Cubie A7S board DTS patches on top of those
+  prerequisites
+- drop local duplicate CCU and pinctrl driver or binding patches unless a
+  maintainer explicitly asks for them
+- regenerate the patch export from that DTS-only candidate branch
+- rerun schema, DTB, build, checkpatch, maintainer, bisectability, and hardware
+  runtime checks on the rebased branch
+- state the dependency relationship in the cover letter without implying the
+  prerequisite work is already accepted unless it is present in the chosen base
 
 ## IRQ Rules
 
@@ -134,6 +188,8 @@ Run the relevant checks on the exact branch or exported patch files:
 - relevant object builds with `W=1`
 - boot/runtime tests on named hardware when the patch claims runtime behavior
 - per-patch bisectability checks for mixed series
+- for DTS board enablement, a strict hardware runtime gate for the exact
+  kernel image and DTB
 
 Run `scripts/checkpatch.pl` from the Linux tree root and pass the exported
 patch files as patch inputs, for example
@@ -197,6 +253,12 @@ Stop and repair the smallest responsible slice if:
 - Ethernet uses only generic DWMAC fallback behavior where SoC glue is needed
 - VPU work mixes binding, clocks, media driver, and DTS in one patch
 - a runtime claim lacks matching runtime evidence
+- a board DTS candidate lacks a boot/runtime proof for the exact kernel image
+  and DTB
+- the submission branch still contains local duplicate CCU or pinctrl driver
+  patches when the intended upstream path is DTS-only on prerequisites
+- accepted/current CCU and pinctrl prerequisites have not been checked and
+  recorded for the day the series is prepared
 - public RFCs already cover the same driver or binding and the cover letter
   does not explain the relationship
 - local CCU or pinctrl patches are still present in a proposed submission when
