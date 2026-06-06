@@ -94,7 +94,7 @@ Current local review consensus:
 
 The current v4 patch files have been regenerated from
 `candidate/a733-platform-clean-v4`. The v4 proof IDs below were produced by
-the AMD validation container.
+the validation container.
 
 Current v4 repository hygiene checks run during this cleanup:
 
@@ -115,13 +115,13 @@ Current v4 repository hygiene checks run during this cleanup:
 - MMC binding and DTS use the existing `allwinner,sun20i-d1-mmc` fallback:
   pass
 - exported v4 patches applied cleanly with `git am --3way` onto the recorded
-  base in an AMD temporary worktree; the resulting tree matched v4 head
+  base in a temporary validation worktree; the resulting tree matched v4 head
   `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
 - `scripts/get_maintainer.pl --no-tree --nogit --nogit-fallback` over the
   exported v4 patches: pass, produced 21 maintainer/list entries including
   the Devicetree, Allwinner, clock, MMC, pinctrl, and reset recipients
 
-AMD validation container proof records for v4 exact head
+Validation container proof records for v4 exact head
 `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`:
 
 - environment version report: pass,
@@ -196,7 +196,7 @@ Still required for v4:
 
 - hardware boot/runtime evidence for the exact kernel and DTB
 
-Historical AMD validation container proof records for v3 exact head
+Historical validation container proof records for v3 exact head
 `3dc9e72c5ccdb19542f8dc068bd5a388d66fdc32`:
 
 - `git diff --check 6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5 HEAD`:
@@ -263,18 +263,18 @@ exist. They do not replace per-patch DT binding or DTB validation.
   `defconfig`: pass,
   `a733-v3-arm64-build-aa708f565ae7`,
   SHA256 `6622155b35c4b8e8ffbab1226f4f0b3bdfb66ea4e2ebb85f3afc14042df022c5`
-- AMD validation container, touched-schema `dt_binding_check`: pass for
+- validation container, touched-schema `dt_binding_check`: pass for
   `arm/sunxi.yaml`, `clock/allwinner,sun60i-a733-ccu.yaml`,
   `pinctrl/allwinner,sun60i-a733-pinctrl.yaml`, and
   `mmc/allwinner,sun4i-a10-mmc.yaml`,
   `a733-v3-dt-binding-check-67d53cb809e7`,
   SHA256 `38d1e5fa8c514fed7d385e665d372c4c091e8e19d96373a8af0d30ebaafef1a3`
-- AMD validation container, `make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-`
+- validation container, `make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-`
   `CHECK_DTBS=y` with colon-separated `DT_SCHEMA_FILES` for the Cubie A7S DTB:
   pass,
   `a733-v3-dtbs-check-20b66a78fc8c`,
   SHA256 `2da6684e69ab605051de65521b40c2b50c919a981724eb0d0d405f34c01374f4`
-- AMD validation container, `W=1` object build for
+- validation container, `W=1` object build for
   `drivers/clk/sunxi-ng/ccu-sun60i-a733.o` and
   `drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o`: pass,
   `a733-v3-object-build-d819e4c35268`,
