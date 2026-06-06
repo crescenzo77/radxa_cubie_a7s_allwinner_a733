@@ -59,6 +59,9 @@ def ssh_probe(ip: str, user: str, identity: str, stage: str, timeout: int) -> di
     remote = r"""
 set -u
 stage="$1"
+boot_sha256_out=""
+boot_sha256_err=""
+trap 'rm -f "${boot_sha256_out:-}" "${boot_sha256_err:-}"' EXIT
 printf 'hostname='; hostname
 printf 'arch='; uname -m
 if [ -r /proc/device-tree/model ]; then

@@ -209,7 +209,11 @@ ENTRY
 "\${sudo_cmd[@]}" install -m 0644 install-metadata.env "\${install_dir}/install-metadata.env"
 "\${sudo_cmd[@]}" install -m 0644 SHA256SUMS "\${install_dir}/SHA256SUMS"
 sync
-(cd "\${install_dir}" && sha256sum -c SHA256SUMS)
+if [ "\${#sudo_cmd[@]}" -eq 0 ]; then
+  (cd "\${install_dir}" && sha256sum -c SHA256SUMS)
+else
+  "\${sudo_cmd[@]}" bash -c 'cd "$1" && sha256sum -c SHA256SUMS' bash "\${install_dir}"
+fi
 "\${sudo_cmd[@]}" cp -a "\${extlinux}" "\${backup}"
 "\${sudo_cmd[@]}" install -m 0644 "\${tmp}" "\${extlinux}"
 sync
