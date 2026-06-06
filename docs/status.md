@@ -100,6 +100,10 @@ Repository hygiene checks run during this cleanup:
 AMD validation container proof records for exact head
 `3dc9e72c5ccdb19542f8dc068bd5a388d66fdc32`:
 
+- `git diff --check 6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5 HEAD`:
+  pass,
+  `a733-v3-public-git-diff-check-997b45f3f8ff`,
+  SHA256 `a36c0ff798d880ac9faa25890e29a640f8af41b10eff5eeef6fb49bd8e93231b`
 - environment version report: pass,
   `a733-v3-version-report-bf0065764dd3`,
   SHA256 `c7045daf779e498eed5d523fc4cc03174c376598dc968a843ce0f0bdc73736ca`
