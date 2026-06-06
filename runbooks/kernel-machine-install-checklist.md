@@ -46,6 +46,7 @@ Use the workflow status aggregator when deciding what Codex should do next:
 scripts/kernel-workflow-status
 scripts/kernel-workflow-status --json
 scripts/kernel-workflow-status --strict
+scripts/kernel-workflow-status --runtime-strict
 scripts/kernel-workflow-status --next-action
 scripts/kernel-workflow-status --next-command
 scripts/kernel-workflow-status --next-shell
@@ -54,7 +55,9 @@ scripts/kernel-workflow-status --next-shell
 It combines machine readiness, local model offload status, idle review ledger
 state, public repo backup state, and the Cubie runtime gate into one concise
 read-only report. Override `KERNEL_PUBLIC_REPO` when checking a different
-public-facing kernel checkout.
+public-facing kernel checkout. Use `--strict` for workflow health and
+`--runtime-strict` only for gates that must fail until exact Cubie hardware
+runtime proof exists.
 
 ## Mac Dispatcher
 

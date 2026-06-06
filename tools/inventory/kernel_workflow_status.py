@@ -263,6 +263,10 @@ def strict_failed(data: dict[str, Any]) -> bool:
     )
 
 
+def runtime_strict_failed(data: dict[str, Any]) -> bool:
+    return strict_failed(data) or data["cubie_runtime_gate"].get("status") != "runtime-ready"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--json", action="store_true")
@@ -282,6 +286,11 @@ def main() -> int:
         help="Print a copy-pasteable shell line for the current next command.",
     )
     parser.add_argument("--strict", action="store_true")
+    parser.add_argument(
+        "--runtime-strict",
+        action="store_true",
+        help="Exit non-zero unless workflow health and Cubie runtime proof are both ready.",
+    )
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
     args = parser.parse_args()
 
@@ -296,6 +305,8 @@ def main() -> int:
         print(json.dumps(data, indent=2, sort_keys=True))
     else:
         print(markdown(data), end="")
+    if args.runtime_strict:
+        return 1 if runtime_strict_failed(data) else 0
     return 1 if args.strict and strict_failed(data) else 0
 
 
