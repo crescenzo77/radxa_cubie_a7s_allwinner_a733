@@ -198,12 +198,12 @@ def boot_staging_status() -> dict[str, Any]:
 
 def boot_staging_rows(staging: dict[str, Any]) -> list[str]:
     lines = [
-        "| ip | hostname | stage | sha256 | installer | sudo | boot entry | boot files | boot sha256 | ready |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| ip | hostname | stage | sha256 | installer | sudo | extra bootargs | boot entry | boot files | boot sha256 | ready |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     rows = staging.get("rows", [])
     if not rows:
-        lines.append("| none | none | none | none | none | none | none | none | none | no |")
+        lines.append("| none | none | none | none | none | none | none | none | none | none | no |")
         return lines
     for row in rows:
         lines.append(
@@ -214,6 +214,7 @@ def boot_staging_rows(staging: dict[str, Any]) -> list[str]:
             f"{md_escape(row.get('sha256_status'))} | "
             f"{md_escape(row.get('installer_syntax'))} | "
             f"{md_escape(row.get('sudo_status'))} | "
+            f"{md_escape(row.get('extlinux_extra_args') or '-')} | "
             f"{md_escape(row.get('boot_entry_status'))} | "
             f"{md_escape(row.get('boot_files_status'))} | "
             f"{md_escape(row.get('boot_sha256_status'))} | "
@@ -232,29 +233,35 @@ def next_safe_action(staging: dict[str, Any], inventory: dict[str, Any]) -> str:
         row = installed[0]
         capture = row.get("capture_label") or "cubie-mainline-boot"
         label = row.get("extlinux_label") or "the staged non-default label"
+        extra = row.get("extlinux_extra_args") or "none"
         return (
             f"Run `scripts/cubie-manual-boot-session 180 {md_escape(capture)}`, "
             f"then manually reboot/reset Cubie3 and select `{md_escape(label)}` "
-            f"over UART.{excluded_note}"
+            f"over UART. Expected temporary extra bootargs: `{md_escape(extra)}`."
+            f"{excluded_note}"
         )
     if ready:
         row = ready[0]
         stage = row.get("stage") or cubie_boot_staging_status.DEFAULT_STAGE
         capture = row.get("capture_label") or f"{Path(stage).name}-boot"
         label = row.get("extlinux_label") or "the staged non-default label"
+        extra = row.get("extlinux_extra_args") or "none"
+        if row.get("sudo_status") == "password-required":
+            return (
+                "Run `scripts/cubie-interactive-root-install-session` from an "
+                "interactive terminal and enter the Cubie sudo password when "
+                "prompted. After the installer succeeds, use the capture it "
+                f"starts to select `{md_escape(label)}` over UART. Expected "
+                f"temporary extra bootargs: `{md_escape(extra)}`.{excluded_note}"
+            )
         host = row.get("hostname") or "target board"
         ip = row.get("ip") or "unknown IP"
-        sudo_hint = (
-            " using interactive sudo password entry"
-            if row.get("sudo_status") == "password-required"
-            else ""
-        )
         return (
             f"On `{md_escape(host)}` `{md_escape(ip)}`, run "
-            f"`cd {md_escape(stage)}` then `sudo ./install-extlinux-entry.sh`"
-            f"{sudo_hint}. "
+            f"`cd {md_escape(stage)}` then `sudo ./install-extlinux-entry.sh`. "
             f"After that, run `scripts/cubie-manual-boot-session 180 {md_escape(capture)}` "
-            f"and select `{md_escape(label)}` over UART.{excluded_note}"
+            f"and select `{md_escape(label)}` over UART. Expected temporary "
+            f"extra bootargs: `{md_escape(extra)}`.{excluded_note}"
         )
     return f"{md_escape(staging.get('next_action', 'repair staging before boot proof'))}.{excluded_note}"
 

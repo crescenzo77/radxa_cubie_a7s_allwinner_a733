@@ -73,6 +73,10 @@ def extlinux_label(row: dict[str, Any]) -> str:
     return str(row.get("extlinux_label") or "the staged non-default label")
 
 
+def extlinux_extra_args(row: dict[str, Any]) -> str:
+    return str(row.get("extlinux_extra_args") or "none")
+
+
 def render(staging: dict[str, Any], args: argparse.Namespace) -> str:
     installed = selected_row(staging, "root_install_complete")
     ready = selected_row(staging, "ready_for_root_install")
@@ -102,6 +106,10 @@ def render(staging: dict[str, Any], args: argparse.Namespace) -> str:
                 "Select this non-default U-Boot label over UART:",
                 "",
                 f"`{extlinux_label(installed)}`",
+                "",
+                "Expected temporary extra bootargs:",
+                "",
+                f"`{extlinux_extra_args(installed)}`",
             ]
         )
         return "\n".join(lines)
@@ -136,6 +144,10 @@ def render(staging: dict[str, Any], args: argparse.Namespace) -> str:
                 "Select this non-default U-Boot label over UART:",
                 "",
                 f"`{extlinux_label(ready)}`",
+                "",
+                "Expected temporary extra bootargs:",
+                "",
+                f"`{extlinux_extra_args(ready)}`",
             ]
         )
         return "\n".join(lines)
