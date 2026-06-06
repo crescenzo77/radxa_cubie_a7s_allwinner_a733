@@ -175,6 +175,19 @@ Validation container proof records for v4 exact head
   `pinctrl-sun60i-a733.o`: pass,
   `a733-v4-public-object-build-0777f6143da5`,
   SHA256 `cf20fb28f752c831cca03dcf0b2f1f69fc29822e406abdadf5856286fd631e95`
+- `arm64 defconfig` boot-artifact build for `Image` and
+  `allwinner/sun60i-a733-cubie-a7s.dtb`: pass, prepared for target hardware
+  runtime testing only and not a boot proof. Compiler:
+  `aarch64-linux-gnu-gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0`.
+  Artifact hashes:
+  `Image` SHA256
+  `b4584f230d436235fb3776a102546e05d8fac1d93206d25f3566aedad7e60b7d`,
+  `sun60i-a733-cubie-a7s.dtb` SHA256
+  `9ac58728715b7999bda4fe579bb00a4c9da7f123c7d0fb1bf9e4664cd85a0e44`,
+  `.config` SHA256
+  `9273c649385ba95c589c9f4867a77addebb7bf39ac7a7bb3d655d4980eb7ca87`,
+  manifest SHA256
+  `1c0ba61cc7f13ef4488cb7ede4db5d9b653b7352623d2ae29375cbee84ff7f09`
 - per-patch `git diff --check`: pass for patches 1 through 9:
   `a733-v4-public-patch01-git-diff-check-e8b1f2d50862`,
   `a733-v4-public-patch02-git-diff-check-526c99256dbb`,
@@ -221,7 +234,8 @@ Validation container proof records for v4 exact head
 
 Still required for v4:
 
-- hardware boot/runtime evidence for the exact kernel and DTB
+- hardware boot/runtime evidence for the exact kernel image, configuration,
+  and DTB
 
 Historical validation container proof records for v3 exact head
 `3dc9e72c5ccdb19542f8dc068bd5a388d66fdc32`:
