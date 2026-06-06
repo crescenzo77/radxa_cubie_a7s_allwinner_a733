@@ -208,7 +208,8 @@ ENTRY
 "\${sudo_cmd[@]}" install -m 0644 manifest.txt "\${install_dir}/manifest.txt"
 "\${sudo_cmd[@]}" install -m 0644 install-metadata.env "\${install_dir}/install-metadata.env"
 "\${sudo_cmd[@]}" install -m 0644 SHA256SUMS "\${install_dir}/SHA256SUMS"
-"\${sudo_cmd[@]}" sh -c "cd '\${install_dir}' && sha256sum -c SHA256SUMS"
+sync
+(cd "\${install_dir}" && sha256sum -c SHA256SUMS)
 "\${sudo_cmd[@]}" cp -a "\${extlinux}" "\${backup}"
 "\${sudo_cmd[@]}" install -m 0644 "\${tmp}" "\${extlinux}"
 sync

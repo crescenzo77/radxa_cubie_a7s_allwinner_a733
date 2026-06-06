@@ -154,12 +154,15 @@ if [ -f install-extlinux-entry.sh ]; then
   esac
   if [ -n "$install_dir" ] && [ -d "$install_dir" ]; then
     if command -v sha256sum >/dev/null 2>&1 && [ -f "${install_dir}/SHA256SUMS" ]; then
-      if (cd "$install_dir" && sha256sum -c SHA256SUMS >/tmp/cubie-boot-sha256.out 2>/tmp/cubie-boot-sha256.err); then
+      boot_sha256_out="$(mktemp)"
+      boot_sha256_err="$(mktemp)"
+      if (cd "$install_dir" && sha256sum -c SHA256SUMS >"$boot_sha256_out" 2>"$boot_sha256_err"); then
         printf 'boot_sha256_status=ok\n'
       else
         printf 'boot_sha256_status=fail\n'
-        sed 's/^/boot_sha256_error=/' /tmp/cubie-boot-sha256.err | head -5
+        sed 's/^/boot_sha256_error=/' "$boot_sha256_err" | head -5
       fi
+      rm -f "$boot_sha256_out" "$boot_sha256_err"
     else
       printf 'boot_sha256_status=missing\n'
     fi
