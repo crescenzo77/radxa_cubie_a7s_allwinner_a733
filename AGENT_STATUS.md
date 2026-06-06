@@ -12,6 +12,12 @@ RTX 3090, RX 7900 XT, Strix, and ThinkCentre.
 
 ## What changed
 
+- Added `inventory/model-dispatch-repair-brief-2026-06-06.md` for the current
+  ThinkCentre `model-dispatch` failure mode: `/srv/model-dispatch` is absent,
+  PID 1812 is running from a deleted cwd, `/v1/models` responds, and chat
+  completions drop the connection. The brief keeps repair operator-gated and
+  notes that the Strix source config must be reconciled with current kernel
+  offload endpoints before any live deploy.
 - Hardened `scripts/routing-health` so ThinkCentre `model-dispatch` `/models`,
   `/chat/completions`, and deleted-live-path checks are visible as
   compatibility warnings without failing the direct kernel offload lanes.
