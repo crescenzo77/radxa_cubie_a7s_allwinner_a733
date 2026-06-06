@@ -38,7 +38,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY proof_runner.py /usr/local/bin/kernel-proof-runner
-RUN chmod +x /usr/local/bin/kernel-proof-runner
+COPY checkpatch_warning_gate.py /usr/local/bin/checkpatch-warning-gate
+RUN chmod +x /usr/local/bin/kernel-proof-runner /usr/local/bin/checkpatch-warning-gate
 
 WORKDIR /workspace
 ENTRYPOINT ["/usr/local/bin/kernel-proof-runner"]
