@@ -141,7 +141,7 @@ Current v4 repository hygiene checks run during this cleanup:
 - public patch directory regenerated from the v4 branch with
   `git format-patch --base`
 - `git apply --numstat patches/000[1-9]-*.patch`: pass, all exported patch
-  files parse as patches
+  files parse as patches; the patch parse proof records the same result
 - public hygiene scan over tracked public-facing files: pass, no private lab
   addresses, local paths, local model stack names, or AI/provider metadata
   found
@@ -157,7 +157,7 @@ Current v4 repository hygiene checks run during this cleanup:
   base in a temporary validation worktree; the resulting tree matched v4 head
   `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
 - `scripts/get_maintainer.pl --no-tree --nogit --nogit-fallback` over the
-  exported v4 patches: pass, produced 21 maintainer/list entries including
+  exported v4 patches: pass, produced 19 maintainer/list entries including
   the Devicetree, Allwinner, clock, MMC, pinctrl, and reset recipients
 
 Validation container proof records for v4 exact head
@@ -187,6 +187,14 @@ Validation container proof records for v4 exact head
   pass, `15` files scanned with `0` matches,
   `public-repo-hygiene-public-hygiene-gate-edde9d72d5bc`,
   SHA256 `e18f23d54c383af5d63ba83785298ee5d2611f563fb53fb5d2fcd994acaa7b26`
+- patch parse gate over the exported v4 patch files:
+  pass,
+  `a733-v4-public-patch-parse-patch-parse-gate-aef637768682`,
+  SHA256 `836e4a569f1aa4f54f0a8c88e8fd09950ebd8e372b3ee74bf95fb67616d3fb0e`
+- maintainer recipient gate over the exported v4 patch files:
+  pass, `19` maintainer/list entries,
+  `a733-v4-public-get-maintainer-get-maintainer-gate-2e9a1a1f7bba`,
+  SHA256 `ab90849ac5ddccec900218ec58c3d76b19fb698e895219a1242beadb2f8e3dea`
 - touched-schema `dt_binding_check`: pass for `arm/sunxi.yaml`,
   `clock/allwinner,sun60i-a733-ccu.yaml`,
   `pinctrl/allwinner,sun60i-a733-pinctrl.yaml`, and
