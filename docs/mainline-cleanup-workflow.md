@@ -205,7 +205,11 @@ a colon-separated `DT_SCHEMA_FILES` value, for example
 wrapper.
 
 A warning is not a pass. Either fix it or record why the specific warning is a
-known false positive before describing the series as ready.
+known false positive before describing the series as ready. For
+`FILE_PATH_CHANGES` warnings about new files and `MAINTAINERS`, the record must
+show the exact new paths, the matching `MAINTAINERS` entry or pattern, and the
+patch that adds or updates that coverage. Do not treat the warning as reviewed
+just because the series includes a generic maintainer note.
 
 ## Evidence Rules
 

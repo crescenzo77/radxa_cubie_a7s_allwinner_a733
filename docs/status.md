@@ -341,7 +341,8 @@ Current checkpatch result:
 - run from the Linux tree root:
   `scripts/checkpatch.pl --strict --no-tree /path/to/export/patches/000[1-9]-*.patch`:
   `0 errors, 6 warnings, 0 checks`
-- remaining warnings are the unconditional MAINTAINERS new-file questions
+- remaining `FILE_PATH_CHANGES` warnings are the unconditional MAINTAINERS
+  new-file questions
   emitted for new files in patches 2, 3, 4, 5, 7, and 8; patch 9 adds the
   explicit `N: sun60i` MAINTAINERS coverage
 
