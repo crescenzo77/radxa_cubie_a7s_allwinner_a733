@@ -14,6 +14,9 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_TARGETS = ["192.168.50.65", "192.168.50.95"]
 DEFAULT_STAGE = "kernel-boot-artifacts/a733-v4-abc8d07b0a63-20260606T152409Z"
+DEFAULT_USER = "radxa"
+DEFAULT_IDENTITY = "~/.ssh/id_ed25519"
+DEFAULT_TIMEOUT = 8
 
 
 def ssh_probe(ip: str, user: str, identity: str, stage: str, timeout: int) -> dict[str, Any]:
@@ -52,6 +55,8 @@ else
   printf 'sha256_status=unavailable\n'
 fi
 if [ -f install-extlinux-entry.sh ]; then
+  awk -F'"' '/^install_dir="/ { print "install_dir="$2; exit }' install-extlinux-entry.sh
+  awk -F'"' '/^label="/ { print "extlinux_label="$2; exit }' install-extlinux-entry.sh
   if bash -n install-extlinux-entry.sh >/tmp/cubie-stage-bashn.out 2>/tmp/cubie-stage-bashn.err; then
     printf 'installer_syntax=ok\n'
   else
@@ -104,6 +109,8 @@ fi
         "model": fields.get("model", ""),
         "stage": stage,
         "stage_status": fields.get("stage_status", "unknown"),
+        "install_dir": fields.get("install_dir", ""),
+        "extlinux_label": fields.get("extlinux_label", ""),
         "sha256_status": fields.get("sha256_status", "unknown"),
         "installer_syntax": fields.get("installer_syntax", "unknown"),
         "ready_for_root_install": ok,
@@ -120,6 +127,9 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     targets = [target.strip() for target in args.targets.split(",") if target.strip()]
     rows = [ssh_probe(ip, args.user, args.identity, args.stage, args.timeout) for ip in targets]
     ready = [row for row in rows if row["ready_for_root_install"]]
+    labels = sorted({row.get("extlinux_label") for row in ready if row.get("extlinux_label")})
+    capture_label = f"{Path(args.stage).name}-boot"
+    label_hint = f" and select {labels[0]}" if labels else ""
     return {
         "stage": args.stage,
         "targets": targets,
@@ -128,7 +138,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         "rows": rows,
         "next_action": (
             "run the staged install-extlinux-entry.sh with sudo/root on the chosen board, "
-            "then start scripts/cubie-manual-boot-session 180 a733-v4-abc8d07b0a63-boot"
+            f"then start scripts/cubie-manual-boot-session 180 {capture_label}{label_hint}"
             if ready
             else "stage or repair boot artifacts before attempting a hardware boot proof"
         ),
@@ -164,9 +174,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--targets", default=",".join(DEFAULT_TARGETS))
     parser.add_argument("--stage", default=DEFAULT_STAGE)
-    parser.add_argument("--user", default="radxa")
-    parser.add_argument("--identity", default="~/.ssh/id_ed25519")
-    parser.add_argument("--timeout", type=int, default=8)
+    parser.add_argument("--user", default=DEFAULT_USER)
+    parser.add_argument("--identity", default=DEFAULT_IDENTITY)
+    parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 

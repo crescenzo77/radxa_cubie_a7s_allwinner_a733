@@ -85,6 +85,12 @@ def build_bundle(args: argparse.Namespace) -> dict[str, Any]:
         network_timeout=args.network_timeout,
         port=args.port,
         skip_network=args.skip_network,
+        skip_staging=False,
+        staging_targets=args.staging_targets,
+        staging_stage=args.staging_stage,
+        staging_user=args.staging_user,
+        staging_identity=args.staging_identity,
+        staging_timeout=args.staging_timeout,
     )
     gate_data = cubie_runtime_gate.build_gate(gate_args)
     gate_md = cubie_runtime_gate.markdown(gate_data)
@@ -171,14 +177,11 @@ def main() -> int:
     parser.add_argument("--discovery-timeout", type=float, default=0.2)
     parser.add_argument("--discovery-ssh-timeout", type=int, default=4)
     parser.add_argument("--discovery-workers", type=int, default=64)
-    parser.add_argument("--staging-targets", default="192.168.50.65,192.168.50.95")
-    parser.add_argument(
-        "--staging-stage",
-        default="kernel-boot-artifacts/a733-v4-abc8d07b0a63-20260606T152409Z",
-    )
-    parser.add_argument("--staging-user", default="radxa")
-    parser.add_argument("--staging-identity", default="~/.ssh/id_ed25519")
-    parser.add_argument("--staging-timeout", type=int, default=8)
+    parser.add_argument("--staging-targets", default=",".join(cubie_boot_staging_status.DEFAULT_TARGETS))
+    parser.add_argument("--staging-stage", default=cubie_boot_staging_status.DEFAULT_STAGE)
+    parser.add_argument("--staging-user", default=cubie_boot_staging_status.DEFAULT_USER)
+    parser.add_argument("--staging-identity", default=cubie_boot_staging_status.DEFAULT_IDENTITY)
+    parser.add_argument("--staging-timeout", type=int, default=cubie_boot_staging_status.DEFAULT_TIMEOUT)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
