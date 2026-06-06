@@ -26,6 +26,7 @@ image_sha="b4584f230d436235fb3776a102546e05d8fac1d93206d25f3566aedad7e60b7d"
 dtb_sha="9ac58728715b7999bda4fe579bb00a4c9da7f123c7d0fb1bf9e4664cd85a0e44"
 config_sha="9273c649385ba95c589c9f4867a77addebb7bf39ac7a7bb3d655d4980eb7ca87"
 manifest_sha="1c0ba61cc7f13ef4488cb7ede4db5d9b653b7352623d2ae29375cbee84ff7f09"
+capture_label="${CUBIE_CAPTURE_LABEL:-${artifact_name}-boot}"
 
 usage() {
   cat <<USAGE
@@ -58,6 +59,26 @@ case "${target_host}" in
     exit 2
     ;;
 esac
+
+require_match() {
+  local name="$1"
+  local value="$2"
+  local pattern="$3"
+  if [[ ! "${value}" =~ ${pattern} ]]; then
+    echo "refusing unsafe ${name}: ${value}" >&2
+    exit 2
+  fi
+}
+
+require_match artifact_name "${artifact_name}" '^[A-Za-z0-9_.-]+$'
+require_match remote_stage "${remote_stage}" '^kernel-boot-artifacts/[A-Za-z0-9_.-]+$'
+require_match install_dir "${install_dir}" '^/boot/mainline-a733-[A-Za-z0-9_.-]+$'
+require_match label "${label}" '^[A-Za-z0-9_.-]+$'
+require_match capture_label "${capture_label}" '^[A-Za-z0-9_.-]+$'
+require_match image_sha "${image_sha}" '^[0-9a-f]{64}$'
+require_match dtb_sha "${dtb_sha}" '^[0-9a-f]{64}$'
+require_match config_sha "${config_sha}" '^[0-9a-f]{64}$'
+require_match manifest_sha "${manifest_sha}" '^[0-9a-f]{64}$'
 
 required_files=(Image sun60i-a733-cubie-a7s.dtb config manifest.txt)
 target_ssh=(
@@ -101,6 +122,20 @@ ${image_sha}  Image
 ${dtb_sha}  sun60i-a733-cubie-a7s.dtb
 ${config_sha}  config
 ${manifest_sha}  manifest.txt
+EOF
+
+echo "Writing staging metadata"
+"${target_ssh[@]}" \
+  "cat > '${remote_stage}/install-metadata.env'" <<EOF
+ARTIFACT_NAME=${artifact_name}
+REMOTE_STAGE=${remote_stage}
+INSTALL_DIR=${install_dir}
+EXTLINUX_LABEL=${label}
+CAPTURE_LABEL=${capture_label}
+IMAGE_SHA=${image_sha}
+DTB_SHA=${dtb_sha}
+CONFIG_SHA=${config_sha}
+MANIFEST_SHA=${manifest_sha}
 EOF
 
 echo "Writing root-required installer"
@@ -160,6 +195,7 @@ ENTRY
 "\${sudo_cmd[@]}" install -m 0644 sun60i-a733-cubie-a7s.dtb "\${install_dir}/sun60i-a733-cubie-a7s.dtb"
 "\${sudo_cmd[@]}" install -m 0644 config "\${install_dir}/config"
 "\${sudo_cmd[@]}" install -m 0644 manifest.txt "\${install_dir}/manifest.txt"
+"\${sudo_cmd[@]}" install -m 0644 install-metadata.env "\${install_dir}/install-metadata.env"
 "\${sudo_cmd[@]}" cp -a "\${extlinux}" "\${backup}"
 "\${sudo_cmd[@]}" install -m 0644 "\${tmp}" "\${extlinux}"
 
@@ -182,7 +218,7 @@ Human/root install step on the board:
   sudo ./install-extlinux-entry.sh
 
 Then from this repo, start UART capture before selecting the boot entry:
-  scripts/cubie-manual-boot-session 180 a733-v4-abc8d07b0a63-boot
+  scripts/cubie-manual-boot-session 180 ${capture_label}
 
 Select this non-default U-Boot label over UART:
   ${label}

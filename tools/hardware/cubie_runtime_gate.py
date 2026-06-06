@@ -126,6 +126,13 @@ def refine_status(status: str, reason: str, staging: dict[str, Any]) -> tuple[st
     )
 
 
+def capture_label_for(stage: str, rows: list[dict[str, Any]]) -> str:
+    labels = sorted({row.get("capture_label") for row in rows if row.get("capture_label")})
+    if labels:
+        return str(labels[0])
+    return f"{Path(stage).name}-boot" if stage else "cubie-manual-boot"
+
+
 def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
     if status == "inventory-invalid":
         return "fix the Cubie hardware inventory before relying on runtime evidence"
@@ -145,7 +152,7 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
         stage = str((staging or {}).get("stage") or "")
         if not stage and installed:
             stage = str(installed[0].get("stage") or "")
-        capture_label = f"{Path(stage).name}-boot" if stage else "cubie-manual-boot"
+        capture_label = capture_label_for(stage, installed)
         labels = sorted({row.get("extlinux_label") for row in installed if row.get("extlinux_label")})
         label_hint = f" and select {labels[0]}" if labels else " and select the staged non-default boot label"
         return f"run scripts/cubie-manual-boot-session 180 {capture_label}{target_hint}{label_hint}"
@@ -157,7 +164,7 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
         stage = str((staging or {}).get("stage") or "")
         if not stage and ready:
             stage = str(ready[0].get("stage") or "")
-        capture_label = f"{Path(stage).name}-boot" if stage else "cubie-manual-boot"
+        capture_label = capture_label_for(stage, ready)
         labels = sorted({row.get("extlinux_label") for row in ready if row.get("extlinux_label")})
         label_hint = f" and select {labels[0]}" if labels else " and select the staged non-default boot label"
         return (
@@ -275,8 +282,8 @@ def markdown(data: dict[str, Any]) -> str:
         lines.extend(
             [
                 "",
-                "| ip | hostname | stage | sha256 | installer | boot entry | boot files | ready |",
-                "| --- | --- | --- | --- | --- | --- | --- | --- |",
+                "| ip | hostname | stage | metadata | sha256 | installer | boot entry | boot files | ready |",
+                "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
             ]
         )
         for row in staging.get("rows", []):
@@ -285,6 +292,7 @@ def markdown(data: dict[str, Any]) -> str:
                 f"`{md_escape(row.get('ip'))}` | "
                 f"{md_escape(row.get('hostname') or '-')} | "
                 f"{md_escape(row.get('stage_status'))} | "
+                f"{md_escape(row.get('metadata_status'))} | "
                 f"{md_escape(row.get('sha256_status'))} | "
                 f"{md_escape(row.get('installer_syntax'))} | "
                 f"{md_escape(row.get('boot_entry_status'))} | "

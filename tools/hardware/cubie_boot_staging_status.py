@@ -36,7 +36,7 @@ if [ ! -d "$stage" ]; then
 fi
 cd "$stage" || exit 0
 printf 'stage_status=present\n'
-for file in Image sun60i-a733-cubie-a7s.dtb config manifest.txt SHA256SUMS install-extlinux-entry.sh; do
+for file in Image sun60i-a733-cubie-a7s.dtb config manifest.txt SHA256SUMS install-metadata.env install-extlinux-entry.sh; do
   if [ -e "$file" ]; then
     bytes="$(wc -c <"$file" | tr -d ' ')"
     printf 'file_%s=%s\n' "$file" "$bytes"
@@ -54,11 +54,30 @@ if command -v sha256sum >/dev/null 2>&1 && [ -f SHA256SUMS ]; then
 else
   printf 'sha256_status=unavailable\n'
 fi
+install_dir=""
+extlinux_label=""
+capture_label=""
+if [ -f install-metadata.env ]; then
+  printf 'metadata_status=present\n'
+  install_dir="$(awk -F= '$1 == "INSTALL_DIR" { print substr($0, index($0, "=") + 1); exit }' install-metadata.env)"
+  extlinux_label="$(awk -F= '$1 == "EXTLINUX_LABEL" { print substr($0, index($0, "=") + 1); exit }' install-metadata.env)"
+  capture_label="$(awk -F= '$1 == "CAPTURE_LABEL" { print substr($0, index($0, "=") + 1); exit }' install-metadata.env)"
+else
+  printf 'metadata_status=missing\n'
+fi
 if [ -f install-extlinux-entry.sh ]; then
-  install_dir="$(awk -F'"' '/^install_dir="/ { print $2; exit }' install-extlinux-entry.sh)"
-  extlinux_label="$(awk -F'"' '/^label="/ { print $2; exit }' install-extlinux-entry.sh)"
+  if [ -z "$install_dir" ]; then
+    install_dir="$(awk -F'"' '/^install_dir="/ { print $2; exit }' install-extlinux-entry.sh)"
+  fi
+  if [ -z "$extlinux_label" ]; then
+    extlinux_label="$(awk -F'"' '/^label="/ { print $2; exit }' install-extlinux-entry.sh)"
+  fi
+  if [ -z "$capture_label" ]; then
+    capture_label="$(basename "$stage")-boot"
+  fi
   printf 'install_dir=%s\n' "$install_dir"
   printf 'extlinux_label=%s\n' "$extlinux_label"
+  printf 'capture_label=%s\n' "$capture_label"
   case "$extlinux_label" in
     ""|*[!A-Za-z0-9_.-]*)
       printf 'boot_entry_status=unexpected-label\n'
@@ -151,6 +170,8 @@ fi
         "stage_status": fields.get("stage_status", "unknown"),
         "install_dir": fields.get("install_dir", ""),
         "extlinux_label": fields.get("extlinux_label", ""),
+        "capture_label": fields.get("capture_label", ""),
+        "metadata_status": fields.get("metadata_status", "unknown"),
         "boot_entry_status": fields.get("boot_entry_status", "unknown"),
         "boot_files_status": fields.get("boot_files_status", "unknown"),
         "sha256_status": fields.get("sha256_status", "unknown"),
@@ -175,8 +196,9 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     ready = [row for row in rows if row["ready_for_root_install"]]
     installed = [row for row in rows if row["root_install_complete"]]
     action_rows = installed or ready
+    capture_labels = sorted({row.get("capture_label") for row in action_rows if row.get("capture_label")})
     labels = sorted({row.get("extlinux_label") for row in action_rows if row.get("extlinux_label")})
-    capture_label = f"{Path(args.stage).name}-boot"
+    capture_label = capture_labels[0] if capture_labels else f"{Path(args.stage).name}-boot"
     label_hint = f" and select {labels[0]}" if labels else ""
     if installed:
         next_action = f"start scripts/cubie-manual-boot-session 180 {capture_label}{label_hint}"
@@ -206,8 +228,8 @@ def markdown(data: dict[str, Any]) -> str:
         f"Ready for root install: `{data['ready_count']}/{data['target_count']}`",
         f"Installed boot entry: `{data.get('installed_count', 0)}/{data['target_count']}`",
         "",
-        "| ip | hostname | model | stage | sha256 | installer | boot entry | boot files | ready |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| ip | hostname | model | stage | metadata | sha256 | installer | boot entry | boot files | ready |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for row in data["rows"]:
         lines.append(
@@ -216,6 +238,7 @@ def markdown(data: dict[str, Any]) -> str:
             f"{row['hostname'] or '-'} | "
             f"{row['model'] or '-'} | "
             f"{row['stage_status']} | "
+            f"{row['metadata_status']} | "
             f"{row['sha256_status']} | "
             f"{row['installer_syntax']} | "
             f"{row['boot_entry_status']} | "
