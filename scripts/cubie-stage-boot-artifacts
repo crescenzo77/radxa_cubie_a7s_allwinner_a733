@@ -1,0 +1,189 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+amd_host="${AMD_VALIDATION_HOST:-192.168.50.252}"
+target_host="${CUBIE_STAGE_TARGET:-192.168.50.95}"
+show_help=0
+case "${1:-}" in
+  -h|--help)
+    show_help=1
+    ;;
+  "")
+    ;;
+  *)
+    target_host="$1"
+    ;;
+esac
+target_user="${CUBIE_SSH_USER:-radxa}"
+target_identity="${CUBIE_SSH_IDENTITY:-${HOME}/.ssh/id_ed25519}"
+artifact_dir="${A733_BOOT_ARTIFACT_DIR:-/srv/projects/kernel-work/outgoing/a733-v4-abc8d07b0a63-20260606T152409Z}"
+artifact_name="$(basename "${artifact_dir}")"
+remote_stage="${CUBIE_REMOTE_STAGE:-kernel-boot-artifacts/${artifact_name}}"
+install_dir="${CUBIE_BOOT_INSTALL_DIR:-/boot/mainline-a733-v4-abc8d07b0a63}"
+label="${CUBIE_EXTLINUX_LABEL:-a733-v4-abc8d07b0a63-uart-proof}"
+
+image_sha="b4584f230d436235fb3776a102546e05d8fac1d93206d25f3566aedad7e60b7d"
+dtb_sha="9ac58728715b7999bda4fe579bb00a4c9da7f123c7d0fb1bf9e4664cd85a0e44"
+config_sha="9273c649385ba95c589c9f4867a77addebb7bf39ac7a7bb3d655d4980eb7ca87"
+manifest_sha="1c0ba61cc7f13ef4488cb7ede4db5d9b653b7352623d2ae29375cbee84ff7f09"
+
+usage() {
+  cat <<USAGE
+Usage: scripts/cubie-stage-boot-artifacts [TARGET_IP]
+
+Copies the exact A733 v4 Image/DTB/config/manifest from AMD into the target
+board user's home directory and writes a sudo-required installer script.
+
+Defaults:
+  AMD_VALIDATION_HOST=${amd_host}
+  TARGET_IP=${target_host}
+  CUBIE_SSH_USER=${target_user}
+  CUBIE_SSH_IDENTITY=${target_identity}
+  A733_BOOT_ARTIFACT_DIR=${artifact_dir}
+  CUBIE_REMOTE_STAGE=${remote_stage}
+
+This script does not write /boot, change boot defaults, power-cycle, or reboot.
+USAGE
+}
+
+if [ "${show_help}" -eq 1 ]; then
+  usage
+  exit 0
+fi
+
+case "${target_host}" in
+  192.168.50.*) ;;
+  *)
+    echo "refusing non-lab target IP: ${target_host}" >&2
+    exit 2
+    ;;
+esac
+
+required_files=(Image sun60i-a733-cubie-a7s.dtb config manifest.txt)
+target_ssh=(
+  ssh
+  -o BatchMode=yes
+  -o ConnectTimeout=8
+  -i "${target_identity}"
+  "${target_user}@${target_host}"
+)
+
+echo "Checking source artifacts on ${amd_host}"
+ssh -o BatchMode=yes -o ConnectTimeout=8 "${amd_host}" bash -s -- "${artifact_dir}" <<'REMOTE_CHECK'
+set -euo pipefail
+artifact_dir="$1"
+for file in Image sun60i-a733-cubie-a7s.dtb config manifest.txt; do
+  test -r "${artifact_dir}/${file}" || {
+    echo "missing source artifact: ${artifact_dir}/${file}" >&2
+    exit 1
+  }
+done
+REMOTE_CHECK
+
+echo "Checking target ${target_host}"
+"${target_ssh[@]}" \
+  'printf "hostname="; hostname; printf "\narch="; uname -m; if [ -r /proc/device-tree/model ]; then printf "\nmodel="; tr "\000" "\n" </proc/device-tree/model; fi'
+
+echo "Creating remote staging directory: ${remote_stage}"
+"${target_ssh[@]}" \
+  "mkdir -p '${remote_stage}'"
+
+echo "Copying artifacts from ${amd_host}:${artifact_dir}"
+ssh -o BatchMode=yes -o ConnectTimeout=8 "${amd_host}" \
+  "cd '${artifact_dir}' && tar -cf - ${required_files[*]}" |
+  "${target_ssh[@]}" \
+    "tar -C '${remote_stage}' -xf -"
+
+echo "Writing checksum file"
+"${target_ssh[@]}" \
+  "cat > '${remote_stage}/SHA256SUMS'" <<EOF
+${image_sha}  Image
+${dtb_sha}  sun60i-a733-cubie-a7s.dtb
+${config_sha}  config
+${manifest_sha}  manifest.txt
+EOF
+
+echo "Writing root-required installer"
+"${target_ssh[@]}" \
+  "cat > '${remote_stage}/install-extlinux-entry.sh'" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+
+stage_dir="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+install_dir="${install_dir}"
+label="${label}"
+extlinux="/boot/extlinux/extlinux.conf"
+
+cd "\${stage_dir}"
+sha256sum -c SHA256SUMS
+
+if [ ! -f "\${extlinux}" ]; then
+  echo "missing extlinux config: \${extlinux}" >&2
+  exit 1
+fi
+
+sudo_cmd=(sudo)
+if [ "\$(id -u)" -eq 0 ]; then
+  sudo_cmd=()
+fi
+
+backup="\${extlinux}.pre-\${label}-\$(date -u +%Y%m%dT%H%M%SZ)"
+root_arg="\$(tr ' ' '\\n' </proc/cmdline | awk '/^root=/{ print; exit }')"
+if [ -z "\${root_arg}" ]; then
+  echo "current /proc/cmdline has no root= argument; refusing to guess" >&2
+  exit 1
+fi
+
+tmp="\$(mktemp)"
+cleanup() {
+  rm -f "\${tmp}"
+}
+trap cleanup EXIT
+
+cp "\${extlinux}" "\${tmp}"
+if grep -q "^label \${label}\$" "\${tmp}"; then
+  echo "label already exists in \${extlinux}: \${label}" >&2
+  exit 1
+fi
+
+cat >>"\${tmp}" <<ENTRY
+
+label \${label}
+	menu label A733 v4 public candidate abc8d07b0a63 UART proof
+	linux ${install_dir}/Image
+	fdt ${install_dir}/sun60i-a733-cubie-a7s.dtb
+	append console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel \${root_arg} rootwait rw
+ENTRY
+
+"\${sudo_cmd[@]}" install -d -m 0755 "\${install_dir}"
+"\${sudo_cmd[@]}" install -m 0644 Image "\${install_dir}/Image"
+"\${sudo_cmd[@]}" install -m 0644 sun60i-a733-cubie-a7s.dtb "\${install_dir}/sun60i-a733-cubie-a7s.dtb"
+"\${sudo_cmd[@]}" install -m 0644 config "\${install_dir}/config"
+"\${sudo_cmd[@]}" install -m 0644 manifest.txt "\${install_dir}/manifest.txt"
+"\${sudo_cmd[@]}" cp -a "\${extlinux}" "\${backup}"
+"\${sudo_cmd[@]}" install -m 0644 "\${tmp}" "\${extlinux}"
+
+echo "Installed non-default extlinux label: \${label}"
+echo "Backup: \${backup}"
+echo "Next: run UART capture, reboot manually, and choose label \${label} in U-Boot."
+EOF
+
+"${target_ssh[@]}" \
+  "chmod +x '${remote_stage}/install-extlinux-entry.sh' && cd '${remote_stage}' && sha256sum -c SHA256SUMS"
+
+cat <<SUMMARY
+
+Staged exact A733 v4 artifacts on ${target_host}:${remote_stage}
+
+No /boot files were changed. No reboot was requested.
+
+Human/root install step on the board:
+  cd ${remote_stage}
+  sudo ./install-extlinux-entry.sh
+
+Then from this repo, start UART capture before selecting the boot entry:
+  scripts/cubie-manual-boot-session 180 a733-v4-abc8d07b0a63-boot
+
+Select this non-default U-Boot label over UART:
+  ${label}
+SUMMARY
