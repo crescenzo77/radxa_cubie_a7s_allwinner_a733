@@ -153,6 +153,10 @@ exist. They do not replace per-patch DT binding or DTB validation.
   `a733-v3-public-patch02-dt-binding-dt-binding-check-73a6ccb3ca4c`,
   `a733-v3-public-patch04-dt-binding-dt-binding-check-70cdf0b0512c`,
   `a733-v3-public-patch06-dt-binding-dt-binding-check-c3d3c6d9ba12`
+- per-patch Cubie A7S DTB checks: pass for patches 8 and 9, where the board
+  DTB exists:
+  `a733-v3-public-patch08-cubie-dtbs-dtbs-check-de84f6d49370`,
+  `a733-v3-public-patch09-cubie-dtbs-dtbs-check-41e21eb001ae`
 - environment version report: pass,
   `a733-v3-version-report-bf0065764dd3`,
   SHA256 `c7045daf779e498eed5d523fc4cc03174c376598dc968a843ce0f0bdc73736ca`
@@ -197,7 +201,7 @@ Validation still required before any upstream submission:
 - hardware boot/runtime record for the exact kernel and DTB
 - full per-patch bisectability record for the exported series, beyond the
   current per-patch diff hygiene, `defconfig`, targeted object, and binding
-  proofs
+  proofs, plus Cubie DTB checks for patches where the board DTB exists
 - coordination/rebase decision for the in-flight CCU and pinctrl RFCs
 - final human decision on coding-assistance disclosure/trailer policy
 - final non-draft cover letter
