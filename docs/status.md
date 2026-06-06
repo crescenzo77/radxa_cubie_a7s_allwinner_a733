@@ -62,6 +62,14 @@ Review-blocker cleanup now present in v4:
   nodes
 - the A733 pinctrl draft does not include deprecated `linux/of_device.h`
 
+The draft CCU and pinctrl binding maintainer entries are not a request to own
+or supersede any external prerequisite series. If the final sendable path is
+stacked on accepted or current CCU/PRCM and pinctrl prerequisite work, drop the
+duplicate local binding patches and their draft maintainer entries when
+regenerating the DTS-only series. If a maintainer asks this branch to carry
+binding work, revisit those maintainer entries during final human review before
+submission.
+
 Future IRQ, Ethernet, or VPU work is blocked by the workflow rules in
 `docs/mainline-cleanup-workflow.md` until it is split by subsystem, justified
 in commit messages, and validated per patch.

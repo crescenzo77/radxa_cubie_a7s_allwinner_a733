@@ -47,6 +47,10 @@ The public branch must not contain:
 - New binding `maintainers:` entries must not volunteer another person unless
   that person explicitly agreed. Use the responsible author's contact or
   coordinate with the subsystem first.
+- Draft binding maintainer entries in local evidence patches must be revisited
+  before any mailed submission. When the final path drops duplicate local
+  CCU/pinctrl bindings in favor of prerequisite work, those draft maintainer
+  entries must disappear with the dropped patches.
 - New SoC names must have explicit `MAINTAINERS` coverage when existing
   patterns do not match the naming family.
 - A patch must be reviewable, bisectable, and self-contained.
