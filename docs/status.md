@@ -104,6 +104,19 @@ AMD validation container proof records for exact head
   pass,
   `a733-v3-public-git-diff-check-997b45f3f8ff`,
   SHA256 `a36c0ff798d880ac9faa25890e29a640f8af41b10eff5eeef6fb49bd8e93231b`
+- per-patch `git diff --check`: pass for patches 1 through 9:
+  `a733-v3-public-patch01-git-diff-check-980fd9adb30c`,
+  `a733-v3-public-patch02-git-diff-check-668dda230905`,
+  `a733-v3-public-patch03-git-diff-check-85bfb1fcb78d`,
+  `a733-v3-public-patch04-git-diff-check-1704b3b6dc19`,
+  `a733-v3-public-patch05-git-diff-check-7d5b40b1418b`,
+  `a733-v3-public-patch06-git-diff-check-12e8278c7b75`,
+  `a733-v3-public-patch07-git-diff-check-68d14b03dd1a`,
+  `a733-v3-public-patch08-git-diff-check-a94d89ef8a01`,
+  `a733-v3-public-patch09-git-diff-check-6160e3d58ca9`
+
+The per-patch diff hygiene proofs do not replace full per-patch build and DT
+validation for bisectability.
 - environment version report: pass,
   `a733-v3-version-report-bf0065764dd3`,
   SHA256 `c7045daf779e498eed5d523fc4cc03174c376598dc968a843ce0f0bdc73736ca`
