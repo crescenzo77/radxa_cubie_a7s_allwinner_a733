@@ -131,6 +131,23 @@ validation for bisectability.
 
 The per-patch `defconfig` proofs confirm Kconfig/default-config generation,
 not full object builds or DT validation at each patch.
+- per-patch targeted CCU object builds: pass for patches 3 through 9:
+  `a733-v3-public-patch03-ccu-object-object-build-c2af45731dff`,
+  `a733-v3-public-patch04-ccu-object-object-build-0642ef45be3a`,
+  `a733-v3-public-patch05-ccu-object-object-build-2f305292ee65`,
+  `a733-v3-public-patch06-ccu-object-object-build-3cd4b2f9d2ca`,
+  `a733-v3-public-patch07-ccu-object-object-build-3c8a697980e0`,
+  `a733-v3-public-patch08-ccu-object-object-build-9b7f8af5de46`,
+  `a733-v3-public-patch09-ccu-object-object-build-5de0c6dc7af0`
+- per-patch targeted pinctrl object builds: pass for patches 5 through 9:
+  `a733-v3-public-patch05-pinctrl-object-object-build-47692854398c`,
+  `a733-v3-public-patch06-pinctrl-object-object-build-036bd9409a09`,
+  `a733-v3-public-patch07-pinctrl-object-object-build-d4c7b9123d50`,
+  `a733-v3-public-patch08-pinctrl-object-object-build-e59cc88f4c3c`,
+  `a733-v3-public-patch09-pinctrl-object-object-build-4f0865931157`
+
+The targeted object proofs compile the introduced driver objects where they
+exist. They do not replace per-patch DT binding or DTB validation.
 - environment version report: pass,
   `a733-v3-version-report-bf0065764dd3`,
   SHA256 `c7045daf779e498eed5d523fc4cc03174c376598dc968a843ce0f0bdc73736ca`
@@ -174,7 +191,7 @@ Validation still required before any upstream submission:
 
 - hardware boot/runtime record for the exact kernel and DTB
 - full per-patch bisectability record for the exported series, beyond the
-  current per-patch diff hygiene and `defconfig` proofs
+  current per-patch diff hygiene, `defconfig`, and targeted object proofs
 - coordination/rebase decision for the in-flight CCU and pinctrl RFCs
 - final human decision on coding-assistance disclosure/trailer policy
 - final non-draft cover letter
