@@ -1,5 +1,5 @@
-From be12c4e465a3afaa71c20e712e8c0917e4107522 Mon Sep 17 00:00:00 2001
-From: Crescenzo <crescenzo@gmail.com>
+From f1e51e0c968de813d5644be77201f6f062c9468b Mon Sep 17 00:00:00 2001
+From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 20:57:04 -0400
 Subject: [PATCH 2/8] dt-bindings: clock: add Allwinner A733 CCU
 
@@ -7,6 +7,7 @@ Add a binding for the main clock control unit found in the
 Allwinner A733 SoC.
 
 Assisted-by: OpenAI:GPT-5 Codex
+Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
  .../clock/allwinner,sun60i-a733-ccu.yaml      | 58 +++++++++++++++++++
  include/dt-bindings/clock/sun60i-a733-ccu.h   | 12 ++++

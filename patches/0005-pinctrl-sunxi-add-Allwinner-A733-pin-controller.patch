@@ -1,5 +1,5 @@
-From 9172745422786178ff675a4532886bbfd44154ec Mon Sep 17 00:00:00 2001
-From: Crescenzo <crescenzo@gmail.com>
+From 264636800751ff71fe1826f55fa821dc4ab3af71 Mon Sep 17 00:00:00 2001
+From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 21:18:20 -0400
 Subject: [PATCH 5/8] pinctrl: sunxi: add Allwinner A733 pin controller
 
@@ -11,6 +11,7 @@ structural IRQ bank slots. Port A is reserved by the IRQ register
 layout, but is not populated with pins.
 
 Assisted-by: OpenAI:GPT-5 Codex
+Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
  drivers/pinctrl/sunxi/Kconfig               | 10 ++++
  drivers/pinctrl/sunxi/Makefile              |  1 +

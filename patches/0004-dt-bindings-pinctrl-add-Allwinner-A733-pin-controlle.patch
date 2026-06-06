@@ -1,5 +1,5 @@
-From 075f95beceb9f2e8f28149fb57f9f9a2cd15fcdd Mon Sep 17 00:00:00 2001
-From: Crescenzo <crescenzo@gmail.com>
+From a39c59e80631cc69bc16b5cd60585eb3e2ef1da3 Mon Sep 17 00:00:00 2001
+From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 21:18:20 -0400
 Subject: [PATCH 4/8] dt-bindings: pinctrl: add Allwinner A733 pin controller
 
@@ -9,6 +9,7 @@ The controller has no physical Port A pins, but the IRQ register
 layout still reserves the first structural bank slot.
 
 Assisted-by: OpenAI:GPT-5 Codex
+Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
  .../allwinner,sun60i-a733-pinctrl.yaml        | 136 ++++++++++++++++++
  1 file changed, 136 insertions(+)

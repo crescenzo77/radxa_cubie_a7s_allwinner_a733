@@ -20,6 +20,22 @@ Before calling a patch a candidate, record:
 - validation commands and results
 - runtime evidence for every runtime claim
 - known limitations and deferred hardware blocks
+- in-flight RFC or patch-series search results for every touched subsystem
+
+## Preflight Gates
+
+Run these gates before editing a candidate branch:
+
+- search public mailing-list archives for the SoC, board, compatible strings,
+  and touched driver filenames
+- record any competing or prerequisite RFCs in the cover letter
+- decide whether to rebase on in-flight work, coordinate with its author, or
+  explicitly justify a different approach
+- verify `get_maintainer.pl` coverage for every new path
+- check whether new SoC names need MAINTAINERS `N:` patterns in addition to
+  existing `F:` path coverage
+- reject BSP-only compatible strings such as internal `sun60iw*` names unless
+  a binding maintainer explicitly asks for them
 
 ## Candidate Branch Rules
 
@@ -48,6 +64,11 @@ Run the relevant checks on the exact branch or exported patch files:
 - relevant object builds with `W=1`
 - boot/runtime tests on named hardware when the patch claims runtime behavior
 
+When passing multiple schemas to this kernel tree's DT validation targets, use
+a colon-separated `DT_SCHEMA_FILES` value, for example
+`foo.yaml:bar.yaml`. A space-separated list can break the `dtbs_check`
+wrapper.
+
 A warning is not a pass. Either fix it or record why the specific warning is a
 known false positive before describing the series as ready.
 
@@ -56,6 +77,9 @@ known false positive before describing the series as ready.
 - A validation record must name the exact commit or patch files checked.
 - A runtime record must name the kernel image, DTB, command line, board, and
   observed behavior.
+- A board DTS that enables UART, MMC, regulators, or other peripherals needs a
+  matching boot/runtime record before the cover letter may claim the board was
+  tested.
 - Do not use a log from one branch or DTB to support a different branch or DTB.
 - Do not replace missing evidence with confidence, model output, or a summary.
 - If the claim cannot be independently understood by a reviewer, narrow the
@@ -82,6 +106,8 @@ Stop and repair the smallest responsible slice if:
 - a DTS node uses an undocumented compatible, clock ID, reset ID, or property
 - a patch mixes unrelated subsystems
 - a runtime claim lacks matching runtime evidence
+- public RFCs already cover the same driver or binding and the cover letter
+  does not explain the relationship
 - a patch requires private lab history to make sense
 - a patch contains unauthorized trailers
 
@@ -93,5 +119,5 @@ Before mailing:
 2. Re-run validation on the regenerated patches.
 3. Run `scripts/get_maintainer.pl` for every patch.
 4. Draft a cover letter with base, scope, validation, limitations, and
-   dependency notes.
+   dependency notes, including any in-flight RFC relationship.
 5. Send only after human review with the correct DCO sign-off.

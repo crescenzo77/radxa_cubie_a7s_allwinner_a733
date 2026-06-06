@@ -25,6 +25,9 @@ The public branch must not contain:
 
 - Use the current Linux documentation and subsystem maintainer instructions as
   the source of truth.
+- Search public mailing-list archives for overlapping work before producing a
+  candidate branch. Do not send competing CCU, pinctrl, or DTS work without a
+  stated relationship to existing RFCs.
 - Bindings and dt-binding headers must precede DTS users.
 - DTS patches must be last in a mixed series unless a maintainer gives a
   different dependency plan.
@@ -38,6 +41,11 @@ The public branch must not contain:
   generic STMMAC core code.
 - Ethernet remains disabled until reset, clocks, wrapper programming, MDIO,
   PHY reset, PHY power, and link behavior are proven.
+- Board DTS patches that enable UART, MMC, regulators, or other peripherals
+  require a boot/runtime record for the exact kernel and DTB before submission.
+- Multiple `DT_SCHEMA_FILES` entries must be passed to DT validation using the
+  delimiter expected by the kernel tree under test; for the current base, that
+  delimiter is `:`.
 - `Signed-off-by:` is human-only. Do not add it until the human submitter has
   reviewed and accepted responsibility under the DCO.
 - Use `Assisted-by:` when coding assistance materially contributed to final

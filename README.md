@@ -18,13 +18,12 @@ and private machine details do not belong on this branch.
 The current candidate work is the 8-patch platform bring-up series exported in
 [patches/](patches/).
 
-Authoritative development branches are in the Linux fork:
+The current authoritative development branch is in the Linux fork:
 
-- `candidate/a733-board-binding-clean`
-- `candidate/a733-ccu-clean`
-- `candidate/a733-pinctrl-clean`
-- `candidate/a733-mmc-binding-clean`
-- `candidate/a733-platform-clean`
+```text
+https://github.com/crescenzo77/linux.git
+candidate/a733-platform-clean-v2
+```
 
 The exported series currently covers:
 
@@ -36,6 +35,9 @@ The exported series currently covers:
 - Cubie A7S DTS with UART0 console and MMC0 storage
 
 Ethernet is not enabled and no Ethernet support is claimed.
+
+The series is not ready to send upstream until the open items in
+[docs/status.md](docs/status.md) are resolved.
 
 ## Submission Discipline
 

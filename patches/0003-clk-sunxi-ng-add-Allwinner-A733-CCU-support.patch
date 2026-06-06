@@ -1,5 +1,5 @@
-From 9ee7128d6501f66a2131ce35261fcfc319270b89 Mon Sep 17 00:00:00 2001
-From: Crescenzo <crescenzo@gmail.com>
+From e432f3dfdab95854fb5a4670d5afce5075ca5bb0 Mon Sep 17 00:00:00 2001
+From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 20:57:04 -0400
 Subject: [PATCH 3/8] clk: sunxi-ng: add Allwinner A733 CCU support
 
@@ -10,6 +10,7 @@ The controller provides clocks and resets used by devices in the main
 SoC domain.
 
 Assisted-by: OpenAI:GPT-5 Codex
+Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
  drivers/clk/sunxi-ng/Kconfig           | 11 +++
  drivers/clk/sunxi-ng/Makefile          |  2 +

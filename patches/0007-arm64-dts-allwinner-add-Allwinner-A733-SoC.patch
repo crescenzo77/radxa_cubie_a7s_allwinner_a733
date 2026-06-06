@@ -1,5 +1,5 @@
-From 314acfbafe0e8ddce6e0a18d56d8b8b4e47dc24b Mon Sep 17 00:00:00 2001
-From: Crescenzo <crescenzo@gmail.com>
+From c1e182fe6f134f0a400822e2b3dd463fd3cb1d4c Mon Sep 17 00:00:00 2001
+From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 23:28:50 -0400
 Subject: [PATCH 7/8] arm64: dts: allwinner: add Allwinner A733 SoC
 
@@ -10,6 +10,7 @@ Keep peripherals disabled by default. Board DTS files can enable only the
 devices that are proven on their hardware.
 
 Assisted-by: OpenAI:GPT-5 Codex
+Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
  .../arm64/boot/dts/allwinner/sun60i-a733.dtsi | 194 ++++++++++++++++++
  1 file changed, 194 insertions(+)

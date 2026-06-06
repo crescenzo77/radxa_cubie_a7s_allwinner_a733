@@ -6,10 +6,10 @@ root README.
 
 Current export:
 
-- branch: `candidate/a733-platform-clean`
+- branch: `candidate/a733-platform-clean-v2`
 - base: `6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5`
 - base subject: `Merge tag 'for-7.1/dm-fixes-3' of git://git.kernel.org/pub/scm/linux/kernel/git/device-mapper/linux-dm`
-- head: `c73b7fa0359f63923ff53d8d301312a55a6b244c`
+- head: `11db6033ce0040edd70cac3def158e1befc6ecb6`
 - head subject: `arm64: dts: allwinner: add Radxa Cubie A7S`
 
 Patch order:
@@ -23,9 +23,10 @@ Patch order:
 7. `arm64: dts: allwinner: add Allwinner A733 SoC`
 8. `arm64: dts: allwinner: add Radxa Cubie A7S`
 
-These files are not a mailed submission series. They intentionally do not add
-`Signed-off-by:` trailers. A human submitter must add DCO sign-off only after
-final review and responsibility for the patch content.
+These files are not a mailed submission series. They now include the human
+DCO sign-off authorized for this public candidate export, but the cover letter
+still marks the series as draft-only until the open items in `docs/status.md`
+are resolved.
 
 Before any version is sent upstream, regenerate the series from a clean kernel
 tree, run the checks in `docs/mainline-cleanup-workflow.md`, and record the
