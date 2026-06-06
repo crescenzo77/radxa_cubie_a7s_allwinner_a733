@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+uart_host="${UART_HOST:-192.168.50.11}"
+remote_root="${UART_REMOTE_ROOT:-/srv/projects/cubie-uart}"
+baud="${UART_BAUD:-115200}"
+
+usage() {
+  cat <<USAGE
+Usage: scripts/cubie-uart ACTION [args]
+
+Actions:
+  list                         List UART devices on the Strix host.
+  capture DEVICE LABEL SECONDS Capture one UART stream for SECONDS.
+  status                       Show recent remote UART logs.
+  pull-logs                    Copy remote UART logs into tools/hardware-logs/.
+
+Defaults:
+  UART_HOST=${uart_host}
+  UART_REMOTE_ROOT=${remote_root}
+  UART_BAUD=${baud}
+
+Examples:
+  scripts/cubie-uart list
+  scripts/cubie-uart capture /dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0 cubie3-boot-probe 30
+
+This script does not power-cycle boards or guess board-to-UART mapping.
+USAGE
+}
+
+ssh_target() {
+  ssh -o BatchMode=yes -o ConnectTimeout=10 "${uart_host}" "$@"
+}
+
+safe_label() {
+  printf '%s' "$1" | tr -cs 'A-Za-z0-9_.-' '-'
+}
+
+list_devices() {
+  ssh_target "set -e
+echo host=\$(hostname)
+echo ssh_target='${uart_host}'
+echo
+echo 'serial by-id:'
+ls -l /dev/serial/by-id 2>/dev/null || true
+echo
+echo 'serial by-path:'
+ls -l /dev/serial/by-path 2>/dev/null || true
+echo
+echo 'ttyUSB/ttyACM:'
+ls -l /dev/ttyUSB* /dev/ttyACM* 2>/dev/null || true
+echo
+echo 'active readers:'
+for dev in /dev/ttyUSB* /dev/ttyACM*; do
+  [ -e \"\$dev\" ] || continue
+  fuser \"\$dev\" 2>/dev/null | sed \"s#^#\$dev #\" || true
+done"
+}
+
+capture() {
+  local device="${1:-}"
+  local label="${2:-}"
+  local seconds="${3:-}"
+
+  if [ -z "${device}" ] || [ -z "${label}" ] || [ -z "${seconds}" ]; then
+    usage >&2
+    exit 2
+  fi
+
+  case "${device}" in
+    /dev/ttyUSB*|/dev/ttyACM*|/dev/serial/by-id/*|/dev/serial/by-path/*) ;;
+    *)
+      echo "refusing unexpected UART device path: ${device}" >&2
+      exit 2
+      ;;
+  esac
+
+  case "${seconds}" in
+    ''|*[!0-9]*)
+      echo "SECONDS must be an integer" >&2
+      exit 2
+      ;;
+  esac
+
+  local safe
+  safe="$(safe_label "${label}")"
+
+  ssh -o BatchMode=yes -o ConnectTimeout=10 "${uart_host}" \
+    env \
+      UART_REMOTE_ROOT="${remote_root}" \
+      UART_DEVICE="${device}" \
+      UART_LABEL="${safe}" \
+      UART_SECONDS="${seconds}" \
+      UART_BAUD="${baud}" \
+      bash -s <<'REMOTE'
+set -euo pipefail
+
+root="${UART_REMOTE_ROOT}"
+device="${UART_DEVICE}"
+label="${UART_LABEL}"
+seconds="${UART_SECONDS}"
+baud="${UART_BAUD}"
+
+mkdir -p "${root}/logs"
+
+if [ ! -e "${device}" ]; then
+  echo "FAIL: UART device does not exist: ${device}" >&2
+  exit 1
+fi
+
+timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+dev_name="$(basename "$(readlink -f "${device}")")"
+log_path="${root}/logs/${timestamp}-${label}-${dev_name}.uart.log"
+meta_path="${log_path}.json"
+
+stty -F "${device}" "${baud}" raw -echo -ixon -ixoff -crtscts 2>/dev/null \
+  || stty -F "${device}" "${baud}" raw -echo -ixon -ixoff
+
+set +e
+timeout "${seconds}" cat "${device}" > "${log_path}"
+capture_code=$?
+set -e
+
+if [ "${capture_code}" -ne 0 ] && [ "${capture_code}" -ne 124 ]; then
+  echo "FAIL: UART capture command failed with exit ${capture_code}" >&2
+  exit "${capture_code}"
+fi
+
+sha="$(sha256sum "${log_path}" | awk '{print $1}')"
+bytes="$(wc -c < "${log_path}" | tr -d ' ')"
+
+python3 - "${meta_path}" <<PY
+import json
+import sys
+
+meta = {
+    "schema_version": 1,
+    "host": "$(hostname)",
+    "device": "${device}",
+    "resolved_device": "$(readlink -f "${device}")",
+    "label": "${label}",
+    "baud": int("${baud}"),
+    "seconds": int("${seconds}"),
+    "capture_exit_code": int("${capture_code}"),
+    "log_path": "${log_path}",
+    "log_sha256": "${sha}",
+    "bytes": int("${bytes}"),
+    "captured_at_utc": "${timestamp}",
+}
+with open(sys.argv[1], "w", encoding="utf-8") as handle:
+    json.dump(meta, handle, indent=2, sort_keys=True)
+    handle.write("\\n")
+print(json.dumps(meta, indent=2, sort_keys=True))
+PY
+REMOTE
+}
+
+status() {
+  ssh_target "set -e
+echo host=\$(hostname)
+echo ssh_target='${uart_host}'
+echo remote_root='${remote_root}'
+echo
+find '${remote_root}/logs' -maxdepth 1 -type f \\( -name '*.uart.log' -o -name '*.json' \\) -printf '%TY-%Tm-%Td %TH:%TM %p\n' 2>/dev/null | sort | tail -30 || true"
+}
+
+pull_logs() {
+  local local_dir="${repo_root}/tools/hardware-logs/cubie-uart"
+  mkdir -p "${local_dir}"
+  scp -q "${uart_host}:${remote_root}/logs/"'*' "${local_dir}/" 2>/dev/null || true
+  echo "UART logs copied to ${local_dir}"
+}
+
+action="${1:-list}"
+if [ "$#" -gt 0 ]; then
+  shift
+fi
+
+case "${action}" in
+  list)
+    list_devices
+    ;;
+  capture)
+    capture "$@"
+    ;;
+  status)
+    status
+    ;;
+  pull-logs)
+    pull_logs
+    ;;
+  -h|--help|help)
+    usage
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac

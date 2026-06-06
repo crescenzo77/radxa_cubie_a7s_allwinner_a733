@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+seconds="${1:-120}"
+label="${2:-cubie-manual-boot}"
+board="${CUBIE_MANUAL_BOARD:-unknown}"
+expected_event="${CUBIE_MANUAL_EXPECTED_EVENT:-manual-reset}"
+
+case "${seconds}" in
+  ''|*[!0-9]*)
+    echo "usage: scripts/cubie-manual-boot-session [SECONDS] [LABEL]" >&2
+    exit 2
+    ;;
+esac
+
+case "${board}" in
+  cubie2|cubie3|unknown) ;;
+  *)
+    echo "CUBIE_MANUAL_BOARD must be cubie2, cubie3, or unknown" >&2
+    exit 2
+    ;;
+esac
+
+case "${expected_event}" in
+  manual-reset|manual-power-on|manual-power-off|manual-power-cycle|manual-note) ;;
+  *)
+    echo "CUBIE_MANUAL_EXPECTED_EVENT must be a cubie-event-log manual event type" >&2
+    exit 2
+    ;;
+esac
+
+network_status="${repo_root}/scripts/cubie-network-status"
+ip_discovery="${repo_root}/scripts/cubie-ip-discovery"
+capture_window="${repo_root}/scripts/cubie-boot-capture-window"
+event_log="${repo_root}/scripts/cubie-event-log"
+runtime_evidence="${repo_root}/scripts/cubie-runtime-evidence"
+map_candidates="${repo_root}/scripts/cubie-uart-map-candidates"
+runtime_gate="${repo_root}/scripts/cubie-runtime-gate"
+inventory_proposal="${repo_root}/scripts/cubie-uart-inventory-proposal"
+
+for helper in "${network_status}" "${ip_discovery}" "${capture_window}" "${event_log}" "${runtime_evidence}" "${map_candidates}" "${runtime_gate}" "${inventory_proposal}"; do
+  if [ ! -x "${helper}" ]; then
+    echo "missing executable helper: ${helper}" >&2
+    exit 1
+  fi
+done
+
+safe_label="$(printf '%s' "${label}" | tr -cs 'A-Za-z0-9_.-' '-')"
+
+echo "Cubie manual boot evidence session"
+echo "seconds=${seconds}"
+echo "label=${safe_label}"
+echo "expected_board=${board}"
+echo "expected_manual_event=${expected_event}"
+echo "No power action will be performed by this script."
+echo
+echo "During the capture window, manually reset or power exactly one Cubie."
+echo "Afterward, record the real action if it happened:"
+echo "scripts/cubie-event-log add --board ${board} --event ${expected_event} --note \"label=${safe_label} manual action during capture\""
+echo
+
+"${event_log}" add \
+  --board "${board}" \
+  --event manual-note \
+  --actor codex-manual-boot-session \
+  --note "opened manual boot evidence session label=${safe_label} seconds=${seconds} expected_event=${expected_event}" >/dev/null
+
+echo "== pre-capture network =="
+"${network_status}" || true
+
+echo
+echo "== ip discovery =="
+"${ip_discovery}" || true
+
+echo
+echo "== uart capture window =="
+set +e
+"${capture_window}" "${seconds}" "${safe_label}"
+capture_rc=$?
+set -e
+
+echo
+echo "== post-capture network =="
+"${network_status}" || true
+
+echo
+echo "== post-capture ip discovery =="
+"${ip_discovery}" || true
+
+echo
+echo "== latest event log =="
+"${event_log}" list --limit 12 || true
+
+echo
+echo "== final runtime evidence =="
+"${runtime_evidence}" || true
+
+echo
+echo "== uart mapping candidates =="
+"${map_candidates}" || true
+
+echo
+echo "== runtime gate =="
+"${runtime_gate}" || true
+
+echo
+echo "== inventory proposal =="
+"${inventory_proposal}" || true
+
+exit "${capture_rc}"

@@ -1,0 +1,253 @@
+{
+  "boards": [
+    {
+      "name": "cubie2",
+      "ip": "192.168.50.85",
+      "model": "Radxa Cubie A7S",
+      "power_switch": null,
+      "uart": {
+        "host": "192.168.50.11",
+        "device": null,
+        "baud": 115200,
+        "mapping_status": "unconfirmed"
+      }
+    },
+    {
+      "name": "cubie3",
+      "ip": "192.168.50.95",
+      "model": "Radxa Cubie A7S",
+      "power_switch": null,
+      "uart": {
+        "host": "192.168.50.11",
+        "device": null,
+        "baud": 115200,
+        "mapping_status": "unconfirmed"
+      }
+    }
+  ],
+    "uart_adapters": [
+        {
+            "host": "192.168.50.11",
+            "device": "/dev/ttyUSB0",
+            "by_path": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1:1.0-port0",
+            "model": "CP2102_USB_to_UART_Bridge_Controller",
+            "vendor": "Silicon_Labs",
+            "serial": "0001",
+            "baud": 115200,
+            "mapping_status": "unconfirmed",
+            "stable_name_preference": "by-path"
+        },
+        {
+            "host": "192.168.50.11",
+            "device": "/dev/ttyUSB1",
+            "by_path": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0",
+            "by_id": "/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0",
+            "model": "CP2102_USB_to_UART_Bridge_Controller",
+            "vendor": "Silicon_Labs",
+            "serial": "0001",
+            "baud": 115200,
+            "mapping_status": "unconfirmed",
+            "stable_name_preference": "by-path"
+        }
+    ],
+    "power_switches": [
+    {
+      "id": "switch-a",
+      "ip": null,
+      "controls_board": null,
+      "api": null,
+      "automation_enabled": false,
+      "mapping_status": "unconfirmed"
+    },
+    {
+      "id": "switch-b",
+      "ip": null,
+      "controls_board": null,
+      "api": null,
+      "automation_enabled": false,
+      "mapping_status": "unconfirmed"
+    }
+  ],
+  "observations": [
+    {
+      "observed_at_utc": "2026-06-06T12:25:18Z",
+      "type": "uart-passive-probe",
+      "host": "192.168.50.11",
+      "results": [
+        {
+          "device": "/dev/ttyUSB0",
+          "baud": 115200,
+          "seconds": 10,
+          "bytes": 0,
+          "mapping_status": "unconfirmed"
+        },
+        {
+          "device": "/dev/ttyUSB1",
+          "baud": 115200,
+          "seconds": 10,
+          "bytes": 0,
+          "mapping_status": "unconfirmed"
+        }
+      ]
+    },
+    {
+      "observed_at_utc": "2026-06-06T12:25:00Z",
+      "type": "network-ping",
+      "results": [
+        {
+          "board": "cubie2",
+          "ip": "192.168.50.85",
+          "result": "no-reply"
+        },
+        {
+          "board": "cubie3",
+          "ip": "192.168.50.95",
+          "result": "reply"
+        }
+      ]
+    },
+        {
+            "observed_at_utc": "2026-06-06T12:26:00Z",
+            "type": "ssh-probe",
+            "results": [
+        {
+          "board": "cubie2",
+          "ip": "192.168.50.85",
+          "result": "port-22-timeout"
+        },
+        {
+          "board": "cubie3",
+          "ip": "192.168.50.95",
+          "result": "ssh-reachable-key-denied"
+                }
+            ]
+        },
+        {
+            "observed_at_utc": "2026-06-06T13:02:15Z",
+            "type": "uart-identity-probe",
+            "host": "192.168.50.11",
+            "results": [
+                {
+                    "device": "/dev/ttyUSB0",
+                    "by_path": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1:1.0-port0",
+                    "model": "CP2102_USB_to_UART_Bridge_Controller",
+                    "serial": "0001",
+                    "mapping_status": "unconfirmed"
+                },
+                {
+                    "device": "/dev/ttyUSB1",
+                    "by_path": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0",
+                    "by_id": "/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0",
+                    "model": "CP2102_USB_to_UART_Bridge_Controller",
+                    "serial": "0001",
+                    "mapping_status": "unconfirmed"
+                }
+            ],
+            "conclusion": "Both UART adapters report the same serial. Prefer by-path names until board-to-UART mapping is confirmed by boot logs."
+        },
+        {
+            "observed_at_utc": "2026-06-06T13:03:46Z",
+            "type": "uart-bypath-passive-probe",
+            "host": "192.168.50.11",
+            "results": [
+                {
+                    "device": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1:1.0-port0",
+                    "resolved_device": "/dev/ttyUSB0",
+                    "baud": 115200,
+                    "seconds": 5,
+                    "bytes": 0,
+                    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                    "mapping_status": "unconfirmed"
+                },
+                {
+                    "device": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0",
+                    "resolved_device": "/dev/ttyUSB1",
+                    "baud": 115200,
+                    "seconds": 5,
+                    "bytes": 0,
+                    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                    "mapping_status": "unconfirmed"
+                }
+            ],
+            "conclusion": "The by-path capture path works for both adapters. Passive captures were empty, so board-to-UART mapping still requires boot output."
+        },
+        {
+            "observed_at_utc": "2026-06-06T13:12:32Z",
+            "type": "uart-host-driver-probe",
+            "host": "192.168.50.11",
+            "results": [
+                {
+                    "device": "/dev/ttyUSB0",
+                    "usb_path": "1-1.1",
+                    "driver": "cp210x",
+                    "kernel_log": "cp210x converter now attached to ttyUSB0",
+                    "baud": 115200,
+                    "host_status": "attached-readable"
+                },
+                {
+                    "device": "/dev/ttyUSB1",
+                    "usb_path": "1-1.2",
+                    "driver": "cp210x",
+                    "kernel_log": "cp210x converter now attached to ttyUSB1",
+                    "baud": 115200,
+                    "host_status": "attached-readable"
+                }
+            ],
+            "conclusion": "The Strix USB serial host path is present and readable. Empty captures now point to board output, wiring, mapping, baud, or power state rather than an obvious host driver absence."
+        },
+        {
+            "observed_at_utc": "2026-06-06T13:14:33Z",
+            "type": "network-refresh",
+            "results": [
+                {
+                    "board": "cubie2",
+                    "ip": "192.168.50.85",
+                    "ping": "no-reply",
+                    "ssh": "probe-terminated-after-timeout"
+                },
+                {
+                    "board": "cubie3",
+                    "ip": "192.168.50.95",
+                    "ping": "reply",
+                    "ssh": "port-22-open"
+                }
+            ],
+            "conclusion": "Network state is unchanged: cubie3 is reachable but credentials remain unresolved; cubie2 is not reachable on the network."
+        },
+        {
+            "observed_at_utc": "2026-06-06T13:15:40Z",
+            "type": "bounded-network-status",
+            "results": [
+                {
+                    "board": "cubie2",
+                    "ip": "192.168.50.85",
+                    "ping": "no-reply",
+                    "tcp_port": 22,
+                    "tcp_status": "timeout"
+                },
+                {
+                    "board": "cubie3",
+                    "ip": "192.168.50.95",
+                    "ping": "reply",
+                    "tcp_port": 22,
+                    "tcp_status": "open"
+                }
+            ],
+            "conclusion": "The bounded network helper avoids hanging probes and confirms cubie3 is reachable while cubie2 remains unreachable."
+        },
+        {
+            "observed_at_utc": "2026-06-06T13:18:23Z",
+            "type": "passive-power-switch-discovery",
+            "method": "local ARP cache and short mDNS browse samples for _hap._tcp, _ewelink._tcp, and _kasa._tcp",
+            "result": "no-confirmed-switch-candidate",
+            "conclusion": "No power-switch IP, API, or board mapping can be inferred safely from passive LAN data. Power automation remains disabled."
+        }
+    ],
+  "rules": [
+    "Do not automate power control until switch IPs, API, and board mapping are confirmed.",
+    "Require explicit human approval before power-off, power-on, or power-cycle.",
+    "Log every power event with timestamp, board, switch, reason, and operator.",
+    "Do not assume UART device mapping until boot output confirms it."
+  ],
+  "uart_host": "192.168.50.11"
+}

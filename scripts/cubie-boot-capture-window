@@ -1,0 +1,152 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+seconds="${1:-120}"
+label="${2:-manual-boot-window}"
+max_seconds="${CUBIE_CAPTURE_MAX_SECONDS:-600}"
+
+case "${seconds}" in
+  ''|*[!0-9]*)
+    echo "usage: scripts/cubie-boot-capture-window [SECONDS] [LABEL]" >&2
+    exit 2
+    ;;
+esac
+
+case "${max_seconds}" in
+  ''|*[!0-9]*)
+    echo "CUBIE_CAPTURE_MAX_SECONDS must be an integer" >&2
+    exit 2
+    ;;
+esac
+
+if [ "${seconds}" -gt "${max_seconds}" ]; then
+  echo "refusing capture longer than ${max_seconds} seconds" >&2
+  exit 2
+fi
+
+safe_label="$(printf '%s' "${label}" | tr -cs 'A-Za-z0-9_.-' '-')"
+
+uart0="${CUBIE_UART0:-/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1:1.0-port0}"
+uart1="${CUBIE_UART1:-/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0}"
+cubie_uart="${repo_root}/scripts/cubie-uart"
+event_log="${repo_root}/scripts/cubie-event-log"
+runtime_evidence="${repo_root}/scripts/cubie-runtime-evidence"
+
+if [ ! -x "${cubie_uart}" ]; then
+  echo "missing executable helper: ${cubie_uart}" >&2
+  exit 1
+fi
+
+pid0=""
+pid1=""
+status=0
+
+log_capture_end() {
+  local final_status="$1"
+  local detail="$2"
+
+  if [ -x "${event_log}" ]; then
+    "${event_log}" add \
+      --board unknown \
+      --event capture-end \
+      --actor codex-capture-window \
+      --note "label=${safe_label} status=${final_status} ${detail}" >/dev/null
+  fi
+}
+
+abort_capture() {
+  trap '' INT TERM HUP
+  echo "Interrupted; stopping UART capture children." >&2
+  if [ -n "${pid0}" ]; then
+    kill "${pid0}" 2>/dev/null || true
+  fi
+  if [ -n "${pid1}" ]; then
+    kill "${pid1}" 2>/dev/null || true
+  fi
+  set +e
+  if [ -n "${pid0}" ]; then
+    wait "${pid0}" 2>/dev/null
+  fi
+  if [ -n "${pid1}" ]; then
+    wait "${pid1}" 2>/dev/null
+  fi
+  set -e
+  log_capture_end 130 "interrupted=1" || true
+  exit 130
+}
+
+trap abort_capture INT TERM HUP
+
+echo "Starting passive boot capture window."
+echo "seconds=${seconds}"
+echo "label=${safe_label}"
+echo "uart0=${uart0}"
+echo "uart1=${uart1}"
+echo "No power action will be performed."
+
+if [ -x "${event_log}" ]; then
+  "${event_log}" add \
+    --board unknown \
+    --event capture-start \
+    --actor codex-capture-window \
+    --note "label=${safe_label} seconds=${seconds} uart0=${uart0} uart1=${uart1}" >/dev/null
+fi
+
+"${cubie_uart}" capture "${uart0}" "${safe_label}-uart0" "${seconds}" &
+pid0=$!
+
+"${cubie_uart}" capture "${uart1}" "${safe_label}-uart1" "${seconds}" &
+pid1=$!
+
+set +e
+wait "${pid0}"
+rc0=$?
+wait "${pid1}"
+rc1=$?
+set -e
+
+trap - INT TERM HUP
+
+if [ "${rc0}" -ne 0 ]; then
+  status="${rc0}"
+elif [ "${rc1}" -ne 0 ]; then
+  status="${rc1}"
+fi
+
+pull_rc=0
+report_rc=0
+evidence_rc=0
+
+set +e
+"${cubie_uart}" pull-logs
+pull_rc=$?
+set -e
+if [ "${pull_rc}" -ne 0 ]; then
+  echo "warning: UART log pull failed with ${pull_rc}" >&2
+fi
+
+if [ -x "${repo_root}/scripts/cubie-uart-report" ]; then
+  set +e
+  "${repo_root}/scripts/cubie-uart-report" --limit 8
+  report_rc=$?
+  set -e
+  if [ "${report_rc}" -ne 0 ]; then
+    echo "warning: UART report failed with ${report_rc}" >&2
+  fi
+fi
+if [ -x "${event_log}" ]; then
+  log_capture_end "${status}" "rc0=${rc0} rc1=${rc1} pull_rc=${pull_rc} report_rc=${report_rc}" || true
+fi
+if [ -x "${runtime_evidence}" ]; then
+  set +e
+  "${runtime_evidence}"
+  evidence_rc=$?
+  set -e
+  if [ "${evidence_rc}" -ne 0 ]; then
+    echo "warning: runtime evidence generation failed with ${evidence_rc}" >&2
+  fi
+fi
+
+exit "${status}"
