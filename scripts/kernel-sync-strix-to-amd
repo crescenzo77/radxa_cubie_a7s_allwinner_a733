@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+strix_host="${STRIX_HOST:-192.168.50.11}"
+amd_host="${AMD_HOST:-192.168.50.252}"
+source_path="${KERNEL_SYNC_SOURCE:-/srv/projects/cubie-a7s-armbian/sources/mainline-linux}"
+dest_path="${KERNEL_SYNC_DEST:-/srv/projects/kernel-work/scratch/strix-mainline-linux}"
+delete_flag="${KERNEL_SYNC_DELETE:-0}"
+progress_flag="${KERNEL_SYNC_PROGRESS:-0}"
+
+usage() {
+  cat <<USAGE
+Usage: scripts/kernel-sync-strix-to-amd ACTION
+
+Actions:
+  dry-run   Show what would sync.
+  sync      Sync Strix kernel tree to AMD scratch.
+  status    Show source and destination git status.
+
+Defaults:
+  STRIX_HOST=${strix_host}
+  AMD_HOST=${amd_host}
+  KERNEL_SYNC_SOURCE=${source_path}
+  KERNEL_SYNC_DEST=${dest_path}
+  KERNEL_SYNC_PROGRESS=${progress_flag}
+USAGE
+}
+
+rsync_args() {
+  local args=(
+    -aH
+    --stats
+    --exclude=.tmp_versions/
+    --exclude='*.o'
+    --exclude='*.cmd'
+    --exclude='*.ko'
+    --exclude='*.mod'
+    --exclude='*.mod.c'
+    --exclude='Module.symvers'
+    --exclude='modules.order'
+    --exclude='/vmlinux'
+    --exclude='/vmlinux.*'
+    --exclude='/System.map'
+    --exclude='arch/arm64/boot/Image'
+    --exclude='arch/arm64/boot/Image.*'
+    --exclude='*.dtb'
+    --exclude='*.dtbo'
+  )
+  if [ "${delete_flag}" = "1" ]; then
+    args+=(--delete)
+  fi
+  if [ "${progress_flag}" = "1" ]; then
+    args+=(--info=stats2,progress2)
+  fi
+  printf '%q ' "${args[@]}"
+}
+
+remote_status() {
+  ssh -o BatchMode=yes -o ConnectTimeout=10 "$1" "set -e
+path='$2'
+echo host=\$(hostname)
+echo path=\$path
+if [ -d \"\$path\" ]; then
+  du -sh \"\$path\" || true
+  git -C \"\$path\" rev-parse --short HEAD 2>/dev/null || true
+  git -C \"\$path\" branch --show-current 2>/dev/null || true
+  git -C \"\$path\" status --short 2>/dev/null | sed -n '1,80p' || true
+else
+  echo missing
+fi"
+}
+
+sync_tree() {
+  local dry="${1:-0}"
+  local dry_arg=""
+  if [ "${dry}" = "1" ]; then
+    dry_arg="--dry-run"
+  fi
+
+  ssh -o BatchMode=yes -o ConnectTimeout=10 "${amd_host}" "mkdir -p '${dest_path}'"
+  ssh -o BatchMode=yes -o ConnectTimeout=10 "${strix_host}" \
+    "rsync ${dry_arg} $(rsync_args) -e 'ssh -o BatchMode=yes -o ConnectTimeout=10' '${source_path}/' '${amd_host}:${dest_path}/'"
+}
+
+action="${1:-status}"
+case "${action}" in
+  dry-run)
+    sync_tree 1
+    ;;
+  sync)
+    sync_tree 0
+    ;;
+  status)
+    echo "== source =="
+    remote_status "${strix_host}" "${source_path}"
+    echo
+    echo "== destination =="
+    remote_status "${amd_host}" "${dest_path}"
+    ;;
+  -h|--help|help)
+    usage
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac

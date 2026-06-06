@@ -1,1 +1,9 @@
 .aider*
+__pycache__/
+*.pyc
+tools/bench/results/
+tools/proof-logs/
+tools/hardware-logs/
+task-packets/kernel/context-cards/
+task-packets/kernel/reviews/
+task-packets/kernel/runtime-proof/

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+bench_py="${repo_root}/tools/bench/strix_runtime_bench.py"
+
+bench_host="${RUNTIME_BENCH_HOST:-${STRIX_BENCH_HOST:-192.168.50.11}}"
+target_name="${RUNTIME_BENCH_TARGET:-${STRIX_BENCH_TARGET:-manual-runtime}}"
+base_url="${RUNTIME_BENCH_BASE_URL:-${STRIX_BENCH_BASE_URL:-http://127.0.0.1:8082/v1}}"
+results_dir="${RUNTIME_BENCH_RESULTS_DIR:-${STRIX_BENCH_RESULTS_DIR:-${repo_root}/tools/bench/results}}"
+timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+safe_target="$(printf '%s' "${target_name}" | tr -cs 'A-Za-z0-9_.-' '-')"
+result_path="${results_dir}/runtime-${safe_target}-${timestamp}.jsonl"
+
+mkdir -p "${results_dir}"
+
+echo "Runtime benchmark"
+echo "host=${bench_host}"
+echo "target=${target_name}"
+echo "base_url=${base_url}"
+echo "result=${result_path}"
+echo
+
+ssh -o BatchMode=yes -o ConnectTimeout=10 "${bench_host}" \
+  python3 - \
+    --target-name "${target_name}" \
+    --base-url "${base_url}" \
+    "$@" \
+  < "${bench_py}" \
+  | tee "${result_path}"
+
+echo
+echo "Wrote ${result_path}"

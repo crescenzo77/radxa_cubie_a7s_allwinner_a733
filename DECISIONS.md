@@ -1,5 +1,57 @@
 # Decisions
 
+## 2026-06-06 — Hold independent A733 CCU, pinctrl, and GMAC submission work
+
+Decision:
+Do not advance local A733 CCU, pinctrl, or GMAC work into a candidate kernel
+submission path until overlap and evidence blockers are resolved.
+
+Policy:
+
+- Do not submit independent A733 CCU/PRCM patches while Junhui Liu's in-flight
+  Linux RFC remains the active reference point.
+- Do not submit independent A733 pinctrl patches while Andre Przywara's
+  in-flight Linux RFC remains the active reference point.
+- Do not submit A733 GMAC binding or DTS support that depends on unverified
+  clock/reset identifiers or incomplete CCU coverage.
+- Do not treat the cortex bringup proof as kernel validation evidence; it only
+  proves retrieval infrastructure.
+- Any future A733 task packet touching these areas must include proof of
+  coordination, rebase/justification against the in-flight RFCs, hardware
+  evidence, and validation proof IDs.
+
+Rationale:
+Local review cards from the RTX 3090, RX 7900 XT, and Strix repeatedly flagged
+the same maintainer blockers: incomplete A733 CCU/reset coverage, sparse or
+unverified clock/reset indices, unresolved pinctrl IRQ/bank evidence, direct
+overlap with in-flight Linux RFCs, and insufficient GMAC-specific clock/reset
+evidence.
+
+## 2026-06-06 — Place kernel cortex on ThinkCentre and AMD
+
+Decision:
+Integrate the kernel knowledge-cortex sidecar as a companion to the kernel
+patch workflow with ThinkCentre as the container/storage host and AMD as the
+RX 7900 XT embedding worker.
+
+Policy:
+
+- ThinkCentre `192.168.50.225` owns Qdrant, ingestion staging, queues, logs,
+  and vector storage under `/srv/projects/kernel-services/cortex`.
+- AMD `192.168.50.252` owns the ROCm embedding endpoint under
+  `/srv/projects/kernel-cortex`, using RX 7900 XT as ROCm GPU `GPU[0]`.
+- The Mac mini remains the Codex Desktop cockpit only. Do not put Qdrant,
+  Docker Desktop, validation containers, or sustained model workloads there.
+- The AMD-to-Mac direct link `192.168.200.1` to `192.168.200.2` is reserved
+  for later bulk staging, not the default service-placement reason.
+- The cortex retrieves evidence only. It must not write patches, promote
+  branches, add trailers, submit mail, or override proof logs.
+
+Rationale:
+The data moving through semantic indexing is mostly text chunks, metadata, and
+vectors, so 1GbE is sufficient. The stable placement is ThinkCentre for
+containers/storage and AMD for GPU batches.
+
 ## 2026-05-29 — Align agent context with archive-first plan structure
 
 Decision:
@@ -895,3 +947,52 @@ Consequences:
 - Hermes must not edit canonical repositories, install live skills, restart
   services, change routing, supervise failures autonomously, or become an
   approval daemon.
+
+## 2026-06-06 - Deploy ThinkCentre/AMD kernel cortex proof
+
+Decision:
+Run the private kernel knowledge-cortex sidecar with ThinkCentre
+`192.168.50.225` as the Qdrant/container/storage host and AMD
+`192.168.50.252` as the RX 7900 XT embedding/research worker. Keep the Mac mini
+out of Docker/model service placement.
+
+Rationale:
+ThinkCentre is the better always-on container host. AMD has the GPU headroom
+for batch embedding and local research synthesis. The Mac mini remains useful
+as the Codex Desktop control surface, but it should not spend limited headroom
+on sustained service work.
+
+Consequences:
+- Qdrant remains loopback-bound on ThinkCentre.
+- AMD exposes embeddings at `http://192.168.50.252:8091/v1`.
+- AMD research synthesis remains local to AMD at `http://127.0.0.1:8092/v1`.
+- `BAAI/bge-large-en-v1.5` currently requires small ingest chunks because vLLM
+  reports a 512-token maximum input length for the served model.
+- Public kernel repos must receive only kernel-development artifacts, not
+  private topology or service-state records.
+
+## 2026-06-06 - Use all local model lanes for token offload
+
+Decision:
+Codex Desktop remains the dispatcher, but large kernel inputs must be reduced
+locally first whenever practical. Use AMD RTX 3090 for fast triage, AMD RX
+7900 XT for research/secondary review, and Strix for long-context tertiary
+maintainer review. When hardware is idle, it should produce advisory context
+cards rather than waiting for Codex to read raw logs, diffs, or threads.
+
+Rationale:
+The local machines can spend local tokens and wall time on bulk reading while
+Codex preserves context for orchestration, verification, and final decisions.
+The useful result is not necessarily consensus; disagreement between lanes is
+itself a review signal.
+
+Consequences:
+- Large logs go through `scripts/kernel-log-triage`.
+- Large diffs go through `scripts/kernel-diff-brief`.
+- Evidence searches go through `scripts/kernel-research-query`.
+- Promotion-sensitive artifacts go through `scripts/kernel-review-matrix`.
+- Idle review state is tracked in
+  `task-packets/kernel/context-cards/idle-review-ledger.json`.
+- Local model context cards are advisory and must cite source/proof IDs.
+- Proof logs, git state, hardware evidence, and human approval remain
+  authoritative.

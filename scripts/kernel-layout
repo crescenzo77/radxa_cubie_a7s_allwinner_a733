@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+amd_host="${AMD_HOST:-192.168.50.252}"
+strix_host="${STRIX_HOST:-192.168.50.11}"
+thinkcentre_host="${THINKCENTRE_HOST:-192.168.50.225}"
+
+usage() {
+  cat <<USAGE
+Usage: scripts/kernel-layout ACTION
+
+Actions:
+  init      Create the current remote directory layout.
+  status    Show key paths and services by IP.
+  scan      List likely Cubie/kernel trees already present.
+
+Defaults:
+  AMD_HOST=${amd_host}
+  STRIX_HOST=${strix_host}
+  THINKCENTRE_HOST=${thinkcentre_host}
+USAGE
+}
+
+ssh_run() {
+  local host="$1"
+  shift
+  ssh -o BatchMode=yes -o ConnectTimeout=10 "${host}" "$@"
+}
+
+init_layout() {
+  ssh_run "${amd_host}" "set -e
+mkdir -p /srv/projects/kernel-work/{mirrors,scratch,proof-logs,outgoing,task-packets,cache}
+mkdir -p /srv/projects/kernel-proof/{context,proof-logs,scratch}
+mkdir -p /srv/projects/kernel-cortex/{models,cache/huggingface,logs,amd}
+find /srv/projects/kernel-work /srv/projects/kernel-proof /srv/projects/kernel-cortex -type d -exec chmod u+rwX,g+rwX {} +
+echo initialized ${amd_host} kernel-work/kernel-proof"
+
+  ssh_run "${strix_host}" "set -e
+mkdir -p /srv/projects/cubie-hardware-lab/{uart-logs,power-events,inventory,boot-artifacts,notes}
+mkdir -p /srv/projects/cubie-uart/logs
+find /srv/projects/cubie-hardware-lab /srv/projects/cubie-uart -type d -exec chmod u+rwX,g+rwX {} +
+echo initialized ${strix_host} cubie hardware lab"
+
+  ssh_run "${thinkcentre_host}" "set -e
+mkdir -p /srv/projects/kernel-services/{gateway,proof-index,status}
+mkdir -p /srv/projects/kernel-services/cortex/{qdrant/storage,ingest,cache,exports,logs,tools,thinkcentre}
+find /srv/projects/kernel-services -type d -exec chmod u+rwX,g+rwX {} +
+echo initialized ${thinkcentre_host} kernel-services"
+}
+
+status() {
+  echo "== ${amd_host}: build/proof host =="
+  ssh_run "${amd_host}" "set -e
+hostname
+find /srv/projects/kernel-work /srv/projects/kernel-proof -maxdepth 2 -type d -print 2>/dev/null | sort
+echo
+docker image inspect local/kernel-build-validate:20260606 --format 'validation_image={{.Id}}' 2>/dev/null || echo validation_image=missing
+rocm-smi --showproductname --showbus --showmeminfo vram 2>/dev/null | sed -n '1,80p' || true
+ss -ltnp 2>/dev/null | grep -E ':8001 ' || true"
+
+  echo
+  echo "== ${strix_host}: review/UART host =="
+  ssh_run "${strix_host}" "set -e
+hostname
+find /srv/projects/cubie-hardware-lab /srv/projects/cubie-uart -maxdepth 2 -type d -print 2>/dev/null | sort
+echo
+ls -l /dev/ttyUSB* /dev/ttyACM* /dev/serial/by-id/* 2>/dev/null || true
+ss -ltnp 2>/dev/null | grep -E ':8082 ' || true"
+
+  echo
+  echo "== ${thinkcentre_host}: lightweight services host =="
+  ssh_run "${thinkcentre_host}" "set -e
+hostname
+find /srv/projects/kernel-services -maxdepth 2 -type d -print 2>/dev/null | sort || true
+curl -fsS http://127.0.0.1:6333/healthz 2>/dev/null || echo qdrant_health=unavailable
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | sed -n '1,80p'"
+}
+
+scan() {
+  echo "== local Mac project paths =="
+  find /Users/enzo/projects -maxdepth 5 -type d \( -name .git -prune -o -iname '*linux*' -o -iname '*kernel*' -o -iname '*armbian*' \) -print | sort
+
+  echo
+  echo "== ${amd_host} likely paths =="
+  ssh_run "${amd_host}" "find /srv /home/enzo -maxdepth 4 -type d \\( -name .git -prune -o -iname '*linux*' -o -iname '*kernel*' -o -iname '*armbian*' \\) -print 2>/dev/null | sort | sed -n '1,220p'"
+
+  echo
+  echo "== ${strix_host} likely paths =="
+  ssh_run "${strix_host}" "find /srv /home/enzo -maxdepth 4 -type d \\( -name .git -prune -o -iname '*linux*' -o -iname '*kernel*' -o -iname '*armbian*' \\) -print 2>/dev/null | sort | sed -n '1,260p'"
+}
+
+action="${1:-status}"
+
+case "${action}" in
+  init)
+    init_layout
+    ;;
+  status)
+    status
+    ;;
+  scan)
+    scan
+    ;;
+  -h|--help|help)
+    usage
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac

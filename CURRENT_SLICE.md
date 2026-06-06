@@ -1,5 +1,156 @@
 # Current Slice
 
+## Active: Implement local token-offload workflow
+
+## Current State
+
+The kernel patch workflow now has an initial private evidence-retrieval
+sidecar online and is being expanded into a local token-offload workflow:
+
+- ThinkCentre `192.168.50.225` is the Qdrant/container/storage host.
+- AMD `192.168.50.252` provides the RTX 3090 fast review lane and RX 7900 XT
+  research/embedding lane.
+- Strix `192.168.50.11` provides the long-context tertiary review lane.
+- Mac mini remains Codex Desktop only and does not gain containers or sustained
+  model work.
+
+This slice started Qdrant on ThinkCentre and the embedding/research services on
+AMD. It must still not change model-dispatch, change Open WebUI, alter systemd,
+or publish private topology to the public kernel repo.
+
+Proof is recorded at:
+
+- `task-packets/kernel/research/cortex-bringup-proof-20260606.md`
+
+Token-offload commands now generate compact context cards under
+`task-packets/kernel/context-cards/`.
+
+Idle-review state is tracked in
+`task-packets/kernel/context-cards/idle-review-ledger.json`.
+Use `scripts/kernel-idle-ledger status` to inspect coverage, backfill from
+older review-matrix cards, or mark a card as consumed after Codex uses it.
+
+All current file-based review cards have been consumed by Codex. The resulting
+A733 guardrail is: hold independent CCU/PRCM, pinctrl, and GMAC submission work
+until RFC overlap, clock/reset, pinctrl hardware, and proof-log evidence
+blockers are resolved.
+
+A 2026-06-06 review of Mac-local, ThinkCentre, and Strix historical patch-work
+documentation recovered additional guardrails now summarized in
+`runbooks/cubie-a7s-hardware-lab.md`: diagnostic IRQ/pinctrl branches stay out
+of upstream series, vendor U-Boot DTB handoff failures must not pollute
+mainline DTS style, and review bundles must prove complete evidence reads.
+
+The public kernel-development repo has been updated and pushed so its A733
+export is labeled as a draft review snapshot rather than a sendable candidate.
+Current public `main`: `d1a83dbd255fdabbc0f806ab2ac739545f09ba34`.
+The ThinkCentre mirror at `192.168.50.225` is also current at that commit.
+
+The AMD validation container now has a fresh proof for public v3:
+`a733-v3-public-git-diff-check-997b45f3f8ff` is `PASS` for
+`git diff --check 6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5 HEAD`.
+Per-patch diff hygiene proofs also pass for patches 1 through 9. Full
+per-patch `defconfig` proofs also pass for patches 1 through 9. Full per-patch
+targeted CCU/pinctrl object-build proofs now pass where those driver objects
+exist. Per-patch DT binding proofs now pass for binding patches. Per-patch DTB
+validation now passes for patches 8 and 9, where the Cubie A7S board DTB
+exists. Local generated `boot-artifacts/` are ignored and remain unpublished.
+The public workflow now records the correct `checkpatch` invocation: run it
+from the Linux tree root against exported patch inputs.
+
+Fresh A733 RFC overlap recheck is recorded at
+`task-packets/kernel/research/a733-rfc-recheck-20260606.md` and indexed in
+Qdrant. The current action remains hold/coordinate for independent CCU/PRCM
+and pinctrl work.
+
+Idle-review ledger is clean: 39 reviewed artifacts, 39 consumed, 0 pending
+idle candidates.
+
+The first hardware-evidence check is passive only: Strix sees two UART devices,
+both produced 0 bytes during 10-second captures, `cubie3` replies to ping, and
+`cubie2` does not. `cubie3` answers SSH but current key/user attempts are
+denied. Both CP2102 UART adapters report serial `0001`; use
+`/dev/serial/by-path/` names until board-to-UART mapping is confirmed.
+By-path passive captures have been verified for both adapters and produced
+0-byte logs without power-cycling. `scripts/cubie-boot-capture-window` now
+opens simultaneous passive captures on both UARTs for a future human-triggered
+boot test. The helper has been locally reviewed and hardened with signal
+cleanup and a maximum capture-duration guard. `scripts/cubie-uart-report` now
+summarizes pulled UART captures after each boot-capture window. Strix host
+diagnostics show both adapters are attached through `cp210x` and readable at
+115200 baud, so empty captures now point past the host-driver layer.
+`scripts/cubie-network-status` now performs bounded ping and port-22 checks
+from the inventory; current state is still `cubie3` reachable and `cubie2`
+unreachable.
+`scripts/cubie-runtime-evidence` now builds a reviewable packet from inventory,
+network status, and UART logs. Current generated packets correctly state
+`runtime-evidence-missing`.
+`scripts/cubie-event-log` now records human manual board actions under ignored
+hardware logs, and runtime evidence packets include the latest manual events.
+`scripts/cubie-boot-capture-window` now treats post-capture pull/report/evidence
+helpers as non-fatal so their failures cannot hide the actual UART capture
+result. Its interrupt cleanup ignores repeat signals while killing/waiting for
+capture children, records `capture-end`, and exits 130. Two 1-second passive
+Strix smoke windows after this hardening completed successfully and generated
+new event-aware runtime evidence packets, but all UART logs remain empty.
+`scripts/cubie-manual-boot-session` now bundles the next human-gated test into
+one command: bounded network precheck, passive UART capture window, bounded
+network postcheck, recent manual-event display, and final runtime-evidence
+generation. A 1-second smoke run completed without power action and correctly
+left the evidence state as `runtime-evidence-missing`.
+`scripts/cubie-uart-map-candidates` now provides a read-only board-to-UART
+mapping report from capture labels, manual event-log notes, UART metadata, and
+non-empty boot logs. It is integrated into the manual boot session and is
+verified to produce no candidates for current empty logs and a
+`strong-candidate` result for a synthetic U-Boot fixture with a logged Cubie
+manual reset.
+`scripts/cubie-runtime-evidence` now includes the same mapping-candidate
+summary inside generated evidence packets. Current packets show
+`mapping candidates: 0`; a synthetic U-Boot fixture produces a
+`strong-candidate` row inside the runtime evidence packet.
+`scripts/cubie-runtime-gate` now gives a deterministic gate state for the
+Cubie hardware workflow. Current real state is `manual-capture-required`; a
+malformed inventory reports `inventory-invalid`; a synthetic U-Boot fixture
+with a logged manual reset reports `runtime-ready`. The manual boot session now
+prints this gate after evidence and mapping reports.
+`scripts/cubie-uart-inventory-proposal` now emits read-only inventory update
+proposals after a strong board-to-UART candidate exists. Current real state is
+`no-proposal`; a synthetic U-Boot fixture produces `proposal-ready` for
+`cubie3` with `apply_automatically=false`. It also includes an in-memory
+unified diff preview so a human can review the exact inventory change before
+editing any file.
+Passive LAN discovery did not identify confirmed power-switch candidates.
+The Cubie hardware readiness packet is indexed in ThinkCentre Qdrant and was
+reviewed by all three local lanes. Local consensus is that the next
+runtime-evidence step requires a human manual reset/power event while
+`scripts/cubie-manual-boot-session 120 cubie-manual-boot` is running.
+Board-to-UART and power-switch mapping remain unconfirmed, and power
+automation remains disabled.
+`192.168.50.65` is excluded from all kernel-work probing, staging, boot, and
+proof flows because it is reserved for Wyze camera object detection. Current
+live A733 kernel-work targeting should default to `192.168.50.95` only.
+
+Checks to preserve before commit:
+
+- `git status --short`
+- `git diff --check`
+- `python3 -m py_compile tools/cortex/kernel_cortex.py`
+- `python3 -m py_compile tools/offload/kernel_token_offload.py`
+- `bash -n scripts/kernel-cortex`
+- `bash -n scripts/kernel-token-offload scripts/kernel-research-query scripts/kernel-log-triage scripts/kernel-diff-brief scripts/kernel-review-local scripts/kernel-review-matrix`
+- `bash -n scripts/kernel-idle-ledger scripts/kernel-idle-review-sweep`
+- `bash -n services/kernel-cortex/amd/run-vllm-embedding-rocm.sh`
+- `scripts/kernel-cortex status`
+- `scripts/kernel-token-offload status`
+- default ThinkCentre cortex ingest
+- Qdrant semantic search proof
+- one `kernel-review-matrix` smoke using all available model lanes
+- `scripts/kernel-idle-review-sweep --next`
+- `scripts/kernel-idle-ledger status`
+- bounded idle sweep with `--loop --max-runs`
+
+## Prior Current State
+
 ## Active: Align agent context with archive-first plan structure
 
 ## Current State

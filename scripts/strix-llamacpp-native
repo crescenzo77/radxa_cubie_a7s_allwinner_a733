@@ -1,0 +1,379 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+strix_host="${STRIX_HOST:-192.168.50.11}"
+strix_llm_base="${STRIX_LLM_BASE:-/srv/projects/llm}"
+llama_build="${STRIX_LLAMA_BUILD:-${strix_llm_base}/builds/b9536-vulkan}"
+llama_server="${STRIX_LLAMA_SERVER:-${llama_build}/llama-server}"
+
+model_dir="${STRIX_LLAMA_MODEL_DIR:-${strix_llm_base}/models/qwen3.6-27b-gguf}"
+model_file="${STRIX_LLAMA_MODEL_FILE:-Qwen3.6-27B-Q4_K_M.gguf}"
+model_path="${STRIX_LLAMA_MODEL:-${model_dir}/${model_file}}"
+model_url="${STRIX_LLAMA_MODEL_URL:-https://huggingface.co/unsloth/Qwen3.6-27B-GGUF/resolve/main/Qwen3.6-27B-Q4_K_M.gguf}"
+
+runtime_name="${STRIX_LLAMA_NAME:-qwen36-27b-q4km-native-vulkan}"
+alias_name="${STRIX_LLAMA_ALIAS:-qwen3.6-27b-q4km-native-vulkan}"
+bind_host="${STRIX_LLAMA_BIND_HOST:-127.0.0.1}"
+port="${STRIX_LLAMA_PORT:-8082}"
+ctx_size="${STRIX_LLAMA_CTX:-65536}"
+threads="${STRIX_LLAMA_THREADS:-16}"
+gpu_layers="${STRIX_LLAMA_NGL:-999}"
+parallel_slots="${STRIX_LLAMA_PARALLEL:-1}"
+batch_size="${STRIX_LLAMA_BATCH:-2048}"
+ubatch_size="${STRIX_LLAMA_UBATCH:-512}"
+gpu_device="${STRIX_LLAMA_GPU_DEVICE:-0}"
+reasoning="${STRIX_LLAMA_REASONING:-off}"
+extra_args="${STRIX_LLAMA_EXTRA_ARGS:-}"
+ready_timeout="${STRIX_LLAMA_READY_TIMEOUT:-900}"
+fetch_force="${STRIX_FETCH_FORCE:-0}"
+
+pid_file="${STRIX_LLAMA_PID_FILE:-${strix_llm_base}/tmp/${runtime_name}.pid}"
+log_file="${STRIX_LLAMA_LOG_FILE:-${strix_llm_base}/logs/${runtime_name}.log}"
+
+usage() {
+  cat <<USAGE
+Usage: scripts/strix-llamacpp-native ACTION [args]
+
+Actions:
+  fetch-qwen36     Download the default Qwen3.6-27B GGUF model on the target host.
+  start            Start llama-server on the target host loopback.
+  stop             Stop the target host llama-server process managed by this script.
+  restart          Stop, then start.
+  status           Show process, endpoint, and model status.
+  logs [lines]     Tail the managed target host server log.
+  sha256           Recompute and store the model sha256 on the target host.
+  bench [args]     Run scripts/strix-runtime-bench against this endpoint.
+
+Important defaults:
+  STRIX_HOST=${strix_host}
+  STRIX_LLAMA_MODEL=${model_path}
+  STRIX_LLAMA_BIND_HOST=${bind_host}
+  STRIX_LLAMA_PORT=${port}
+  STRIX_LLAMA_CTX=${ctx_size}
+
+The Mac does not run containers. This script dispatches work by SSH to the IP above.
+USAGE
+}
+
+remote_action() {
+  local action="$1"
+  shift || true
+
+  ssh -o BatchMode=yes -o ConnectTimeout=10 "${strix_host}" \
+    env \
+      STRIX_LLM_BASE="${strix_llm_base}" \
+      STRIX_REMOTE_SSH_TARGET="${strix_host}" \
+      STRIX_LLAMA_SERVER="${llama_server}" \
+      STRIX_LLAMA_MODEL_DIR="${model_dir}" \
+      STRIX_LLAMA_MODEL_FILE="${model_file}" \
+      STRIX_LLAMA_MODEL="${model_path}" \
+      STRIX_LLAMA_MODEL_URL="${model_url}" \
+      STRIX_LLAMA_NAME="${runtime_name}" \
+      STRIX_LLAMA_ALIAS="${alias_name}" \
+      STRIX_LLAMA_BIND_HOST="${bind_host}" \
+      STRIX_LLAMA_PORT="${port}" \
+      STRIX_LLAMA_CTX="${ctx_size}" \
+      STRIX_LLAMA_THREADS="${threads}" \
+      STRIX_LLAMA_NGL="${gpu_layers}" \
+      STRIX_LLAMA_PARALLEL="${parallel_slots}" \
+      STRIX_LLAMA_BATCH="${batch_size}" \
+      STRIX_LLAMA_UBATCH="${ubatch_size}" \
+      STRIX_LLAMA_GPU_DEVICE="${gpu_device}" \
+      STRIX_LLAMA_REASONING="${reasoning}" \
+      STRIX_LLAMA_EXTRA_ARGS="${extra_args}" \
+      STRIX_LLAMA_READY_TIMEOUT="${ready_timeout}" \
+      STRIX_FETCH_FORCE="${fetch_force}" \
+      STRIX_LLAMA_PID_FILE="${pid_file}" \
+      STRIX_LLAMA_LOG_FILE="${log_file}" \
+      bash -s -- "${action}" "$@" <<'REMOTE'
+set -euo pipefail
+
+action="$1"
+shift || true
+
+base="${STRIX_LLM_BASE}"
+ssh_target="${STRIX_REMOTE_SSH_TARGET}"
+server_bin="${STRIX_LLAMA_SERVER}"
+model_dir="${STRIX_LLAMA_MODEL_DIR}"
+model_file="${STRIX_LLAMA_MODEL_FILE}"
+model_path="${STRIX_LLAMA_MODEL}"
+model_url="${STRIX_LLAMA_MODEL_URL}"
+runtime_name="${STRIX_LLAMA_NAME}"
+alias_name="${STRIX_LLAMA_ALIAS}"
+bind_host="${STRIX_LLAMA_BIND_HOST}"
+port="${STRIX_LLAMA_PORT}"
+ctx_size="${STRIX_LLAMA_CTX}"
+threads="${STRIX_LLAMA_THREADS}"
+gpu_layers="${STRIX_LLAMA_NGL}"
+parallel_slots="${STRIX_LLAMA_PARALLEL}"
+batch_size="${STRIX_LLAMA_BATCH}"
+ubatch_size="${STRIX_LLAMA_UBATCH}"
+gpu_device="${STRIX_LLAMA_GPU_DEVICE}"
+reasoning="${STRIX_LLAMA_REASONING}"
+extra_args="${STRIX_LLAMA_EXTRA_ARGS}"
+ready_timeout="${STRIX_LLAMA_READY_TIMEOUT}"
+fetch_force="${STRIX_FETCH_FORCE}"
+pid_file="${STRIX_LLAMA_PID_FILE}"
+log_file="${STRIX_LLAMA_LOG_FILE}"
+
+models_url="http://${bind_host}:${port}/v1/models"
+
+pid_running() {
+  [ -s "${pid_file}" ] || return 1
+  local pid
+  pid="$(cat "${pid_file}" 2>/dev/null || true)"
+  [ -n "${pid}" ] || return 1
+  kill -0 "${pid}" 2>/dev/null
+}
+
+server_args() {
+  local args=(
+    "${server_bin}"
+    --model "${model_path}"
+    --alias "${alias_name}"
+    --host "${bind_host}"
+    --port "${port}"
+    --ctx-size "${ctx_size}"
+    --n-gpu-layers "${gpu_layers}"
+    --threads "${threads}"
+    --parallel "${parallel_slots}"
+    --batch-size "${batch_size}"
+    --ubatch-size "${ubatch_size}"
+    --jinja
+  )
+
+  if [ -n "${reasoning}" ]; then
+    args+=(--reasoning "${reasoning}")
+  fi
+
+  if [ -n "${extra_args}" ]; then
+    # shellcheck disable=SC2206
+    local split_extra=( ${extra_args} )
+    args+=("${split_extra[@]}")
+  fi
+
+  printf '%s\0' "${args[@]}"
+}
+
+wait_ready() {
+  local deadline=$((SECONDS + ready_timeout))
+  local body
+
+  while [ "${SECONDS}" -lt "${deadline}" ]; do
+    body="$(curl -fsS --max-time 5 "${models_url}" 2>/dev/null || true)"
+    if printf '%s' "${body}" | grep -Fq "${alias_name}"; then
+      echo "ready: ${models_url}"
+      return 0
+    fi
+
+    if [ -s "${pid_file}" ] && ! pid_running; then
+      echo "FAIL: server exited while starting" >&2
+      tail -n 80 "${log_file}" >&2 2>/dev/null || true
+      return 1
+    fi
+
+    sleep 5
+  done
+
+  echo "FAIL: timed out waiting for ${models_url}" >&2
+  tail -n 80 "${log_file}" >&2 2>/dev/null || true
+  return 1
+}
+
+fetch_qwen36() {
+  mkdir -p "${model_dir}"
+
+  if [ -s "${model_path}" ] && [ "${fetch_force}" != "1" ]; then
+    echo "exists: ${model_path}"
+    ls -lh "${model_path}"
+    return 0
+  fi
+
+  local partial="${model_path}.partial"
+  echo "downloading: ${model_url}"
+  echo "target: ${model_path}"
+  curl \
+    -fL \
+    --retry 8 \
+    --retry-delay 5 \
+    --retry-all-errors \
+    --continue-at - \
+    -o "${partial}" \
+    "${model_url}"
+  mv "${partial}" "${model_path}"
+  sha256sum "${model_path}" | tee "${model_path}.sha256"
+  ls -lh "${model_path}"
+}
+
+start_server() {
+  mkdir -p "${base}/tmp" "${base}/logs" "${model_dir}"
+
+  if pid_running; then
+    echo "running: pid=$(cat "${pid_file}")"
+    curl -fsS --max-time 5 "${models_url}" || true
+    return 0
+  fi
+
+  rm -f "${pid_file}"
+
+  if [ ! -x "${server_bin}" ]; then
+    echo "FAIL: llama-server is missing or not executable: ${server_bin}" >&2
+    return 1
+  fi
+
+  if [ ! -s "${model_path}" ]; then
+    echo "FAIL: model is missing: ${model_path}" >&2
+    echo "Run: scripts/strix-llamacpp-native fetch-qwen36" >&2
+    return 1
+  fi
+
+  if ss -ltn 2>/dev/null | grep -q ":${port} "; then
+    echo "FAIL: port ${port} is already listening on Strix" >&2
+    ss -ltnp 2>/dev/null | grep ":${port} " >&2 || true
+    return 1
+  fi
+
+  {
+    echo
+    echo "=== ${runtime_name} start $(date -Is) ==="
+    echo "model=${model_path}"
+    echo "alias=${alias_name}"
+    echo "endpoint=${models_url}"
+    echo "ctx=${ctx_size} ngl=${gpu_layers} threads=${threads} parallel=${parallel_slots}"
+  } >> "${log_file}"
+
+  local args=()
+  while IFS= read -r -d '' item; do
+    args+=("${item}")
+  done < <(server_args)
+
+  nohup env GGML_VK_VISIBLE_DEVICES="${gpu_device}" "${args[@]}" >> "${log_file}" 2>&1 &
+  local pid=$!
+  echo "${pid}" > "${pid_file}"
+  echo "started: pid=${pid}"
+
+  wait_ready
+}
+
+stop_server() {
+  if ! [ -s "${pid_file}" ]; then
+    echo "not running: no pid file"
+    return 0
+  fi
+
+  local pid
+  pid="$(cat "${pid_file}" 2>/dev/null || true)"
+  if [ -z "${pid}" ]; then
+    rm -f "${pid_file}"
+    echo "not running: empty pid file removed"
+    return 0
+  fi
+
+  if ! kill -0 "${pid}" 2>/dev/null; then
+    rm -f "${pid_file}"
+    echo "not running: stale pid file removed"
+    return 0
+  fi
+
+  kill "${pid}" 2>/dev/null || true
+  for _ in $(seq 1 20); do
+    if ! kill -0 "${pid}" 2>/dev/null; then
+      rm -f "${pid_file}"
+      echo "stopped: pid=${pid}"
+      return 0
+    fi
+    sleep 1
+  done
+
+  kill -9 "${pid}" 2>/dev/null || true
+  rm -f "${pid_file}"
+  echo "stopped with SIGKILL: pid=${pid}"
+}
+
+status_server() {
+  echo "host=$(hostname)"
+  echo "ssh_target=${ssh_target}"
+  echo "runtime=${runtime_name}"
+  echo "server=${server_bin}"
+  echo "model=${model_path}"
+  echo "alias=${alias_name}"
+  echo "endpoint=${models_url}"
+  echo "pid_file=${pid_file}"
+  echo "log_file=${log_file}"
+
+  if pid_running; then
+    echo "process=running pid=$(cat "${pid_file}")"
+  else
+    echo "process=stopped"
+  fi
+
+  echo
+  echo "port:"
+  ss -ltnp 2>/dev/null | grep ":${port} " || echo "no listener on ${port}"
+
+  echo
+  echo "models:"
+  curl -fsS --max-time 5 "${models_url}" 2>/dev/null || echo "no response"
+
+  echo
+  echo "memory:"
+  free -h | sed -n '1,2p'
+}
+
+case "${action}" in
+  fetch-qwen36)
+    fetch_qwen36
+    ;;
+  start)
+    start_server
+    ;;
+  stop)
+    stop_server
+    ;;
+  restart)
+    stop_server
+    start_server
+    ;;
+  status)
+    status_server
+    ;;
+  logs)
+    lines="${1:-80}"
+    tail -n "${lines}" "${log_file}" 2>/dev/null || true
+    ;;
+  sha256)
+    sha256sum "${model_path}" | tee "${model_path}.sha256"
+    ;;
+  *)
+    echo "unknown remote action: ${action}" >&2
+    exit 2
+    ;;
+esac
+REMOTE
+}
+
+action="${1:-status}"
+if [ "$#" -gt 0 ]; then
+  shift
+fi
+
+case "${action}" in
+  fetch-qwen36|start|stop|restart|status|logs|sha256)
+    remote_action "${action}" "$@"
+    ;;
+  bench)
+    export STRIX_BENCH_HOST="${strix_host}"
+    export STRIX_BENCH_TARGET="${STRIX_BENCH_TARGET:-${runtime_name}}"
+    export STRIX_BENCH_BASE_URL="${STRIX_BENCH_BASE_URL:-http://${bind_host}:${port}/v1}"
+    exec "${repo_root}/scripts/strix-runtime-bench" "$@"
+    ;;
+  -h|--help|help)
+    usage
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac

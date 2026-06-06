@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+thinkcentre_host="${THINKCENTRE_HOST:-192.168.50.225}"
+amd_host="${AMD_HOST:-192.168.50.252}"
+thinkcentre_root="${CORTEX_THINKCENTRE_ROOT:-/srv/projects/kernel-services/cortex}"
+amd_root="${CORTEX_AMD_ROOT:-/srv/projects/kernel-cortex}"
+embedding_base_url="${EMBEDDING_API_BASE:-http://192.168.50.252:8091/v1}"
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+usage() {
+  cat <<USAGE
+Usage: scripts/kernel-cortex ACTION
+
+Actions:
+  status                    Read-only status check by IP.
+  init-layout               Create remote cortex directories only.
+  install-thinkcentre-files Copy Qdrant compose/tool templates only.
+  install-amd-files         Copy AMD embedding templates only.
+  deploy-plan               Print human-gated deployment commands.
+
+Defaults:
+  THINKCENTRE_HOST=${thinkcentre_host}
+  AMD_HOST=${amd_host}
+  EMBEDDING_API_BASE=${embedding_base_url}
+USAGE
+}
+
+ssh_run() {
+  local host="$1"
+  shift
+  ssh -o BatchMode=yes -o ConnectTimeout=10 "${host}" "$@"
+}
+
+status() {
+  echo "== ${thinkcentre_host}: cortex storage/container host =="
+  ssh_run "${thinkcentre_host}" "set -e
+hostname
+find '${thinkcentre_root}' -maxdepth 3 -type d -print 2>/dev/null | sort || true
+echo
+docker compose version 2>/dev/null || true
+if [ -f '${thinkcentre_root}/thinkcentre/compose.yaml' ]; then
+  docker compose -f '${thinkcentre_root}/thinkcentre/compose.yaml' ps || true
+fi
+curl -fsS http://127.0.0.1:6333/healthz 2>/dev/null || echo qdrant_health=unavailable"
+
+  echo
+  echo "== ${amd_host}: RX 7900 XT embedding worker host =="
+  ssh_run "${amd_host}" "set -e
+hostname
+rocm-smi --showproductname --showbus --showmeminfo vram 2>/dev/null || true
+echo
+find '${amd_root}' -maxdepth 2 -type d -print 2>/dev/null | sort || true
+echo
+curl -fsS '${embedding_base_url%/}/models' 2>/dev/null || echo embedding_endpoint=unavailable"
+}
+
+init_layout() {
+  ssh_run "${thinkcentre_host}" "set -e
+mkdir -p '${thinkcentre_root}'/{qdrant/storage,ingest,cache,exports,logs,tools,thinkcentre}
+find '${thinkcentre_root}' -type d -exec chmod u+rwX,g+rwX {} +
+echo initialized ${thinkcentre_host}:${thinkcentre_root}"
+
+  ssh_run "${amd_host}" "set -e
+mkdir -p '${amd_root}'/{models,cache/huggingface,logs,amd}
+find '${amd_root}' -type d -exec chmod u+rwX,g+rwX {} +
+echo initialized ${amd_host}:${amd_root}"
+}
+
+install_thinkcentre_files() {
+  rsync -a \
+    "${repo_root}/services/kernel-cortex/thinkcentre/" \
+    "${thinkcentre_host}:${thinkcentre_root}/thinkcentre/"
+  rsync -a \
+    "${repo_root}/tools/cortex/kernel_cortex.py" \
+    "${thinkcentre_host}:${thinkcentre_root}/tools/kernel_cortex.py"
+  ssh_run "${thinkcentre_host}" "chmod +x '${thinkcentre_root}/tools/kernel_cortex.py'"
+  echo "installed ThinkCentre cortex templates to ${thinkcentre_host}:${thinkcentre_root}"
+}
+
+install_amd_files() {
+  rsync -a \
+    "${repo_root}/services/kernel-cortex/amd/" \
+    "${amd_host}:${amd_root}/amd/"
+  ssh_run "${amd_host}" "chmod +x '${amd_root}/amd/run-vllm-embedding-rocm.sh'"
+  echo "installed AMD cortex templates to ${amd_host}:${amd_root}"
+}
+
+deploy_plan() {
+  cat <<PLAN
+Human-gated deployment plan:
+
+1. Create remote directories:
+   scripts/kernel-cortex init-layout
+
+2. Copy templates without starting services:
+   scripts/kernel-cortex install-thinkcentre-files
+   scripts/kernel-cortex install-amd-files
+
+3. On ${amd_host}, start the RX 7900 XT embedding endpoint only after approval:
+   ssh ${amd_host} 'cd ${amd_root}/amd && env \$(cat embedding-service.env.example | xargs) ./run-vllm-embedding-rocm.sh'
+
+4. On ${thinkcentre_host}, start Qdrant only after approval:
+   ssh ${thinkcentre_host} 'cd ${thinkcentre_root}/thinkcentre && cp -n .env.example .env && docker compose up -d qdrant'
+
+5. Verify:
+   scripts/kernel-cortex status
+   ssh ${thinkcentre_host} 'curl -fsS http://127.0.0.1:6333/healthz'
+   ssh ${amd_host} 'curl -fsS ${embedding_base_url%/}/models'
+
+6. Ingest only curated public text:
+   ssh ${thinkcentre_host} 'cd ${thinkcentre_root} && docker compose -f thinkcentre/compose.yaml --profile manual run --rm ingest-worker'
+
+No step above sends patches, changes model-dispatch, changes Open WebUI, or
+exposes Qdrant beyond ThinkCentre loopback.
+PLAN
+}
+
+action="${1:-status}"
+
+case "${action}" in
+  status)
+    status
+    ;;
+  init-layout)
+    init_layout
+    ;;
+  install-thinkcentre-files)
+    install_thinkcentre_files
+    ;;
+  install-amd-files)
+    install_amd_files
+    ;;
+  deploy-plan)
+    deploy_plan
+    ;;
+  -h|--help|help)
+    usage
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac

@@ -2,71 +2,530 @@
 
 ## Current status
 
-The active slice is `Align agent context with archive-first plan structure`.
+The active slice is `Implement local token-offload workflow`.
 
 ## Current task
 
-Update `CODEX_CONTEXT.md` so future agents see the fresh top-level entrypoints
-as current, follow the archive-before-replacement rule, and treat Aider as the
-preferred bounded patch executor for planned strict slices.
+Deploy local token-offload tooling so Codex Desktop can dispatch bulk reading,
+research, diff triage, log compression, and secondary/tertiary review to the
+RTX 3090, RX 7900 XT, Strix, and ThinkCentre.
 
 ## What changed
 
-- Updated `CODEX_CONTEXT.md` to list `PROJECT_PLAN.md`, `WORKFLOW.md`,
-  `ROADMAP.md`, and `HOMELAB_LAYOUT.md` as current entrypoints.
-- Added the archive-or-quarantine-before-replacement rule to `CODEX_CONTEXT.md`.
-- Updated the Aider role wording in `CODEX_CONTEXT.md`.
-- Updated `DECISIONS.md` with the agent-context alignment decision.
-- Updated `CURRENT_SLICE.md` for this slice.
+- Added `runbooks/kernel-knowledge-cortex.md`.
+- Added ThinkCentre Qdrant compose and environment templates under
+  `services/kernel-cortex/thinkcentre/`.
+- Added AMD RX 7900 XT ROCm embedding endpoint templates under
+  `services/kernel-cortex/amd/`.
+- Added `tools/cortex/kernel_cortex.py`, a minimal Qdrant plus
+  OpenAI-compatible embeddings helper for curated text ingestion/search.
+- Added `scripts/kernel-cortex` for status, directory layout, file install, and
+  human-gated deployment plan commands.
+- Updated `HOMELAB_LAYOUT.md`, `PLAN_INDEX.md`, `runbooks/kernel-layout.md`,
+  `scripts/kernel-layout`, `DECISIONS.md`, and `CURRENT_SLICE.md`.
+- Created remote cortex directories on `192.168.50.225` and `192.168.50.252`.
+- Copied the cortex templates/helper code to those remote directories without
+  starting services.
+- Started a bounded 7900XT research endpoint on `192.168.50.252`:
+  `qwen36-27b-7900xt-research` at `http://127.0.0.1:8092/v1`.
+- Cloned the public `linux-sunxi` public-inbox git archive to
+  `/tmp/lore-linux-sunxi-0.git` for this research run.
+- Generated the first research packet:
+  `task-packets/kernel/research/a733-overlap-scan-20260606.md`.
+- Started Qdrant on ThinkCentre `192.168.50.225` as
+  `kernel-cortex-qdrant-1`, loopback-bound on `127.0.0.1:6333-6334`.
+- Started the AMD ROCm embedding service on `192.168.50.252` as
+  `kernel-cortex-embedding`, exposing
+  `http://192.168.50.252:8091/v1`.
+- Corrected the vLLM embedding launch command for vLLM `0.22.1` by using the
+  model as the positional argument with `--runner pooling --convert embed`.
+- Calibrated ingest chunk defaults for `BAAI/bge-large-en-v1.5`'s 512-token
+  input limit: `CORTEX_MAX_CHARS=700`, `CORTEX_OVERLAP=70`,
+  `CORTEX_BATCH_SIZE=16`.
+- Indexed the first A733 research packet into Qdrant collection
+  `kernel_evidence`.
+- Added bringup proof:
+  `task-packets/kernel/research/cortex-bringup-proof-20260606.md`.
+- Generated and indexed the follow-up A733 in-flight state packet:
+  `task-packets/kernel/research/a733-inflight-ccu-pinctrl-state-20260606.md`.
+- Used the 7900XT research model to summarize maintainer impact from the
+  CCU/PRCM and pinctrl evidence.
+- Added `tools/offload/kernel_token_offload.py`.
+- Added wrappers:
+  `scripts/kernel-token-offload`, `scripts/kernel-research-query`,
+  `scripts/kernel-log-triage`, `scripts/kernel-diff-brief`,
+  `scripts/kernel-review-local`, `scripts/kernel-review-matrix`, and
+  `scripts/kernel-idle-review-sweep`.
+- Added `runbooks/kernel-token-offload.md`.
+- Updated task packets with a `token_offload_gate` covering large logs, large
+  diffs, mailing-list/datasheet research, and matrix review.
+- Verified all live lanes:
+  AMD RTX 3090 at `192.168.50.252:127.0.0.1:8001`,
+  AMD RX 7900 XT research at `192.168.50.252:127.0.0.1:8092`,
+  Strix at `192.168.50.11:127.0.0.1:8082`, and ThinkCentre Qdrant at
+  `192.168.50.225:127.0.0.1:6333`.
+- Ran smoke cards for 3090 diff brief, 7900XT research query, 3090 log triage,
+  three-lane review matrix, and one real idle review sweep.
+- Added a persistent idle-review ledger at
+  `task-packets/kernel/context-cards/idle-review-ledger.json`.
+- Added `--next`, `--loop`, and `--max-runs` controls to
+  `scripts/kernel-idle-review-sweep`.
+- Ran the bounded idle sweep until the current review/research queue was empty.
+- Added `scripts/kernel-idle-ledger` and `idle-ledger` commands for ledger
+  status, backfill, and consumed-by-Codex markers.
+- Backfilled the idle-review ledger from existing review-matrix cards so older
+  reviews are recorded in the same long-term measurement ledger.
+- Consumed all 9 reviewed local context cards through the ledger and recorded
+  concise Codex consumption notes.
+- Reviewed additional Mac-local, ThinkCentre, and Strix documentation for past
+  Cubie A7S patch work. The important recovered guardrails are now summarized
+  in `runbooks/cubie-a7s-hardware-lab.md`.
+- Recorded `192.168.50.65` as excluded from all kernel-work probing, staging,
+  boot, and proof flows because it is reserved for Wyze camera object
+  detection.
+- Recorded the current A733 guardrail: independent CCU/PRCM, pinctrl, and GMAC
+  submission work is on hold until RFC overlap, clock/reset, pinctrl hardware,
+  and validation evidence blockers are resolved.
+- Updated the public kernel-development repo
+  `crescenzo77/radxa_cubie_a7s_allwinner_a733` so the exported A733 series is
+  described as a draft review snapshot, not a sendable candidate.
+- Pushed public repo commit
+  `513ca43f92d886cfc902ba63b2e25cd12fc4e24c`.
+- Created a standalone AMD validation clone for public Linux branch
+  `candidate/a733-platform-clean-v3` at
+  `/srv/projects/kernel-work/validation/a733-v3-public-clone`.
+- Recorded AMD validation proof
+  `a733-v3-public-git-diff-check-997b45f3f8ff` for
+  `git diff --check 6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5 HEAD`.
+- Updated and pushed public repo commit
+  `fd2504dbe9e7aad5f791f1e287170fe727b86395`.
+- Ran and pulled 9 per-patch AMD validation-container `git diff --check`
+  proofs for public v3; all passed.
+- Updated and pushed public repo commit
+  `032b523ff2c7761e63fb7a1fefef5ca71bdacc0d`.
+- Ran and pulled 9 per-patch AMD validation-container `defconfig` proofs for
+  public v3; all passed after moving build output out of noexec `/tmp`.
+- Updated and pushed public repo commit
+  `b896a2b3a7c9b315dc6caf62cc2eb738839f91f3`.
+- Ran and pulled targeted per-patch AMD validation-container object-build
+  proofs for public v3: CCU object on patches 3 through 9 and pinctrl object
+  on patches 5 through 9; all passed.
+- Updated and pushed public repo commit
+  `c030ab8a0c79d286530e676d2a2f826090511582`.
+- Ran and pulled per-patch AMD validation-container DT binding proofs for
+  binding patches 1, 2, 4, and 6; all passed.
+- Updated and pushed public repo commit
+  `7cbef630922cddec153d79e282895541e7a9ca36`.
+- Ran and pulled per-patch AMD validation-container Cubie A7S DTB proofs for
+  patches 8 and 9, where the board DTB exists; both passed.
+- Updated and pushed public repo commit
+  `43c02e5c291bb27fe33ec7cd1014965d24aa5b79`.
+- Ignored local public-repo `boot-artifacts/` so generated boot files stay out
+  of the public-facing kernel record.
+- Updated and pushed public repo commit
+  `1841d0fa02eb690e5c8c4cf043fe71c8b30f77b4`.
+- Ran a three-lane local public-repo audit card:
+  `task-packets/kernel/context-cards/review-matrix-public-repo-audit-1841d0f-831626b6a619.md`.
+- Verified the audit's checkpatch concern and found the earlier failure was an
+  invocation issue, not a patch-content issue.
+- Updated the public workflow/status docs to require running `checkpatch` from
+  the Linux tree root against exported patch inputs.
+- Updated and pushed public repo commit
+  `d1a83dbd255fdabbc0f806ab2ac739545f09ba34`.
+- Pushed the same public repo `main` to the ThinkCentre mirror using
+  `192.168.50.225`.
+- Rechecked public A733 RFC overlap state and recorded
+  `task-packets/kernel/research/a733-rfc-recheck-20260606.md`.
+- Indexed the A733 RFC recheck into ThinkCentre Qdrant; 2 chunks added.
+- Generated local research proof card
+  `task-packets/kernel/context-cards/research-query-a733-rfc-recheck-index-proof-46f6d2c435ea.md`.
+- Ran idle review for the new A733 RFC recheck and consumed the resulting
+  three-lane review card.
+- Checked Cubie hardware lab state: Strix sees `/dev/ttyUSB0` and
+  `/dev/ttyUSB1`; both 10-second passive UART captures produced 0 bytes.
+- Confirmed current ping state: `cubie3` at `192.168.50.95` replied;
+  `cubie2` at `192.168.50.85` did not.
+- Checked Cubie SSH reachability: `cubie3` answers SSH but rejects current
+  key/user attempts; `cubie2` times out on port 22.
+- Recorded Strix UART identity details: both CP2102 adapters report serial
+  `0001`, so `/dev/serial/by-path/` names are safer than `/dev/serial/by-id/`.
+- Updated `scripts/cubie-uart` to list and accept `/dev/serial/by-path/*`
+  capture targets.
+- Verified by-path UART captures for both adapters; each resolved to the
+  expected `/dev/ttyUSB*` device and captured 0 bytes during a 5-second passive
+  window.
+- Added `scripts/cubie-boot-capture-window` to open simultaneous passive
+  capture windows on both Strix UART adapters without touching power control.
+- Smoke-tested the boot capture window for 1 second; both captures completed
+  and produced empty logs as expected.
+- Ran a three-lane local review of `scripts/cubie-boot-capture-window`.
+- Hardened the helper with signal cleanup, executable-helper checks, a
+  `CUBIE_CAPTURE_MAX_SECONDS` guard, and first-failure exit-code preservation.
+- Verified the hardened helper with `bash -n`, a max-duration refusal check,
+  and another 1-second passive smoke capture.
+- Added `tools/hardware/cubie_uart_report.py` and `scripts/cubie-uart-report`
+  to summarize pulled UART logs, count non-empty captures, check log SHA256s,
+  and flag boot/error markers.
+- Integrated `scripts/cubie-uart-report` into
+  `scripts/cubie-boot-capture-window` after log pull.
+- Verified the reporter with `py_compile`, shell syntax checks, standalone
+  report output, and an integrated 1-second capture-window smoke run.
+- Ran a three-lane local review of the reporter, fixed SHA mismatch accounting
+  for missing remote hashes, and consumed the review in the idle ledger.
+- Ran idle review on the generated UART report, then checked Strix serial host
+  state: `cp210x` is attached for both adapters and both report 115200 baud.
+- Added `tools/hardware/cubie_network_status.py` and
+  `scripts/cubie-network-status` for bounded Cubie ping and SSH-port checks.
+- Verified current network state through the helper: `cubie2`
+  `192.168.50.85` has no ping reply and port 22 times out; `cubie3`
+  `192.168.50.95` replies to ping and has port 22 open.
+- Ran a three-lane local review of the network helper, then changed it to load
+  board IPs from `inventory/hardware/cubie-a7s-lab.json` and round ping waits
+  upward.
+- Passively sampled local ARP data and short mDNS browse windows for common
+  switch service names. No confirmed Cubie power-switch IP/API/mapping was
+  identified, so power automation remains disabled.
+- Added `task-packets/kernel/reviews/cubie-hardware-readiness-20260606.md`
+  as a compact Cubie hardware readiness packet.
+- Ran a three-lane local review of that readiness packet; all lanes converged
+  on the same safe next runtime-evidence step: run the boot-capture window and
+  have the human operator manually reset or power one board.
+- Indexed the readiness packet into ThinkCentre Qdrant and verified retrieval
+  with the 7900XT research lane.
+- Added `tools/hardware/cubie_runtime_evidence.py` and
+  `scripts/cubie-runtime-evidence` to build a reviewable runtime evidence
+  packet from inventory, bounded network status, and pulled UART logs.
+- Verified the runtime evidence builder with imports, `py_compile`, packet
+  generation, and diff hygiene. The generated packet correctly marks the
+  current state as `runtime-evidence-missing`.
+- Ran and consumed local reviews for the builder and generated runtime evidence
+  packets. All lanes agree no runtime boot proof can be claimed until a human
+  manual board reset/power event occurs during active UART capture.
+- Added `tools/hardware/cubie_event_log.py` and `scripts/cubie-event-log` so
+  human manual board actions can be recorded as JSONL events under the ignored
+  `tools/hardware-logs/` directory.
+- Integrated recent manual events into `scripts/cubie-runtime-evidence`.
+- Ran a three-lane local review of the event logger, then hardened it with
+  path containment under `tools/hardware-logs/` and append locking.
+- Verified the event logger with `py_compile`, shell syntax checks, allowed
+  and refused log-path smoke tests, runtime evidence integration, and idle
+  review of the generated event-aware evidence packet.
+- Hardened `scripts/cubie-boot-capture-window` so post-capture helper failures
+  (`pull-logs`, UART report, runtime evidence generation) warn without masking
+  the actual UART capture exit status.
+- Changed the interrupted-capture path to ignore repeat signals during cleanup,
+  kill/wait for child captures, record `capture-end`, and exit 130.
+- Verified the hardened capture window with `bash -n`, `git diff --check`, and
+  two 1-second passive Strix UART smoke windows. Both UARTs still captured
+  cleanly but produced 0-byte logs.
+- Ran local three-lane reviews on the hardened capture wrapper and on the new
+  runtime-evidence packets using the RTX 3090, RX 7900 XT, and Strix lanes.
+- Consumed all current idle-review artifacts in the ledger. Current ledger:
+  26 reviewed, 26 consumed, 0 pending idle candidates.
+- The next runtime-evidence step is unchanged: run
+  `scripts/cubie-boot-capture-window 120 cubie-manual-boot`, then manually
+  reset or power exactly one Cubie during that window. Do not automate power.
+- Added `scripts/cubie-manual-boot-session`, a safer one-command wrapper for
+  the same human-gated step. It runs a bounded pre-capture network check,
+  opens the passive UART capture window, runs a bounded post-capture network
+  check, prints recent manual events, and writes final runtime evidence.
+- Smoke-tested `scripts/cubie-manual-boot-session 1 smoke-manual-session`.
+  It completed without power action, produced two more empty UART captures,
+  and generated event-aware runtime evidence packets.
+- Ran and consumed local three-lane reviews for the new session wrapper and
+  generated runtime evidence packets. Current ledger: 29 reviewed, 29
+  consumed, 0 pending idle candidates.
+- Added `tools/hardware/cubie_uart_map_candidates.py` and
+  `scripts/cubie-uart-map-candidates` to correlate capture labels, manual
+  event-log notes, UART metadata, and non-empty boot logs into read-only
+  board-to-UART mapping candidates.
+- Integrated mapping-candidate output into `scripts/cubie-manual-boot-session`
+  and changed the printed manual action command to include `label=...` so the
+  future human action can be correlated with the capture.
+- Verified the mapping analyzer against current empty logs
+  (`candidate_count=0`, `non_empty=0`) and a synthetic U-Boot fixture
+  (`candidate_count=1`, `strength=strong-candidate`).
+- Smoke-tested the integrated mapping session with
+  `scripts/cubie-manual-boot-session 1 smoke-map-session`. It completed with
+  no power action, generated two more empty UART captures, and printed no
+  mapping candidates.
+- Ran and consumed local three-lane reviews for the mapping analyzer, updated
+  manual session wrapper, and generated runtime evidence packets. Current
+  ledger: 32 reviewed, 32 consumed, 0 pending idle candidates.
+- Integrated the read-only UART mapping candidate summary into
+  `scripts/cubie-runtime-evidence` packets so future boot proof carries the
+  candidate board/UART mapping in the same artifact.
+- Updated the runtime evidence next-action text to use
+  `scripts/cubie-manual-boot-session 120 cubie-manual-boot`.
+- Verified runtime evidence with current empty logs
+  (`mapping candidates: 0`) and a synthetic U-Boot fixture
+  (`mapping candidates: 1`, `strong-candidate`).
+- Ran and consumed local reviews for the updated runtime evidence builder and
+  generated packet. Current ledger: 33 reviewed, 33 consumed, 0 pending idle
+  candidates.
+- Added `tools/hardware/cubie_runtime_gate.py` and
+  `scripts/cubie-runtime-gate` to deterministically classify whether Cubie
+  runtime evidence is ready, blocked on manual capture, unmapped, or invalid.
+- Integrated `scripts/cubie-runtime-gate` into
+  `scripts/cubie-manual-boot-session` so each future manual boot session ends
+  with a machine-readable state classification.
+- Verified current gate state as `manual-capture-required`
+  (`non_empty=0`, `candidates=0`), verified `--strict` exits non-zero before
+  proof is ready, verified malformed inventory reports `inventory-invalid`,
+  and verified a synthetic U-Boot fixture reports `runtime-ready`.
+- Ran and consumed local reviews for the runtime gate and generated evidence
+  packets. Current ledger: 36 reviewed, 36 consumed, 0 pending idle candidates.
+- Added `tools/hardware/cubie_uart_inventory_proposal.py` and
+  `scripts/cubie-uart-inventory-proposal`, a read-only proposal generator for
+  future strong board-to-UART candidates.
+- Integrated the inventory proposal report into
+  `scripts/cubie-manual-boot-session`. It reports `no-proposal` for current
+  empty logs and never edits inventory.
+- Verified a synthetic U-Boot fixture produces `proposal-ready` for `cubie3`
+  with `apply_automatically=false`.
+- Ran and consumed local reviews for the inventory proposal tool and generated
+  evidence packets. Current ledger: 39 reviewed, 39 consumed, 0 pending idle
+  candidates.
+- Added an in-memory unified diff preview to
+  `scripts/cubie-uart-inventory-proposal` so future strong UART mappings show
+  the exact inventory change for human review without editing any files.
+- Verified current real state remains `no-proposal` with an empty diff, while a
+  synthetic U-Boot fixture produces a diff setting `device`, `host`,
+  `resolved_device`, and `mapping_status` for `cubie3`.
 
 ## What did not change
 
 - No files were deleted.
-- No services were changed.
+- No Mac mini containers were started.
 - No model-dispatch config was changed.
 - No Open WebUI config was changed.
-- No Docker or systemd state was changed.
-- No routing, deployment, provider, or model runtime state was changed.
-- No files were staged or committed.
+- No systemd state was changed.
+- No routing, provider, or model-dispatch state was changed.
+- No public kernel code, patch-series content, validation proof content, or
+  submission metadata were changed after the proof-recording commits; only a
+  local-artifact ignore rule was added.
+- No public repo changes were made based on the latest maintainer-style
+  assessment; that assessment was treated as advisory only.
 
 ## Files changed
 
-- `CODEX_CONTEXT.md`
-- `DECISIONS.md`
+- `HOMELAB_LAYOUT.md`
+- `PLAN_INDEX.md`
 - `CURRENT_SLICE.md`
+- `DECISIONS.md`
 - `AGENT_STATUS.md`
+- `runbooks/kernel-layout.md`
+- `runbooks/kernel-knowledge-cortex.md`
+- `scripts/kernel-layout`
+- `scripts/kernel-cortex`
+- `services/kernel-cortex/`
+- `tools/cortex/kernel_cortex.py`
+- `task-packets/kernel/research/a733-overlap-scan-20260606.md`
+- `task-packets/kernel/research/cortex-bringup-proof-20260606.md`
+- `task-packets/kernel/research/a733-inflight-ccu-pinctrl-state-20260606.md`
+- `task-packets/kernel/context-cards/`
+- `runbooks/kernel-token-offload.md`
+- `tools/offload/kernel_token_offload.py`
+- `scripts/kernel-token-offload`
+- `scripts/kernel-research-query`
+- `scripts/kernel-log-triage`
+- `scripts/kernel-diff-brief`
+- `scripts/kernel-review-local`
+- `scripts/kernel-review-matrix`
+- `scripts/kernel-idle-review-sweep`
 
 ## Checks run
 
 - `git diff --check`
-- Grep check for stale `CODEX_CONTEXT.md` wording:
-  - `historical workflow reference`
-  - `historical roadmap`
-  - `compatibility is validated`
-  - `bounded patch assistant`
-- Reviewed updated `CODEX_CONTEXT.md`.
+- `python3 -m py_compile tools/cortex/kernel_cortex.py`
+- `bash -n scripts/kernel-cortex`
+- `bash -n scripts/kernel-layout`
+- `bash -n services/kernel-cortex/amd/run-vllm-embedding-rocm.sh`
+- `docker compose -f services/kernel-cortex/thinkcentre/compose.yaml config`
+- `docker compose -f services/kernel-cortex/thinkcentre/compose.yaml --profile manual config`
+- `scripts/kernel-cortex status`
+- `scripts/kernel-cortex deploy-plan`
+- `curl http://127.0.0.1:8092/v1/models` on AMD over SSH
+- 7900XT research model call against the A733 overlap evidence packet
+- `pgrep -af 'llama-server.*8092|qwen36-27b-7900xt-research'` on AMD
+- `curl http://127.0.0.1:6333/healthz` on ThinkCentre
+- `curl http://192.168.50.252:8091/v1/models` on AMD
+- embedding probe from ThinkCentre to AMD
+- ThinkCentre default ingest worker against staged A733 packet
+- semantic Qdrant search for A733 in-flight RFC conflicts
+- 7900XT research synthesis for A733 CCU/pinctrl maintainer impact
+- default ingest after adding the A733 in-flight state packet
+- `python3 -m py_compile tools/offload/kernel_token_offload.py`
+- `bash -n` for all token-offload wrappers
+- `scripts/kernel-token-offload status`
+- `scripts/kernel-diff-brief --repo /tmp/kernel-offload-smoke --target amd-fast`
+- `scripts/kernel-research-query ... --target amd-research`
+- `scripts/kernel-log-triage ... --target amd-fast`
+- `scripts/kernel-review-matrix --repo /tmp/kernel-offload-smoke`
+- `scripts/kernel-idle-review-sweep --limit 1 --run --allow-unavailable`
+- `scripts/kernel-idle-review-sweep --next`
+- `scripts/kernel-idle-review-sweep --loop --max-runs 3 --run --allow-unavailable`
+- `scripts/kernel-idle-ledger status`
+- `scripts/kernel-idle-ledger backfill`
+- `scripts/kernel-idle-ledger mark-consumed ...`
+- public repo `git diff --check HEAD~1..HEAD`
+- public repo scan for coding-assistance/private-lab markers
+- public repo `git ls-remote public refs/heads/main`
+- AMD validation host fetch of `candidate/a733-platform-clean-v3`
+- AMD validation standalone clone creation
+- failed proof-log attempt using a Git worktree mount:
+  `a733-v3-public-git-diff-check-d42963c6a859`
+- failed proof-log attempt using an unhydrated partial clone:
+  `a733-v3-public-git-diff-check-1f7f8337e3ca`
+- host-side hydration/diff check in the standalone clone
+- passing offline container proof:
+  `a733-v3-public-git-diff-check-997b45f3f8ff`
+- passing per-patch container proofs:
+  `a733-v3-public-patch01-git-diff-check-980fd9adb30c` through
+  `a733-v3-public-patch09-git-diff-check-6160e3d58ca9`
+- failed first per-patch `defconfig` attempt:
+  `a733-v3-public-patch01-defconfig-arm64-build-f6ad5e135f96`; cause was
+  build output under noexec `/tmp`, not a patch failure
+- passing per-patch `defconfig` proofs:
+  `a733-v3-public-patch01-defconfig-arm64-build-536dcbfa0035` through
+  `a733-v3-public-patch09-defconfig-arm64-build-f9eda2075f2a`
+- passing targeted CCU object proofs:
+  `a733-v3-public-patch03-ccu-object-object-build-c2af45731dff` through
+  `a733-v3-public-patch09-ccu-object-object-build-5de0c6dc7af0`
+- passing targeted pinctrl object proofs:
+  `a733-v3-public-patch05-pinctrl-object-object-build-47692854398c` through
+  `a733-v3-public-patch09-pinctrl-object-object-build-4f0865931157`
+- passing per-patch DT binding proofs:
+  `a733-v3-public-patch01-dt-binding-dt-binding-check-80cf1c07960b`,
+  `a733-v3-public-patch02-dt-binding-dt-binding-check-73a6ccb3ca4c`,
+  `a733-v3-public-patch04-dt-binding-dt-binding-check-70cdf0b0512c`, and
+  `a733-v3-public-patch06-dt-binding-dt-binding-check-c3d3c6d9ba12`
+- failed first patch 8 DTB proof:
+  `a733-v3-public-patch08-cubie-dtbs-dtbs-check-114058187c2a`; cause was a
+  missing `.config`, fixed by including `defconfig` in the proof command
+- passing per-patch Cubie A7S DTB proofs:
+  `a733-v3-public-patch08-cubie-dtbs-dtbs-check-de84f6d49370` and
+  `a733-v3-public-patch09-cubie-dtbs-dtbs-check-41e21eb001ae`
+- `kernel_cortex.py upsert-file ingest/a733-rfc-recheck-20260606.md`:
+  indexed 2 chunks
+- `scripts/kernel-research-query "A733 RFC recheck CCU pinctrl hold 2026-06-06"`
+- `scripts/kernel-idle-review-sweep --next --run --allow-unavailable`
+- `scripts/kernel-idle-ledger mark-consumed ...`
+- `scripts/cubie-uart list`
+- `scripts/cubie-uart capture /dev/ttyUSB0 passive-probe-ttyUSB0 10`
+- `scripts/cubie-uart capture /dev/ttyUSB1 passive-probe-ttyUSB1 10`
+- `scripts/cubie-uart pull-logs`
+- read-only SSH probes to `192.168.50.85` and `192.168.50.95`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json`
+- Qdrant collection and point-count checks
 - `git status --short`
-- `git diff --stat`
 
 ## Results of checks
 
+- Python and shell syntax checks passed.
+- ThinkCentre Qdrant compose and manual ingestion profile both render through
+  Docker Compose.
+- Qdrant health passed on ThinkCentre.
+- AMD embedding service advertises `BAAI/bge-large-en-v1.5`.
+- Embedding probe returned a 1024-dimensional vector.
+- Default ingest indexed 7 chunks into `kernel_evidence`.
+- Qdrant reports `count=13` after indexing the current research packets.
+- Semantic search returned the expected A733 CCU/PRCM and pinctrl conflict
+  chunks.
+- The updated A733 in-flight state search returned the workflow action chunk as
+  the top result: do not submit local A733 CCU/pinctrl patches as standalone
+  Linux kernel work right now.
+- Token-offload status found all live local lanes available.
+- 3090 diff brief generated
+  `task-packets/kernel/context-cards/diff-brief-offload-smoke-diff-3090-58c2de9e2cd6.md`.
+- 7900XT research query generated
+  `task-packets/kernel/context-cards/research-query-offload-smoke-research-7900xt-2698406719ba.md`.
+- 3090 log triage generated
+  `task-packets/kernel/context-cards/log-triage-offload-smoke-log-3090-c511e772485b.md`.
+- Three-lane matrix smoke generated
+  `task-packets/kernel/context-cards/review-matrix-offload-smoke-review-matrix-668731d6b93a.md`.
+- Idle sweep generated a real three-lane review card for
+  `a733-defer-unproven-gmac-962ab817120d7d9b.md`; each lane consumed about
+  5.3k local model tokens and no lane failed.
+- The idle-review ledger now tracks 9 reviewed artifacts and 0 failed
+  artifacts.
+- Existing review-matrix cards are fully represented in the ledger:
+  `backfillable_missing_or_stale=0`.
+- All 9 file-based reviewed cards are now marked consumed by Codex.
+- GitHub public repo `main` now points at
+  `d1a83dbd255fdabbc0f806ab2ac739545f09ba34`.
+- The new public proof record is a container-backed `PASS` for full-series
+  `git diff --check` against the recorded base.
+- Per-patch diff hygiene is now recorded publicly, but full per-patch build/DT
+  validation remains open for real bisectability.
+- Per-patch `defconfig` is now recorded publicly. It proves Kconfig/default
+  config generation, not object builds or DT validation at each patch.
+- Targeted per-patch object builds are now recorded publicly for the introduced
+  CCU and pinctrl driver objects. Per-patch DT binding/DTB validation remains
+  open.
+- Per-patch DT binding checks are now recorded publicly for binding patches.
+  Per-patch Cubie A7S DTB validation is now recorded publicly where the board
+  DTB exists. Hardware boot/runtime evidence remains open.
+- Cortex search now returns the fresh A733 RFC recheck packet; workflow remains
+  on hold for independent CCU/PRCM and pinctrl submission work.
+- Idle-review ledger now tracks 11 reviewed file artifacts, all consumed, with
+  no pending candidates.
+- Strix UART devices are present and readable, but board-to-UART mapping is
+  still unconfirmed because passive captures were silent.
+- Public DTS export remains Ethernet-consistent: no board Ethernet enablement
+  was found in the exported Cubie A7S DTS.
+- `scripts/kernel-idle-review-sweep --next` now reports
+  `idle_review_candidates=0` for the current queue.
+- `scripts/kernel-cortex deploy-plan` prints a human-gated command sequence.
+- The research endpoint is alive and advertises
+  `qwen36-27b-7900xt-research`.
+- Process check confirms llama.cpp was launched with `--device Vulkan2`.
+- The first model call returned hidden/no visible content until
+  `enable_thinking=false` was passed; the second call returned a clean
+  Markdown blocker summary.
 - `git diff --check` passed.
-- `CODEX_CONTEXT.md` no longer describes current entrypoints as historical.
-- `CODEX_CONTEXT.md` now includes the archive-before-replacement rule.
-- `CODEX_CONTEXT.md` now says Aider is the preferred bounded patch executor for
-  planned strict slices.
+- `git status --short` still shows pre-existing dirty/untracked homelab work in
+  addition to this integration.
 
 ## Known risks or blockers
 
-- This correction is not committed yet.
+- The vLLM ROCm image is large (`38.6GB`) and was pulled on AMD. Keep an eye on
+  Docker storage before adding more ROCm service images.
+- Qdrant is intentionally loopback-bound on ThinkCentre. Codex queries should
+  use SSH or a later approved local API rather than exposing Qdrant broadly.
+- The current BGE embedding model has a 512-token input limit. Larger chunks
+  fail with HTTP 400, so keep the calibrated chunk defaults unless the model
+  changes.
+- A733 CCU/PRCM, pinctrl, and GMAC remain blocked for candidate submission
+  until the workflow has coordination/rebase notes for in-flight Linux RFCs,
+  reviewed clock/reset identifiers, pinctrl hardware evidence, and fresh proof
+  IDs.
+- One review-matrix smoke card came from a temporary git diff rather than a
+  file artifact, so it is intentionally skipped by the idle-review ledger.
+- Context-card compression ratios are useful only for large inputs. Tiny smoke
+  diffs can produce cards larger than the source because the card includes
+  metadata, model summaries, and lane usage.
+- `kernel-idle-review-sweep` is intentionally manual and bounded, not a daemon.
+  Use `--loop --max-runs N` for continuous work within a single explicit run.
+- This integration is not committed yet because the homelab repo already has a
+  broad dirty/untracked worktree; commit only a selected file list if/when
+  backing this up.
 
 ## User approval needed
 
-User approved making the recommended changes, committing, and backing up.
+No further approval is needed for the deployed initial cortex proof.
 
 ## Recommended next action
 
-Run final checks, commit this docs correction, and push it to configured mirrors.
+When local model lanes are idle, use
+`scripts/kernel-idle-review-sweep --next --run --allow-unavailable` or a
+bounded loop such as
+`scripts/kernel-idle-review-sweep --loop --max-runs 3 --run --allow-unavailable`.
+The ledger prevents repeat reviews unless an artifact changes.
+
+Use `scripts/kernel-idle-ledger status` to inspect long-term review coverage,
+and `scripts/kernel-idle-ledger mark-consumed PATH` after Codex has used a card
+or source artifact.
 
 ## Archived Status History
 

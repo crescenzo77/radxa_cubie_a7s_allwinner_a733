@@ -32,6 +32,8 @@ must be archived before replacement.
 | `WORKFLOW.md` | Current workflow entrypoint |
 | `ROADMAP.md` | Current roadmap entrypoint |
 | `HOMELAB_LAYOUT.md` | Current layout entrypoint and host/repo meanings |
+| `runbooks/kernel-knowledge-cortex.md` | Kernel evidence retrieval sidecar for the patch workflow |
+| `runbooks/kernel-token-offload.md` | Local hardware token-offload workflow for kernel logs, diffs, research, and reviews |
 | `CURRENT_SLICE.md` | Active task and boundaries |
 | `AGENT_STATUS.md` | Latest handoff/status |
 | `DECISIONS.md` | Durable decision log |
