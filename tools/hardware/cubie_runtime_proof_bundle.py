@@ -15,6 +15,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import cubie_event_log
+import cubie_boot_staging_status
 import cubie_ip_discovery
 import cubie_runtime_evidence
 import cubie_runtime_gate
@@ -102,17 +103,28 @@ def build_bundle(args: argparse.Namespace) -> dict[str, Any]:
     )
     discovery_data = cubie_ip_discovery.discover(discovery_args)
     discovery_md = cubie_ip_discovery.markdown(discovery_data)
+    staging_args = Namespace(
+        targets=args.staging_targets,
+        stage=args.staging_stage,
+        user=args.staging_user,
+        identity=args.staging_identity,
+        timeout=args.staging_timeout,
+    )
+    staging_data = cubie_boot_staging_status.build_status(staging_args)
+    staging_md = cubie_boot_staging_status.markdown(staging_data)
 
     files: dict[str, str] = {
         "runtime-evidence.md": evidence_md,
         "runtime-gate.md": gate_md,
         "ip-discovery.md": discovery_md,
+        "boot-staging-status.md": staging_md,
         "uart-map-candidates.md": mapping_md,
         "uart-inventory-proposal.md": proposal_md,
     }
     json_files = {
         "runtime-gate.json": gate_data,
         "ip-discovery.json": discovery_data,
+        "boot-staging-status.json": staging_data,
         "uart-map-candidates.json": mapping_data,
         "uart-inventory-proposal.json": proposal_data,
     }
@@ -159,6 +171,14 @@ def main() -> int:
     parser.add_argument("--discovery-timeout", type=float, default=0.2)
     parser.add_argument("--discovery-ssh-timeout", type=int, default=4)
     parser.add_argument("--discovery-workers", type=int, default=64)
+    parser.add_argument("--staging-targets", default="192.168.50.65,192.168.50.95")
+    parser.add_argument(
+        "--staging-stage",
+        default="kernel-boot-artifacts/a733-v4-abc8d07b0a63-20260606T152409Z",
+    )
+    parser.add_argument("--staging-user", default="radxa")
+    parser.add_argument("--staging-identity", default="~/.ssh/id_ed25519")
+    parser.add_argument("--staging-timeout", type=int, default=8)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
