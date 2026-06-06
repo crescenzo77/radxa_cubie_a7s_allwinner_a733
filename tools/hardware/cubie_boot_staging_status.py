@@ -12,11 +12,46 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_TARGETS = ["192.168.50.65", "192.168.50.95"]
+DEFAULT_TARGETS = ["192.168.50.95"]
+DEFAULT_EXCLUDED_TARGETS = ["192.168.50.65"]
 DEFAULT_STAGE = "kernel-boot-artifacts/a733-v4-abc8d07b0a63-20260606T152409Z"
 DEFAULT_USER = "radxa"
 DEFAULT_IDENTITY = "~/.ssh/id_ed25519"
 DEFAULT_TIMEOUT = 8
+
+
+def split_csv(values: list[str] | str) -> list[str]:
+    if isinstance(values, str):
+        values = [values]
+    result: list[str] = []
+    for value in values:
+        result.extend(item.strip() for item in value.split(",") if item.strip())
+    return result
+
+
+def excluded_row(ip: str, stage: str) -> dict[str, Any]:
+    return {
+        "ip": ip,
+        "ssh_returncode": None,
+        "hostname": "",
+        "arch": "",
+        "model": "",
+        "stage": stage,
+        "stage_status": "excluded",
+        "install_dir": "",
+        "extlinux_label": "",
+        "capture_label": "",
+        "metadata_status": "excluded",
+        "boot_entry_status": "excluded",
+        "boot_files_status": "excluded",
+        "sha256_status": "excluded",
+        "installer_syntax": "excluded",
+        "root_install_complete": False,
+        "ready_for_root_install": False,
+        "excluded_from_kernel_work": True,
+        "files": {},
+        "stderr": "",
+    }
 
 
 def ssh_probe(ip: str, user: str, identity: str, stage: str, timeout: int) -> dict[str, Any]:
@@ -192,7 +227,17 @@ fi
 
 def build_status(args: argparse.Namespace) -> dict[str, Any]:
     targets = [target.strip() for target in args.targets.split(",") if target.strip()]
-    rows = [ssh_probe(ip, args.user, args.identity, args.stage, args.timeout) for ip in targets]
+    excluded = set(
+        []
+        if getattr(args, "include_excluded", False)
+        else split_csv(getattr(args, "exclude_target", DEFAULT_EXCLUDED_TARGETS))
+    )
+    rows = [
+        excluded_row(ip, args.stage)
+        if ip in excluded
+        else ssh_probe(ip, args.user, args.identity, args.stage, args.timeout)
+        for ip in targets
+    ]
     ready = [row for row in rows if row["ready_for_root_install"]]
     installed = [row for row in rows if row["root_install_complete"]]
     action_rows = installed or ready
@@ -215,6 +260,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         "ready_count": len(ready),
         "installed_count": len(installed),
         "target_count": len(rows),
+        "excluded_targets": sorted(excluded),
         "rows": rows,
         "next_action": next_action,
     }
@@ -227,6 +273,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"Stage: `{data['stage']}`",
         f"Ready for root install: `{data['ready_count']}/{data['target_count']}`",
         f"Installed boot entry: `{data.get('installed_count', 0)}/{data['target_count']}`",
+        f"Excluded targets: `{', '.join(data.get('excluded_targets', [])) or 'none'}`",
         "",
         "| ip | hostname | model | stage | metadata | sha256 | installer | boot entry | boot files | ready |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
@@ -256,6 +303,8 @@ def main() -> int:
     parser.add_argument("--user", default=DEFAULT_USER)
     parser.add_argument("--identity", default=DEFAULT_IDENTITY)
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
+    parser.add_argument("--exclude-target", action="append", default=list(DEFAULT_EXCLUDED_TARGETS))
+    parser.add_argument("--include-excluded", action="store_true")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 

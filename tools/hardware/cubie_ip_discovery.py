@@ -26,6 +26,7 @@ DEFAULT_COMMAND = (
 )
 DEFAULT_USER = "radxa"
 DEFAULT_IDENTITY = "~/.ssh/id_ed25519"
+DEFAULT_EXCLUDED_IPS = ["192.168.50.65"]
 
 
 def load_inventory(path: Path) -> dict[str, Any]:
@@ -59,6 +60,15 @@ def tcp_open(ip: str, port: int, timeout: float) -> bool:
 
 def split_csv(value: str) -> list[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def split_csv_items(values: list[str] | str) -> list[str]:
+    if isinstance(values, str):
+        values = [values]
+    result: list[str] = []
+    for value in values:
+        result.extend(split_csv(value))
+    return result
 
 
 def is_a733_cubie(model: str, hostname: str, arch: str, returncode: int) -> bool:
@@ -181,8 +191,35 @@ def classify_target(
     }
 
 
-def scan_network(network: str, port: int, timeout: float, workers: int) -> list[str]:
-    ips = [str(ip) for ip in ipaddress.ip_network(network, strict=False).hosts()]
+def excluded_target(ip: str, port: int) -> dict[str, Any]:
+    return {
+        "ip": ip,
+        "tcp_port": port,
+        "tcp_status": "excluded",
+        "classification": "excluded-from-kernel-work",
+        "hostname": "",
+        "arch": "",
+        "model": "",
+        "selected_user": "",
+        "is_a733_cubie_candidate": False,
+        "excluded_from_kernel_work": True,
+        "probes": [],
+    }
+
+
+def scan_network(
+    network: str,
+    port: int,
+    timeout: float,
+    workers: int,
+    excluded: set[str] | None = None,
+) -> list[str]:
+    excluded = excluded or set()
+    ips = [
+        str(ip)
+        for ip in ipaddress.ip_network(network, strict=False).hosts()
+        if str(ip) not in excluded
+    ]
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
         checks = {executor.submit(tcp_open, ip, port, timeout): ip for ip in ips}
         open_ips: list[str] = []
@@ -199,11 +236,17 @@ def scan_network(network: str, port: int, timeout: float, workers: int) -> list[
 def discover(args: argparse.Namespace) -> dict[str, Any]:
     inventory = load_inventory(Path(args.inventory))
     known_inventory_ips = inventory_ips(inventory)
+    excluded = set(
+        []
+        if getattr(args, "include_excluded", False)
+        else split_csv_items(getattr(args, "exclude_ip", DEFAULT_EXCLUDED_IPS))
+    )
     target_ips = list(getattr(args, "target", []) or [])
     if target_ips:
         default_user = getattr(args, "user", DEFAULT_USER) or DEFAULT_USER
         users = split_csv(getattr(args, "probe_users", "")) or [default_user]
         arp = arp_table()
+        probe_ips = [ip for ip in target_ips if ip not in excluded]
         with tempfile.NamedTemporaryFile(prefix="cubie-known-hosts-") as known_hosts:
             targets = [
                 classify_target(
@@ -215,8 +258,9 @@ def discover(args: argparse.Namespace) -> dict[str, Any]:
                     args.ssh_timeout,
                     known_hosts.name,
                 )
-                for ip in target_ips
+                for ip in probe_ips
             ]
+        targets.extend(excluded_target(ip, args.port) for ip in target_ips if ip in excluded)
         for target in targets:
             target["inventory_name"] = known_inventory_ips.get(target["ip"], "")
             target["mac"] = arp.get(target["ip"], "")
@@ -229,10 +273,11 @@ def discover(args: argparse.Namespace) -> dict[str, Any]:
             "a733_candidate_count": len(candidates),
             "a733_candidates": candidates,
             "target_results": targets,
+            "excluded_ips": sorted(excluded.intersection(target_ips)),
             "stale_inventory_entries": [],
             "ssh_open_ips": [target["ip"] for target in targets if target["tcp_status"] == "open"],
         }
-    open_ips = scan_network(args.network, args.port, args.timeout, args.workers)
+    open_ips = scan_network(args.network, args.port, args.timeout, args.workers, excluded)
     arp = arp_table()
     with tempfile.NamedTemporaryFile(prefix="cubie-known-hosts-") as known_hosts:
         probes = [
@@ -257,6 +302,7 @@ def discover(args: argparse.Namespace) -> dict[str, Any]:
         "a733_candidate_count": len(candidates),
         "a733_candidates": candidates,
         "non_a733_ssh_hosts": non_candidates,
+        "excluded_ips": sorted(excluded),
         "stale_inventory_entries": stale,
         "ssh_open_ips": open_ips,
     }
@@ -270,6 +316,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"Inventory: `{data['inventory']}`",
         f"SSH-open hosts: `{data['ssh_open_count']}`",
         f"A733 candidates: `{data['a733_candidate_count']}`",
+        f"Excluded IPs: `{', '.join(data.get('excluded_ips', [])) or 'none'}`",
         "",
         "## A733 Candidates",
         "",
@@ -353,6 +400,8 @@ def main() -> int:
     )
     parser.add_argument("--identity", default=DEFAULT_IDENTITY)
     parser.add_argument("--target", action="append", default=[], help="Probe a specific IP instead of scanning.")
+    parser.add_argument("--exclude-ip", action="append", default=list(DEFAULT_EXCLUDED_IPS))
+    parser.add_argument("--include-excluded", action="store_true")
     parser.add_argument("--port", type=int, default=22)
     parser.add_argument("--timeout", type=float, default=0.2)
     parser.add_argument("--ssh-timeout", type=int, default=4)

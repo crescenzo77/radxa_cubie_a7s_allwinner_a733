@@ -223,6 +223,7 @@ def build_gate(args: argparse.Namespace) -> dict[str, Any]:
             "ready_count": staging.get("ready_count", 0),
             "installed_count": staging.get("installed_count", 0),
             "target_count": staging.get("target_count", 0),
+            "excluded_targets": staging.get("excluded_targets", []),
             "rows": staging.get("rows", []),
         },
     }
@@ -278,6 +279,10 @@ def markdown(data: dict[str, Any]) -> str:
         lines.append(
             f"- installed boot entry: `{staging.get('installed_count', 0)}/"
             f"{staging.get('target_count', 0)}`"
+        )
+        lines.append(
+            "- excluded targets: "
+            f"`{', '.join(staging.get('excluded_targets', [])) or 'none'}`"
         )
         lines.extend(
             [
