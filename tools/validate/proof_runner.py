@@ -82,6 +82,14 @@ fi
 trailer-gate "${patches[@]}"
 """,
     ],
+    "public-hygiene-gate": [
+        "bash",
+        "-lc",
+        r"""
+set -euo pipefail
+public-hygiene-gate .
+""",
+    ],
     "cubie-a7s-dtbs-check": [
         "bash",
         "-lc",
@@ -101,6 +109,7 @@ ALLOWED_PREFIXES = {
     "checkpatch-strict": [["perl", "scripts/checkpatch.pl", "--strict"], ["scripts/checkpatch.pl", "--strict"]],
     "checkpatch-warning-gate": [["checkpatch-warning-gate"]],
     "trailer-gate": [["trailer-gate"]],
+    "public-hygiene-gate": [["public-hygiene-gate"]],
 }
 
 VERSION_COMMANDS = {

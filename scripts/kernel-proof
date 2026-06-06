@@ -12,6 +12,7 @@ context_dir="${repo_root}/validation/build-validate"
 runner="${repo_root}/tools/validate/proof_runner.py"
 warning_gate="${repo_root}/tools/validate/checkpatch_warning_gate.py"
 trailer_gate="${repo_root}/tools/validate/trailer_gate.py"
+public_hygiene_gate="${repo_root}/tools/validate/public_hygiene_gate.py"
 
 usage() {
   cat <<USAGE
@@ -24,6 +25,8 @@ Actions:
   self-test       Run version, dummy PASS, and expected dummy FAIL proofs.
   warning-gate    Export a local patch series and run the checkpatch warning gate.
   trailer-gate    Export a local patch series and run the trailer policy gate.
+  public-hygiene-gate
+                  Archive the public-facing repo and scan for private/AI leaks.
   run [args]      Run kernel-proof-runner in the validation container.
   pull-logs       Copy remote proof logs into tools/proof-logs/.
 
@@ -45,7 +48,7 @@ deploy() {
   ssh_target "mkdir -p '${remote_root}/context' '${remote_root}/proof-logs' '${remote_root}/scratch'"
   COPYFILE_DISABLE=1 tar --format ustar -C "${context_dir}" -cf - Dockerfile \
     | ssh_target "tar -C '${remote_root}/context' -xf -"
-  COPYFILE_DISABLE=1 tar --format ustar -C "$(dirname "${runner}")" -cf - "$(basename "${runner}")" "$(basename "${warning_gate}")" "$(basename "${trailer_gate}")" \
+  COPYFILE_DISABLE=1 tar --format ustar -C "$(dirname "${runner}")" -cf - "$(basename "${runner}")" "$(basename "${warning_gate}")" "$(basename "${trailer_gate}")" "$(basename "${public_hygiene_gate}")" \
     | ssh_target "tar -C '${remote_root}/context' -xf -"
   echo "deployed to ${validation_host}:${remote_root}/context"
 }
@@ -203,6 +206,40 @@ trailer_gate_proof() {
   series_gate_proof trailer-gate
 }
 
+public_hygiene_gate_proof() {
+  local public_repo="${PUBLIC_HYGIENE_REPO:-${projects_root}/Home Lab/cubie-a7s-armbian}"
+  local public_ref="${PUBLIC_HYGIENE_REF:-HEAD}"
+  local task_id="${PUBLIC_HYGIENE_TASK_ID:-public-repo-hygiene}"
+  local allow_dirty="${PUBLIC_HYGIENE_ALLOW_DIRTY:-0}"
+
+  if [ ! -d "${public_repo}/.git" ]; then
+    echo "missing public hygiene repo: ${public_repo}" >&2
+    exit 2
+  fi
+  if [ "${allow_dirty}" != "1" ] && [ -n "$(git -C "${public_repo}" status --porcelain)" ]; then
+    echo "refusing to scan dirty public repo: ${public_repo}" >&2
+    exit 2
+  fi
+
+  local head_sha short stamp work
+  head_sha="$(git -C "${public_repo}" rev-parse "${public_ref}")"
+  short="${head_sha:0:12}"
+  stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  work="public-hygiene-gate-${short}-${stamp}"
+
+  ssh_target "mkdir -p '${validation_workspace}'"
+  git -C "${public_repo}" archive --format=tar --prefix="${work}/" "${public_ref}" \
+    | ssh_target "tar -C '${validation_workspace}' -xf -"
+  echo "public_hygiene_workspace=${validation_host}:${validation_workspace}/${work}"
+  echo "public_hygiene_head=${head_sha}"
+  run_proof \
+    --task-id "${task_id}" \
+    --check public-hygiene-gate \
+    --workdir "/workspace/${work}" \
+    --stdout-excerpt-chars 8000 \
+    --stderr-excerpt-chars 4000
+}
+
 pull_logs() {
   local local_dir="${repo_root}/tools/proof-logs"
   mkdir -p "${local_dir}"
@@ -234,6 +271,9 @@ case "${action}" in
     ;;
   trailer-gate)
     trailer_gate_proof "$@"
+    ;;
+  public-hygiene-gate)
+    public_hygiene_gate_proof "$@"
     ;;
   run)
     run_proof "$@"

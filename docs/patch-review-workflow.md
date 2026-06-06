@@ -231,3 +231,17 @@ By default it permits only `Signed-off-by: Enzo Adriano
 <enzo.adriano.code@gmail.com>` and rejects nonstandard or AI/provider metadata
 trailers. Override `WARNING_GATE_REPO`, `WARNING_GATE_BASE`, and
 `WARNING_GATE_REF` to check a different exported series.
+
+## Public Hygiene Gate
+
+Run the public hygiene gate before pushing the public-facing kernel record:
+
+```sh
+scripts/kernel-proof public-hygiene-gate
+```
+
+It archives the configured public repo and scans the AMD validation copy for
+private LAN addresses, private paths, lab host names, local model stack names,
+AI/provider metadata, and unrelated local automation terms. Override
+`PUBLIC_HYGIENE_REPO` or `PUBLIC_HYGIENE_REF` when checking a different public
+record.
