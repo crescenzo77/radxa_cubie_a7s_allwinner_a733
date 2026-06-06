@@ -40,6 +40,7 @@ def excluded_row(ip: str, stage: str) -> dict[str, Any]:
         "stage_status": "excluded",
         "install_dir": "",
         "extlinux_label": "",
+        "extlinux_extra_args": "",
         "capture_label": "",
         "metadata_status": "excluded",
         "boot_entry_status": "excluded",
@@ -98,11 +99,13 @@ else
 fi
 install_dir=""
 extlinux_label=""
+extlinux_extra_args=""
 capture_label=""
 if [ -f install-metadata.env ]; then
   printf 'metadata_status=present\n'
   install_dir="$(awk -F= '$1 == "INSTALL_DIR" { print substr($0, index($0, "=") + 1); exit }' install-metadata.env)"
   extlinux_label="$(awk -F= '$1 == "EXTLINUX_LABEL" { print substr($0, index($0, "=") + 1); exit }' install-metadata.env)"
+  extlinux_extra_args="$(awk -F= '$1 == "EXTLINUX_EXTRA_ARGS" { print substr($0, index($0, "=") + 1); exit }' install-metadata.env)"
   capture_label="$(awk -F= '$1 == "CAPTURE_LABEL" { print substr($0, index($0, "=") + 1); exit }' install-metadata.env)"
 else
   printf 'metadata_status=missing\n'
@@ -119,6 +122,7 @@ if [ -f install-extlinux-entry.sh ]; then
   fi
   printf 'install_dir=%s\n' "$install_dir"
   printf 'extlinux_label=%s\n' "$extlinux_label"
+  printf 'extlinux_extra_args=%s\n' "$extlinux_extra_args"
   printf 'capture_label=%s\n' "$capture_label"
   case "$extlinux_label" in
     ""|*[!A-Za-z0-9_.-]*)
@@ -243,6 +247,7 @@ fi
         "stage_status": fields.get("stage_status", "unknown"),
         "install_dir": fields.get("install_dir", ""),
         "extlinux_label": fields.get("extlinux_label", ""),
+        "extlinux_extra_args": fields.get("extlinux_extra_args", ""),
         "capture_label": fields.get("capture_label", ""),
         "metadata_status": fields.get("metadata_status", "unknown"),
         "boot_entry_status": fields.get("boot_entry_status", "unknown"),
@@ -331,8 +336,8 @@ def markdown(data: dict[str, Any]) -> str:
         f"Installed boot entry: `{data.get('installed_count', 0)}/{data['target_count']}`",
         f"Excluded targets: `{', '.join(data.get('excluded_targets', [])) or 'none'}`",
         "",
-        "| ip | hostname | model | stage | metadata | sha256 | installer | sudo | boot entry | boot files | boot sha256 | ready |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| ip | hostname | model | stage | metadata | sha256 | installer | sudo | extra bootargs | boot entry | boot files | boot sha256 | ready |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for row in data["rows"]:
         lines.append(
@@ -345,6 +350,7 @@ def markdown(data: dict[str, Any]) -> str:
             f"{row['sha256_status']} | "
             f"{row['installer_syntax']} | "
             f"{row['sudo_status']} | "
+            f"{row.get('extlinux_extra_args') or '-'} | "
             f"{row['boot_entry_status']} | "
             f"{row['boot_files_status']} | "
             f"{row['boot_sha256_status']} | "

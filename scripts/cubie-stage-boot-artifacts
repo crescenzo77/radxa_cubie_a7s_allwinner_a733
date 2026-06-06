@@ -22,6 +22,7 @@ artifact_name="$(basename "${artifact_dir}")"
 remote_stage="${CUBIE_REMOTE_STAGE:-kernel-boot-artifacts/${artifact_name}}"
 install_dir="${CUBIE_BOOT_INSTALL_DIR:-/boot/mainline-a733-v4-abc8d07b0a63}"
 label="${CUBIE_EXTLINUX_LABEL:-a733-v4-abc8d07b0a63-uart-proof}"
+bootargs_extra="${CUBIE_EXTLINUX_EXTRA_ARGS:-drm_debug=1}"
 
 image_sha="b4584f230d436235fb3776a102546e05d8fac1d93206d25f3566aedad7e60b7d"
 dtb_sha="9ac58728715b7999bda4fe579bb00a4c9da7f123c7d0fb1bf9e4664cd85a0e44"
@@ -44,6 +45,7 @@ Defaults:
   A733_BOOT_ARTIFACT_DIR=${artifact_dir}
   CUBIE_REMOTE_STAGE=${remote_stage}
   CUBIE_STAGE_EXCLUDED_TARGETS=${excluded_targets}
+  CUBIE_EXTLINUX_EXTRA_ARGS=${bootargs_extra}
 
 This script does not write /boot, change boot defaults, power-cycle, or reboot.
 USAGE
@@ -90,6 +92,9 @@ require_match image_sha "${image_sha}" '^[0-9a-f]{64}$'
 require_match dtb_sha "${dtb_sha}" '^[0-9a-f]{64}$'
 require_match config_sha "${config_sha}" '^[0-9a-f]{64}$'
 require_match manifest_sha "${manifest_sha}" '^[0-9a-f]{64}$'
+if [ -n "${bootargs_extra}" ]; then
+  require_match bootargs_extra "${bootargs_extra}" '^[A-Za-z0-9_.=,:/-]+( [A-Za-z0-9_.=,:/-]+)*$'
+fi
 
 required_files=(Image sun60i-a733-cubie-a7s.dtb config manifest.txt)
 target_ssh=(
@@ -143,6 +148,7 @@ REMOTE_STAGE=${remote_stage}
 INSTALL_DIR=${install_dir}
 EXTLINUX_LABEL=${label}
 CAPTURE_LABEL=${capture_label}
+EXTLINUX_EXTRA_ARGS=${bootargs_extra}
 IMAGE_SHA=${image_sha}
 DTB_SHA=${dtb_sha}
 CONFIG_SHA=${config_sha}
@@ -158,6 +164,7 @@ set -euo pipefail
 stage_dir="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
 install_dir="${install_dir}"
 label="${label}"
+bootargs_extra="${bootargs_extra}"
 extlinux="/boot/extlinux/extlinux.conf"
 
 cd "\${stage_dir}"
@@ -198,7 +205,7 @@ label \${label}
 	menu label A733 v4 public candidate abc8d07b0a63 UART proof
 	linux ${install_dir}/Image
 	fdt ${install_dir}/sun60i-a733-cubie-a7s.dtb
-	append console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel \${root_arg} rootwait rw
+	append console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel \${bootargs_extra} \${root_arg} rootwait rw
 ENTRY
 
 "\${sudo_cmd[@]}" install -d -m 0755 "\${install_dir}"
@@ -212,7 +219,7 @@ sync
 if [ "\${#sudo_cmd[@]}" -eq 0 ]; then
   (cd "\${install_dir}" && sha256sum -c SHA256SUMS)
 else
-  "\${sudo_cmd[@]}" bash -c 'cd "$1" && sha256sum -c SHA256SUMS' bash "\${install_dir}"
+  "\${sudo_cmd[@]}" bash -c 'cd "\$1" && sha256sum -c SHA256SUMS' bash "\${install_dir}"
 fi
 "\${sudo_cmd[@]}" cp -a "\${extlinux}" "\${backup}"
 "\${sudo_cmd[@]}" install -m 0644 "\${tmp}" "\${extlinux}"
@@ -241,4 +248,7 @@ Then from this repo, start UART capture before selecting the boot entry:
 
 Select this non-default U-Boot label over UART:
   ${label}
+
+Temporary bootargs on this label:
+  ${bootargs_extra}
 SUMMARY
