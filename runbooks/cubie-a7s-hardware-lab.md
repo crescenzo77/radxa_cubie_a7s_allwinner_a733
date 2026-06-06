@@ -39,6 +39,9 @@ Quick network observation:
   found passively.
 - 2026-06-06 read-only UART IP query on the Cubie2 candidate adapter returned
   0 bytes. It did not reveal a Cubie2 IP address.
+- 2026-06-06 UART recheck: the 1.1 adapter answered with `cubie-3 login:`,
+  confirming that path is Cubie3. The 1.2 adapter returned 0 bytes again and
+  still did not reveal a Cubie2 IP address.
 
 Treat reachability as a live lab condition, not a permanent fact.
 
@@ -97,15 +100,19 @@ board-to-tty mapping.
   the board.
 - A fixed read-only hostname/IP query on the 1.2 adapter also returned 0
   bytes, so UART has not revealed a Cubie2 IP address.
+- A later fixed read-only hostname/IP query on the 1.1 adapter again returned
+  `cubie-3 login:`. The query text was treated as a login name, so it confirmed
+  the board identity but did not expose Cubie3 network details. The 1.2 adapter
+  remained silent.
 
-Do not assume the board-to-tty mapping yet. Confirm by capturing boot output
-from one board at a time.
+Do not assume the 1.2 adapter is Cubie2 until boot or login text identifies the
+board. Confirm by capturing boot output from one board at a time.
 
 Use:
 
 ```sh
 scripts/cubie-uart list
-scripts/cubie-uart capture /dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0 cubie3-boot-probe 30
+scripts/cubie-uart capture /dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1:1.0-port0 cubie3-boot-probe 30
 scripts/cubie-uart readonly-ip-query /dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0 cubie2-ip-query 12
 scripts/cubie-uart pull-logs
 scripts/cubie-uart-report
