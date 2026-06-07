@@ -160,6 +160,12 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
                 "scripts/cubie-interactive-root-install-session "
                 f"--confirm-target-ip {ready[0]['ip']}"
             )
+    elif status == "boot-selection-required":
+        installed = [row for row in rows if row.get("root_install_complete")]
+        labels = sorted({row.get("capture_label") for row in installed if row.get("capture_label")})
+        stage = str(staging.get("stage") or "")
+        capture_label = labels[0] if labels else f"{Path(stage).name}-boot" if stage else "cubie-manual-boot"
+        next_command = f"scripts/cubie-uart-interactive-boot-session {shlex.quote(capture_label)}"
     return {
         "ok": status == "runtime-ready",
         "status": status,
