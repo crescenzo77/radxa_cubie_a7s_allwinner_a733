@@ -33,8 +33,34 @@ This is not Linux runtime proof. It is bootloader/DTB handoff evidence.
 Cubie3 was power-cycled again through the same Kasa wrapper and extlinux option
 `1` was selected to return to the vendor kernel path.
 
+## Follow-Up U-Boot Env Test
+
+The same option `50` was tested again with `drm_debug` set as a temporary
+U-Boot environment variable before running `bootcmd`:
+
+```text
+setenv drm_debug 1
+run bootcmd
+```
+
+That bypassed the vendor U-Boot FDT creation hang. Linux started, brought up all
+8 CPUs, initialized `ttyS0`, and initialized `sunxi-mmc 4020000.mmc`.
+
+The next failure was later and different:
+
+```text
+Disabling rootwait; root= is invalid.
+/dev/root: Can't open blockdev
+Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0)
+```
+
+This is meaningful runtime evidence for kernel handoff, UART, CPU topology, and
+MMC controller initialization. It is still not a full boot proof because the
+root filesystem was not mounted.
+
 ## Next Action
 
-Triage why vendor U-Boot treats the staged mainline DTB as invalid during its
-FDT mutation path before repeating runtime proof. Do not claim mainline boot or
-runtime success from this capture.
+Repeat the U-Boot-env boot with a kernel-native root argument such as a concrete
+block device or `PARTUUID`, instead of relying on filesystem `UUID=` without an
+initramfs. Keep `drm_debug=1` as a temporary bootloader test constraint, not as
+an upstream DTS or kernel patch claim.
