@@ -407,6 +407,34 @@
                 }
             ],
             "conclusion": "A refreshed bounded SSH discovery sweep again found Cubie3 as the only authenticated A733 candidate. Cubie2's old 192.168.50.85 entry remains stale, no replacement IP was confirmed, and 192.168.50.65 was excluded from probing."
+        },
+        {
+            "observed_at_utc": "2026-06-07T03:16:19Z",
+            "type": "post-reboot-network-refresh",
+            "network": "192.168.50.0/24",
+            "excluded_ips": [
+                "192.168.50.65"
+            ],
+            "results": [
+                {
+                    "board": "cubie2",
+                    "ip": "192.168.50.85",
+                    "hostname": "cubie-2",
+                    "ping": "reply",
+                    "ssh": "open",
+                    "kernel": "5.15.147-21-a733",
+                    "arch": "aarch64",
+                    "interface": "eth0",
+                    "address": "192.168.50.85/24"
+                },
+                {
+                    "board": "cubie3",
+                    "ip": "192.168.50.95",
+                    "ping": "reply",
+                    "ssh": "open"
+                }
+            ],
+            "conclusion": "After the user rebooted Cubie2, its reserved DHCP address 192.168.50.85 became reachable again. SSH identity check confirmed hostname cubie-2 on aarch64 with eth0 at 192.168.50.85/24."
         }
     ],
   "rules": [

@@ -176,14 +176,17 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
         rows = (staging or {}).get("rows", [])
         installed = [row for row in rows if row.get("root_install_complete")]
         targets = ", ".join(f"{row.get('hostname') or row.get('ip')}:{row.get('ip')}" for row in installed)
-        target_hint = f" while booting one installed board ({targets})" if targets else ""
         stage = str((staging or {}).get("stage") or "")
         if not stage and installed:
             stage = str(installed[0].get("stage") or "")
         capture_label = capture_label_for(stage, installed)
         labels = sorted({row.get("extlinux_label") for row in installed if row.get("extlinux_label")})
-        label_hint = f" and select {labels[0]}" if labels else " and select the staged non-default boot label"
-        return f"run scripts/cubie-manual-boot-session 180 {capture_label}{target_hint}{label_hint}"
+        selection = labels[0] if labels else "the staged non-default boot label"
+        target_hint = f" for one installed board ({targets})" if targets else ""
+        return (
+            f"run scripts/cubie-uart-interactive-boot-session {capture_label}{target_hint}; "
+            f"reboot the board separately and select {selection}"
+        )
     if status == "root-install-required":
         rows = (staging or {}).get("rows", [])
         ready = [row for row in rows if row.get("ready_for_root_install")]
