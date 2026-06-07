@@ -12,7 +12,7 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_TARGETS = ["192.168.50.95"]
+DEFAULT_TARGETS = ["192.168.50.85", "192.168.50.95"]
 DEFAULT_EXCLUDED_TARGETS = ["192.168.50.65"]
 DEFAULT_STAGE = "kernel-boot-artifacts/a733-v4-abc8d07b0a63-20260606T152409Z"
 DEFAULT_USER = "radxa"
@@ -297,11 +297,15 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     elif "noninteractive-ok" in sudo_statuses:
         sudo_hint = " using non-interactive sudo"
     capture_label = capture_labels[0] if capture_labels else f"{Path(args.stage).name}-boot"
-    label_hint = f" and select {labels[0]}" if labels else ""
+    selection = labels[0] if labels else "the staged non-default boot label"
     if installed:
-        next_action = f"start scripts/cubie-manual-boot-session 180 {capture_label}{label_hint}"
+        target_names = ", ".join(f"{row.get('hostname') or row.get('ip')}:{row.get('ip')}" for row in installed)
+        target_hint = f" for one installed board ({target_names})" if target_names else ""
+        next_action = (
+            f"run scripts/cubie-uart-interactive-boot-session {capture_label}{target_hint}; "
+            f"reboot the board separately and select {selection}"
+        )
     elif ready and needs_interactive_sudo:
-        selection = labels[0] if labels else "the staged non-default boot label"
         target_ip = ready[0].get("ip") or "TARGET_IP"
         next_action = (
             "run scripts/cubie-interactive-root-install-session "
@@ -313,7 +317,8 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         next_action = (
             "run the staged install-extlinux-entry.sh"
             f"{sudo_hint} on the chosen board, "
-            f"then start scripts/cubie-manual-boot-session 180 {capture_label}{label_hint}"
+            f"then run scripts/cubie-uart-interactive-boot-session {capture_label} "
+            f"and select {selection}"
         )
     else:
         next_action = "stage or repair boot artifacts before attempting a hardware boot proof"

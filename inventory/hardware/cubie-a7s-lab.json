@@ -435,6 +435,21 @@
                 }
             ],
             "conclusion": "After the user rebooted Cubie2, its reserved DHCP address 192.168.50.85 became reachable again. SSH identity check confirmed hostname cubie-2 on aarch64 with eth0 at 192.168.50.85/24."
+        },
+        {
+            "observed_at_utc": "2026-06-07T03:18:27Z",
+            "type": "boot-artifact-staging",
+            "board": "cubie2",
+            "ip": "192.168.50.85",
+            "hostname": "cubie-2",
+            "stage": "kernel-boot-artifacts/a733-v4-abc8d07b0a63-20260606T152409Z",
+            "artifact": "a733-v4-abc8d07b0a63-20260606T152409Z",
+            "checksums": "verified",
+            "root_files_changed": false,
+            "boot_files_changed": false,
+            "installer": "install-extlinux-entry.sh",
+            "installer_requires": "sudo/root",
+            "conclusion": "The exact A733 v4 Image, DTB, config, manifest, checksum file, metadata, and root-required extlinux installer are staged under the Cubie2 radxa home directory. No /boot files were changed and no reboot was requested."
         }
     ],
   "rules": [
