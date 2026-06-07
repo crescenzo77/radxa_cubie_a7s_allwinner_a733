@@ -147,10 +147,13 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
             "next_action": data.get("error", "cubie gate failed"),
             "next_command": "",
             "next_shell": "",
+            "next_reboot_command": "",
+            "next_reboot_shell": "",
         }
     gate = data["data"]
     status = gate.get("status")
     next_command = ""
+    next_reboot_command = ""
     staging = gate.get("staging") if isinstance(gate.get("staging"), dict) else {}
     rows = staging.get("rows") if isinstance(staging.get("rows"), list) else []
     if status == "root-install-required":
@@ -166,6 +169,8 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
         stage = str(staging.get("stage") or "")
         capture_label = labels[0] if labels else f"{Path(stage).name}-boot" if stage else "cubie-manual-boot"
         next_command = f"scripts/cubie-uart-interactive-boot-session {shlex.quote(capture_label)}"
+        if installed and installed[0].get("ip"):
+            next_reboot_command = f"ssh radxa@{installed[0]['ip']} 'sudo reboot'"
     return {
         "ok": status == "runtime-ready",
         "status": status,
@@ -173,6 +178,8 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
         "next_action": gate.get("next_action"),
         "next_command": next_command,
         "next_shell": f"cd {shlex.quote(str(REPO_ROOT))} && {next_command}" if next_command else "",
+        "next_reboot_command": next_reboot_command,
+        "next_reboot_shell": next_reboot_command,
     }
 
 
@@ -233,6 +240,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"| idle review ledger | idle_candidates={ledger.get('values', {}).get('idle_review_candidates', 'unknown')}, unconsumed={ledger.get('values', {}).get('unconsumed_reviewed', 'unknown')} |",
         f"| Cubie runtime gate | `{cubie.get('status')}` |",
         f"| next command | `{cubie.get('next_shell') or cubie.get('next_command') or 'none'}` |",
+        f"| next reboot command | `{cubie.get('next_reboot_shell') or cubie.get('next_reboot_command') or 'none'}` |",
         "",
         "## Machine Readiness",
         "",
@@ -291,6 +299,11 @@ def main() -> int:
         action="store_true",
         help="Print a copy-pasteable shell line for the current next command.",
     )
+    parser.add_argument(
+        "--next-reboot-shell",
+        action="store_true",
+        help="Print a copy-pasteable shell line for the paired board reboot when one is known.",
+    )
     parser.add_argument("--strict", action="store_true")
     parser.add_argument(
         "--runtime-strict",
@@ -303,6 +316,8 @@ def main() -> int:
     data = build_status(args)
     if args.next_shell:
         print(data["cubie_runtime_gate"].get("next_shell") or "none")
+    elif args.next_reboot_shell:
+        print(data["cubie_runtime_gate"].get("next_reboot_shell") or "none")
     elif args.next_command:
         print(data["cubie_runtime_gate"].get("next_command") or "none")
     elif args.next_action:
