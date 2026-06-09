@@ -21,8 +21,12 @@ Patch order:
 These files are not a mailed submission series. They are a maintainer-shape
 review export that intentionally drops the local CCU, pinctrl, standalone MMC
 binding, and MAINTAINERS scaffolding from the earlier 9-patch draft. The DTS
-patches carry explicit `Depends-on:` references for the active A733 CCU/PRCM
-and pinctrl RFCs.
+patches carry explicit `Depends-on:` references for the active A733 RTC,
+CCU/PRCM, and pinctrl RFCs.
+
+A final regenerated candidate may add one MMC binding patch if the chosen base
+does not already document `allwinner,sun60i-a733-mmc`. It must not grow into
+local CCU, pinctrl, Ethernet, VPU, display, wireless, USB-C, or PCIe work.
 
 The files include the human DCO sign-off authorized for this public review
 export. They intentionally do not include nonstandard metadata trailers; any

@@ -17,7 +17,7 @@ observed locally at `8e65320d91cdc3b241d4b94855c88459b91abf66`.
 The current `patches/` export is a 3-patch maintainer-shape review snapshot:
 board compatible binding, A733 SoC DTSI, and Cubie A7S board DTS. It is not a
 mailed submission. Before sending, regenerate from a clean kernel branch stacked
-on the current or accepted CCU/PRCM and pinctrl prerequisite work.
+on the current or accepted RTC, CCU/PRCM, and pinctrl prerequisite work.
 
 The earlier 9-patch v4 export remains historical validation evidence only. The
 local CCU/PRCM, pinctrl, standalone MMC binding, and MAINTAINERS scaffolding
@@ -72,6 +72,8 @@ in commit messages, and validated per patch.
 
 - Junhui Liu posted an RFC A733 CCU/PRCM series:
   `https://lore.kernel.org/r/20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech`
+- Junhui Liu posted an A733 RTC series used by the CCU/PRCM RFC:
+  `https://lore.kernel.org/r/20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech`
 - Andre Przywara posted an RFC A733 pinctrl series:
   `https://lore.kernel.org/r/20250821004232.8134-1-andre.przywara@arm.com`
 
@@ -82,6 +84,11 @@ Dependency evidence rechecked in the private workflow on 2026-06-09:
   PRCM`, including main CCU, PRCM/R-CCU, PLLs, module clocks, bus gates, reset
   lines, and an RTC dependency.
   Reference: `https://patchew.org/linux/20260310-a733-clk-v1-0-36b4e9b24457%40pigmoral.tech/`
+- RTC: public archives show Junhui Liu's 7-patch A733 RTC series,
+  `[PATCH 0/7] rtc: sun6i: Add support for Allwinner A733 SoC`, including the
+  A733 RTC compatible, RTC CCU support, and clock outputs used by the A733 CCU
+  binding.
+  Reference: `https://lore.kernel.org/r/20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech`
 - pinctrl: public archives show Andre Przywara's 9-patch RFC series,
   `[RFC PATCH 0/9] pinctrl: sunxi: Allwinner A733 support`, based on
   `v6.17-rc1`. The cover letter says the author lacked suitable hardware and
@@ -91,14 +98,17 @@ Dependency evidence rechecked in the private workflow on 2026-06-09:
   compatible in the RFC thread.
   Reference: `https://www.spinics.net/lists/linux-gpio/msg118661.html`
 
-The current DTS patches carry explicit dependency references for both RFCs.
-The local CCU and pinctrl portions must not be sent upstream while this overlap
-is unresolved unless maintainers ask for that plan.
+The current DTS patches carry explicit dependency references for the RTC,
+CCU/PRCM, and pinctrl prerequisite work. The local CCU and pinctrl portions
+must not be sent upstream while this overlap is unresolved unless maintainers
+ask for that plan.
 
 The expected sendable direction is a smaller SoC DTSI plus Cubie A7S board DTS
-series stacked on accepted or current CCU/PRCM and pinctrl prerequisites,
-unless subsystem maintainers ask for a different dependency plan. Local
-CCU/PRCM and pinctrl driver patches are draft evidence only for that path.
+series stacked on accepted or current RTC, CCU/PRCM, and pinctrl prerequisites,
+with a separate MMC binding patch added only if the chosen base still lacks the
+A733 MMC compatible. Local CCU/PRCM and pinctrl driver patches are draft
+evidence only for that path unless subsystem maintainers ask for a different
+dependency plan.
 
 Current local review consensus:
 
@@ -112,15 +122,16 @@ Current local review consensus:
 Current upstream-readiness blockers:
 
 - build a clean kernel candidate branch rebased on the accepted or current
-  CCU/PRCM and pinctrl prerequisite work
+  RTC, CCU/PRCM, and pinctrl prerequisite work
 - reconcile the DTS with the active A733 CCU RFC clock-input API before branch
   regeneration; the RFC binding models the main CCU with `hosc`, `losc`,
-  `iosc`, and `losc-fanout`, while the current review DTSI still has only
-  `hosc`, `losc`, and `iosc`
+  `iosc`, and `losc-fanout` sourced from A733 RTC clock outputs, while the
+  current review DTSI still has only `hosc`, `losc`, and `iosc`
 - resolve A733 MMC compatible coverage before branch regeneration; the current
   review DTSI uses `allwinner,sun60i-a733-mmc`, which must be documented in the
   series or already present in the chosen base
-- regenerate the 3-patch export from that exact branch
+- regenerate the review export from that exact branch; it may remain three
+  patches or grow by one MMC binding patch depending on the chosen base
 - rerun validation, maintainer, bisectability, and runtime checks against the
   regenerated export
 - perform final human review of trailers, recipients, and cover-letter claims

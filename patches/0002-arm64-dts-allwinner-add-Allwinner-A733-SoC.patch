@@ -11,6 +11,7 @@ devices that are proven on their hardware.
 
 Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
+Depends-on: 20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech
 Depends-on: 20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech
 Depends-on: 20250821004232.8134-1-andre.przywara@arm.com
 

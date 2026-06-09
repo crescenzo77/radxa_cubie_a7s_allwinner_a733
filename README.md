@@ -34,20 +34,22 @@ The current review export covers:
 
 Ethernet is not enabled and no Ethernet support is claimed.
 
-The CCU/PRCM and pinctrl work is treated as external prerequisite work through
-explicit `Depends-on:` references. The local CCU, pinctrl, standalone MMC
+The RTC, CCU/PRCM, and pinctrl work is treated as external prerequisite work
+through explicit `Depends-on:` references. The local CCU, pinctrl, standalone MMC
 binding, and MAINTAINERS scaffolding patches from the earlier 9-patch draft are
 not part of the current review export.
 
 The expected sendable direction is this narrow board-compatible plus DTS slice
-stacked on the accepted or current CCU/PRCM and pinctrl prerequisite branches,
-unless subsystem maintainers ask for a different plan. Runtime proof for the
-exact v4 kernel and DTB has been captured in the private workflow; raw logs
-remain out of public git. Before mailing, regenerate the patches from a clean
-kernel branch that matches the prerequisite state and rerun all validation.
+stacked on the accepted or current RTC, CCU/PRCM, and pinctrl prerequisite
+branches, with an MMC binding patch added only if the chosen base still lacks
+the A733 MMC compatible. Runtime proof for the exact v4 kernel and DTB has been
+captured in the private workflow; raw logs remain out of public git. Before
+mailing, regenerate the patches from a clean kernel branch that matches the
+prerequisite state and rerun all validation.
 Current prerequisite API reconciliation is still open: the DTS must be checked
-against the active A733 CCU clock-input binding, and the A733 MMC compatible
-must either be documented in the series or already exist in the chosen base.
+against the active A733 RTC/CCU clock-input binding, and the A733 MMC
+compatible must either be documented in the series or already exist in the
+chosen base.
 
 ## Submission Discipline
 
@@ -59,8 +61,8 @@ This repository follows the Linux kernel submission process:
 - every hardware value needs evidence that can be explained without private
   lab history
 - board enablement needs a boot/runtime proof for the exact kernel and DTB
-- final submission shape must be checked against current CCU/PRCM and pinctrl
-  prerequisite status
+- final submission shape must be checked against current RTC, CCU/PRCM, and
+  pinctrl prerequisite status
 - generated artifacts and local debug output stay out of git
 - failed experiments are not presented as candidate patches
 - `Signed-off-by:` is added only by the human submitter after final review

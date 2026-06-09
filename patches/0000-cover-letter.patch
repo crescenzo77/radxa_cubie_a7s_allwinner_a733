@@ -17,8 +17,10 @@ Cubie A7S board:
 This export intentionally drops the local CCU/PRCM, pinctrl, standalone MMC
 binding, and MAINTAINERS scaffolding patches from the earlier 9-patch draft.
 Those areas overlap active A733 RFC work and should be coordinated as external
-prerequisites unless maintainers ask for a different plan.
+prerequisites unless maintainers ask for a different plan. The A733 CCU RFC
+also depends on the A733 RTC series.
 
+Depends-on: 20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech
 Depends-on: 20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech
 Depends-on: 20250821004232.8134-1-andre.przywara@arm.com
 
@@ -35,11 +37,13 @@ corrected PARTUUID path.
 
 Open work before mailing:
 
-- regenerate this 3-patch shape from a clean kernel branch stacked on the
-  current or accepted CCU/PRCM and pinctrl prerequisites
+- regenerate this review shape from a clean kernel branch stacked on the
+  current or accepted RTC, CCU/PRCM, and pinctrl prerequisites, adding a
+  separate MMC binding patch only if the chosen base still lacks the A733
+  compatible
 - rerun checkpatch, dt_binding_check, dtbs_check, build, maintainer-recipient,
   and bisectability checks against that exact branch
-- re-check the A733 CCU/PRCM and pinctrl RFC status before sending
+- re-check the A733 RTC, CCU/PRCM, and pinctrl RFC status before sending
 - perform final human review of trailers, recipients, and cover-letter claims
 
 Enzo Adriano (3):
