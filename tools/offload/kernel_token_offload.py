@@ -602,13 +602,13 @@ def args_untracked_limit() -> int:
 def git_diff_remote(host: str, path: str, *, max_diff_chars: int) -> tuple[str, dict[str, Any], str]:
     script = r"""
 set -e
-printf '---STAT---\n'
+printf -- '---STAT---\n'
 git diff --stat --
-printf '---NAMES---\n'
+printf -- '---NAMES---\n'
 git diff --name-only --
-printf '---UNTRACKED---\n'
+printf -- '---UNTRACKED---\n'
 git ls-files --others --exclude-standard
-printf '---DIFF---\n'
+printf -- '---DIFF---\n'
 git diff --no-ext-diff --binary --
 git ls-files --others --exclude-standard | head -20 | while IFS= read -r path; do
   git diff --no-index -- /dev/null "$path" || true
