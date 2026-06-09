@@ -223,7 +223,7 @@ Current required interactive handoff:
 
 ```sh
 scripts/cubie-corrected-root-operator-brief
-ssh -tt 192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95'
+ssh -tt enzo@192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95'
 ```
 
 Codex Desktop runs on the Mac, but live Cubie root-install, UART, and U-Boot

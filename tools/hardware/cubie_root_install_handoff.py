@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shlex
 import subprocess
 import sys
@@ -19,6 +20,10 @@ import cubie_boot_staging_status
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+STRIX_HOST = os.environ.get("KERNEL_STRIX_HOST", "192.168.50.11")
+STRIX_SSH_TARGET = os.environ.get("KERNEL_STRIX_SSH_TARGET", f"enzo@{STRIX_HOST}")
+STRIX_REPO = os.environ.get("KERNEL_STRIX_REPO", "/srv/projects/homelab")
+STRIX_REMOTE = os.environ.get("KERNEL_STRIX_REMOTE", "mac-mini")
 
 
 def staging_args(args: argparse.Namespace) -> SimpleNamespace:
@@ -71,9 +76,9 @@ def strix_interactive_install_command(row: dict[str, Any]) -> str:
         [
             "ssh",
             "-tt",
-            "192.168.50.11",
-            "cd /srv/projects/homelab && "
-            "git pull --ff-only mac-mini main && "
+            STRIX_SSH_TARGET,
+            f"cd {shlex.quote(STRIX_REPO)} && "
+            f"git pull --ff-only {shlex.quote(STRIX_REMOTE)} main && "
             f"{interactive_install_command(row)}",
         ]
     )

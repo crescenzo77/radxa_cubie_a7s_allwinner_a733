@@ -30,6 +30,7 @@ Generated advisory card:
 
 ```text
 task-packets/kernel/context-cards/review-matrix-a733-strix-live-proof-flow-review-20260609-c67669ffba29.md
+task-packets/kernel/context-cards/review-matrix-idle-review-a733-strix-live-proof-flow-review-20260609.md-5cfdfff5e061.md
 ```
 
 Model lanes reported in the manifest:
@@ -58,6 +59,13 @@ Action taken:
   workaround that is not upstream DTS evidence.
 - The selftest now fails if the passing report does not mark that workaround as
   lab-only.
+- The 2026-06-09 refresh also caught that pasteable Strix commands must include
+  the SSH user. Operator-facing commands now use `enzo@192.168.50.11`, while
+  `KERNEL_STRIX_HOST` remains the physical Strix host/IP for inventory and
+  local-host detection.
+- A follow-up search found no `drm_debug` occurrences in checked DTS, DTSI, or
+  YAML files under the local A733/public kernel trees or the Strix copies; the
+  token remains confined to lab bootargs and documentation.
 
 ## Remaining Blocker
 
@@ -70,7 +78,7 @@ exact v4 Cubie runtime proof is root-install-required
 Next live action remains:
 
 ```sh
-ssh -tt 192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95'
+ssh -tt enzo@192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95'
 ```
 
 Do not reshape the public patch export, draft maintainer-facing mail, or claim

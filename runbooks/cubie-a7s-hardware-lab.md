@@ -224,7 +224,7 @@ is ready to type the Cubie sudo password. The command starts on the Mac, but
 the live work runs on Strix:
 
 ```sh
-ssh -tt 192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95'
+ssh -tt enzo@192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95'
 ```
 
 The helper prints the selected board and staged artifact path, opens an SSH TTY
@@ -249,13 +249,13 @@ non-default U-Boot menu label.
 For the boot proof, keep the UART session on Strix:
 
 ```sh
-ssh -tt 192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-uart-interactive-boot-session a733-v4-abc8d07b0a63-partuuid-ro-proof'
+ssh -tt enzo@192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-uart-interactive-boot-session a733-v4-abc8d07b0a63-partuuid-ro-proof'
 ```
 
 In a second terminal, still dispatching through Strix, reboot Cubie3 only:
 
 ```sh
-ssh 192.168.50.11 'ssh radxa@192.168.50.95 "sudo reboot"'
+ssh enzo@192.168.50.11 'ssh radxa@192.168.50.95 "sudo reboot"'
 ```
 
 Then in U-Boot, run this RAM-only variable before booting the menu:

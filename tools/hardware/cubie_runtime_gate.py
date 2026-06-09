@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -23,6 +24,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_INVENTORY = REPO_ROOT / "inventory" / "hardware" / "cubie-a7s-lab.json"
 DEFAULT_EVENT_LOG = cubie_event_log.DEFAULT_EVENT_LOG
 DEFAULT_STAGING_TARGETS = ",".join(cubie_boot_staging_status.DEFAULT_TARGETS)
+STRIX_HOST = os.environ.get("KERNEL_STRIX_HOST", "192.168.50.11")
+STRIX_SSH_TARGET = os.environ.get("KERNEL_STRIX_SSH_TARGET", f"enzo@{STRIX_HOST}")
 
 
 def utc_now() -> str:
@@ -215,7 +218,7 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
             target_ip = ready[0].get("ip") if ready else "TARGET_IP"
             return (
                 "from Codex Desktop, dispatch to Strix: "
-                "ssh -tt 192.168.50.11 'cd /srv/projects/homelab && "
+                f"ssh -tt {STRIX_SSH_TARGET} 'cd /srv/projects/homelab && "
                 "git pull --ff-only mac-mini main && "
                 "scripts/cubie-interactive-root-install-session "
                 f"--confirm-target-ip {target_ip}'; "

@@ -6,7 +6,7 @@ addresses, or local workflow notes into upstream kernel submission material.
 ## Current Maintainer-Path Next Action
 
 ```sh
-ssh -tt 192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95'
+ssh -tt enzo@192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95'
 ```
 
 Codex Desktop on the Mac is only the dispatcher. The live root-install, UART,

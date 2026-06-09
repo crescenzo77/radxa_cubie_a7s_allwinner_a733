@@ -19,6 +19,7 @@ PUBLIC_REPO = Path(
 )
 DEFAULT_TIMEOUT = 30
 STRIX_HOST = os.environ.get("KERNEL_STRIX_HOST", "192.168.50.11")
+STRIX_SSH_TARGET = os.environ.get("KERNEL_STRIX_SSH_TARGET", f"enzo@{STRIX_HOST}")
 STRIX_REPO = os.environ.get("KERNEL_STRIX_REPO", "/srv/projects/homelab")
 STRIX_REMOTE = os.environ.get("KERNEL_STRIX_REMOTE", "mac-mini")
 PRIVATE_ORIGIN_REMOTES = [
@@ -147,7 +148,7 @@ def strix_dispatch_shell(command: str, *, tty: bool = False) -> str:
     argv = ["ssh"]
     if tty:
         argv.append("-tt")
-    argv.extend([STRIX_HOST, remote])
+    argv.extend([STRIX_SSH_TARGET, remote])
     return shlex.join(argv)
 
 

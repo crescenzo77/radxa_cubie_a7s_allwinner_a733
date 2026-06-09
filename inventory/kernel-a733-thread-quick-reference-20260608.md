@@ -239,14 +239,14 @@ scripts/cubie-runtime-gate
 Cubie3 Kasa state and cycle:
 
 ```sh
-ssh 192.168.50.11 '~/.local/bin/cubie3-power state'
-ssh 192.168.50.11 '~/.local/bin/cubie3-power cycle 5'
+ssh enzo@192.168.50.11 '~/.local/bin/cubie3-power state'
+ssh enzo@192.168.50.11 '~/.local/bin/cubie3-power cycle 5'
 ```
 
 Check UART is free:
 
 ```sh
-ssh 192.168.50.11 'fuser -v /dev/ttyUSB0 2>&1 || true; test ! -e /tmp/cubie-uart-capture.lock || ls -ld /tmp/cubie-uart-capture.lock'
+ssh enzo@192.168.50.11 'fuser -v /dev/ttyUSB0 2>&1 || true; test ! -e /tmp/cubie-uart-capture.lock || ls -ld /tmp/cubie-uart-capture.lock'
 ```
 
 Known-good bootloader workaround shape:
