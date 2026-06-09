@@ -346,6 +346,36 @@ def workflow_backup_summary(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
+    actions: list[str] = []
+    cubie = data["cubie_runtime_gate"]
+    if cubie.get("human_required"):
+        actions.append(f"read operator brief: cd {shlex.quote(str(REPO_ROOT))} && {OPERATOR_BRIEF}")
+        actions.append(
+            "keep hardware gate explicit: "
+            + str(cubie.get("human_gate") or "human interaction required before runtime proof")
+        )
+        actions.append(
+            "do not reshape or send patches until evidence gate passes: "
+            + str(cubie.get("evidence_gate") or "runtime proof required")
+        )
+    actions.append(
+        f"check backup posture: cd {shlex.quote(str(REPO_ROOT))} && "
+        "scripts/kernel-workflow-status --workflow-backup-status"
+    )
+    if data["local_offload"].get("ok"):
+        actions.append(
+            "optional advisory review only: "
+            "scripts/kernel-idle-review-sweep --limit 1 --run --allow-unavailable"
+        )
+    if not data["a733_series_shape"].get("ok"):
+        actions.append(
+            "preserve series guardrail: current export is scaffolding; "
+            "do not create maintainer-facing patches before corrected-root proof"
+        )
+    return actions
+
+
 def build_status(args: argparse.Namespace) -> dict[str, Any]:
     machine = machine_summary(
         command_json([str(REPO_ROOT / "scripts" / "kernel-machine-readiness"), "--json"], timeout=args.timeout)
@@ -401,6 +431,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     }
     data["workflow_backup"] = workflow_backup_summary(data)
     data["maintainer_ready"] = maintainer_ready_summary(data)
+    data["dispatcher_waiting_actions"] = dispatcher_waiting_actions(data)
     return data
 
 
@@ -420,6 +451,7 @@ def markdown(data: dict[str, Any]) -> str:
     public_hygiene = data["public_hygiene"]
     maintainer_ready = data["maintainer_ready"]
     workflow_backup = data["workflow_backup"]
+    waiting_actions = data["dispatcher_waiting_actions"]
 
     lines = [
         "# Kernel Workflow Status",
@@ -477,6 +509,9 @@ def markdown(data: dict[str, Any]) -> str:
     lines.extend(["", "## Maintainer Ready", "", str(maintainer_ready.get("next_action") or "none")])
     for blocker in maintainer_ready.get("blockers", []):
         lines.append(f"- {blocker}")
+    lines.extend(["", "## Dispatcher Waiting Actions", ""])
+    for action in waiting_actions:
+        lines.append(f"- {action}")
     if workflow_backup.get("note"):
         lines.extend(["", "## Workflow Backup Note", "", str(workflow_backup["note"])])
     return "\n".join(lines) + "\n"
@@ -570,6 +605,11 @@ def main() -> int:
         action="store_true",
         help="Print compact private/public backup posture for dispatcher stopping points.",
     )
+    parser.add_argument(
+        "--dispatcher-waiting-actions",
+        action="store_true",
+        help="Print safe dispatcher actions while a human/hardware gate is pending.",
+    )
     parser.add_argument("--strict", action="store_true")
     parser.add_argument(
         "--runtime-strict",
@@ -613,6 +653,8 @@ def main() -> int:
         print(f"public_mirror_backed={md_bool(backup.get('public_mirror_backed'))}")
         if backup.get("note"):
             print(f"note={backup['note']}")
+    elif args.dispatcher_waiting_actions:
+        print("\n".join(data["dispatcher_waiting_actions"]) or "none")
     elif args.json:
         print(json.dumps(data, indent=2, sort_keys=True))
     else:

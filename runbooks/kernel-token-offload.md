@@ -41,6 +41,18 @@ mirror from public kernel-facing material that is backed up to GitHub and the
 ThinkCentre mirror. Do not invent or add a GitHub remote without explicit human
 approval.
 
+When the maintainer path is waiting on a human/hardware gate, list only safe
+coordinator actions with:
+
+```sh
+scripts/kernel-workflow-status --dispatcher-waiting-actions
+```
+
+These actions may include reading the operator brief, checking backup posture,
+or running advisory idle-review sweeps. They must not replace the required
+runtime proof or turn the current scaffolding export into maintainer-facing
+patches.
+
 For A733/Cubie A7S work, the dispatcher must preserve the current guardrails:
 do not prepare a maintainer-facing series until the exact v4 boot/runtime proof
 passes, do not submit the local CCU or pinctrl scaffolding while the external

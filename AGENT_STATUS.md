@@ -1,5 +1,19 @@
 # Agent Status
 
+## 2026-06-09 dispatcher waiting actions
+
+- Added `scripts/kernel-workflow-status --dispatcher-waiting-actions` so Codex
+  Desktop has a safe, machine-readable action list while the maintainer path is
+  waiting on Cubie sudo/UART hardware proof.
+- The maintainer next action still points at the corrected-root interactive
+  install session; the waiting-actions list only permits operator-brief review,
+  backup posture checks, advisory idle-review sweeps, and guardrail reminders.
+- Updated `runbooks/kernel-token-offload.md` to document that waiting actions
+  must not replace runtime proof or turn the current scaffolding export into
+  maintainer-facing patches.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 workflow backup posture command
 
 - Added `scripts/kernel-workflow-status --workflow-backup-status` for Codex
