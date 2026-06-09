@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+gate="${repo_root}/scripts/cubie-corrected-root-proof-gate"
+
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "${tmpdir}"' EXIT
+
+pass_log="${tmpdir}/a733-corrected-root-pass.uart.log"
+missing_gic_log="${tmpdir}/a733-corrected-root-missing-gic-cpu7.uart.log"
+old_uuid_log="${tmpdir}/a733-corrected-root-old-uuid.uart.log"
+
+cat >"${pass_log}" <<'LOG'
+Retrieving file: /boot/mainline-a733-v4-abc8d07b0a63/Image
+Retrieving file: /boot/mainline-a733-v4-abc8d07b0a63/sun60i-a733-cubie-a7s.dtb
+drm debug mode: 1
+Linux version 7.1.0-rc6-gabc8d07b0a63
+Machine model: Radxa Cubie A7S
+SMP: Total of 8 processors activated
+GICv3: GIC: Using split EOI/Deactivate mode
+GICv3: CPU0: found redistributor
+GICv3: CPU1: found redistributor
+GICv3: CPU2: found redistributor
+GICv3: CPU3: found redistributor
+GICv3: CPU4: found redistributor
+GICv3: CPU5: found redistributor
+GICv3: CPU6: found redistributor
+GICv3: CPU7: found redistributor
+sun60i-a733-pinctrl 2000000.pinctrl: initialized
+2500000.serial: ttyS0 at MMIO is a 16550A
+sunxi-mmc 4020000.mmc: initialized
+Kernel command line: console=ttyS0 root=PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e rootwait ro rootflags=noload init=/bin/sh
+mmcblk0: p1 p2 p3
+mmcblk0p3
+Run /bin/sh as init process
+LOG
+
+cp "${pass_log}" "${missing_gic_log}"
+perl -0pi -e 's/GICv3: CPU7: found redistributor\n//' "${missing_gic_log}"
+
+cp "${pass_log}" "${old_uuid_log}"
+cat >>"${old_uuid_log}" <<'LOG'
+Disabling rootwait; root= is invalid.
+root=UUID=6f750720-329a-45f0-a4b5-abc5797b040a
+Kernel panic - not syncing: VFS: Unable to mount root fs
+LOG
+
+"${gate}" "${pass_log}" --strict >/dev/null
+
+if "${gate}" "${missing_gic_log}" --strict >"${tmpdir}/missing-gic.out" 2>&1; then
+  printf 'expected missing GIC CPU7 redistributor proof to fail\n' >&2
+  exit 1
+fi
+if ! grep -q 'missing required evidence: gic_cpu7' "${tmpdir}/missing-gic.out"; then
+  printf 'missing GIC failure did not name gic_cpu7\n' >&2
+  cat "${tmpdir}/missing-gic.out" >&2
+  exit 1
+fi
+
+if "${gate}" "${old_uuid_log}" --strict >"${tmpdir}/old-uuid.out" 2>&1; then
+  printf 'expected old UUID/root panic proof to fail\n' >&2
+  exit 1
+fi
+if ! grep -q 'error markers present:' "${tmpdir}/old-uuid.out"; then
+  printf 'old UUID failure did not report fatal markers\n' >&2
+  cat "${tmpdir}/old-uuid.out" >&2
+  exit 1
+fi
+
+printf 'cubie-corrected-root-proof-gate-selftest=pass\n'
