@@ -422,6 +422,20 @@ def runtime_strict_failed(data: dict[str, Any]) -> bool:
     return strict_failed(data) or data["cubie_runtime_gate"].get("status") != "runtime-ready"
 
 
+def maintainer_ready_failed(data: dict[str, Any]) -> bool:
+    return any(
+        [
+            runtime_strict_failed(data),
+            not data["a733_series_shape"].get("ok"),
+            not data["public_hygiene"].get("ok"),
+            not data["public_repo"].get("clean"),
+            not data["public_repo"].get("remote_matches"),
+            not data["public_repo"].get("remote_is_github"),
+            not data["public_mirror"].get("remote_matches"),
+        ]
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--json", action="store_true")
@@ -451,6 +465,15 @@ def main() -> int:
         action="store_true",
         help="Exit non-zero unless workflow health and Cubie runtime proof are both ready.",
     )
+    parser.add_argument(
+        "--maintainer-ready-strict",
+        action="store_true",
+        help=(
+            "Exit non-zero unless the public A733 path is ready for maintainer "
+            "preparation: workflow health, runtime proof, series shape, hygiene, "
+            "and public backups must all pass."
+        ),
+    )
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
     args = parser.parse_args()
 
@@ -467,6 +490,8 @@ def main() -> int:
         print(json.dumps(data, indent=2, sort_keys=True))
     else:
         print(markdown(data), end="")
+    if args.maintainer_ready_strict:
+        return 1 if maintainer_ready_failed(data) else 0
     if args.runtime_strict:
         return 1 if runtime_strict_failed(data) else 0
     return 1 if args.strict and strict_failed(data) else 0

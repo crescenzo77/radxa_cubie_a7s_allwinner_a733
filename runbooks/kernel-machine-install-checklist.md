@@ -47,6 +47,7 @@ scripts/kernel-workflow-status
 scripts/kernel-workflow-status --json
 scripts/kernel-workflow-status --strict
 scripts/kernel-workflow-status --runtime-strict
+scripts/kernel-workflow-status --maintainer-ready-strict
 scripts/kernel-workflow-status --next-action
 scripts/kernel-workflow-status --next-command
 scripts/kernel-workflow-status --next-shell
@@ -57,7 +58,9 @@ state, public repo backup state, and the Cubie runtime gate into one concise
 read-only report. Override `KERNEL_PUBLIC_REPO` when checking a different
 public-facing kernel checkout. Use `--strict` for workflow health and
 `--runtime-strict` only for gates that must fail until exact Cubie hardware
-runtime proof exists.
+runtime proof exists. Use `--maintainer-ready-strict` only for a pre-submission
+or patch-prep stop gate; it additionally requires the A733 export shape and
+public hygiene gates to pass.
 
 ## Mac Dispatcher
 

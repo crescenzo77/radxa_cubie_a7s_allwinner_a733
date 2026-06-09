@@ -1,5 +1,23 @@
 # Agent Status
 
+## 2026-06-09 maintainer-ready workflow gate
+
+- Added `scripts/kernel-workflow-status --maintainer-ready-strict` as a
+  stronger stop gate for A733 patch-prep or pre-submission checks.
+- The gate requires workflow health, corrected-root runtime proof, maintainer
+  series shape, public hygiene, public GitHub backup, and ThinkCentre public
+  mirror backup. It is expected to fail today while Cubie runtime proof is
+  `root-install-required` and the public export remains the local 9-patch
+  scaffolding series.
+- Updated `runbooks/kernel-machine-install-checklist.md` to document the new
+  mode separately from ordinary `--strict` and `--runtime-strict`.
+- Validation: `python3 -m py_compile tools/inventory/kernel_workflow_status.py`,
+  `bash -n scripts/kernel-workflow-status`, `scripts/kernel-workflow-status
+  --json`, and `scripts/kernel-workflow-status --maintainer-ready-strict`
+  returning `1` with the current expected blockers visible.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 workflow status includes public hygiene
 
 - Integrated `scripts/kernel-public-hygiene-gate` into
