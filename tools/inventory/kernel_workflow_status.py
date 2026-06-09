@@ -21,6 +21,11 @@ DEFAULT_TIMEOUT = 30
 STRIX_HOST = os.environ.get("KERNEL_STRIX_HOST", "192.168.50.11")
 STRIX_REPO = os.environ.get("KERNEL_STRIX_REPO", "/srv/projects/homelab")
 STRIX_REMOTE = os.environ.get("KERNEL_STRIX_REMOTE", "mac-mini")
+PRIVATE_ORIGIN_REMOTES = [
+    item.strip()
+    for item in os.environ.get("KERNEL_PRIVATE_ORIGIN_REMOTES", "origin,mac-mini").split(",")
+    if item.strip()
+]
 PRIVATE_GITHUB_REMOTE = os.environ.get("KERNEL_PRIVATE_GITHUB_REMOTE", "github")
 OPERATOR_BRIEF = "scripts/cubie-corrected-root-operator-brief"
 PATCH_PREP_CHECKLIST = "scripts/a733-patch-prep-checklist"
@@ -96,6 +101,17 @@ def missing_git_status(repo: Path, remote: str) -> dict[str, Any]:
         "remote_matches": False,
         "errors": ["missing repository"],
     }
+
+
+def git_status_any(repo: Path, remotes: list[str]) -> dict[str, Any]:
+    fallback: dict[str, Any] | None = None
+    for remote in remotes:
+        status = git_status(repo, remote)
+        if fallback is None:
+            fallback = status
+        if status.get("remote_url"):
+            return status
+    return fallback or missing_git_status(repo, ",".join(remotes) or "origin")
 
 
 def command_json(
@@ -784,7 +800,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         command_text([str(REPO_ROOT / "scripts" / "cubie-corrected-root-proof-gate-selftest")], timeout=args.timeout)
     )
     data = {
-        "homelab": git_status(REPO_ROOT, "origin"),
+        "homelab": git_status_any(REPO_ROOT, PRIVATE_ORIGIN_REMOTES),
         "homelab_github": git_status(REPO_ROOT, PRIVATE_GITHUB_REMOTE),
         "public_repo": git_status(PUBLIC_REPO, "public")
         if PUBLIC_REPO.exists()
