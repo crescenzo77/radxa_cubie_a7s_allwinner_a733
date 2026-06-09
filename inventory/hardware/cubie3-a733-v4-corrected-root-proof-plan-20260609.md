@@ -188,6 +188,17 @@ dmesg | grep -E 'Linux version|Machine model|GICv3|CPU[0-7]|pinctrl|ttyS0|sunxi-
 mount
 ```
 
+After pulling the UART log, classify the candidate log with the deterministic
+corrected-root gate before claiming runtime proof:
+
+```sh
+scripts/cubie-corrected-root-proof-gate path/to/candidate.uart.log
+```
+
+Use `--strict` in automation. The gate must report `status: pass`; old logs
+that still contain `root=UUID=...`, `Bad Linux ARM64 Image magic`, panic/Oops,
+or vendor FDT mutation failures are not acceptable runtime proof.
+
 Power-cycle back to the vendor kernel after capture unless the board is known
 to be safe to leave at the shell.
 

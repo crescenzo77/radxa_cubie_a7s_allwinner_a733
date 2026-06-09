@@ -1,5 +1,22 @@
 # Agent Status
 
+## 2026-06-09 corrected-root proof log gate
+
+- Added `scripts/cubie-corrected-root-proof-gate`, backed by
+  `tools/hardware/cubie_corrected_root_proof_gate.py`, to classify the future
+  corrected-root UART log deterministically before anyone claims runtime proof.
+- The gate requires exact v4 kernel/model evidence, 8 CPU bring-up, GICv3,
+  A733 pinctrl, `ttyS0`, `sunxi-mmc 4020000.mmc`, the corrected `PARTUUID`,
+  `rootflags=noload`, `mmcblk0/mmcblk0p3`, and shell or mount evidence.
+- The gate fails logs containing known bad markers including the old
+  `root=UUID=...` path, kernel panic, Oops, `Bad Linux ARM64 Image magic`, or
+  vendor FDT mutation failures.
+- Verified a synthetic corrected-root log passes with `--strict`; verified the
+  old v4 `root=UUID=...` panic log fails with `status: fail`.
+- Updated the corrected-root proof plan and Cubie hardware runbook to require
+  this gate after UART capture and log pull.
+- No board state, `/boot` files, DTS files, or public repo files were changed.
+
 ## 2026-06-09 corrected-root review and PARTUUID proof
 
 - Ran a three-lane local review matrix for

@@ -256,6 +256,17 @@ UART:
 A733 v4 abc8d07b0a63 PARTUUID ro proof
 ```
 
+After exiting the UART session and pulling logs, run the corrected-root proof
+gate on the candidate `.uart.log` before claiming success:
+
+```sh
+scripts/cubie-corrected-root-proof-gate path/to/candidate.uart.log
+```
+
+The gate must report `status: pass`. Logs containing the old
+`root=UUID=...` panic, `Bad Linux ARM64 Image magic`, or vendor FDT mutation
+errors remain failures.
+
 Do not use the board IP `192.168.50.65` for any kernel proof work, even if it
 appears reachable during discovery.
 
