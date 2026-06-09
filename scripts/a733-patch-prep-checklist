@@ -6,19 +6,26 @@ public_repo="${KERNEL_PUBLIC_REPO:-/Users/enzo/projects/Home Lab/cubie-a7s-armbi
 
 usage() {
   cat <<USAGE
-usage: $(basename "$0") [--run]
+usage: $(basename "$0") [--run|--preflight]
 
 Without arguments, print the read-only checklist. With --run, execute the
-patch-prep gates in order and stop on the first failure.
+patch-prep gates in order and stop on the first failure. With --preflight,
+execute only the dispatcher/offload and backup checks that do not require the
+live Cubie runtime proof to have passed.
 USAGE
 }
 
 run=0
+preflight=0
 case "${1:-}" in
   "")
     ;;
   --run)
     run=1
+    shift
+    ;;
+  --preflight)
+    preflight=1
     shift
     ;;
   -h|--help)
@@ -42,10 +49,22 @@ run_gate() {
   "$@"
 }
 
+if [ "${preflight}" = "1" ]; then
+  cd "${repo_root}"
+  run_gate "dispatcher/offload smoke" \
+    scripts/kernel-offload-status-smoke
+  run_gate "backup posture" \
+    scripts/kernel-workflow-status --workflow-backup-status
+  printf '\nA733 patch-prep preflight gates passed.\n'
+  exit 0
+fi
+
 if [ "${run}" = "1" ]; then
   cd "${repo_root}"
   run_gate "exact v4 Cubie runtime proof" \
     scripts/cubie-latest-corrected-root-proof --strict
+  run_gate "dispatcher/offload smoke" \
+    scripts/kernel-offload-status-smoke
   run_gate "maintainer-ready workflow gate" \
     scripts/kernel-workflow-status --maintainer-ready-strict
   run_gate "A733 series shape gate" \
@@ -68,23 +87,31 @@ To execute the gates in order:
 
    cd ${repo_root} && scripts/a733-patch-prep-checklist --run
 
+To check non-hardware dispatcher and backup readiness while waiting:
+
+   cd ${repo_root} && scripts/a733-patch-prep-checklist --preflight
+
 1. Exact v4 Cubie runtime proof:
 
    cd ${repo_root} && scripts/cubie-latest-corrected-root-proof --strict
 
-2. Maintainer-ready workflow gate:
+2. Dispatcher/offload smoke:
+
+   cd ${repo_root} && scripts/kernel-offload-status-smoke
+
+3. Maintainer-ready workflow gate:
 
    cd ${repo_root} && scripts/kernel-workflow-status --maintainer-ready-strict
 
-3. A733 series shape gate on the public export:
+4. A733 series shape gate on the public export:
 
    cd ${repo_root} && scripts/a733-series-shape-gate "${public_repo}/patches"
 
-4. Public hygiene gate:
+5. Public hygiene gate:
 
    cd ${repo_root} && scripts/kernel-public-hygiene-gate "${public_repo}"
 
-5. Backup posture:
+6. Backup posture:
 
    cd ${repo_root} && scripts/kernel-workflow-status --workflow-backup-status
 

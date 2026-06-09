@@ -416,6 +416,10 @@ def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
             "after proof passes, use the read-only patch-prep checklist: "
             f"cd {shlex.quote(str(REPO_ROOT))} && {PATCH_PREP_CHECKLIST} --run"
         )
+        actions.append(
+            "while waiting, run non-hardware patch-prep preflight: "
+            f"cd {shlex.quote(str(REPO_ROOT))} && {PATCH_PREP_CHECKLIST} --preflight"
+        )
     actions.append(
         f"check backup posture: cd {shlex.quote(str(REPO_ROOT))} && "
         "scripts/kernel-workflow-status --workflow-backup-status"
