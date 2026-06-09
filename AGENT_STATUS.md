@@ -1,5 +1,24 @@
 # Agent Status
 
+## 2026-06-09 maintainer next-action command
+
+- Added `scripts/kernel-workflow-status --maintainer-next-action`, which
+  returns the ordered next step toward maintainer readiness rather than just
+  the generic runtime next action.
+- Current output is still the human-gated corrected-root proof command:
+  `cd /Users/enzo/projects/homelab && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95`.
+- Ordering is runtime proof first, then A733 export shape, then public hygiene,
+  public GitHub backup, and ThinkCentre mirror backup.
+- Updated `runbooks/kernel-machine-install-checklist.md` to document the new
+  command for dispatcher continuations.
+- Validation: `python3 -m py_compile tools/inventory/kernel_workflow_status.py`,
+  `bash -n scripts/kernel-workflow-status`,
+  `scripts/kernel-workflow-status --maintainer-next-action`, and JSON assertion
+  that the current maintainer next action is the Cubie interactive root install
+  session.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 maintainer-ready blocker local review
 
 - Created local review packet

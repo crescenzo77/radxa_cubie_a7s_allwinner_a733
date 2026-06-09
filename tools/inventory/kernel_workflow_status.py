@@ -304,7 +304,21 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
     if not data["public_mirror"].get("remote_matches"):
         blockers.append("ThinkCentre public mirror is not backed up")
 
-    if blockers:
+    cubie_next = data["cubie_runtime_gate"].get("next_shell") or data["cubie_runtime_gate"].get("next_command")
+    if data["cubie_runtime_gate"].get("status") != "runtime-ready" and cubie_next:
+        next_action = str(cubie_next)
+    elif not data["a733_series_shape"].get("ok"):
+        next_action = (
+            "after corrected-root runtime proof, reshape the public export to "
+            "the narrow A733 DTS/board series before patch-prep validation"
+        )
+    elif not data["public_hygiene"].get("ok"):
+        next_action = "remove public hygiene matches before public backup or patch prep"
+    elif not data["public_repo"].get("clean") or not data["public_repo"].get("remote_matches"):
+        next_action = "clean and push the public kernel repo before patch prep"
+    elif not data["public_mirror"].get("remote_matches"):
+        next_action = "push the public kernel repo to the ThinkCentre mirror before patch prep"
+    elif blockers:
         next_action = "do not prepare or send maintainer-facing patches; clear the listed blockers first"
     else:
         next_action = "maintainer-ready gates pass; proceed to patch-prep validation and human review"
@@ -503,6 +517,11 @@ def main() -> int:
         action="store_true",
         help="Print one maintainer-readiness blocker per line.",
     )
+    parser.add_argument(
+        "--maintainer-next-action",
+        action="store_true",
+        help="Print the ordered next action for maintainer-readiness.",
+    )
     parser.add_argument("--strict", action="store_true")
     parser.add_argument(
         "--runtime-strict",
@@ -533,6 +552,8 @@ def main() -> int:
     elif args.maintainer_ready_blockers:
         blockers = data["maintainer_ready"].get("blockers") or []
         print("\n".join(blockers) if blockers else "none")
+    elif args.maintainer_next_action:
+        print(data["maintainer_ready"].get("next_action") or "none")
     elif args.json:
         print(json.dumps(data, indent=2, sort_keys=True))
     else:
