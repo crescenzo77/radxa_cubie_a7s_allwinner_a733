@@ -38,11 +38,11 @@ VENDOR_POLLUTION = {
 }
 
 FEATURE_CREEP = {
-    "ethernet-gmac": re.compile(r"\b(?:ethernet|gmac|emac)\b", re.IGNORECASE),
-    "vpu-video": re.compile(r"\b(?:vpu|video-codec|cedrus)\b", re.IGNORECASE),
-    "display-drm": re.compile(r"\b(?:display|drm|hdmi|tcon|de[0-9]?)\b", re.IGNORECASE),
+    "ethernet-gmac": re.compile(r"\b(?:ethernet|gmac[0-9]*|emac[0-9]*)\b", re.IGNORECASE),
+    "vpu-video": re.compile(r"\b(?:vpu[0-9]*|video-codec|cedrus)\b", re.IGNORECASE),
+    "display-drm": re.compile(r"\b(?:display|drm|hdmi[0-9]*|tcon[0-9]*|de[0-9]*)\b", re.IGNORECASE),
     "wireless": re.compile(r"\b(?:wifi|wi-fi|bluetooth|bt)\b", re.IGNORECASE),
-    "pcie-usbc": re.compile(r"\b(?:pcie|usb-c|typec|type-c)\b", re.IGNORECASE),
+    "pcie-usbc": re.compile(r"\b(?:pcie[0-9]*|usb-c|typec|type-c)\b", re.IGNORECASE),
 }
 
 
@@ -59,7 +59,24 @@ def read_patch(path: Path) -> dict[str, Any]:
         if line.startswith("Subject:"):
             subject = line.removeprefix("Subject:").strip()
             break
-    return {"path": str(path), "name": path.name, "subject": subject, "text": text}
+    added_lines = []
+    in_diff = False
+    for line in text.splitlines():
+        if line.startswith("diff --git "):
+            in_diff = True
+            continue
+        if not in_diff or not line.startswith("+"):
+            continue
+        if line.startswith("+++") or line.startswith("+-- "):
+            continue
+        added_lines.append(line[1:])
+    return {
+        "path": str(path),
+        "name": path.name,
+        "subject": subject,
+        "text": text,
+        "added_text": "\n".join(added_lines),
+    }
 
 
 def find_matches(patterns: dict[str, re.Pattern[str]], text: str) -> list[str]:
@@ -71,6 +88,7 @@ def classify(path: Path, max_patches: int) -> dict[str, Any]:
     non_cover = [item for item in patches if not item["name"].startswith("0000-")]
     subjects = "\n".join(item["subject"] for item in patches)
     full_text = "\n".join(item["text"] for item in patches)
+    added_text = "\n".join(item["added_text"] for item in patches)
 
     findings: list[dict[str, Any]] = []
     if not patches:
@@ -86,10 +104,11 @@ def classify(path: Path, max_patches: int) -> dict[str, Any]:
     for kind in find_matches(FORBIDDEN_SUBJECTS, subjects):
         findings.append({"kind": kind, "detail": "forbidden A733 scaffolding subject present"})
 
-    for kind in find_matches(VENDOR_POLLUTION, full_text):
+    for kind in find_matches(VENDOR_POLLUTION, added_text):
         findings.append({"kind": kind, "detail": "vendor bootloader workaround does not belong in upstream DTS"})
 
-    for kind in find_matches(FEATURE_CREEP, subjects):
+    feature_creep_text = "\n".join([subjects, added_text])
+    for kind in find_matches(FEATURE_CREEP, feature_creep_text):
         findings.append({"kind": kind, "detail": "first A733 slice must remain UART0/SDMMC0 only"})
 
     missing_required = [
