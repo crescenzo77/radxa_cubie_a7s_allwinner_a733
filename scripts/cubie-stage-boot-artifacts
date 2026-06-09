@@ -22,7 +22,9 @@ artifact_name="$(basename "${artifact_dir}")"
 remote_stage="${CUBIE_REMOTE_STAGE:-kernel-boot-artifacts/${artifact_name}}"
 install_dir="${CUBIE_BOOT_INSTALL_DIR:-/boot/mainline-a733-v4-abc8d07b0a63}"
 label="${CUBIE_EXTLINUX_LABEL:-a733-v4-abc8d07b0a63-uart-proof}"
+menu_label="${CUBIE_EXTLINUX_MENU_LABEL:-A733 v4 public candidate abc8d07b0a63 UART proof}"
 bootargs_extra="${CUBIE_EXTLINUX_EXTRA_ARGS:-drm_debug=1}"
+append_override="${CUBIE_EXTLINUX_APPEND_OVERRIDE:-}"
 
 image_sha="b4584f230d436235fb3776a102546e05d8fac1d93206d25f3566aedad7e60b7d"
 dtb_sha="9ac58728715b7999bda4fe579bb00a4c9da7f123c7d0fb1bf9e4664cd85a0e44"
@@ -45,7 +47,9 @@ Defaults:
   A733_BOOT_ARTIFACT_DIR=${artifact_dir}
   CUBIE_REMOTE_STAGE=${remote_stage}
   CUBIE_STAGE_EXCLUDED_TARGETS=${excluded_targets}
+  CUBIE_EXTLINUX_MENU_LABEL=${menu_label}
   CUBIE_EXTLINUX_EXTRA_ARGS=${bootargs_extra}
+  CUBIE_EXTLINUX_APPEND_OVERRIDE=${append_override}
 
 This script does not write /boot, change boot defaults, power-cycle, or reboot.
 USAGE
@@ -87,6 +91,7 @@ require_match artifact_name "${artifact_name}" '^[A-Za-z0-9_.-]+$'
 require_match remote_stage "${remote_stage}" '^kernel-boot-artifacts/[A-Za-z0-9_.-]+$'
 require_match install_dir "${install_dir}" '^/boot/mainline-a733-[A-Za-z0-9_.-]+$'
 require_match label "${label}" '^[A-Za-z0-9_.-]+$'
+require_match menu_label "${menu_label}" '^[A-Za-z0-9_.=,:/ -]+$'
 require_match capture_label "${capture_label}" '^[A-Za-z0-9_.-]+$'
 require_match image_sha "${image_sha}" '^[0-9a-f]{64}$'
 require_match dtb_sha "${dtb_sha}" '^[0-9a-f]{64}$'
@@ -94,6 +99,9 @@ require_match config_sha "${config_sha}" '^[0-9a-f]{64}$'
 require_match manifest_sha "${manifest_sha}" '^[0-9a-f]{64}$'
 if [ -n "${bootargs_extra}" ]; then
   require_match bootargs_extra "${bootargs_extra}" '^[A-Za-z0-9_.=,:/-]+( [A-Za-z0-9_.=,:/-]+)*$'
+fi
+if [ -n "${append_override}" ]; then
+  require_match append_override "${append_override}" '^[A-Za-z0-9_.=,:/-]+( [A-Za-z0-9_.=,:/-]+)*$'
 fi
 
 required_files=(Image sun60i-a733-cubie-a7s.dtb config manifest.txt)
@@ -147,8 +155,10 @@ ARTIFACT_NAME=${artifact_name}
 REMOTE_STAGE=${remote_stage}
 INSTALL_DIR=${install_dir}
 EXTLINUX_LABEL=${label}
+EXTLINUX_MENU_LABEL=${menu_label}
 CAPTURE_LABEL=${capture_label}
 EXTLINUX_EXTRA_ARGS=${bootargs_extra}
+EXTLINUX_APPEND_OVERRIDE=${append_override}
 IMAGE_SHA=${image_sha}
 DTB_SHA=${dtb_sha}
 CONFIG_SHA=${config_sha}
@@ -164,7 +174,9 @@ set -euo pipefail
 stage_dir="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
 install_dir="${install_dir}"
 label="${label}"
+menu_label="${menu_label}"
 bootargs_extra="${bootargs_extra}"
+append_override="${append_override}"
 extlinux="/boot/extlinux/extlinux.conf"
 
 cd "\${stage_dir}"
@@ -182,9 +194,14 @@ fi
 
 backup="\${extlinux}.pre-\${label}-\$(date -u +%Y%m%dT%H%M%SZ)"
 root_arg="\$(tr ' ' '\\n' </proc/cmdline | awk '/^root=/{ print; exit }')"
-if [ -z "\${root_arg}" ]; then
+if [ -z "\${append_override}" ] && [ -z "\${root_arg}" ]; then
   echo "current /proc/cmdline has no root= argument; refusing to guess" >&2
   exit 1
+fi
+if [ -n "\${append_override}" ]; then
+  append_line="\${append_override}"
+else
+  append_line="console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel \${bootargs_extra} \${root_arg} rootwait rw"
 fi
 
 tmp="\$(mktemp)"
@@ -202,10 +219,10 @@ fi
 cat >>"\${tmp}" <<ENTRY
 
 label \${label}
-	menu label A733 v4 public candidate abc8d07b0a63 UART proof
+	menu label \${menu_label}
 	linux ${install_dir}/Image
 	fdt ${install_dir}/sun60i-a733-cubie-a7s.dtb
-	append console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel \${bootargs_extra} \${root_arg} rootwait rw
+	append \${append_line}
 ENTRY
 
 "\${sudo_cmd[@]}" install -d -m 0755 "\${install_dir}"
@@ -250,5 +267,5 @@ Select this non-default U-Boot label over UART:
   ${label}
 
 Temporary bootargs on this label:
-  ${bootargs_extra}
+  ${append_override:-${bootargs_extra}}
 SUMMARY

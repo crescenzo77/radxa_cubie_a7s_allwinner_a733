@@ -1,5 +1,24 @@
 # Agent Status
 
+## 2026-06-09 A733 corrected-root proof installer staged
+
+- Added a narrow `CUBIE_EXTLINUX_APPEND_OVERRIDE` path to
+  `scripts/cubie-stage-boot-artifacts` so a proof label can use the exact
+  `root=PARTUUID=... rootfstype=ext4 rootwait ro rootflags=noload init=/bin/sh`
+  append line instead of inheriting the vendor `root=UUID=... rw` bootargs.
+- Staged the exact v4 Image/DTB/config/manifest on Cubie3 only at
+  `192.168.50.95:kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609`.
+- The staged non-default label is
+  `a733-v4-abc8d07b0a63-partuuid-ro-proof`.
+- Verified the staged checksums and installer syntax with
+  `scripts/cubie-boot-staging-status --targets 192.168.50.95 --stage kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609 --json`.
+- Status is `ready_for_root_install: true`, `root_install_complete: false`,
+  and `sudo_status: password-required`; no `/boot` files were changed and no
+  reboot was requested.
+- Next action is an operator-gated sudo install of that staged label, followed
+  by UART capture, U-Boot RAM `setenv drm_debug 1`, `run bootcmd`, and manual
+  selection of the corrected-root label.
+
 ## 2026-06-09 Strix Qwen3.6 headQ6 offload target correction
 
 - Reviewed the Mac homelab knowledge base for the Strix model mismatch.

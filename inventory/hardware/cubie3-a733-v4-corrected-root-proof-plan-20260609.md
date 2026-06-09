@@ -86,6 +86,64 @@ run bootcmd
 
 Then select the new `PARTUUID ro proof` label.
 
+## Staged Installer
+
+The corrected-root proof installer has been staged in the Cubie3 user's home
+directory only:
+
+```text
+192.168.50.95:kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609
+```
+
+The staged label is:
+
+```text
+a733-v4-abc8d07b0a63-partuuid-ro-proof
+```
+
+The visible U-Boot menu label is:
+
+```text
+A733 v4 abc8d07b0a63 PARTUUID ro proof
+```
+
+The staged metadata and checksums were verified with:
+
+```sh
+scripts/cubie-boot-staging-status \
+  --targets 192.168.50.95 \
+  --stage kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609 \
+  --json
+```
+
+That status currently reports `ready_for_root_install: true`,
+`root_install_complete: false`, `sha256_status: ok`, `installer_syntax: ok`,
+and `sudo_status: password-required`. No `/boot` files were changed while
+staging this installer.
+
+The next operator action is:
+
+```sh
+ssh -tt -o BatchMode=no -o ConnectTimeout=8 -i /Users/enzo/.ssh/id_ed25519 \
+  radxa@192.168.50.95 \
+  'cd kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609 && sudo ./install-extlinux-entry.sh'
+```
+
+After the install succeeds, start the UART capture before rebooting:
+
+```sh
+scripts/cubie-uart-interactive-boot-session a733-v4-abc8d07b0a63-partuuid-ro-proof
+```
+
+Then in U-Boot, run:
+
+```text
+setenv drm_debug 1
+run bootcmd
+```
+
+and select `a733-v4-abc8d07b0a63-partuuid-ro-proof`.
+
 ## Expected Pass Evidence
 
 Capture a UART log that shows:
