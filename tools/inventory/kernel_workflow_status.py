@@ -18,6 +18,7 @@ PUBLIC_REPO = Path(
 DEFAULT_TIMEOUT = 30
 OPERATOR_BRIEF = "scripts/cubie-corrected-root-operator-brief"
 PATCH_PREP_CHECKLIST = "scripts/a733-patch-prep-checklist"
+REQUIRED_OFFLOAD_TARGETS = {"amd-fast", "amd-research", "strix-review"}
 
 
 def run(
@@ -137,7 +138,11 @@ def offload_summary(data: dict[str, Any]) -> dict[str, Any]:
     status = data["data"]
     target_lines = []
     failures = []
+    seen_targets = set()
     for target in status.get("targets", []):
+        name = str(target.get("name") or "")
+        if name:
+            seen_targets.add(name)
         if target.get("ok"):
             target_lines.append(
                 f"{target.get('name')}: ok host={target.get('host')} "
@@ -150,6 +155,9 @@ def offload_summary(data: dict[str, Any]) -> dict[str, Any]:
             )
             target_lines.append(line)
             failures.append(line)
+    missing_targets = sorted(REQUIRED_OFFLOAD_TARGETS.difference(seen_targets))
+    for name in missing_targets:
+        failures.append(f"{name}: missing required dispatcher offload target")
     cortex_data = status.get("cortex", {})
     if cortex_data.get("ok"):
         cortex_lines = [
@@ -164,6 +172,8 @@ def offload_summary(data: dict[str, Any]) -> dict[str, Any]:
         "targets": target_lines,
         "cortex": cortex_lines,
         "failures": failures,
+        "required_targets": sorted(REQUIRED_OFFLOAD_TARGETS),
+        "missing_targets": missing_targets,
     }
 
 
@@ -433,7 +443,8 @@ def goal_completion_audit(data: dict[str, Any]) -> dict[str, Any]:
             "requirement": "Codex Desktop dispatcher/offload documentation exists",
             "status": "pass" if data["local_offload"].get("ok") else "fail",
             "evidence": (
-                "local offload lanes are healthy and dispatcher runbook/status surfaces exist"
+                "local offload lanes are healthy and dispatcher runbook/status surfaces exist: "
+                + ", ".join(data["local_offload"].get("required_targets", []))
                 if data["local_offload"].get("ok")
                 else "local offload lanes are not all healthy"
             ),
