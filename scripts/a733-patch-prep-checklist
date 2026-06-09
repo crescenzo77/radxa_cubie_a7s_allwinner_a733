@@ -4,11 +4,69 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 public_repo="${KERNEL_PUBLIC_REPO:-/Users/enzo/projects/Home Lab/cubie-a7s-armbian}"
 
+usage() {
+  cat <<USAGE
+usage: $(basename "$0") [--run]
+
+Without arguments, print the read-only checklist. With --run, execute the
+patch-prep gates in order and stop on the first failure.
+USAGE
+}
+
+run=0
+case "${1:-}" in
+  "")
+    ;;
+  --run)
+    run=1
+    shift
+    ;;
+  -h|--help)
+    usage
+    exit 0
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac
+if [ "$#" -ne 0 ]; then
+  usage >&2
+  exit 2
+fi
+
+run_gate() {
+  local title="$1"
+  shift
+  printf '\n== %s ==\n' "${title}"
+  "$@"
+}
+
+if [ "${run}" = "1" ]; then
+  cd "${repo_root}"
+  run_gate "exact v4 Cubie runtime proof" \
+    scripts/cubie-latest-corrected-root-proof --strict
+  run_gate "maintainer-ready workflow gate" \
+    scripts/kernel-workflow-status --maintainer-ready-strict
+  run_gate "A733 series shape gate" \
+    scripts/a733-series-shape-gate "${public_repo}/patches"
+  run_gate "public hygiene gate" \
+    scripts/kernel-public-hygiene-gate "${public_repo}"
+  run_gate "backup posture" \
+    scripts/kernel-workflow-status --workflow-backup-status
+  printf '\nA733 patch-prep gates passed.\n'
+  exit 0
+fi
+
 cat <<CHECKLIST
 # A733 Patch Prep Checklist
 
 Run these gates after the corrected-root runtime proof passes and before
 creating any maintainer-facing branch, patch export, cover letter, or mail.
+
+To execute the gates in order:
+
+   cd ${repo_root} && scripts/a733-patch-prep-checklist --run
 
 1. Exact v4 Cubie runtime proof:
 
