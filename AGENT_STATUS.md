@@ -1,5 +1,21 @@
 # Agent Status
 
+## 2026-06-09 dispatcher human-gate status
+
+- Updated `scripts/kernel-workflow-status` output, via
+  `tools/inventory/kernel_workflow_status.py`, to expose the Cubie proof
+  `human_required`, `human_gate`, and `evidence_gate` state.
+- Current status confirms the dispatcher lanes are healthy, including Strix
+  `qwen3.6-27b-rocmfp4-mtp` on `192.168.50.11:8080`, and that the real next
+  A733 action remains the interactive corrected-root installer/UART proof.
+- The command now explicitly warns not to install the extlinux label
+  non-interactively and requires `scripts/cubie-latest-corrected-root-proof
+  --strict` before claiming v4 runtime proof.
+- Validation: `python3 -m py_compile tools/inventory/kernel_workflow_status.py`,
+  `bash -n scripts/kernel-workflow-status`, `scripts/kernel-workflow-status
+  --json`, and `scripts/kernel-workflow-status`.
+- No board state, `/boot` files, DTS files, or public repo files were changed.
+
 ## 2026-06-09 latest corrected-root proof helper
 
 - Added `scripts/cubie-latest-corrected-root-proof`, backed by

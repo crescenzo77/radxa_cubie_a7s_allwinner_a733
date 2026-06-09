@@ -150,6 +150,9 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
         return {
             "ok": False,
             "status": "unknown",
+            "human_required": False,
+            "human_gate": "",
+            "evidence_gate": "",
             "next_action": data.get("error", "cubie gate failed"),
             "next_command": "",
             "next_shell": "",
@@ -160,6 +163,9 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
     status = gate.get("status")
     next_command = ""
     next_reboot_command = ""
+    human_required = False
+    human_gate = ""
+    evidence_gate = ""
     staging = gate.get("staging") if isinstance(gate.get("staging"), dict) else {}
     rows = staging.get("rows") if isinstance(staging.get("rows"), list) else []
     if status == "root-install-required":
@@ -169,6 +175,16 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
                 "scripts/cubie-interactive-root-install-session "
                 f"--confirm-target-ip {ready[0]['ip']}"
             )
+            human_required = True
+            human_gate = (
+                "Cubie sudo password and live UART/operator control are required; "
+                "do not install the extlinux label non-interactively."
+            )
+            evidence_gate = (
+                "After install and boot capture, run "
+                "`scripts/cubie-latest-corrected-root-proof --strict` before "
+                "claiming v4 runtime proof."
+            )
     elif status == "boot-selection-required":
         installed = [row for row in rows if row.get("root_install_complete")]
         labels = sorted({row.get("capture_label") for row in installed if row.get("capture_label")})
@@ -177,10 +193,24 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
         next_command = f"scripts/cubie-uart-interactive-boot-session {shlex.quote(capture_label)}"
         if installed and installed[0].get("ip"):
             next_reboot_command = f"ssh radxa@{installed[0]['ip']} 'sudo reboot'"
+        human_required = True
+        human_gate = (
+            "Live U-Boot intervention is required: set RAM-only `drm_debug=1`, "
+            "run `bootcmd`, then select the corrected-root label."
+        )
+        evidence_gate = (
+            "The UART capture must pass `scripts/cubie-corrected-root-proof-gate "
+            "--strict` for the exact v4 Image and DTB."
+        )
+    elif status == "runtime-ready":
+        evidence_gate = "Runtime proof is present; inspect the proof ID before patch prep."
     return {
         "ok": status == "runtime-ready",
         "status": status,
         "reason": gate.get("reason"),
+        "human_required": human_required,
+        "human_gate": human_gate,
+        "evidence_gate": evidence_gate,
         "next_action": gate.get("next_action"),
         "next_command": next_command,
         "next_shell": f"cd {shlex.quote(str(REPO_ROOT))} && {next_command}" if next_command else "",
@@ -247,6 +277,8 @@ def markdown(data: dict[str, Any]) -> str:
         f"| local offload | ok={md_bool(offload.get('ok'))} |",
         f"| idle review ledger | idle_candidates={ledger.get('values', {}).get('idle_review_candidates', 'unknown')}, unconsumed={ledger.get('values', {}).get('unconsumed_reviewed', 'unknown')} |",
         f"| Cubie runtime gate | `{cubie.get('status')}` |",
+        f"| human gate | required={md_bool(cubie.get('human_required'))}; {cubie.get('human_gate') or 'none'} |",
+        f"| evidence gate | {cubie.get('evidence_gate') or 'none'} |",
         f"| next command | `{cubie.get('next_shell') or cubie.get('next_command') or 'none'}` |",
         f"| next reboot command | `{cubie.get('next_reboot_shell') or cubie.get('next_reboot_command') or 'none'}` |",
         "",
@@ -268,6 +300,10 @@ def markdown(data: dict[str, Any]) -> str:
     if offload.get("failures"):
         lines.append(f"- failures: {', '.join(offload['failures'])}")
     lines.extend(["", "## Next Action", "", str(cubie.get("next_action") or "none")])
+    if cubie.get("human_gate"):
+        lines.extend(["", "## Human Gate", "", str(cubie["human_gate"])])
+    if cubie.get("evidence_gate"):
+        lines.extend(["", "## Evidence Gate", "", str(cubie["evidence_gate"])])
     return "\n".join(lines) + "\n"
 
 
