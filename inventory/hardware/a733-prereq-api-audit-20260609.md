@@ -70,6 +70,11 @@ binding/header/RTC CCU driver, lacks the A733 R-CCU/PRCM pieces from the current
 CCU RFC, and still has a three-input A733 CCU binding/DTSI shape. See
 `inventory/hardware/a733-prereq-stack-audit-20260609.md`.
 
+A later Strix scratch worktree proved that RTC and CCU/PRCM can be stacked on
+`8fde5d1d47f6`; the next unresolved stack blocker is rebasing Andre Przywara's
+A733 pinctrl RFC, beginning at patch `2/9`, plus resolving MMC compatible
+binding coverage for the regenerated export.
+
 ### CCU Clock Inputs
 
 Junhui Liu's A733 CCU RFC binding patch documents the main CCU example as:

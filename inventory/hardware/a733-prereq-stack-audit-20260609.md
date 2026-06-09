@@ -108,3 +108,45 @@ uses that compatible.
 Guardrails remain unchanged: no vendor U-Boot DTS pollution, no hard-coded
 memory, no local CCU/pinctrl driver submission while the RFCs are active, and no
 Ethernet/VPU/display/wireless/USB-C/PCIe expansion.
+
+## Strix Scratch Stack Attempt
+
+Attempted on Strix from the proven base `8fde5d1d47f6` in:
+
+```text
+/srv/projects/a733-prereq-stack-v2-20260609T183944Z
+```
+
+Local public-inbox messages were converted to mbox form and applied with
+`git am`.
+
+Result:
+
+- A733 RTC series `1/7..7/7`: applied.
+- A733 CCU/PRCM RFC `1/8..8/8`: applied after two adjacent Kconfig/Makefile
+  conflict resolutions to keep all three A733 clock-controller entries:
+  `SUN60I_A733_RTC_CCU`, `SUN60I_A733_CCU`, and `SUN60I_A733_R_CCU`.
+- A733 pinctrl RFC: patch `1/9` can be rebased mechanically, but patch `2/9`
+  fails against the 7.1-rc6-era `pinctrl-sunxi.c` / `pinctrl-sunxi.h` context.
+  The pinctrl apply was aborted to leave the scratch tree clean.
+
+Current scratch audit:
+
+```text
+status=FAIL
+git_head=4420510d7223
+git_dirty=no
+pinctrl-binding-missing
+pinctrl-driver-missing
+mmc-binding-missing
+```
+
+Interpretation:
+
+- RTC and CCU/PRCM are no longer the immediate stack blocker in the scratch
+  path.
+- The next stack task is a deliberate rebase of Andre Przywara's pinctrl RFC
+  onto the RTC+CCU stack, beginning at pinctrl patch `2/9`.
+- The MMC compatible remains outside the prerequisite stack and still needs
+  either accepted-base coverage or one focused MMC binding patch in the final
+  regenerated export.

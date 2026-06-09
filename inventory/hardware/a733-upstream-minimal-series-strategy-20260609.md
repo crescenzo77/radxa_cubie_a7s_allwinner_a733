@@ -89,6 +89,15 @@ the A733 R-CCU/PRCM pieces from the current CCU RFC, and still has a
 three-input A733 CCU binding/DTSI shape. Do not regenerate maintainer-facing
 patches from that tree.
 
+A separate Strix scratch worktree now proves more about the path forward:
+
+- RTC `1/7..7/7` applies on `8fde5d1d47f6`.
+- CCU/PRCM `1/8..8/8` applies after adjacent Kconfig/Makefile conflict
+  resolutions caused by the RTC CCU entry.
+- pinctrl remains unresolved: the RFC needs a deliberate rebase beginning at
+  patch `2/9` against the current `pinctrl-sunxi.c` / `pinctrl-sunxi.h`.
+- MMC binding coverage is still missing from that scratch stack.
+
 ## Runtime Proof Required First
 
 The exact v4 kernel and DTB have a clean corrected-root UART proof using:
