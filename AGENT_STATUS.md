@@ -1,5 +1,23 @@
 # Agent Status
 
+## 2026-06-09 workflow status includes public hygiene
+
+- Integrated `scripts/kernel-public-hygiene-gate` into
+  `scripts/kernel-workflow-status` so the dispatcher dashboard reports whether
+  the public kernel-facing repo contains private lab paths, private IPs,
+  AI/local-model metadata, or other non-upstream material.
+- Current dashboard state is `public hygiene: PASS`, with `matches=0`, for
+  `/Users/enzo/projects/Home Lab/cubie-a7s-armbian`.
+- `scripts/kernel-workflow-status --strict` now treats a public-hygiene failure
+  as a strict workflow failure. The current strict exit remains non-zero because
+  of unrelated private workflow repo dirt, not because of public hygiene.
+- Validation: `python3 -m py_compile tools/inventory/kernel_workflow_status.py`,
+  `bash -n scripts/kernel-workflow-status`, `scripts/kernel-workflow-status
+  --json`, `scripts/kernel-workflow-status`, and
+  `scripts/kernel-workflow-status --strict`.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 workflow status includes A733 shape gate
 
 - Integrated `scripts/a733-series-shape-gate` into

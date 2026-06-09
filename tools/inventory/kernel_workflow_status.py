@@ -254,6 +254,31 @@ def a733_series_shape_summary(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def public_hygiene_summary(data: dict[str, Any]) -> dict[str, Any]:
+    if not data.get("ok"):
+        return {
+            "ok": False,
+            "status": "unknown",
+            "match_count": 0,
+            "kinds": [],
+            "next_action": data.get("error", "public hygiene gate failed"),
+        }
+    gate = data["data"]
+    matches = gate.get("matches") if isinstance(gate.get("matches"), list) else []
+    kinds = sorted({str(item.get("kind")) for item in matches if item.get("kind")})
+    if gate.get("status") == "PASS":
+        next_action = "public kernel-facing repo has no private lab or AI metadata hygiene matches"
+    else:
+        next_action = "remove private lab or AI metadata from the public kernel-facing repo before backup or submission"
+    return {
+        "ok": gate.get("status") == "PASS",
+        "status": gate.get("status", "unknown"),
+        "match_count": gate.get("match_count", 0),
+        "kinds": kinds,
+        "next_action": next_action,
+    }
+
+
 def build_status(args: argparse.Namespace) -> dict[str, Any]:
     machine = machine_summary(
         command_json([str(REPO_ROOT / "scripts" / "kernel-machine-readiness"), "--json"], timeout=args.timeout)
@@ -281,6 +306,17 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
             ok_codes=(0, 1),
         )
     )
+    public_hygiene = public_hygiene_summary(
+        command_json(
+            [
+                str(REPO_ROOT / "scripts" / "kernel-public-hygiene-gate"),
+                str(PUBLIC_REPO),
+                "--json",
+            ],
+            timeout=args.timeout,
+            ok_codes=(0, 1),
+        )
+    )
     return {
         "homelab": git_status(REPO_ROOT, "origin"),
         "public_repo": git_status(PUBLIC_REPO, "public")
@@ -294,6 +330,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         "idle_ledger": ledger,
         "cubie_runtime_gate": cubie,
         "a733_series_shape": a733_series_shape,
+        "public_hygiene": public_hygiene,
     }
 
 
@@ -310,6 +347,7 @@ def markdown(data: dict[str, Any]) -> str:
     ledger = data["idle_ledger"]
     cubie = data["cubie_runtime_gate"]
     a733_shape = data["a733_series_shape"]
+    public_hygiene = data["public_hygiene"]
 
     lines = [
         "# Kernel Workflow Status",
@@ -328,6 +366,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"| human gate | required={md_bool(cubie.get('human_required'))}; {cubie.get('human_gate') or 'none'} |",
         f"| evidence gate | {cubie.get('evidence_gate') or 'none'} |",
         f"| A733 series shape | `{a733_shape.get('status')}`, patches={a733_shape.get('patch_count')}, sendable={md_bool(a733_shape.get('ok'))} |",
+        f"| public hygiene | `{public_hygiene.get('status')}`, matches={public_hygiene.get('match_count')}, clean={md_bool(public_hygiene.get('ok'))} |",
         f"| next command | `{cubie.get('next_shell') or cubie.get('next_command') or 'none'}` |",
         f"| next reboot command | `{cubie.get('next_reboot_shell') or cubie.get('next_reboot_command') or 'none'}` |",
         "",
@@ -357,6 +396,10 @@ def markdown(data: dict[str, Any]) -> str:
     if a733_shape.get("finding_kinds"):
         lines.append("")
         lines.append("Findings: " + ", ".join(a733_shape["finding_kinds"]))
+    lines.extend(["", "## Public Hygiene", "", str(public_hygiene.get("next_action") or "none")])
+    if public_hygiene.get("kinds"):
+        lines.append("")
+        lines.append("Findings: " + ", ".join(public_hygiene["kinds"]))
     return "\n".join(lines) + "\n"
 
 
@@ -370,6 +413,7 @@ def strict_failed(data: dict[str, Any]) -> bool:
             not data["public_mirror"].get("remote_matches"),
             data["machine_readiness"].get("required_missing", 1) != 0,
             not data["local_offload"].get("ok"),
+            not data["public_hygiene"].get("ok"),
         ]
     )
 
