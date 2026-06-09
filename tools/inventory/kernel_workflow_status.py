@@ -375,6 +375,32 @@ def public_hygiene_summary(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def a733_prereq_api_summary(data: dict[str, Any]) -> dict[str, Any]:
+    if not data.get("ok"):
+        return {
+            "ok": False,
+            "status": "unknown",
+            "finding_kinds": [],
+            "next_action": data.get("error", "A733 prerequisite API audit failed"),
+        }
+    gate = data["data"]
+    findings = gate.get("findings") if isinstance(gate.get("findings"), list) else []
+    finding_kinds = [str(item.get("kind")) for item in findings if item.get("kind")]
+    if gate.get("status") == "PASS":
+        next_action = "A733 DTS references match the checked prerequisite API assumptions"
+    else:
+        next_action = (
+            "reconcile the A733 DTS with prerequisite RFC APIs before regenerating "
+            "or mailing patches"
+        )
+    return {
+        "ok": gate.get("status") == "PASS",
+        "status": gate.get("status", "unknown"),
+        "finding_kinds": finding_kinds,
+        "next_action": next_action,
+    }
+
+
 def latest_rfc_recheck_path() -> Path:
     candidates = sorted(RFC_RECHECK_DIR.glob(RFC_RECHECK_GLOB))
     return candidates[-1] if candidates else RFC_RECHECK_DIR / "a733-rfc-recheck-missing.md"
@@ -432,6 +458,11 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
             "A733 export shape is not maintainer-ready: "
             + ", ".join(data["a733_series_shape"].get("finding_kinds", []) or ["unknown"])
         )
+    if not data["a733_prereq_api"].get("ok"):
+        blockers.append(
+            "A733 prerequisite API audit is not clean: "
+            + ", ".join(data["a733_prereq_api"].get("finding_kinds", []) or ["unknown"])
+        )
     if not data["public_repo"].get("remote_is_github"):
         blockers.append("public kernel repo public remote is not GitHub")
     if not data["a733_rfc_recheck"].get("ok"):
@@ -454,6 +485,11 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
         next_action = (
             "after corrected-root runtime proof, reshape the public export to "
             "the narrow A733 board-binding/SoC-DTSI/board-DTS series before patch-prep validation"
+        )
+    elif not data["a733_prereq_api"].get("ok"):
+        next_action = (
+            "resolve the A733 prerequisite API audit findings before regenerating "
+            "a clean candidate branch"
         )
     elif not data["public_hygiene"].get("ok"):
         next_action = "remove public hygiene matches before public backup or patch prep"
@@ -570,6 +606,11 @@ def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
             "preserve series guardrail: current export is not maintainer-aligned; "
             "do not create or send maintainer-facing patches before reshaping it"
         )
+    if not data["a733_prereq_api"].get("ok"):
+        actions.append(
+            "resolve prerequisite API audit before candidate regeneration: "
+            + str(data["a733_prereq_api"].get("next_action"))
+        )
     if not data["a733_rfc_recheck"].get("ok"):
         actions.append(
             "refresh external overlap evidence before patch prep: "
@@ -613,6 +654,11 @@ def goal_completion_audit(data: dict[str, Any]) -> dict[str, Any]:
             "requirement": "maintainer-facing A733 patch shape is ready",
             "status": "fail" if not data["a733_series_shape"].get("ok") else "pass",
             "evidence": data["a733_series_shape"].get("next_action") or "",
+        },
+        {
+            "requirement": "A733 DTS matches prerequisite API assumptions",
+            "status": "pass" if data["a733_prereq_api"].get("ok") else "fail",
+            "evidence": data["a733_prereq_api"].get("next_action") or "",
         },
         {
             "requirement": "A733 CCU/pinctrl RFC overlap state is freshly rechecked",
@@ -737,6 +783,14 @@ def stopping_point_audit(data: dict[str, Any]) -> dict[str, Any]:
             ),
         },
         {
+            "name": "A733 prerequisite API audit",
+            "status": "ok" if data["a733_prereq_api"].get("ok") else "attention",
+            "detail": (
+                data["a733_prereq_api"].get("next_action")
+                or "audit A733 DTS references against CCU/pinctrl/MMC prerequisite APIs"
+            ),
+        },
+        {
             "name": "A733 RFC overlap freshness",
             "status": "ok" if data["a733_rfc_recheck"].get("ok") else "attention",
             "detail": (
@@ -804,6 +858,17 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
             ok_codes=(0, 1),
         )
     )
+    a733_prereq_api = a733_prereq_api_summary(
+        command_json(
+            [
+                str(REPO_ROOT / "scripts" / "a733-prereq-api-audit"),
+                str(PUBLIC_REPO / "patches"),
+                "--json",
+            ],
+            timeout=args.timeout,
+            ok_codes=(0, 1),
+        )
+    )
     proof_gate_selftest = proof_gate_selftest_summary(
         command_text([str(REPO_ROOT / "scripts" / "cubie-corrected-root-proof-gate-selftest")], timeout=args.timeout)
     )
@@ -822,6 +887,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         "cubie_runtime_gate": cubie,
         "a733_series_shape": a733_series_shape,
         "public_hygiene": public_hygiene,
+        "a733_prereq_api": a733_prereq_api,
         "a733_rfc_recheck": rfc_recheck_summary(),
         "proof_gate_selftest": proof_gate_selftest,
     }
@@ -851,6 +917,7 @@ def markdown(data: dict[str, Any]) -> str:
     ledger = data["idle_ledger"]
     cubie = data["cubie_runtime_gate"]
     a733_shape = data["a733_series_shape"]
+    a733_prereq_api = data["a733_prereq_api"]
     a733_rfc_recheck = data["a733_rfc_recheck"]
     proof_gate_selftest = data["proof_gate_selftest"]
     public_hygiene = data["public_hygiene"]
@@ -882,6 +949,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"| human gate | required={md_bool(cubie.get('human_required'))}; {cubie.get('human_gate') or 'none'} |",
         f"| evidence gate | {cubie.get('evidence_gate') or 'none'} |",
         f"| A733 series shape | `{a733_shape.get('status')}`, patches={a733_shape.get('patch_count')}, shape_ok={md_bool(a733_shape.get('ok'))} |",
+        f"| A733 prerequisite API audit | `{a733_prereq_api.get('status')}`, clean={md_bool(a733_prereq_api.get('ok'))} |",
         f"| A733 RFC overlap recheck | fresh_today={md_bool(a733_rfc_recheck.get('ok'))}, date=`{a733_rfc_recheck.get('date') or 'missing'}` |",
         f"| corrected-root proof gate selftest | ok={md_bool(proof_gate_selftest.get('ok'))} |",
         f"| public hygiene | `{public_hygiene.get('status')}`, matches={public_hygiene.get('match_count')}, clean={md_bool(public_hygiene.get('ok'))} |",
@@ -916,6 +984,10 @@ def markdown(data: dict[str, Any]) -> str:
     if a733_shape.get("finding_kinds"):
         lines.append("")
         lines.append("Findings: " + ", ".join(a733_shape["finding_kinds"]))
+    lines.extend(["", "## A733 Prerequisite API Audit", "", str(a733_prereq_api.get("next_action") or "none")])
+    if a733_prereq_api.get("finding_kinds"):
+        lines.append("")
+        lines.append("Findings: " + ", ".join(a733_prereq_api["finding_kinds"]))
     lines.extend(["", "## A733 RFC Overlap Freshness", "", str(a733_rfc_recheck.get("next_action") or "none")])
     if a733_rfc_recheck.get("path"):
         lines.append(f"Evidence packet: `{a733_rfc_recheck.get('path')}`")
@@ -985,6 +1057,7 @@ def maintainer_ready_failed(data: dict[str, Any]) -> bool:
         [
             runtime_strict_failed(data),
             not data["a733_series_shape"].get("ok"),
+            not data["a733_prereq_api"].get("ok"),
             not data["public_hygiene"].get("ok"),
             not data["public_repo"].get("clean"),
             not data["public_repo"].get("remote_matches"),
