@@ -25,10 +25,12 @@ Primary local lanes:
   - research synthesis
   - LKML/linux-sunxi overlap summaries
   - secondary maintainer-risk review
-- Strix on `192.168.50.11`, endpoint `http://127.0.0.1:8082/v1`
+- Strix on `192.168.50.11`, endpoint `http://127.0.0.1:8080/v1`
   - long-context review
   - tertiary maintainer-style rejection review
   - hardware/UART evidence review
+  - current model: Qwen3.6 27B ROCmFP4-MTP headQ6 trial,
+    alias `qwen3.6-27b-rocmfp4-mtp`
 
 Storage/search lane:
 

@@ -1,5 +1,20 @@
 # Agent Status
 
+## 2026-06-09 Strix Qwen3.6 headQ6 offload target correction
+
+- Reviewed the Mac homelab knowledge base for the Strix model mismatch.
+- Current Strix trial is the Qwen3.6 27B ROCmFP4-MTP headQ6 GGUF described in
+  `/Users/enzo/Documents/Homelab/inventory/strix-qwen36-rocmfp4-docker-runbook.md`.
+- Verified Strix `qwen36-rocmfp4` is healthy on `127.0.0.1:8080` and serves
+  model alias `qwen3.6-27b-rocmfp4-mtp` with context `262144`.
+- The old Strix `8082` Q4_K_M Vulkan container was intentionally stopped during
+  the self-speculative ROCmFP4 deployment, so the earlier offload failure was a
+  stale target definition rather than evidence that the desired Strix Q6-head
+  trial was down.
+- Updated `tools/offload/kernel_token_offload.py` and
+  `runbooks/kernel-token-offload.md` to use Strix `8080` and
+  `qwen3.6-27b-rocmfp4-mtp` for the `strix-review` lane.
+
 ## 2026-06-09 A733 v4 corrected-root proof planning
 
 - Continued the Codex Desktop dispatcher/coordinator workflow for A733 kernel

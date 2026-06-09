@@ -46,10 +46,9 @@ TARGETS: dict[str, dict[str, Any]] = {
     },
     "strix-review": {
         "host": "192.168.50.11",
-        "base_url": "http://127.0.0.1:8082/v1",
-        "model": "qwen3.6-27b-q4km-native-vulkan",
-        "chat_template_kwargs": {"enable_thinking": False},
-        "role": "longer maintainer-style review",
+        "base_url": "http://127.0.0.1:8080/v1",
+        "model": "qwen3.6-27b-rocmfp4-mtp",
+        "role": "longer maintainer-style review on the Qwen3.6 27B ROCmFP4-MTP headQ6 trial endpoint",
     },
 }
 
