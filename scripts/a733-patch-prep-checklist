@@ -63,6 +63,8 @@ if [ "${preflight}" = "1" ]; then
   run_gate "Cubie corrected-root session dry-run" \
     scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95 --dry-run
   printf '\nA733 patch-prep preflight gates passed.\n'
+  printf '\nNext live action:\n'
+  scripts/kernel-workflow-status --maintainer-next-action
   exit 0
 fi
 
