@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+next_action="$("${repo_root}/scripts/kernel-workflow-status" --maintainer-next-action)"
+
+cat <<BRIEF
+# Cubie Corrected-Root Operator Brief
+
+Maintainer-path next action:
+
+\`\`\`sh
+${next_action}
+\`\`\`
+
+Read-only install/session preflight:
+
+\`\`\`text
+BRIEF
+
+"${repo_root}/scripts/cubie-interactive-root-install-session" \
+  --confirm-target-ip 192.168.50.95 \
+  --dry-run
+
+cat <<'BRIEF'
+```
+
+Live U-Boot step, RAM only:
+
+```text
+setenv drm_debug 1
+run bootcmd
+```
+
+Select this non-default U-Boot menu label:
+
+```text
+A733 v4 abc8d07b0a63 PARTUUID ro proof
+```
+
+After the UART session exits, proof gates:
+
+```sh
+scripts/cubie-latest-corrected-root-proof --strict
+scripts/kernel-workflow-status --maintainer-ready-blockers
+```
+
+Do not claim runtime proof, reshape patches, or prepare maintainer-facing
+submission material unless the corrected-root proof gate passes.
+BRIEF

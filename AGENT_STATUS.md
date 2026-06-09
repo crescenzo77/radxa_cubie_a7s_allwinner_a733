@@ -1,5 +1,21 @@
 # Agent Status
 
+## 2026-06-09 corrected-root operator brief
+
+- Added `scripts/cubie-corrected-root-operator-brief`, a read-only Markdown
+  operator brief for the current corrected-root proof step.
+- The brief prints the maintainer-path next action, dry-run target/label/
+  bootargs/UART preflight details, required RAM-only U-Boot commands, the
+  visible corrected-root menu label, and post-capture proof gates.
+- Updated `runbooks/kernel-machine-install-checklist.md` to show the brief
+  immediately before the live interactive install command.
+- Validation: `bash -n scripts/cubie-corrected-root-operator-brief` and
+  `scripts/cubie-corrected-root-operator-brief` rendered the current Cubie3
+  target, `A733 v4 abc8d07b0a63 PARTUUID ro proof` label, `drm_debug=1`
+  U-Boot step, and corrected-root proof gates.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 Cubie maintainer next-action dry-run
 
 - Ran read-only preflight:

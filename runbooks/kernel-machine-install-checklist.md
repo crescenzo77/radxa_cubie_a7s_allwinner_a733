@@ -220,6 +220,7 @@ Current required interactive handoff:
 
 ```sh
 cd /Users/enzo/projects/homelab
+scripts/cubie-corrected-root-operator-brief
 scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95
 ```
 
