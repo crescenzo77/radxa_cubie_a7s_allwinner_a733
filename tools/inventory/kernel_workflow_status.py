@@ -17,6 +17,7 @@ PUBLIC_REPO = Path(
 )
 DEFAULT_TIMEOUT = 30
 OPERATOR_BRIEF = "scripts/cubie-corrected-root-operator-brief"
+PATCH_PREP_CHECKLIST = "scripts/a733-patch-prep-checklist"
 
 
 def run(
@@ -373,6 +374,10 @@ def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
         actions.append(
             "do not reshape or send patches until evidence gate passes: "
             + str(cubie.get("evidence_gate") or "runtime proof required")
+        )
+        actions.append(
+            "after proof passes, use the read-only patch-prep checklist: "
+            f"cd {shlex.quote(str(REPO_ROOT))} && {PATCH_PREP_CHECKLIST}"
         )
     actions.append(
         f"check backup posture: cd {shlex.quote(str(REPO_ROOT))} && "
