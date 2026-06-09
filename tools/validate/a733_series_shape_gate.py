@@ -35,6 +35,7 @@ VENDOR_POLLUTION = {
     "vendor-path-alias": re.compile(r"\bsoc@3000000|sdmmc@4020000\b"),
     "fdt-workaround": re.compile(r"\bfdt_high\b"),
     "hardcoded-memory": re.compile(r"\bmemory@40000000\b"),
+    "lab-bootargs": re.compile(r"\b(?:bootargs|root=|rootwait|rootflags=|drm_debug)\b"),
 }
 
 FEATURE_CREEP = {
@@ -105,7 +106,12 @@ def classify(path: Path, max_patches: int) -> dict[str, Any]:
         findings.append({"kind": kind, "detail": "forbidden A733 scaffolding subject present"})
 
     for kind in find_matches(VENDOR_POLLUTION, added_text):
-        findings.append({"kind": kind, "detail": "vendor bootloader workaround does not belong in upstream DTS"})
+        detail = (
+            "lab boot policy belongs in the proof procedure, not upstream DTS"
+            if kind == "lab-bootargs"
+            else "vendor bootloader workaround does not belong in upstream DTS"
+        )
+        findings.append({"kind": kind, "detail": detail})
 
     feature_creep_text = "\n".join([subjects, added_text])
     for kind in find_matches(FEATURE_CREEP, feature_creep_text):
