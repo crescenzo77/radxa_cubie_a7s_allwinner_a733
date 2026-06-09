@@ -1,5 +1,18 @@
 # Agent Status
 
+## 2026-06-09 workflow backup visibility
+
+- Updated `scripts/kernel-workflow-status` JSON and markdown output to include
+  each checked repo remote URL and whether that remote is GitHub-backed.
+- Current status shows the private Homelab workflow repo is backed up to the
+  local bare mirror `/Users/enzo/git-mirrors/homelab.git`, but that remote is
+  not GitHub.
+- Current status shows the public Cubie A7S kernel repo is clean and backed up
+  to GitHub at
+  `https://github.com/crescenzo77/radxa_cubie_a7s_allwinner_a733.git`, with
+  the ThinkCentre mirror also matching.
+- No remotes were changed.
+
 ## 2026-06-09 corrected-root handoff preflight bundle
 
 - Verified `scripts/cubie-interactive-root-install-session --dry-run

@@ -48,10 +48,12 @@ def git_status(repo: Path, remote: str) -> dict[str, Any]:
     status = run(["git", "status", "--short"], cwd=repo)
     head = run(["git", "rev-parse", "--short", "HEAD"], cwd=repo)
     full_head = run(["git", "rev-parse", "HEAD"], cwd=repo)
+    remote_url = run(["git", "remote", "get-url", remote], cwd=repo)
     remote_head = run(["git", "ls-remote", remote, "refs/heads/main"], cwd=repo, timeout=20)
     remote_sha = ""
     if remote_head["ok"] and remote_head["stdout"]:
         remote_sha = remote_head["stdout"].split()[0]
+    url = remote_url["stdout"] if remote_url["ok"] else ""
     return {
         "path": str(repo),
         "clean": status["ok"] and not status["stdout"],
@@ -59,9 +61,11 @@ def git_status(repo: Path, remote: str) -> dict[str, Any]:
         "head_short": head["stdout"] if head["ok"] else "",
         "head": full_head["stdout"] if full_head["ok"] else "",
         "remote": remote,
+        "remote_url": url,
+        "remote_is_github": "github.com" in url.lower(),
         "remote_head": remote_sha,
         "remote_matches": bool(remote_sha and remote_sha == (full_head["stdout"] if full_head["ok"] else "")),
-        "errors": [item["stderr"] for item in (status, head, full_head, remote_head) if item["stderr"]],
+        "errors": [item["stderr"] for item in (status, head, full_head, remote_url, remote_head) if item["stderr"]],
     }
 
 
@@ -73,6 +77,8 @@ def missing_git_status(repo: Path, remote: str) -> dict[str, Any]:
         "head_short": "",
         "head": "",
         "remote": remote,
+        "remote_url": "",
+        "remote_is_github": False,
         "remote_head": "",
         "remote_matches": False,
         "errors": ["missing repository"],
@@ -233,7 +239,9 @@ def markdown(data: dict[str, Any]) -> str:
         "| area | state |",
         "| --- | --- |",
         f"| private workflow repo | clean={md_bool(homelab.get('clean'))}, backed_up={md_bool(homelab.get('remote_matches'))}, head=`{homelab.get('head_short', '')}` |",
-        f"| public kernel repo | clean={md_bool(public_repo.get('clean'))}, github_backed_up={md_bool(public_repo.get('remote_matches'))}, head=`{public_repo.get('head_short', '')}` |",
+        f"| private workflow remote | `{homelab.get('remote_url', '') or 'none'}`; github={md_bool(homelab.get('remote_is_github'))} |",
+        f"| public kernel repo | clean={md_bool(public_repo.get('clean'))}, github_backed_up={md_bool(public_repo.get('remote_matches') and public_repo.get('remote_is_github'))}, head=`{public_repo.get('head_short', '')}` |",
+        f"| public kernel GitHub remote | `{public_repo.get('remote_url', '') or 'none'}` |",
         f"| thinkcentre public mirror | backed_up={md_bool(public_mirror.get('remote_matches'))} |",
         f"| machine readiness | required_missing={machine.get('required_missing', 'unknown')} |",
         f"| local offload | ok={md_bool(offload.get('ok'))} |",
