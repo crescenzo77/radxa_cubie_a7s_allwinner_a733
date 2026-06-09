@@ -1,5 +1,21 @@
 # Agent Status
 
+## 2026-06-09 workflow backup posture command
+
+- Added `scripts/kernel-workflow-status --workflow-backup-status` for Codex
+  Desktop dispatcher stopping points.
+- The command reports whether the private workflow repo is backed up to its
+  configured origin, whether that origin is GitHub-backed, and whether the
+  public kernel repo has both GitHub and mirror backups.
+- Current posture is expected to show the private workflow repo backed up to
+  `/Users/enzo/git-mirrors/homelab.git` but not GitHub-backed, because no
+  GitHub remote is configured for this private repo.
+- Updated `runbooks/kernel-token-offload.md` to use this command before
+  claiming stopping-point backup state and to avoid inventing a GitHub remote
+  without human approval.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 dispatcher topology consistency
 
 - Re-checked the Codex Desktop dispatcher/offload docs after the Strix headQ6

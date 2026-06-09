@@ -30,6 +30,17 @@ state, commit only the relevant workflow/documentation changes, back them up to
 the configured remotes or mirrors, and then take the next maintainer-safe action
 that does not pretend the gate has passed.
 
+At a stopping point, check backup posture with:
+
+```sh
+scripts/kernel-workflow-status --workflow-backup-status
+```
+
+This distinguishes a private workflow repo that is backed up only to a local
+mirror from public kernel-facing material that is backed up to GitHub and the
+ThinkCentre mirror. Do not invent or add a GitHub remote without explicit human
+approval.
+
 For A733/Cubie A7S work, the dispatcher must preserve the current guardrails:
 do not prepare a maintainer-facing series until the exact v4 boot/runtime proof
 passes, do not submit the local CCU or pinctrl scaffolding while the external

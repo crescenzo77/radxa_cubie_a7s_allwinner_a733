@@ -319,6 +319,33 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def workflow_backup_summary(data: dict[str, Any]) -> dict[str, Any]:
+    homelab = data["homelab"]
+    public_repo = data["public_repo"]
+    public_mirror = data["public_mirror"]
+    private_github_backed = bool(homelab.get("remote_matches") and homelab.get("remote_is_github"))
+    return {
+        "ok": bool(
+            homelab.get("remote_matches")
+            and public_repo.get("remote_matches")
+            and public_repo.get("remote_is_github")
+            and public_mirror.get("remote_matches")
+        ),
+        "private_origin_backed": bool(homelab.get("remote_matches")),
+        "private_github_backed": private_github_backed,
+        "private_remote_url": homelab.get("remote_url") or "",
+        "public_github_backed": bool(public_repo.get("remote_matches") and public_repo.get("remote_is_github")),
+        "public_remote_url": public_repo.get("remote_url") or "",
+        "public_mirror_backed": bool(public_mirror.get("remote_matches")),
+        "note": (
+            "private workflow repo is backed up only to its configured origin; "
+            "no GitHub remote is configured"
+            if homelab.get("remote_matches") and not homelab.get("remote_is_github")
+            else ""
+        ),
+    }
+
+
 def build_status(args: argparse.Namespace) -> dict[str, Any]:
     machine = machine_summary(
         command_json([str(REPO_ROOT / "scripts" / "kernel-machine-readiness"), "--json"], timeout=args.timeout)
@@ -372,6 +399,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         "a733_series_shape": a733_series_shape,
         "public_hygiene": public_hygiene,
     }
+    data["workflow_backup"] = workflow_backup_summary(data)
     data["maintainer_ready"] = maintainer_ready_summary(data)
     return data
 
@@ -391,6 +419,7 @@ def markdown(data: dict[str, Any]) -> str:
     a733_shape = data["a733_series_shape"]
     public_hygiene = data["public_hygiene"]
     maintainer_ready = data["maintainer_ready"]
+    workflow_backup = data["workflow_backup"]
 
     lines = [
         "# Kernel Workflow Status",
@@ -399,6 +428,7 @@ def markdown(data: dict[str, Any]) -> str:
         "| --- | --- |",
         f"| private workflow repo | clean={md_bool(homelab.get('clean'))}, backed_up={md_bool(homelab.get('remote_matches'))}, head=`{homelab.get('head_short', '')}` |",
         f"| private workflow remote | `{homelab.get('remote_url', '') or 'none'}`; github={md_bool(homelab.get('remote_is_github'))} |",
+        f"| workflow backup posture | private_github={md_bool(workflow_backup.get('private_github_backed'))}, public_github={md_bool(workflow_backup.get('public_github_backed'))}, public_mirror={md_bool(workflow_backup.get('public_mirror_backed'))} |",
         f"| public kernel repo | clean={md_bool(public_repo.get('clean'))}, github_backed_up={md_bool(public_repo.get('remote_matches') and public_repo.get('remote_is_github'))}, head=`{public_repo.get('head_short', '')}` |",
         f"| public kernel GitHub remote | `{public_repo.get('remote_url', '') or 'none'}` |",
         f"| thinkcentre public mirror | backed_up={md_bool(public_mirror.get('remote_matches'))} |",
@@ -447,6 +477,8 @@ def markdown(data: dict[str, Any]) -> str:
     lines.extend(["", "## Maintainer Ready", "", str(maintainer_ready.get("next_action") or "none")])
     for blocker in maintainer_ready.get("blockers", []):
         lines.append(f"- {blocker}")
+    if workflow_backup.get("note"):
+        lines.extend(["", "## Workflow Backup Note", "", str(workflow_backup["note"])])
     return "\n".join(lines) + "\n"
 
 
@@ -533,6 +565,11 @@ def main() -> int:
         action="store_true",
         help="Print a copy-pasteable read-only operator brief command.",
     )
+    parser.add_argument(
+        "--workflow-backup-status",
+        action="store_true",
+        help="Print compact private/public backup posture for dispatcher stopping points.",
+    )
     parser.add_argument("--strict", action="store_true")
     parser.add_argument(
         "--runtime-strict",
@@ -567,6 +604,15 @@ def main() -> int:
         print(data["maintainer_ready"].get("next_action") or "none")
     elif args.maintainer_operator_brief_shell:
         print(data["maintainer_ready"].get("operator_brief_shell") or "none")
+    elif args.workflow_backup_status:
+        backup = data["workflow_backup"]
+        print(f"private_origin_backed={md_bool(backup.get('private_origin_backed'))}")
+        print(f"private_github_backed={md_bool(backup.get('private_github_backed'))}")
+        print(f"private_remote_url={backup.get('private_remote_url') or 'none'}")
+        print(f"public_github_backed={md_bool(backup.get('public_github_backed'))}")
+        print(f"public_mirror_backed={md_bool(backup.get('public_mirror_backed'))}")
+        if backup.get("note"):
+            print(f"note={backup['note']}")
     elif args.json:
         print(json.dumps(data, indent=2, sort_keys=True))
     else:
