@@ -279,6 +279,38 @@ def public_hygiene_summary(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
+    blockers: list[str] = []
+    if strict_failed(data):
+        blockers.append("workflow health is not strict-clean")
+    if data["cubie_runtime_gate"].get("status") != "runtime-ready":
+        blockers.append(f"cubie runtime proof is {data['cubie_runtime_gate'].get('status')}")
+    if not data["a733_series_shape"].get("ok"):
+        blockers.append(
+            "A733 export shape is not maintainer-ready: "
+            + ", ".join(data["a733_series_shape"].get("finding_kinds", []) or ["unknown"])
+        )
+    if not data["public_hygiene"].get("ok"):
+        blockers.append(
+            "public hygiene failed: "
+            + ", ".join(data["public_hygiene"].get("kinds", []) or ["unknown"])
+        )
+    if not data["public_repo"].get("clean"):
+        blockers.append("public kernel repo is dirty")
+    if not data["public_repo"].get("remote_matches"):
+        blockers.append("public kernel repo is not backed up to its public remote")
+    if not data["public_repo"].get("remote_is_github"):
+        blockers.append("public kernel repo public remote is not GitHub")
+    if not data["public_mirror"].get("remote_matches"):
+        blockers.append("ThinkCentre public mirror is not backed up")
+
+    if blockers:
+        next_action = "do not prepare or send maintainer-facing patches; clear the listed blockers first"
+    else:
+        next_action = "maintainer-ready gates pass; proceed to patch-prep validation and human review"
+    return {"ok": not blockers, "blockers": blockers, "next_action": next_action}
+
+
 def build_status(args: argparse.Namespace) -> dict[str, Any]:
     machine = machine_summary(
         command_json([str(REPO_ROOT / "scripts" / "kernel-machine-readiness"), "--json"], timeout=args.timeout)
@@ -317,7 +349,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
             ok_codes=(0, 1),
         )
     )
-    return {
+    data = {
         "homelab": git_status(REPO_ROOT, "origin"),
         "public_repo": git_status(PUBLIC_REPO, "public")
         if PUBLIC_REPO.exists()
@@ -332,6 +364,8 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         "a733_series_shape": a733_series_shape,
         "public_hygiene": public_hygiene,
     }
+    data["maintainer_ready"] = maintainer_ready_summary(data)
+    return data
 
 
 def md_bool(value: object) -> str:
@@ -348,6 +382,7 @@ def markdown(data: dict[str, Any]) -> str:
     cubie = data["cubie_runtime_gate"]
     a733_shape = data["a733_series_shape"]
     public_hygiene = data["public_hygiene"]
+    maintainer_ready = data["maintainer_ready"]
 
     lines = [
         "# Kernel Workflow Status",
@@ -367,6 +402,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"| evidence gate | {cubie.get('evidence_gate') or 'none'} |",
         f"| A733 series shape | `{a733_shape.get('status')}`, patches={a733_shape.get('patch_count')}, sendable={md_bool(a733_shape.get('ok'))} |",
         f"| public hygiene | `{public_hygiene.get('status')}`, matches={public_hygiene.get('match_count')}, clean={md_bool(public_hygiene.get('ok'))} |",
+        f"| maintainer ready | {md_bool(maintainer_ready.get('ok'))}; blockers={len(maintainer_ready.get('blockers', []))} |",
         f"| next command | `{cubie.get('next_shell') or cubie.get('next_command') or 'none'}` |",
         f"| next reboot command | `{cubie.get('next_reboot_shell') or cubie.get('next_reboot_command') or 'none'}` |",
         "",
@@ -400,6 +436,9 @@ def markdown(data: dict[str, Any]) -> str:
     if public_hygiene.get("kinds"):
         lines.append("")
         lines.append("Findings: " + ", ".join(public_hygiene["kinds"]))
+    lines.extend(["", "## Maintainer Ready", "", str(maintainer_ready.get("next_action") or "none")])
+    for blocker in maintainer_ready.get("blockers", []):
+        lines.append(f"- {blocker}")
     return "\n".join(lines) + "\n"
 
 
@@ -459,6 +498,11 @@ def main() -> int:
         action="store_true",
         help="Print a copy-pasteable shell line for the paired board reboot when one is known.",
     )
+    parser.add_argument(
+        "--maintainer-ready-blockers",
+        action="store_true",
+        help="Print one maintainer-readiness blocker per line.",
+    )
     parser.add_argument("--strict", action="store_true")
     parser.add_argument(
         "--runtime-strict",
@@ -486,6 +530,9 @@ def main() -> int:
         print(data["cubie_runtime_gate"].get("next_command") or "none")
     elif args.next_action:
         print(data["cubie_runtime_gate"].get("next_action") or "none")
+    elif args.maintainer_ready_blockers:
+        blockers = data["maintainer_ready"].get("blockers") or []
+        print("\n".join(blockers) if blockers else "none")
     elif args.json:
         print(json.dumps(data, indent=2, sort_keys=True))
     else:

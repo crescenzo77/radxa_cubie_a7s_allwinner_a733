@@ -48,6 +48,7 @@ scripts/kernel-workflow-status --json
 scripts/kernel-workflow-status --strict
 scripts/kernel-workflow-status --runtime-strict
 scripts/kernel-workflow-status --maintainer-ready-strict
+scripts/kernel-workflow-status --maintainer-ready-blockers
 scripts/kernel-workflow-status --next-action
 scripts/kernel-workflow-status --next-command
 scripts/kernel-workflow-status --next-shell
@@ -60,7 +61,8 @@ public-facing kernel checkout. Use `--strict` for workflow health and
 `--runtime-strict` only for gates that must fail until exact Cubie hardware
 runtime proof exists. Use `--maintainer-ready-strict` only for a pre-submission
 or patch-prep stop gate; it additionally requires the A733 export shape and
-public hygiene gates to pass.
+public hygiene gates to pass. Use `--maintainer-ready-blockers` when a compact
+blocker list is easier to hand to a local review lane than the full dashboard.
 
 ## Mac Dispatcher
 

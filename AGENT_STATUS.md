@@ -1,5 +1,23 @@
 # Agent Status
 
+## 2026-06-09 maintainer-ready blocker list
+
+- Added a normalized `maintainer_ready` JSON block to
+  `scripts/kernel-workflow-status`, plus
+  `scripts/kernel-workflow-status --maintainer-ready-blockers` for compact
+  one-blocker-per-line output.
+- Current blockers are: private workflow repo is not strict-clean, Cubie
+  runtime proof is `root-install-required`, and the A733 export shape fails
+  because the public export is still the local 9-patch scaffolding series.
+- Updated `runbooks/kernel-machine-install-checklist.md` to list the blocker
+  command for local LLM review handoffs.
+- Validation: `python3 -m py_compile tools/inventory/kernel_workflow_status.py`,
+  `bash -n scripts/kernel-workflow-status`, `scripts/kernel-workflow-status
+  --json`, `scripts/kernel-workflow-status --maintainer-ready-blockers`, and
+  `scripts/kernel-workflow-status --maintainer-ready-strict` returning `1`.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 maintainer-ready workflow gate
 
 - Added `scripts/kernel-workflow-status --maintainer-ready-strict` as a
