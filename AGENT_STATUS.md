@@ -1,5 +1,17 @@
 # Agent Status
 
+## 2026-06-09 dispatcher idle queue guard
+
+- Updated `scripts/kernel-workflow-status --dispatcher-waiting-actions` to
+  inspect the idle-review ledger before recommending an advisory local-model
+  sweep.
+- When `idle_review_candidates=0`, the command now says the advisory queue is
+  empty instead of suggesting a no-op `kernel-idle-review-sweep` run.
+- Validation confirmed the current queue is empty and the maintainer next
+  action remains the corrected-root Cubie install/session.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 dispatcher waiting actions
 
 - Added `scripts/kernel-workflow-status --dispatcher-waiting-actions` so Codex

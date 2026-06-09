@@ -349,6 +349,8 @@ def workflow_backup_summary(data: dict[str, Any]) -> dict[str, Any]:
 def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
     actions: list[str] = []
     cubie = data["cubie_runtime_gate"]
+    ledger_values = data.get("idle_ledger", {}).get("values", {})
+    idle_candidates = ledger_values.get("idle_review_candidates", "unknown")
     if cubie.get("human_required"):
         actions.append(f"read operator brief: cd {shlex.quote(str(REPO_ROOT))} && {OPERATOR_BRIEF}")
         actions.append(
@@ -363,11 +365,13 @@ def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
         f"check backup posture: cd {shlex.quote(str(REPO_ROOT))} && "
         "scripts/kernel-workflow-status --workflow-backup-status"
     )
-    if data["local_offload"].get("ok"):
+    if data["local_offload"].get("ok") and idle_candidates not in ("0", 0):
         actions.append(
             "optional advisory review only: "
             "scripts/kernel-idle-review-sweep --limit 1 --run --allow-unavailable"
         )
+    elif data["local_offload"].get("ok"):
+        actions.append("advisory idle review queue is empty; do not run a no-op sweep")
     if not data["a733_series_shape"].get("ok"):
         actions.append(
             "preserve series guardrail: current export is scaffolding; "
