@@ -1,7 +1,7 @@
-From 6717e9b11044eae059eb007c82dc8da1882648c3 Mon Sep 17 00:00:00 2001
+From d9aa2e15caae5085b51a28529fc0c35d189df543 Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
-Date: Wed, 3 Jun 2026 23:28:52 -0400
-Subject: [PATCH 3/3] arm64: dts: allwinner: add Radxa Cubie A7S
+Date: Tue, 9 Jun 2026 15:05:27 -0400
+Subject: [PATCH 4/4] arm64: dts: allwinner: add Radxa Cubie A7S
 
 Add the Radxa Cubie A7S board description with serial console and SD card
 boot support.
@@ -11,10 +11,6 @@ MDIO, PHY reset, PHY power, and link behavior are proven.
 
 Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
-Depends-on: 20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech
-Depends-on: 20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech
-Depends-on: 20250821004232.8134-1-andre.przywara@arm.com
-
  arch/arm64/boot/dts/allwinner/Makefile        |  1 +
  .../dts/allwinner/sun60i-a733-cubie-a7s.dts   | 49 +++++++++++++++++++
  2 files changed, 50 insertions(+)
@@ -87,5 +83,5 @@ index 000000000000..5ea8ec4e983b
 +	pinctrl-0 = <&uart0_pb9_pb10_pins>;
 +	status = "okay";
 +};
--- 
-2.50.1 (Apple Git-155)
+--
+2.53.0

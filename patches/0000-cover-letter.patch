@@ -1,7 +1,7 @@
-From abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e Mon Sep 17 00:00:00 2001
+From d9aa2e15caae5085b51a28529fc0c35d189df543 Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
-Date: Tue, 9 Jun 2026 13:47:00 -0400
-Subject: [PATCH 0/3] arm64: dts: allwinner: add A733/Cubie A7S DTS support
+Date: Tue, 9 Jun 2026 15:05:45 -0400
+Subject: [PATCH 0/4] arm64: dts: allwinner: add A733/Cubie A7S DTS support
 
 Maintainer-shape review export. Do not mail this directory without a final
 human review, regeneration from the exact kernel branch, and current
@@ -10,15 +10,16 @@ maintainer recipient checks.
 This series adds initial DTS support for the Allwinner A733 SoC and the Radxa
 Cubie A7S board:
 
+- A733 MMC compatible binding coverage
 - Radxa Cubie A7S board compatible
-- initial A733 SoC DTSI with CPUs, timer, GICv3, UART0, and SDMMC0
+- initial A733 SoC DTSI with CPUs, timer, GICv3, RTC oscillator provider,
+  CCU/R-CCU, pinctrl, UART0, and SDMMC0
 - Cubie A7S board DTS enabling UART0 console and SD card boot storage
 
-This export intentionally drops the local CCU/PRCM, pinctrl, standalone MMC
-binding, and MAINTAINERS scaffolding patches from the earlier 9-patch draft.
-Those areas overlap active A733 RFC work and should be coordinated as external
-prerequisites unless maintainers ask for a different plan. The A733 CCU RFC
-also depends on the A733 RTC series.
+This export intentionally does not carry local CCU/PRCM or pinctrl driver
+patches. Those areas overlap active A733 RFC work and should be coordinated as
+external prerequisites unless maintainers ask for a different plan. The A733
+CCU RFC also depends on the A733 RTC series.
 
 Depends-on: 20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech
 Depends-on: 20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech
@@ -28,37 +29,40 @@ Ethernet, VPU/Cedrus, display, Wi-Fi, Bluetooth, USB-C, PCIe, and other board
 peripherals are intentionally out of scope. Vendor U-Boot workarounds used for
 private lab proof collection are not encoded in these device trees.
 
-The corrected-root Cubie A7S runtime proof has now been captured in the private
+The corrected-root Cubie A7S runtime proof has been captured in the private
 homelab workflow and passes its strict proof gate. The proof shows the exact v4
 Image and DTB loading, Linux 7.1.0-rc6-gabc8d07b0a63, Radxa Cubie A7S machine
 model, 8 CPUs, GICv3 redistributors, A733 pinctrl/UART0, SDMMC0 enumeration,
 mmcblk0 partition discovery, and a read-only mmcblk0p3 root mount via the
 corrected PARTUUID path.
 
+The regenerated review branch is stacked on the current local prerequisite
+stack that applies the A733 RTC, CCU/PRCM, and pinctrl RFCs. It also aligns the
+DTSI with the RTC-derived A733 CCU input API and Andre Przywara RFC 10-bank
+A733 pinctrl binding shape.
+
 Open work before mailing:
 
-- regenerate this review shape from a clean kernel branch stacked on the
-  current or accepted RTC, CCU/PRCM, and pinctrl prerequisites, adding a
-  separate MMC binding patch only if the chosen base still lacks the A733
-  compatible
-- rerun checkpatch, dt_binding_check, dtbs_check, build, maintainer-recipient,
-  and bisectability checks against that exact branch
 - re-check the A733 RTC, CCU/PRCM, and pinctrl RFC status before sending
+- rerun maintainer-recipient and bisectability checks against the final branch
 - perform final human review of trailers, recipients, and cover-letter claims
 
-Enzo Adriano (3):
+Enzo Adriano (4):
+  dt-bindings: mmc: add Allwinner A733 compatible
   dt-bindings: arm: sunxi: add Radxa Cubie A7S
   arm64: dts: allwinner: add Allwinner A733 SoC
   arm64: dts: allwinner: add Radxa Cubie A7S
 
- Documentation/devicetree/bindings/arm/sunxi.yaml        |   5 +
- arch/arm64/boot/dts/allwinner/Makefile                  |   1 +
- arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts |  49 ++++
- arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi          | 199 ++++++++++++++++
- 4 files changed, 254 insertions(+)
+ .../devicetree/bindings/arm/sunxi.yaml        |   5 +
+ .../bindings/mmc/allwinner,sun4i-a10-mmc.yaml |   3 +
+ arch/arm64/boot/dts/allwinner/Makefile        |   1 +
+ .../dts/allwinner/sun60i-a733-cubie-a7s.dts   |  49 ++++
+ .../arm64/boot/dts/allwinner/sun60i-a733.dtsi | 228 ++++++++++++++++++
+ 5 files changed, 286 insertions(+)
  create mode 100644 arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts
  create mode 100644 arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
 
-base-commit: 6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5
+
+base-commit: 6428b90c6af7e01e07972134898b2313fbe20789
 --
-2.50.1 (Apple Git-155)
+2.53.0

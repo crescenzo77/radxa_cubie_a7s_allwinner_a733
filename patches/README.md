@@ -6,27 +6,24 @@ root README.
 
 Current review export:
 
-- previous validation branch: `candidate/a733-platform-clean-v4`
-- base: `6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5`
-- base subject: `Merge tag 'for-7.1/dm-fixes-3' of git://git.kernel.org/pub/scm/linux/kernel/git/device-mapper/linux-dm`
-- previous validation head: `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
-- previous validation head subject: `MAINTAINERS: add Allwinner sun60i pattern`
+- review shape: 4 non-cover patches plus cover letter
+- base: current local prerequisite stack after A733 RTC, CCU/PRCM, and pinctrl
+  RFCs are applied
+- base commit recorded by the patch export: `6428b90c6af7`
+- historical validation branch: `candidate/a733-platform-clean-v4`
+- historical validation head: `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
 
 Patch order:
 
-1. `dt-bindings: arm: sunxi: add Radxa Cubie A7S`
-2. `arm64: dts: allwinner: add Allwinner A733 SoC`
-3. `arm64: dts: allwinner: add Radxa Cubie A7S`
+1. `dt-bindings: mmc: add Allwinner A733 compatible`
+2. `dt-bindings: arm: sunxi: add Radxa Cubie A7S`
+3. `arm64: dts: allwinner: add Allwinner A733 SoC`
+4. `arm64: dts: allwinner: add Radxa Cubie A7S`
 
 These files are not a mailed submission series. They are a maintainer-shape
-review export that intentionally drops the local CCU, pinctrl, standalone MMC
-binding, and MAINTAINERS scaffolding from the earlier 9-patch draft. The DTS
-patches carry explicit `Depends-on:` references for the active A733 RTC,
-CCU/PRCM, and pinctrl RFCs.
-
-A final regenerated candidate may add one MMC binding patch if the chosen base
-does not already document `allwinner,sun60i-a733-mmc`. It must not grow into
-local CCU, pinctrl, Ethernet, VPU, display, wireless, USB-C, or PCIe work.
+review export that intentionally drops the local CCU and pinctrl driver work
+from the earlier 9-patch draft. The cover letter carries explicit `Depends-on:`
+references for the active A733 RTC, CCU/PRCM, and pinctrl RFCs.
 
 The files include the human DCO sign-off authorized for this public review
 export. They intentionally do not include nonstandard metadata trailers; any

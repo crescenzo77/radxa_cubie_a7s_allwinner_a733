@@ -15,9 +15,10 @@ and private machine details do not belong on this branch.
 
 ## Current Review Export
 
-The current public artifact is a 3-patch maintainer-shape review export in
-[patches/](patches/). It is not mailed, and it still needs regeneration from
-the final clean kernel branch plus full validation before any upstream send.
+The current public artifact is a 4-patch maintainer-shape review export in
+[patches/](patches/). It is not mailed, and it still needs final regeneration
+from the exact clean kernel branch plus full human review before any upstream
+send.
 
 The previous full validation branch remains in the Linux fork:
 
@@ -28,28 +29,26 @@ candidate/a733-platform-clean-v4
 
 The current review export covers:
 
+- A733 MMC compatible binding coverage
 - Radxa Cubie A7S board compatible
-- initial A733 SoC DTSI
+- initial A733 SoC DTSI with CPUs, timer, GICv3, RTC oscillator provider,
+  CCU/R-CCU, pinctrl, UART0, and SDMMC0
 - Cubie A7S DTS with UART0 console and MMC0 storage
 
 Ethernet is not enabled and no Ethernet support is claimed.
 
 The RTC, CCU/PRCM, and pinctrl work is treated as external prerequisite work
-through explicit `Depends-on:` references. The local CCU, pinctrl, standalone MMC
-binding, and MAINTAINERS scaffolding patches from the earlier 9-patch draft are
-not part of the current review export.
+through explicit `Depends-on:` references. The local CCU and pinctrl driver
+patches from the earlier 9-patch draft are not part of the current review
+export. The focused MMC binding patch is now included because the DTS uses
+`allwinner,sun60i-a733-mmc`.
 
-The expected sendable direction is this narrow board-compatible plus DTS slice
-stacked on the accepted or current RTC, CCU/PRCM, and pinctrl prerequisite
-branches, with an MMC binding patch added only if the chosen base still lacks
-the A733 MMC compatible. Runtime proof for the exact v4 kernel and DTB has been
-captured in the private workflow; raw logs remain out of public git. Before
-mailing, regenerate the patches from a clean kernel branch that matches the
-prerequisite state and rerun all validation.
-Current prerequisite API reconciliation is still open: the DTS must be checked
-against the active A733 RTC/CCU clock-input binding, and the A733 MMC
-compatible must either be documented in the series or already exist in the
-chosen base.
+The current export has been reconciled with the active A733 RTC/CCU clock-input
+API and with the A733 pinctrl RFC binding shape. Runtime proof for the exact v4
+kernel and DTB has been captured in the private workflow; raw logs remain out
+of public git. Before mailing, re-check the prerequisite RFC status, regenerate
+from the final branch, and rerun maintainer, bisectability, and full validation
+checks.
 
 ## Submission Discipline
 

@@ -1,0 +1,29 @@
+From c2beaa7a01f09739fb7774ddfad3270932e24090 Mon Sep 17 00:00:00 2001
+From: Enzo Adriano <enzo.adriano.code@gmail.com>
+Date: Tue, 9 Jun 2026 15:05:27 -0400
+Subject: [PATCH 1/4] dt-bindings: mmc: add Allwinner A733 compatible
+
+Document the Allwinner A733 MMC compatible. The controller is used with
+the existing D1 fallback in the initial A733 DTSI.
+
+Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
+---
+ .../devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml       | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml b/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml
+index 9f3b1edacaa0..9e9590521210 100644
+--- a/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml
++++ b/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml
+@@ -58,6 +58,9 @@ properties:
+       - items:
+           - const: allwinner,sun55i-a523-mmc
+           - const: allwinner,sun20i-d1-mmc
++      - items:
++          - const: allwinner,sun60i-a733-mmc
++          - const: allwinner,sun20i-d1-mmc
+
+   reg:
+     maxItems: 1
+--
+2.53.0

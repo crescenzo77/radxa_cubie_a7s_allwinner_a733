@@ -1,7 +1,7 @@
-From 3388ad9793af30a070bcf01cebd004c89aaaed55 Mon Sep 17 00:00:00 2001
+From b69434747983cf862722ab7e6d31bb00af01a526 Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
-Date: Wed, 3 Jun 2026 20:57:24 -0400
-Subject: [PATCH 1/3] dt-bindings: arm: sunxi: add Radxa Cubie A7S
+Date: Tue, 9 Jun 2026 15:05:27 -0400
+Subject: [PATCH 2/4] dt-bindings: arm: sunxi: add Radxa Cubie A7S
 
 Document the Radxa Cubie A7S board compatible for the Allwinner A733 SoC.
 
@@ -17,7 +17,7 @@ index e6443c266fa1..9f603681c78e 100644
 @@ -850,6 +850,11 @@ properties:
            - const: radxa,cubie-a5e
            - const: allwinner,sun55i-a527
- 
+
 +      - description: Radxa Cubie A7S
 +        items:
 +          - const: radxa,cubie-a7s
@@ -26,7 +26,5 @@ index e6443c266fa1..9f603681c78e 100644
        - description: Remix Mini PC
          items:
            - const: jide,remix-mini-pc
-
-base-commit: 6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5
--- 
-2.50.1 (Apple Git-155)
+--
+2.53.0

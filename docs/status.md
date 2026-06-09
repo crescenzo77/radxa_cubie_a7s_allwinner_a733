@@ -5,35 +5,32 @@ Last updated: 2026-06-09.
 ## Maintainer-Shape Review Export
 
 - Linux fork: `https://github.com/crescenzo77/linux.git`
-- previous full-validation branch: `candidate/a733-platform-clean-v4`
-- base: `6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5`
-- base subject: `Merge tag 'for-7.1/dm-fixes-3' of git://git.kernel.org/pub/scm/linux/kernel/git/device-mapper/linux-dm`
-- previous full-validation head: `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
-- previous full-validation head subject: `MAINTAINERS: add Allwinner sun60i pattern`
+- historical full-validation branch: `candidate/a733-platform-clean-v4`
+- historical full-validation head: `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
+- current review export base: local prerequisite stack with A733 RTC,
+  CCU/PRCM, and pinctrl RFCs applied
+- current review export base commit recorded in patches: `6428b90c6af7`
+- current review branch head: `d9aa2e15caae`
 
-The base commit is reachable from the updated `torvalds/linux` `master` ref
-observed locally at `8e65320d91cdc3b241d4b94855c88459b91abf66`.
-
-The current `patches/` export is a 3-patch maintainer-shape review snapshot:
-board compatible binding, A733 SoC DTSI, and Cubie A7S board DTS. It is not a
-mailed submission. Before sending, regenerate from a clean kernel branch stacked
-on the current or accepted RTC, CCU/PRCM, and pinctrl prerequisite work.
+The current `patches/` export is a 4-patch maintainer-shape review snapshot:
+A733 MMC binding coverage, board compatible binding, A733 SoC DTSI, and Cubie
+A7S board DTS. It is not a mailed submission.
 
 The earlier 9-patch v4 export remains historical validation evidence only. The
-local CCU/PRCM, pinctrl, standalone MMC binding, and MAINTAINERS scaffolding
-patches are no longer part of the current public review export.
+local CCU/PRCM, pinctrl, and MAINTAINERS scaffolding patches are not part of
+the current public review export.
 
 ## Scope
 
 The current public review export prepares a narrow first enablement slice:
 
+- A733 MMC compatible binding coverage
 - Radxa Cubie A7S board compatible
 - initial A733 SoC DTSI
 - Cubie A7S DTS with UART0 console and MMC0 storage
 
-Ethernet is intentionally out of scope. The public series must not claim
-Ethernet support until reset, clocking, wrapper setup, MDIO, PHY reset, PHY
-power, and link behavior are proven.
+Ethernet, VPU/Cedrus, display, wireless, USB-C, PCIe, and other board
+peripherals are intentionally out of scope.
 
 ## Issue-Class Audit
 
@@ -42,27 +39,20 @@ The current exported series does not contain:
 - nonstandard metadata trailers
 - deferred parent IRQ registration or an irq_domain bypass
 - local CCU/PRCM or pinctrl driver patches
-- standalone MMC binding or MAINTAINERS scaffolding patches
+- MAINTAINERS scaffolding patches
 - Ethernet nodes, generic DWMAC fallback enablement, or STMMAC glue changes
 - VPU, Cedrus, media-driver, or VPU clock/DTS changes
+- vendor U-Boot compatibility strings, vendor path aliases, or hardcoded memory
 
-Relevant cleanup retained from the v4 validation work:
+The current SoC DTSI has been reconciled with the active prerequisite API
+shape:
 
-- new CCU and pinctrl binding maintainer blocks list
-  `Enzo Adriano <enzo.adriano.code@gmail.com>`
-- `MAINTAINERS` includes an explicit `N: sun60i` Allwinner pattern
-- A733 Cortex-A55 CPU nodes use `capacity-dmips-mhz = <530>`
-- A733 Cortex-A76 CPU nodes use `capacity-dmips-mhz = <1024>`
-- the GICv3 redistributor region is `0x100000`, not the previous irregular
-  `0xff004`
-- the GICv3 node omits unused child-bus properties because it has no child
-  nodes
-- the A733 pinctrl draft does not include deprecated `linux/of_device.h`
-
-The duplicate local CCU and pinctrl binding maintainer entries from v4 are no
-longer part of the current export. If a maintainer asks this branch to carry
-binding work after all, revisit those maintainer entries during final human
-review before submission.
+- main CCU inputs are sourced from A733 RTC outputs: `hosc`, `losc`, `iosc`,
+  and `losc-fanout`
+- A733 RTC fixed-clock inputs are modeled as `osc19M`, `osc24M`, and `osc26M`
+- the review export carries A733 MMC compatible binding coverage
+- the A733 main pinctrl interrupt list follows the current RFC binding and
+  driver shape: 10 interrupt banks, PB through PK, beginning at `GIC_SPI 69`
 
 Future IRQ, Ethernet, or VPU work is blocked by the workflow rules in
 `docs/mainline-cleanup-workflow.md` until it is split by subsystem, justified
@@ -103,17 +93,9 @@ CCU/PRCM, and pinctrl prerequisite work. The local CCU and pinctrl portions
 must not be sent upstream while this overlap is unresolved unless maintainers
 ask for that plan.
 
-The expected sendable direction is a smaller SoC DTSI plus Cubie A7S board DTS
-series stacked on accepted or current RTC, CCU/PRCM, and pinctrl prerequisites,
-with a separate MMC binding patch added only if the chosen base still lacks the
-A733 MMC compatible. Local CCU/PRCM and pinctrl driver patches are draft
-evidence only for that path unless subsystem maintainers ask for a different
-dependency plan.
-
 Current local review consensus:
 
-- A733 CCU/PRCM work is on hold because it overlaps the in-flight Linux RFC and
-  still depends on reviewed clock/reset evidence.
+- A733 CCU/PRCM work is on hold because it overlaps the in-flight Linux RFC.
 - A733 pinctrl work is on hold because it overlaps the in-flight Linux RFC and
   still needs hardware evidence for IRQ/bank behavior.
 - A733 GMAC remains out of scope until clock/reset identifiers, wrapper setup,
@@ -121,49 +103,38 @@ Current local review consensus:
 
 Current upstream-readiness blockers:
 
-- build a clean kernel candidate branch rebased on the accepted or current
-  RTC, CCU/PRCM, and pinctrl prerequisite work
-- reconcile the DTS with the active A733 CCU RFC clock-input API before branch
-  regeneration; the RFC binding models the main CCU with `hosc`, `losc`,
-  `iosc`, and `losc-fanout` sourced from A733 RTC clock outputs, while the
-  current review DTSI still has only `hosc`, `losc`, and `iosc`
-- resolve A733 MMC compatible coverage before branch regeneration; the current
-  review DTSI uses `allwinner,sun60i-a733-mmc`, which must be documented in the
-  series or already present in the chosen base
-- regenerate the review export from that exact branch; it may remain three
-  patches or grow by one MMC binding patch depending on the chosen base
-- rerun validation, maintainer, bisectability, and runtime checks against the
-  regenerated export
+- re-check the A733 RTC, CCU/PRCM, and pinctrl RFC status before sending
+- regenerate from the exact final clean kernel candidate branch
+- rerun full validation, maintainer, and bisectability checks against that
+  final branch
 - perform final human review of trailers, recipients, and cover-letter claims
 
 Runtime proof for the exact v4 Image and DTB has been captured in the private
 workflow and passes its strict corrected-root proof gate. Raw logs and lab
 details remain outside this public repository.
 
-## Current 3-Patch Validation Record
+## Current 4-Patch Validation Record
 
 Checks run on the current maintainer-shape review export:
 
-- series shape gate: pass, exactly three non-cover patches
-- public hygiene gate over tracked public-facing files: pass, no private lab
-  addresses, local paths, local model stack names, or AI/provider metadata
-  found
+- series shape gate: pass, exactly four non-cover patches
+- prerequisite API audit: pass
 - `git diff --check`: pass
-- `git apply --numstat patches/000[1-3]-*.patch`: pass, all exported patch
-  files parse as patches
-- `scripts/get_maintainer.pl --nogit --nogit-fallback --norolestats` over the
-  exported patches: pass, produced the expected Devicetree, Allwinner, ARM,
-  and Linux kernel maintainer/list recipients
-- `scripts/checkpatch.pl --strict --no-tree` over the exported patches:
-  `0 errors`; two reviewed `FILE_PATH_CHANGES` warnings for new DTS files and
-  MAINTAINERS coverage
-
-Prerequisite API audit result for this review export:
-
-- fail: current A733 CCU node does not match the active CCU RFC clock-input
-  shape because it omits `losc-fanout`
-- fail: current export uses `allwinner,sun60i-a733-mmc` without carrying the
-  matching MMC binding update or identifying a chosen base that already has it
+- exported patch application check: pass; all four non-cover patches apply to
+  the recorded prerequisite-stack base
+- exported patch parse proof: pass; `git apply --numstat` reports 286 inserted
+  lines across the five touched files
+- `scripts/checkpatch.pl --strict --no-tree --git`: `0 errors`; two reviewed
+  `FILE_PATH_CHANGES` warnings for new DTS files and MAINTAINERS coverage
+- `scripts/get_maintainer.pl --nogit --nogit-fallback --norolestats`: pass;
+  produced 13 maintainer/list entries covering Devicetree, Allwinner, ARM,
+  MMC, and Linux kernel recipients
+- targeted `arm64 defconfig` DTB build: pass for
+  `allwinner/sun60i-a733-cubie-a7s.dtb`
+- direct dtschema validation of the built Cubie A7S DTB: pass
+- direct dtschema schema generation for touched prerequisite schemas: pass;
+  the prerequisite A523/A733 pinctrl schema still emits existing type-definition
+  warnings for generic pin properties
 
 The MAINTAINERS warnings are intentional review items for this narrow export.
 The earlier local `sun60i` MAINTAINERS scaffolding was dropped because the
