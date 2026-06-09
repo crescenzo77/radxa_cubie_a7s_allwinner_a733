@@ -60,6 +60,8 @@ if [ "${preflight}" = "1" ]; then
     scripts/kernel-workflow-status --workflow-dirty-status
   run_gate "backup approval brief" \
     scripts/kernel-backup-approval-brief
+  run_gate "dispatcher stopping-point audit" \
+    scripts/kernel-workflow-status --stopping-point-audit
   run_gate "Cubie corrected-root session dry-run" \
     scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95 --dry-run
   printf '\nA733 patch-prep preflight gates passed.\n'
@@ -135,6 +137,10 @@ To check read-only dispatcher, backup, and Cubie session readiness while waiting
 9. Cubie corrected-root session dry-run:
 
    cd ${repo_root} && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95 --dry-run
+
+10. Dispatcher stopping-point audit:
+
+   cd ${repo_root} && scripts/kernel-workflow-status --stopping-point-audit
 
 The current 9-patch scaffolding export is not sendable. A future sendable
 candidate must be the narrow DTS/board slice, carry the two active Depends-on

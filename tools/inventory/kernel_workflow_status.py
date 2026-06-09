@@ -509,6 +509,79 @@ def goal_completion_audit(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def stopping_point_audit(data: dict[str, Any]) -> dict[str, Any]:
+    """Summarize what Codex should do before pausing at a kernel-work stop."""
+    workflow_backup = data["workflow_backup"]
+    public_repo = data["public_repo"]
+    public_mirror = data["public_mirror"]
+    homelab = data["homelab"]
+    cubie = data["cubie_runtime_gate"]
+    checks = [
+        {
+            "name": "private workflow commit",
+            "status": "attention" if homelab.get("status_short") else "ok",
+            "detail": (
+                f"{dirty_count(homelab)} private workflow paths are dirty; commit only scoped work"
+                if homelab.get("status_short")
+                else f"private workflow tree clean at {homelab.get('head_short', '')}"
+            ),
+        },
+        {
+            "name": "private workflow origin backup",
+            "status": "ok" if workflow_backup.get("private_origin_backed") else "fail",
+            "detail": (
+                f"origin `{workflow_backup.get('private_remote_url')}` matches HEAD"
+                if workflow_backup.get("private_origin_backed")
+                else "push private workflow repo to its configured origin"
+            ),
+        },
+        {
+            "name": "private workflow GitHub backup",
+            "status": "human-approval-required"
+            if workflow_backup.get("private_origin_backed") and not workflow_backup.get("private_github_backed")
+            else ("ok" if workflow_backup.get("private_github_backed") else "fail"),
+            "detail": (
+                "no GitHub remote is configured; do not invent or add one without explicit human approval"
+                if not workflow_backup.get("private_github_backed")
+                else "private workflow GitHub remote matches HEAD"
+            ),
+        },
+        {
+            "name": "public kernel GitHub backup",
+            "status": "ok" if workflow_backup.get("public_github_backed") else "fail",
+            "detail": (
+                f"public remote `{public_repo.get('remote_url')}` matches HEAD"
+                if workflow_backup.get("public_github_backed")
+                else "push public kernel repo to its GitHub remote before public handoff"
+            ),
+        },
+        {
+            "name": "public kernel mirror backup",
+            "status": "ok" if workflow_backup.get("public_mirror_backed") else "fail",
+            "detail": (
+                f"mirror `{public_mirror.get('remote_url')}` matches HEAD"
+                if workflow_backup.get("public_mirror_backed")
+                else "push public kernel repo to the ThinkCentre mirror"
+            ),
+        },
+        {
+            "name": "maintainer guardrail",
+            "status": "ok" if not data["a733_series_shape"].get("ok") else "review",
+            "detail": (
+                "current public export is blocked as scaffolding; do not send it"
+                if not data["a733_series_shape"].get("ok")
+                else "series shape passes; still require exact runtime proof before patch prep"
+            ),
+        },
+        {
+            "name": "next safe action",
+            "status": "human-required" if cubie.get("human_required") else "ok",
+            "detail": data["maintainer_ready"].get("next_action") or "none",
+        },
+    ]
+    return {"checks": checks, "next_action": data["maintainer_ready"].get("next_action") or "none"}
+
+
 def build_status(args: argparse.Namespace) -> dict[str, Any]:
     machine = machine_summary(
         command_json([str(REPO_ROOT / "scripts" / "kernel-machine-readiness"), "--json"], timeout=args.timeout)
@@ -570,6 +643,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     data["maintainer_ready"] = maintainer_ready_summary(data)
     data["dispatcher_waiting_actions"] = dispatcher_waiting_actions(data)
     data["goal_completion_audit"] = goal_completion_audit(data)
+    data["stopping_point_audit"] = stopping_point_audit(data)
     return data
 
 
@@ -664,6 +738,9 @@ def markdown(data: dict[str, Any]) -> str:
         lines.extend(["", "## Workflow Backup Note", "", str(workflow_backup["note"])])
     if workflow_backup.get("next_action"):
         lines.extend(["", "## Workflow Backup Next Action", "", str(workflow_backup["next_action"])])
+    lines.extend(["", "## Stopping Point Audit", ""])
+    for item in data["stopping_point_audit"].get("checks", []):
+        lines.append(f"- {item['status']}: {item['name']} - {item['detail']}")
     return "\n".join(lines) + "\n"
 
 
@@ -775,6 +852,11 @@ def main() -> int:
         action="store_true",
         help="Print requirement-level audit for the persistent kernel-maintainer goal.",
     )
+    parser.add_argument(
+        "--stopping-point-audit",
+        action="store_true",
+        help="Print dispatcher stop/pause checks: scoped commits, backups, guardrails, and next action.",
+    )
     parser.add_argument("--strict", action="store_true")
     parser.add_argument(
         "--runtime-strict",
@@ -833,6 +915,11 @@ def main() -> int:
         print(f"complete={md_bool(audit.get('complete'))}")
         for item in audit.get("checks", []):
             print(f"{item['status']}: {item['requirement']} - {item['evidence']}")
+        print(f"next_action={audit.get('next_action') or 'none'}")
+    elif args.stopping_point_audit:
+        audit = data["stopping_point_audit"]
+        for item in audit.get("checks", []):
+            print(f"{item['status']}: {item['name']} - {item['detail']}")
         print(f"next_action={audit.get('next_action') or 'none'}")
     elif args.json:
         print(json.dumps(data, indent=2, sort_keys=True))
