@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import os
+import re
 import shlex
 import subprocess
 from pathlib import Path
@@ -20,6 +22,7 @@ OPERATOR_BRIEF = "scripts/cubie-corrected-root-operator-brief"
 PATCH_PREP_CHECKLIST = "scripts/a733-patch-prep-checklist"
 BACKUP_APPROVAL_BRIEF = "scripts/kernel-backup-approval-brief"
 REQUIRED_OFFLOAD_TARGETS = {"amd-fast", "amd-research", "strix-review"}
+RFC_RECHECK_PATH = REPO_ROOT / "task-packets/kernel/research/a733-rfc-recheck-20260606.md"
 
 
 def run(
@@ -318,6 +321,46 @@ def public_hygiene_summary(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def rfc_recheck_summary(path: Path = RFC_RECHECK_PATH) -> dict[str, Any]:
+    if not path.exists():
+        return {
+            "ok": False,
+            "path": str(path),
+            "date": "",
+            "days_old": None,
+            "fresh_today": False,
+            "next_action": "run a fresh A733 CCU/pinctrl RFC overlap recheck before patch prep",
+            "error": "missing RFC recheck packet",
+        }
+    text = path.read_text(encoding="utf-8", errors="replace")
+    match = re.search(r"^(?:Date|Generated):\s*(\d{4}-\d{2}-\d{2})\b", text, re.MULTILINE)
+    checked_date = match.group(1) if match else ""
+    days_old = None
+    fresh_today = False
+    if checked_date:
+        try:
+            parsed = dt.date.fromisoformat(checked_date)
+            today = dt.date.today()
+            days_old = (today - parsed).days
+            fresh_today = parsed == today
+        except ValueError:
+            pass
+    next_action = (
+        "A733 CCU/pinctrl RFC overlap recheck is fresh for today"
+        if fresh_today
+        else "run a fresh A733 CCU/pinctrl RFC overlap recheck before patch prep"
+    )
+    return {
+        "ok": fresh_today,
+        "path": str(path),
+        "date": checked_date,
+        "days_old": days_old,
+        "fresh_today": fresh_today,
+        "next_action": next_action,
+        "error": "" if checked_date else "could not parse RFC recheck date",
+    }
+
+
 def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
     blockers: list[str] = []
     blockers.extend(strict_blockers(data))
@@ -330,6 +373,11 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
         )
     if not data["public_repo"].get("remote_is_github"):
         blockers.append("public kernel repo public remote is not GitHub")
+    if not data["a733_rfc_recheck"].get("ok"):
+        blockers.append(
+            "A733 CCU/pinctrl RFC overlap recheck is stale or missing: "
+            + str(data["a733_rfc_recheck"].get("date") or data["a733_rfc_recheck"].get("error") or "unknown")
+        )
 
     cubie_next = data["cubie_runtime_gate"].get("next_shell") or data["cubie_runtime_gate"].get("next_command")
     if data["cubie_runtime_gate"].get("status") != "runtime-ready" and cubie_next:
@@ -345,6 +393,8 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
         next_action = "clean and push the public kernel repo before patch prep"
     elif not data["public_mirror"].get("remote_matches"):
         next_action = "push the public kernel repo to the ThinkCentre mirror before patch prep"
+    elif not data["a733_rfc_recheck"].get("ok"):
+        next_action = "run a fresh A733 CCU/pinctrl RFC overlap recheck before patch prep"
     elif blockers:
         next_action = "do not prepare or send maintainer-facing patches; clear the listed blockers first"
     else:
@@ -443,6 +493,11 @@ def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
             "preserve series guardrail: current export is scaffolding; "
             "do not create maintainer-facing patches before corrected-root proof"
         )
+    if not data["a733_rfc_recheck"].get("ok"):
+        actions.append(
+            "refresh external overlap evidence before patch prep: "
+            + str(data["a733_rfc_recheck"].get("next_action"))
+        )
     return actions
 
 
@@ -476,6 +531,18 @@ def goal_completion_audit(data: dict[str, Any]) -> dict[str, Any]:
             "requirement": "maintainer-facing A733 patch shape is ready",
             "status": "fail" if not data["a733_series_shape"].get("ok") else "pass",
             "evidence": data["a733_series_shape"].get("next_action") or "",
+        },
+        {
+            "requirement": "A733 CCU/pinctrl RFC overlap state is freshly rechecked",
+            "status": "pass" if data["a733_rfc_recheck"].get("ok") else "fail",
+            "evidence": (
+                "RFC overlap recheck is fresh for today"
+                if data["a733_rfc_recheck"].get("ok")
+                else (
+                    f"latest local RFC recheck is {data['a733_rfc_recheck'].get('date') or 'missing'}; "
+                    "refresh before patch prep"
+                )
+            ),
         },
         {
             "requirement": "public kernel material is hygienic and GitHub/mirror backed",
@@ -574,6 +641,18 @@ def stopping_point_audit(data: dict[str, Any]) -> dict[str, Any]:
             ),
         },
         {
+            "name": "A733 RFC overlap freshness",
+            "status": "ok" if data["a733_rfc_recheck"].get("ok") else "attention",
+            "detail": (
+                "fresh for today"
+                if data["a733_rfc_recheck"].get("ok")
+                else (
+                    f"latest local recheck is {data['a733_rfc_recheck'].get('date') or 'missing'}; "
+                    "refresh before patch prep"
+                )
+            ),
+        },
+        {
             "name": "next safe action",
             "status": "human-required" if cubie.get("human_required") else "ok",
             "detail": data["maintainer_ready"].get("next_action") or "none",
@@ -638,6 +717,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         "cubie_runtime_gate": cubie,
         "a733_series_shape": a733_series_shape,
         "public_hygiene": public_hygiene,
+        "a733_rfc_recheck": rfc_recheck_summary(),
     }
     data["workflow_backup"] = workflow_backup_summary(data)
     data["maintainer_ready"] = maintainer_ready_summary(data)
@@ -665,6 +745,7 @@ def markdown(data: dict[str, Any]) -> str:
     ledger = data["idle_ledger"]
     cubie = data["cubie_runtime_gate"]
     a733_shape = data["a733_series_shape"]
+    a733_rfc_recheck = data["a733_rfc_recheck"]
     public_hygiene = data["public_hygiene"]
     maintainer_ready = data["maintainer_ready"]
     workflow_backup = data["workflow_backup"]
@@ -689,6 +770,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"| human gate | required={md_bool(cubie.get('human_required'))}; {cubie.get('human_gate') or 'none'} |",
         f"| evidence gate | {cubie.get('evidence_gate') or 'none'} |",
         f"| A733 series shape | `{a733_shape.get('status')}`, patches={a733_shape.get('patch_count')}, sendable={md_bool(a733_shape.get('ok'))} |",
+        f"| A733 RFC overlap recheck | fresh_today={md_bool(a733_rfc_recheck.get('ok'))}, date=`{a733_rfc_recheck.get('date') or 'missing'}` |",
         f"| public hygiene | `{public_hygiene.get('status')}`, matches={public_hygiene.get('match_count')}, clean={md_bool(public_hygiene.get('ok'))} |",
         f"| maintainer ready | {md_bool(maintainer_ready.get('ok'))}; blockers={len(maintainer_ready.get('blockers', []))} |",
         f"| goal complete | {md_bool(goal_audit.get('complete'))}; incomplete={len(goal_audit.get('incomplete', []))} |",
@@ -721,6 +803,11 @@ def markdown(data: dict[str, Any]) -> str:
     if a733_shape.get("finding_kinds"):
         lines.append("")
         lines.append("Findings: " + ", ".join(a733_shape["finding_kinds"]))
+    lines.extend(["", "## A733 RFC Overlap Freshness", "", str(a733_rfc_recheck.get("next_action") or "none")])
+    if a733_rfc_recheck.get("path"):
+        lines.append(f"Evidence packet: `{a733_rfc_recheck.get('path')}`")
+    if a733_rfc_recheck.get("days_old") is not None:
+        lines.append(f"Days old: {a733_rfc_recheck.get('days_old')}")
     lines.extend(["", "## Public Hygiene", "", str(public_hygiene.get("next_action") or "none")])
     if public_hygiene.get("kinds"):
         lines.append("")
@@ -785,6 +872,7 @@ def maintainer_ready_failed(data: dict[str, Any]) -> bool:
             not data["public_repo"].get("remote_matches"),
             not data["public_repo"].get("remote_is_github"),
             not data["public_mirror"].get("remote_matches"),
+            not data["a733_rfc_recheck"].get("ok"),
         ]
     )
 
@@ -841,6 +929,11 @@ def main() -> int:
         "--workflow-dirty-status",
         action="store_true",
         help="Print compact private/public git cleanliness for dispatcher preflight.",
+    )
+    parser.add_argument(
+        "--a733-rfc-recheck-status",
+        action="store_true",
+        help="Print freshness of the local A733 CCU/pinctrl RFC overlap recheck.",
     )
     parser.add_argument(
         "--dispatcher-waiting-actions",
@@ -908,6 +1001,15 @@ def main() -> int:
         print(f"private_dirty_count={dirty_count(data['homelab'])}")
         print(f"public_clean={md_bool(data['public_repo'].get('clean'))}")
         print(f"public_dirty_count={dirty_count(data['public_repo'])}")
+    elif args.a733_rfc_recheck_status:
+        recheck = data["a733_rfc_recheck"]
+        print(f"fresh_today={md_bool(recheck.get('ok'))}")
+        print(f"date={recheck.get('date') or 'missing'}")
+        print(f"days_old={recheck.get('days_old') if recheck.get('days_old') is not None else 'unknown'}")
+        print(f"path={recheck.get('path') or 'none'}")
+        print(f"next_action={recheck.get('next_action') or 'none'}")
+        if recheck.get("error"):
+            print(f"error={recheck['error']}")
     elif args.dispatcher_waiting_actions:
         print("\n".join(data["dispatcher_waiting_actions"]) or "none")
     elif args.goal_completion_audit:

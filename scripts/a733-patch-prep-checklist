@@ -58,6 +58,8 @@ if [ "${preflight}" = "1" ]; then
     scripts/kernel-workflow-status --workflow-backup-status
   run_gate "workflow dirty status" \
     scripts/kernel-workflow-status --workflow-dirty-status
+  run_gate "A733 RFC overlap freshness" \
+    scripts/kernel-workflow-status --a733-rfc-recheck-status
   run_gate "backup approval brief" \
     scripts/kernel-backup-approval-brief
   run_gate "dispatcher stopping-point audit" \
@@ -76,6 +78,8 @@ if [ "${run}" = "1" ]; then
     scripts/cubie-latest-corrected-root-proof --strict
   run_gate "dispatcher/offload smoke" \
     scripts/kernel-offload-status-smoke
+  run_gate "A733 RFC overlap freshness" \
+    scripts/kernel-workflow-status --a733-rfc-recheck-status
   run_gate "maintainer-ready workflow gate" \
     scripts/kernel-workflow-status --maintainer-ready-strict
   run_gate "A733 series shape gate" \
@@ -118,27 +122,35 @@ To check read-only dispatcher, backup, and Cubie session readiness while waiting
 
    cd ${repo_root} && scripts/a733-series-shape-gate "${public_repo}/patches"
 
-5. Public hygiene gate:
+5. A733 RFC overlap freshness:
+
+   cd ${repo_root} && scripts/kernel-workflow-status --a733-rfc-recheck-status
+
+   This must be fresh before maintainer-facing patch prep. If it is stale,
+   refresh the public A733 CCU/pinctrl overlap scan and keep local CCU/pinctrl
+   patches out of the sendable slice unless maintainers request otherwise.
+
+6. Public hygiene gate:
 
    cd ${repo_root} && scripts/kernel-public-hygiene-gate "${public_repo}"
 
-6. Backup posture:
+7. Backup posture:
 
    cd ${repo_root} && scripts/kernel-workflow-status --workflow-backup-status
 
-7. Workflow dirty status:
+8. Workflow dirty status:
 
    cd ${repo_root} && scripts/kernel-workflow-status --workflow-dirty-status
 
-8. Backup approval brief:
+9. Backup approval brief:
 
    cd ${repo_root} && scripts/kernel-backup-approval-brief
 
-9. Cubie corrected-root session dry-run:
+10. Cubie corrected-root session dry-run:
 
    cd ${repo_root} && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95 --dry-run
 
-10. Dispatcher stopping-point audit:
+11. Dispatcher stopping-point audit:
 
    cd ${repo_root} && scripts/kernel-workflow-status --stopping-point-audit
 
