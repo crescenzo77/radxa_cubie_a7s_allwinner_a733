@@ -393,16 +393,29 @@ def build_model_prompt(task: str, context: str, instruction: str) -> str:
 
 
 def command_status(args: argparse.Namespace) -> int:
-    print("== local model targets ==")
+    targets = []
+    cortex: dict[str, Any]
+    ok = True
     for name in TARGETS:
+        target = TARGETS[name]
+        item: dict[str, Any] = {
+            "name": name,
+            "host": target["host"],
+            "base_url": target["base_url"],
+            "configured_model": target.get("model", ""),
+            "ok": False,
+            "models": [],
+            "error": "",
+        }
         try:
             data = remote_models(name)
-            models = [item.get("id") for item in data.get("data", []) if item.get("id")]
-            print(f"{name}: ok host={TARGETS[name]['host']} base={TARGETS[name]['base_url']} models={models}")
+            item["models"] = [model.get("id") for model in data.get("data", []) if model.get("id")]
+            item["ok"] = True
         except Exception as exc:
-            print(f"{name}: unavailable host={TARGETS[name]['host']} base={TARGETS[name]['base_url']} error={exc}")
+            item["error"] = str(exc)
+            ok = False
+        targets.append(item)
 
-    print("\n== cortex ==")
     try:
         health = ssh(THINKCENTRE_HOST, "curl -fsS http://127.0.0.1:6333/healthz", timeout=20).strip()
         count = ssh(
@@ -411,10 +424,50 @@ def command_status(args: argparse.Namespace) -> int:
             "-H 'Content-Type: application/json' -d '{}'",
             timeout=20,
         ).strip()
-        print(f"qdrant: ok health={health} count={count}")
+        cortex = {
+            "name": "qdrant",
+            "host": THINKCENTRE_HOST,
+            "url": QDRANT_URL,
+            "ok": True,
+            "health": health,
+            "count": count,
+            "error": "",
+        }
     except Exception as exc:
-        print(f"qdrant: unavailable error={exc}")
-    return 0
+        cortex = {
+            "name": "qdrant",
+            "host": THINKCENTRE_HOST,
+            "url": QDRANT_URL,
+            "ok": False,
+            "health": "",
+            "count": "",
+            "error": str(exc),
+        }
+        ok = False
+
+    if args.json:
+        print(json.dumps({"ok": ok, "targets": targets, "cortex": cortex}, indent=2, sort_keys=True))
+        return 0 if ok else 1
+
+    print("== local model targets ==")
+    for item in targets:
+        if item["ok"]:
+            print(
+                f"{item['name']}: ok host={item['host']} "
+                f"base={item['base_url']} models={item['models']}"
+            )
+        else:
+            print(
+                f"{item['name']}: unavailable host={item['host']} "
+                f"base={item['base_url']} error={item['error']}"
+            )
+
+    print("\n== cortex ==")
+    if cortex["ok"]:
+        print(f"qdrant: ok health={cortex['health']} count={cortex['count']}")
+    else:
+        print(f"qdrant: unavailable error={cortex['error']}")
+    return 0 if ok else 1
 
 
 def command_research_query(args: argparse.Namespace) -> int:
@@ -1181,6 +1234,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     status = sub.add_parser("status")
+    status.add_argument("--json", action="store_true")
     status.set_defaults(func=command_status)
 
     research = sub.add_parser("research-query")

@@ -131,14 +131,40 @@ def machine_summary(data: dict[str, Any]) -> dict[str, Any]:
     return {"ok": required_missing == 0, "required_missing": required_missing, "hosts": hosts}
 
 
-def offload_summary(text: dict[str, Any]) -> dict[str, Any]:
-    if not text["ok"]:
-        return {"ok": False, "error": text["stderr"] or text["stdout"]}
-    lines = text["stdout"].splitlines()
-    targets = [line.strip() for line in lines if line.startswith(("amd-", "strix-"))]
-    cortex = [line.strip() for line in lines if line.startswith("qdrant:")]
-    failures = [line for line in targets + cortex if ": ok " not in line and not line.endswith(": ok")]
-    return {"ok": not failures, "targets": targets, "cortex": cortex, "failures": failures}
+def offload_summary(data: dict[str, Any]) -> dict[str, Any]:
+    if not data.get("ok"):
+        return {"ok": False, "error": data.get("error", "offload status failed"), "targets": [], "cortex": []}
+    status = data["data"]
+    target_lines = []
+    failures = []
+    for target in status.get("targets", []):
+        if target.get("ok"):
+            target_lines.append(
+                f"{target.get('name')}: ok host={target.get('host')} "
+                f"base={target.get('base_url')} models={target.get('models', [])}"
+            )
+        else:
+            line = (
+                f"{target.get('name')}: unavailable host={target.get('host')} "
+                f"base={target.get('base_url')} error={target.get('error')}"
+            )
+            target_lines.append(line)
+            failures.append(line)
+    cortex_data = status.get("cortex", {})
+    if cortex_data.get("ok"):
+        cortex_lines = [
+            f"qdrant: ok health={cortex_data.get('health')} count={cortex_data.get('count')}"
+        ]
+    else:
+        line = f"qdrant: unavailable error={cortex_data.get('error')}"
+        cortex_lines = [line]
+        failures.append(line)
+    return {
+        "ok": bool(status.get("ok")) and not failures,
+        "targets": target_lines,
+        "cortex": cortex_lines,
+        "failures": failures,
+    }
 
 
 def ledger_summary(text: dict[str, Any]) -> dict[str, Any]:
@@ -468,7 +494,11 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         command_json([str(REPO_ROOT / "scripts" / "kernel-machine-readiness"), "--json"], timeout=args.timeout)
     )
     offload = offload_summary(
-        command_text([str(REPO_ROOT / "scripts" / "kernel-token-offload"), "status"], timeout=args.timeout)
+        command_json(
+            [str(REPO_ROOT / "scripts" / "kernel-token-offload"), "status", "--json"],
+            timeout=args.timeout,
+            ok_codes=(0, 1),
+        )
     )
     ledger = ledger_summary(
         command_text([str(REPO_ROOT / "scripts" / "kernel-idle-ledger"), "status"], timeout=args.timeout)
