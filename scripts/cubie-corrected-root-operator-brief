@@ -63,6 +63,7 @@ A733 v4 abc8d07b0a63 PARTUUID ro proof
 After the UART session exits, proof gates:
 
 ```sh
+scripts/cubie-corrected-root-proof-gate-selftest
 scripts/cubie-latest-corrected-root-proof --strict
 scripts/kernel-workflow-status --maintainer-ready-blockers
 scripts/a733-patch-prep-checklist --run
@@ -75,5 +76,6 @@ scripts/a733-patch-prep-checklist --preflight
 ```
 
 Do not claim runtime proof, reshape patches, or prepare maintainer-facing
-submission material unless the corrected-root proof gate passes.
+submission material unless the corrected-root proof gate selftest and the
+captured-log proof gate both pass.
 BRIEF
