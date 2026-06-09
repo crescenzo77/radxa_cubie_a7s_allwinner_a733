@@ -16,6 +16,11 @@ EXPECTED_PARTUUID = "db375e07-7682-4d4e-b8bc-a923dd0b027e"
 
 
 CHECKS: list[tuple[str, str, str]] = [
+    (
+        "uboot_handoff",
+        "U-Boot handoff/load evidence",
+        r"drm debug mode:\s*1|Retrieving file: /boot/mainline-a733-v4-abc8d07b0a63/(?:Image|sun60i-a733-cubie-a7s\.dtb)",
+    ),
     ("kernel_version", "exact v4 kernel version", re.escape(EXPECTED_KERNEL)),
     ("machine_model", "Radxa Cubie A7S model", re.escape(EXPECTED_MODEL)),
     ("cpu8", "all 8 CPUs booted", r"Brought up 8 CPUs|SMP: Total of 8 processors activated"),

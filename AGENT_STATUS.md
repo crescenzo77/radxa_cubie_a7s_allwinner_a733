@@ -1,5 +1,18 @@
 # Agent Status
 
+## 2026-06-09 corrected-root handoff gate tightened
+
+- Updated `scripts/cubie-corrected-root-proof-gate` to require U-Boot
+  handoff/load evidence for the corrected-root proof, not only a mid-kernel
+  fragment.
+- The gate now accepts either `drm debug mode: 1` or retrieval of the exact v4
+  Image/DTB path as handoff evidence.
+- Updated the corrected-root proof plan and Cubie hardware runbook to state
+  that captures must start early enough to show the vendor U-Boot workaround
+  crossing the FDT creation point.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 idle review ledger consumed
 
 - Backfilled the ignored idle-review ledger from existing review-matrix cards.

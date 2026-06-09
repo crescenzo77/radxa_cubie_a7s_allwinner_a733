@@ -266,6 +266,9 @@ scripts/cubie-corrected-root-proof-gate path/to/candidate.uart.log
 The gate must report `status: pass`. Logs containing the old
 `root=UUID=...` panic, `Bad Linux ARM64 Image magic`, or vendor FDT mutation
 errors remain failures.
+The log must include U-Boot handoff/load evidence, not only a mid-kernel
+fragment, because the proof needs to show the RAM-only `drm_debug=1` path got
+past the vendor FDT creation hang.
 
 For the corrected-root label, `scripts/cubie-uart-interactive-boot-session`
 also runs the latest-log helper after pulling logs:
