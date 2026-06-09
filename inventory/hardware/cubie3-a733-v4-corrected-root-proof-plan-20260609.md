@@ -199,6 +199,14 @@ Use `--strict` in automation. The gate must report `status: pass`; old logs
 that still contain `root=UUID=...`, `Bad Linux ARM64 Image magic`, panic/Oops,
 or vendor FDT mutation failures are not acceptable runtime proof.
 
+For the standard corrected-root label, the interactive UART helper runs this
+latest-log gate automatically after pulling logs:
+
+```sh
+scripts/cubie-latest-corrected-root-proof \
+  --label a733-v4-abc8d07b0a63-partuuid-ro-proof
+```
+
 Power-cycle back to the vendor kernel after capture unless the board is known
 to be safe to leave at the shell.
 

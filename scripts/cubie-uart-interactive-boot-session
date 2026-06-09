@@ -36,10 +36,14 @@ baud=${baud}
 
 Use this for Cubie3 now:
   1. Reboot Cubie3 from another terminal: ssh radxa@192.168.50.95 'sudo reboot'
-  2. In the U-Boot menu, select:
-     a733-v4-abc8d07b0a63-uart-proof
-  3. Let the boot log continue to a prompt, panic, or clear stop.
-  4. Exit picocom with Ctrl-a, then Ctrl-x.
+  2. If testing the corrected-root proof, run in U-Boot:
+     setenv drm_debug 1
+     run bootcmd
+  3. In the U-Boot menu, select the requested label.
+     Current corrected-root label:
+     A733 v4 abc8d07b0a63 PARTUUID ro proof
+  4. Let the boot log continue to a prompt, panic, or clear stop.
+  5. Exit picocom with Ctrl-a, then Ctrl-x.
 
 This script does not power-cycle or reboot any board.
 INTRO
@@ -120,3 +124,9 @@ REMOTE
 "${repo_root}/scripts/cubie-uart-report" --limit 8 || true
 "${repo_root}/scripts/cubie-runtime-evidence" || true
 "${repo_root}/scripts/cubie-runtime-gate" || true
+case "${safe_label}" in
+  a733-v4-abc8d07b0a63-partuuid-ro-proof)
+    "${repo_root}/scripts/cubie-latest-corrected-root-proof" \
+      --label "${safe_label}" || true
+    ;;
+esac

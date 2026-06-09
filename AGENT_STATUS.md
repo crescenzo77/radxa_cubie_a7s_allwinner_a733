@@ -1,5 +1,22 @@
 # Agent Status
 
+## 2026-06-09 latest corrected-root proof helper
+
+- Added `scripts/cubie-latest-corrected-root-proof`, backed by
+  `tools/hardware/cubie_latest_corrected_root_proof.py`, to find the latest
+  local UART log for `a733-v4-abc8d07b0a63-partuuid-ro-proof` and run
+  `scripts/cubie-corrected-root-proof-gate` on it.
+- Updated `scripts/cubie-uart-interactive-boot-session` so the corrected-root
+  label automatically runs the latest-log gate after `pull-logs`, UART report,
+  runtime evidence, and runtime gate.
+- Validation: with no corrected-root capture present yet, the latest-log helper
+  reports `status: missing-log`; the known old v4 `root=UUID=...` panic log
+  still fails the corrected-root gate with `panic`, `fdt_badpath`, and
+  `old_uuid_root` markers.
+- Updated the proof plan and Cubie hardware runbook to mention the automatic
+  latest-log helper.
+- No board state, `/boot` files, DTS files, or public repo files were changed.
+
 ## 2026-06-09 corrected-root proof log gate
 
 - Added `scripts/cubie-corrected-root-proof-gate`, backed by

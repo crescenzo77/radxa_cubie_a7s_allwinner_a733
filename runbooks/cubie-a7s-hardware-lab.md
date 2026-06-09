@@ -267,6 +267,14 @@ The gate must report `status: pass`. Logs containing the old
 `root=UUID=...` panic, `Bad Linux ARM64 Image magic`, or vendor FDT mutation
 errors remain failures.
 
+For the corrected-root label, `scripts/cubie-uart-interactive-boot-session`
+also runs the latest-log helper after pulling logs:
+
+```sh
+scripts/cubie-latest-corrected-root-proof \
+  --label a733-v4-abc8d07b0a63-partuuid-ro-proof
+```
+
 Do not use the board IP `192.168.50.65` for any kernel proof work, even if it
 appears reachable during discovery.
 
