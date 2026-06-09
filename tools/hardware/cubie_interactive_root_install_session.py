@@ -210,6 +210,12 @@ def main() -> int:
 
     print(f"target={row.get('hostname') or row.get('ip')} ip={row.get('ip')}")
     print(f"stage={row.get('stage') or args.stage}")
+    if row.get("extlinux_label"):
+        print(f"extlinux_label={row.get('extlinux_label')}")
+    if row.get("extlinux_menu_label"):
+        print(f"extlinux_menu_label={row.get('extlinux_menu_label')}")
+    if row.get("extlinux_append_override"):
+        print(f"extlinux_append_override={row.get('extlinux_append_override')}")
     if row.get("extlinux_extra_args"):
         print(f"extlinux_extra_args={row.get('extlinux_extra_args')}")
     print(f"sudo_status={row.get('sudo_status', 'unknown')}")

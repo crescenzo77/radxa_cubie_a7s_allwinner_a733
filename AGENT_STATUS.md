@@ -1,5 +1,24 @@
 # Agent Status
 
+## 2026-06-09 corrected-root handoff preflight bundle
+
+- Verified `scripts/cubie-interactive-root-install-session --dry-run
+  --confirm-target-ip 192.168.50.95` selects Cubie3, the corrected-root stage,
+  and reports UART preflight `ok` on Strix `192.168.50.11`.
+- Updated the interactive install, root-install handoff, runtime evidence, and
+  runtime gate output to show the full `EXTLINUX_APPEND_OVERRIDE` bootargs and
+  the visible U-Boot menu label, not only `drm_debug=1`.
+- Generated ignored local proof bundle
+  `task-packets/kernel/runtime-proof/cubie-runtime-proof-20260609T044228966768Z`
+  with `status: root-install-required`, `human_required: true`, and
+  `applied_changes: false`.
+- Bundle manifest hashes include `runtime-gate.md`
+  `8bf21692348e5207cec55930e5da335285e3d14f91269f673fe1f9190f4e072b` and
+  `runtime-evidence.md`
+  `b7ad781618810b10a13354a2c058f56ff57c99cee97a2d367915a01da912a994`.
+- No `/boot` files were changed, no reboot was requested, and no runtime proof
+  was claimed.
+
 ## 2026-06-09 corrected-root gate defaults
 
 - Updated the Cubie runtime/staging gate defaults to the corrected-root proof

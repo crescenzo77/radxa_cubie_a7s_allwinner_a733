@@ -75,11 +75,11 @@ def capture_argv(row: dict[str, Any]) -> list[str]:
 
 
 def extlinux_label(row: dict[str, Any]) -> str:
-    return str(row.get("extlinux_label") or "the staged non-default label")
+    return str(row.get("extlinux_menu_label") or row.get("extlinux_label") or "the staged non-default label")
 
 
-def extlinux_extra_args(row: dict[str, Any]) -> str:
-    return str(row.get("extlinux_extra_args") or "none")
+def extlinux_bootargs(row: dict[str, Any]) -> str:
+    return str(row.get("extlinux_append_override") or row.get("extlinux_extra_args") or "none")
 
 
 def render(staging: dict[str, Any], args: argparse.Namespace) -> str:
@@ -112,9 +112,16 @@ def render(staging: dict[str, Any], args: argparse.Namespace) -> str:
                 "",
                 f"`{extlinux_label(installed)}`",
                 "",
-                "Expected temporary extra bootargs:",
+                "Before selecting the label, run this RAM-only U-Boot step:",
                 "",
-                f"`{extlinux_extra_args(installed)}`",
+                "```text",
+                "setenv drm_debug 1",
+                "run bootcmd",
+                "```",
+                "",
+                "Expected bootargs:",
+                "",
+                f"`{extlinux_bootargs(installed)}`",
             ]
         )
         return "\n".join(lines)
@@ -156,9 +163,16 @@ def render(staging: dict[str, Any], args: argparse.Namespace) -> str:
                 "",
                 f"`{extlinux_label(ready)}`",
                 "",
-                "Expected temporary extra bootargs:",
+                "Before selecting the label, run this RAM-only U-Boot step:",
                 "",
-                f"`{extlinux_extra_args(ready)}`",
+                "```text",
+                "setenv drm_debug 1",
+                "run bootcmd",
+                "```",
+                "",
+                "Expected bootargs:",
+                "",
+                f"`{extlinux_bootargs(ready)}`",
             ]
         )
         return "\n".join(lines)

@@ -343,7 +343,7 @@ def markdown(data: dict[str, Any]) -> str:
         lines.extend(
             [
                 "",
-                "| ip | hostname | stage | metadata | sha256 | installer | sudo | extra bootargs | boot entry | boot files | ready |",
+                "| ip | hostname | stage | metadata | sha256 | installer | sudo | bootargs | boot entry | boot files | ready |",
                 "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
             ]
         )
@@ -357,7 +357,7 @@ def markdown(data: dict[str, Any]) -> str:
                 f"{md_escape(row.get('sha256_status'))} | "
                 f"{md_escape(row.get('installer_syntax'))} | "
                 f"{md_escape(row.get('sudo_status'))} | "
-                f"{md_escape(row.get('extlinux_extra_args') or '-')} | "
+                f"{md_escape(row.get('extlinux_append_override') or row.get('extlinux_extra_args') or '-')} | "
                 f"{md_escape(row.get('boot_entry_status'))} | "
                 f"{md_escape(row.get('boot_files_status'))} | "
                 f"{'yes' if row.get('ready_for_root_install') else 'no'} |"
