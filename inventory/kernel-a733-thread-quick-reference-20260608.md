@@ -9,10 +9,12 @@ not a public submission artifact.
 - Private workflow repo: `/Users/enzo/projects/homelab`
 - Public-facing repo: `/Users/enzo/projects/Home Lab/cubie-a7s-armbian`
 - Public GitHub record: `https://github.com/crescenzo77/radxa_cubie_a7s_allwinner_a733`
-- Candidate Linux fork/branch referenced by public docs:
+- Historical full-validation Linux fork/branch referenced by public docs:
   - fork: `https://github.com/crescenzo77/linux.git`
   - branch: `candidate/a733-platform-clean-v4`
   - head: `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
+- Current public review-export note:
+  `inventory/kernel-a733-public-review-export-v2-20260609.md`
 - Public repo is documentation/patch-export facing. Keep raw UART logs, model
   reviews, private topology, generated images, DTBs, and scratch notes out of
   it.
@@ -139,30 +141,37 @@ Useful conclusions:
 
 ## Current Upstream Strategy
 
-Public docs say the current v4 patch export is a review snapshot, not a
-sendable series.
+Public docs say the current 4-patch export is a review snapshot, not a
+sendable upstream submission. The export is recorded publicly at commit
+`57a1325 patches: refresh A733 review export` and privately in
+`inventory/kernel-a733-public-review-export-v2-20260609.md`.
 
-Current v4 scope:
+Current public review-export scope:
 
+- A733 MMC compatible binding coverage
 - Radxa Cubie A7S board compatible
-- A733 CCU binding and initial driver support
-- A733 pinctrl binding and driver support
-- A733 MMC compatible
-- initial A733 SoC DTSI
+- initial A733 SoC DTSI with CPUs, timer, GICv3, RTC oscillator provider,
+  CCU/R-CCU, pinctrl, UART0, and SDMMC0
 - Cubie A7S DTS with UART0 console and MMC0 storage
-- Allwinner `sun60i` MAINTAINERS pattern
 
-Cleanup already applied:
+Historical full-validation v4 scope also carried local CCU/PRCM, pinctrl, MMC,
+and MAINTAINERS scaffolding. That 9-patch shape remains validation evidence
+only and must not be mailed as-is.
+
+Cleanup and guardrails retained:
 
 - no nonstandard AI trailers
 - no deferred parent IRQ registration workaround
+- no local CCU/PRCM or pinctrl driver patches in the public review export
 - no Ethernet node or generic DWMAC fallback enablement
 - no VPU/Cedrus/media patches
-- maintainer blocks use `Enzo Adriano <enzo.adriano.code@gmail.com>`
+- no vendor U-Boot compatibility strings, vendor path aliases, or hardcoded
+  memory
 - GIC redistributor size fixed to `0x100000`
-- asymmetric CPU capacities present
+- asymmetric CPU capacities are represented
 - unused GIC child-bus properties removed
-- deprecated `linux/of_device.h` removed from the draft pinctrl driver
+- public cover letter carries explicit RTC, CCU/PRCM, and pinctrl `Depends-on:`
+  references
 
 ## External Work To Coordinate
 
