@@ -12,6 +12,12 @@ echo '```text'
 "${repo_root}/scripts/kernel-workflow-status" --workflow-backup-status
 echo '```'
 echo
+echo "Workflow dirty status:"
+echo
+echo '```text'
+"${repo_root}/scripts/kernel-workflow-status" --workflow-dirty-status
+echo '```'
+echo
 echo "Private workflow remotes:"
 echo
 echo '```text'
