@@ -1,5 +1,31 @@
 # Agent Status
 
+## 2026-06-09 A733 v4 corrected-root proof planning
+
+- Continued the Codex Desktop dispatcher/coordinator workflow for A733 kernel
+  bring-up using the local token-offload lanes where available.
+- `scripts/kernel-token-offload status` showed AMD RTX 3090 and AMD RX 7900 XT
+  lanes healthy, but the Strix long-context lane is unavailable:
+  `127.0.0.1:8082` on Strix refused connections and the compose project showed
+  no running container. No service restart was attempted because live service
+  changes remain operator-gated.
+- Ran the pending idle review sweep with `--allow-unavailable` for three Cubie
+  runtime evidence packets. AMD lanes produced review cards; Strix
+  unavailability was recorded in the card manifests.
+- `scripts/kernel-idle-ledger status` now reports `idle_review_candidates=0`.
+- `scripts/cubie-runtime-gate` still reports
+  `runtime-log-needs-triage`; the next runtime proof must not claim success
+  from the old `root=UUID=...` panic.
+- Added
+  `inventory/hardware/cubie3-a733-v4-corrected-root-proof-plan-20260609.md`
+  to reconcile the stale local-model recommendation with the newer UART
+  evidence. The safest next boot proof is a new non-default extlinux label
+  using `root=PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e`, `ro`,
+  `rootflags=noload`, and `init=/bin/sh`, plus the required U-Boot RAM command
+  `setenv drm_debug 1` before `run bootcmd`.
+- No kernel patches, public repo files, DTS files, bootloader files, or live
+  board state were changed.
+
 ## Current status
 
 The active slice is `Implement local token-offload workflow`.
