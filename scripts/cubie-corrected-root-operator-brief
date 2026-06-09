@@ -65,6 +65,7 @@ After the UART session exits, proof gates:
 ```sh
 scripts/cubie-latest-corrected-root-proof --strict
 scripts/kernel-workflow-status --maintainer-ready-blockers
+scripts/a733-patch-prep-checklist
 ```
 
 Do not claim runtime proof, reshape patches, or prepare maintainer-facing

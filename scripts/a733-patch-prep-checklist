@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+public_repo="${KERNEL_PUBLIC_REPO:-/Users/enzo/projects/Home Lab/cubie-a7s-armbian}"
+
+cat <<CHECKLIST
+# A733 Patch Prep Checklist
+
+Run these gates after the corrected-root runtime proof passes and before
+creating any maintainer-facing branch, patch export, cover letter, or mail.
+
+1. Exact v4 Cubie runtime proof:
+
+   cd ${repo_root} && scripts/cubie-latest-corrected-root-proof --strict
+
+2. Maintainer-ready workflow gate:
+
+   cd ${repo_root} && scripts/kernel-workflow-status --maintainer-ready-strict
+
+3. A733 series shape gate on the public export:
+
+   cd ${repo_root} && scripts/a733-series-shape-gate "${public_repo}/patches"
+
+4. Public hygiene gate:
+
+   cd ${repo_root} && scripts/kernel-public-hygiene-gate "${public_repo}"
+
+5. Backup posture:
+
+   cd ${repo_root} && scripts/kernel-workflow-status --workflow-backup-status
+
+The current 9-patch scaffolding export is not sendable. A future sendable
+candidate must be the narrow DTS/board slice, carry the two active Depends-on
+IDs for the A733 CCU and pinctrl RFCs, avoid vendor U-Boot workaround state in
+DTS, and avoid Ethernet, VPU, display, wireless, USB-C, PCIe, and other feature
+creep.
+CHECKLIST
