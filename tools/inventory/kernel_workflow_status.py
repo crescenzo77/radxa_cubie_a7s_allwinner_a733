@@ -324,6 +324,18 @@ def workflow_backup_summary(data: dict[str, Any]) -> dict[str, Any]:
     public_repo = data["public_repo"]
     public_mirror = data["public_mirror"]
     private_github_backed = bool(homelab.get("remote_matches") and homelab.get("remote_is_github"))
+    next_action = "backup posture is current"
+    if not homelab.get("remote_matches"):
+        next_action = f"push private workflow repo to configured origin `{homelab.get('remote')}`"
+    elif not private_github_backed:
+        next_action = (
+            "private workflow repo is backed up to its configured origin, but not GitHub; "
+            "human approval is required before adding a private GitHub remote"
+        )
+    elif not (public_repo.get("remote_matches") and public_repo.get("remote_is_github")):
+        next_action = "push public kernel repo to its GitHub remote"
+    elif not public_mirror.get("remote_matches"):
+        next_action = "push public kernel repo to the ThinkCentre mirror"
     return {
         "ok": bool(
             homelab.get("remote_matches")
@@ -337,6 +349,7 @@ def workflow_backup_summary(data: dict[str, Any]) -> dict[str, Any]:
         "public_github_backed": bool(public_repo.get("remote_matches") and public_repo.get("remote_is_github")),
         "public_remote_url": public_repo.get("remote_url") or "",
         "public_mirror_backed": bool(public_mirror.get("remote_matches")),
+        "next_action": next_action,
         "note": (
             "private workflow repo is backed up only to its configured origin; "
             "no GitHub remote is configured"
@@ -365,6 +378,9 @@ def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
         f"check backup posture: cd {shlex.quote(str(REPO_ROOT))} && "
         "scripts/kernel-workflow-status --workflow-backup-status"
     )
+    backup_next = data.get("workflow_backup", {}).get("next_action")
+    if backup_next and backup_next != "backup posture is current":
+        actions.append(f"backup next action: {backup_next}")
     if data["local_offload"].get("ok") and idle_candidates not in ("0", 0):
         actions.append(
             "optional advisory review only: "
@@ -586,6 +602,8 @@ def markdown(data: dict[str, Any]) -> str:
         lines.append(f"- {item['status']}: {item['requirement']} - {item['evidence']}")
     if workflow_backup.get("note"):
         lines.extend(["", "## Workflow Backup Note", "", str(workflow_backup["note"])])
+    if workflow_backup.get("next_action"):
+        lines.extend(["", "## Workflow Backup Next Action", "", str(workflow_backup["next_action"])])
     return "\n".join(lines) + "\n"
 
 
@@ -678,6 +696,11 @@ def main() -> int:
         help="Print compact private/public backup posture for dispatcher stopping points.",
     )
     parser.add_argument(
+        "--workflow-backup-next-action",
+        action="store_true",
+        help="Print the next safe backup action without inventing remotes.",
+    )
+    parser.add_argument(
         "--dispatcher-waiting-actions",
         action="store_true",
         help="Print safe dispatcher actions while a human/hardware gate is pending.",
@@ -728,8 +751,11 @@ def main() -> int:
         print(f"private_remote_url={backup.get('private_remote_url') or 'none'}")
         print(f"public_github_backed={md_bool(backup.get('public_github_backed'))}")
         print(f"public_mirror_backed={md_bool(backup.get('public_mirror_backed'))}")
+        print(f"next_action={backup.get('next_action') or 'none'}")
         if backup.get("note"):
             print(f"note={backup['note']}")
+    elif args.workflow_backup_next_action:
+        print(data["workflow_backup"].get("next_action") or "none")
     elif args.dispatcher_waiting_actions:
         print("\n".join(data["dispatcher_waiting_actions"]) or "none")
     elif args.goal_completion_audit:
