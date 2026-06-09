@@ -40,12 +40,34 @@ ssh_target() {
   ssh -o BatchMode=yes -o ConnectTimeout=10 "${uart_host}" "$@"
 }
 
+local_host_tokens() {
+  printf '%s\n' localhost 127.0.0.1 ::1
+  hostname 2>/dev/null || true
+  hostname -f 2>/dev/null || true
+  hostname -I 2>/dev/null | tr ' ' '\n' || true
+  ip -o addr show 2>/dev/null | awk '{print $4}' | cut -d/ -f1 || true
+  ifconfig 2>/dev/null | awk '/inet / {print $2}' || true
+}
+
+is_local_uart_host() {
+  [ -n "${uart_host}" ] || return 1
+  local_host_tokens | awk 'NF' | grep -Fx -- "${uart_host}" >/dev/null
+}
+
+run_on_uart_host() {
+  if is_local_uart_host; then
+    bash -c "$1"
+  else
+    ssh_target "$1"
+  fi
+}
+
 safe_label() {
   printf '%s' "$1" | tr -cs 'A-Za-z0-9_.-' '-'
 }
 
 list_devices() {
-  ssh_target "set -e
+  run_on_uart_host "set -e
 echo host=\$(hostname)
 echo ssh_target='${uart_host}'
 echo
@@ -95,16 +117,8 @@ capture() {
   local safe
   safe="$(safe_label "${label}")"
 
-  ssh -o BatchMode=yes -o ConnectTimeout=10 "${uart_host}" \
-    env \
-      UART_REMOTE_ROOT="${remote_root}" \
-      UART_DEVICE="${device}" \
-      UART_LABEL="${safe}" \
-      UART_SECONDS="${seconds}" \
-      UART_BAUD="${baud}" \
-      UART_SEND_ENTER="${send_enter}" \
-      UART_SEND_IP_QUERY="${send_ip_query}" \
-      bash -s <<'REMOTE'
+  capture_remote_body() {
+    cat <<'REMOTE'
 set -euo pipefail
 
 root="${UART_REMOTE_ROOT}"
@@ -184,10 +198,34 @@ with open(sys.argv[1], "w", encoding="utf-8") as handle:
 print(json.dumps(meta, indent=2, sort_keys=True))
 PY
 REMOTE
+  }
+
+  if is_local_uart_host; then
+    capture_remote_body | env \
+      UART_REMOTE_ROOT="${remote_root}" \
+      UART_DEVICE="${device}" \
+      UART_LABEL="${safe}" \
+      UART_SECONDS="${seconds}" \
+      UART_BAUD="${baud}" \
+      UART_SEND_ENTER="${send_enter}" \
+      UART_SEND_IP_QUERY="${send_ip_query}" \
+      bash -s
+  else
+    capture_remote_body | ssh -o BatchMode=yes -o ConnectTimeout=10 "${uart_host}" \
+      env \
+        UART_REMOTE_ROOT="${remote_root}" \
+        UART_DEVICE="${device}" \
+        UART_LABEL="${safe}" \
+        UART_SECONDS="${seconds}" \
+        UART_BAUD="${baud}" \
+        UART_SEND_ENTER="${send_enter}" \
+        UART_SEND_IP_QUERY="${send_ip_query}" \
+        bash -s
+  fi
 }
 
 status() {
-  ssh_target "set -e
+  run_on_uart_host "set -e
 echo host=\$(hostname)
 echo ssh_target='${uart_host}'
 echo remote_root='${remote_root}'
@@ -198,7 +236,11 @@ find '${remote_root}/logs' -maxdepth 1 -type f \\( -name '*.uart.log' -o -name '
 pull_logs() {
   local local_dir="${repo_root}/tools/hardware-logs/cubie-uart"
   mkdir -p "${local_dir}"
-  scp -q "${uart_host}:${remote_root}/logs/"'*' "${local_dir}/" 2>/dev/null || true
+  if is_local_uart_host; then
+    cp -a "${remote_root}/logs/." "${local_dir}/" 2>/dev/null || true
+  else
+    scp -q "${uart_host}:${remote_root}/logs/"'*' "${local_dir}/" 2>/dev/null || true
+  fi
   echo "UART logs copied to ${local_dir}"
 }
 

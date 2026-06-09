@@ -25,6 +25,20 @@ uart_host="${UART_HOST:-192.168.50.11}"
 remote_root="${UART_REMOTE_ROOT:-/srv/projects/cubie-uart}"
 baud="${UART_BAUD:-115200}"
 
+local_host_tokens() {
+  printf '%s\n' localhost 127.0.0.1 ::1
+  hostname 2>/dev/null || true
+  hostname -f 2>/dev/null || true
+  hostname -I 2>/dev/null | tr ' ' '\n' || true
+  ip -o addr show 2>/dev/null | awk '{print $4}' | cut -d/ -f1 || true
+  ifconfig 2>/dev/null | awk '/inet / {print $2}' || true
+}
+
+is_local_uart_host() {
+  [ -n "${uart_host}" ] || return 1
+  local_host_tokens | awk 'NF' | grep -Fx -- "${uart_host}" >/dev/null
+}
+
 safe_label="$(printf '%s' "${label}" | tr -cs 'A-Za-z0-9_.-' '-')"
 
 cat <<INTRO
@@ -48,13 +62,8 @@ Use this for Cubie3 now:
 This script does not power-cycle or reboot any board.
 INTRO
 
-ssh -tt -o BatchMode=yes -o ConnectTimeout=10 "${uart_host}" \
-  env \
-    UART_REMOTE_ROOT="${remote_root}" \
-    UART_DEVICE="${device}" \
-    UART_LABEL="${safe_label}" \
-    UART_BAUD="${baud}" \
-    bash -s <<'REMOTE'
+interactive_remote_body() {
+  cat <<'REMOTE'
 set -euo pipefail
 
 root="${UART_REMOTE_ROOT}"
@@ -119,6 +128,27 @@ PY
 
 exit "${picocom_rc}"
 REMOTE
+}
+
+if is_local_uart_host; then
+  tmp_script="$(mktemp)"
+  trap 'rm -f "${tmp_script}"' EXIT
+  interactive_remote_body >"${tmp_script}"
+  env \
+    UART_REMOTE_ROOT="${remote_root}" \
+    UART_DEVICE="${device}" \
+    UART_LABEL="${safe_label}" \
+    UART_BAUD="${baud}" \
+    bash "${tmp_script}"
+else
+  interactive_remote_body | ssh -tt -o BatchMode=yes -o ConnectTimeout=10 "${uart_host}" \
+    env \
+      UART_REMOTE_ROOT="${remote_root}" \
+      UART_DEVICE="${device}" \
+      UART_LABEL="${safe_label}" \
+      UART_BAUD="${baud}" \
+      bash -s
+fi
 
 "${repo_root}/scripts/cubie-uart" pull-logs
 "${repo_root}/scripts/cubie-uart-report" --limit 8 || true

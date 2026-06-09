@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import shlex
+import socket
 import subprocess
 import sys
 from pathlib import Path
@@ -73,6 +74,46 @@ def verify_capture_argv(args: argparse.Namespace) -> list[str]:
 
 def shell_join(argv: list[str]) -> str:
     return " ".join(shlex.quote(part) for part in argv)
+
+
+def local_host_tokens() -> set[str]:
+    tokens = {"localhost", "127.0.0.1", "::1"}
+    for name in (socket.gethostname(), socket.getfqdn()):
+        if name:
+            tokens.add(name)
+    for argv in (
+        ["hostname", "-I"],
+        ["ip", "-o", "addr", "show"],
+        ["ifconfig"],
+    ):
+        try:
+            proc = subprocess.run(
+                argv,
+                check=False,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                timeout=3,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        if proc.returncode != 0:
+            continue
+        for token in re_split_host_tokens(proc.stdout):
+            tokens.add(token)
+    return {token for token in tokens if token}
+
+
+def re_split_host_tokens(text: str) -> list[str]:
+    return [
+        token.split("/", 1)[0]
+        for token in text.replace("\n", " ").split()
+        if token and (token[0].isdigit() or ":" in token)
+    ]
+
+
+def is_local_host(host: str) -> bool:
+    return bool(host and host in local_host_tokens())
 
 
 def confirmation_error(row: dict[str, Any], confirm_target_ip: str) -> str:
@@ -154,14 +195,24 @@ def uart_preflight(row: dict[str, Any], args: argparse.Namespace) -> dict[str, A
             ],
         ]
     )
-    proc = subprocess.run(
-        ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=8", host, remote],
-        check=False,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=12,
-    )
+    if is_local_host(host):
+        proc = subprocess.run(
+            ["bash", "-c", remote],
+            check=False,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=12,
+        )
+    else:
+        proc = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=8", host, remote],
+            check=False,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=12,
+        )
     if proc.returncode != 0:
         return {
             "status": "failed",
