@@ -15,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_TARGETS = ["192.168.50.85", "192.168.50.95"]
 DEFAULT_EXCLUDED_TARGETS = ["192.168.50.65"]
 DEFAULT_STAGE = "kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609"
-DEFAULT_USER = "radxa"
+DEFAULT_USER = os.environ.get("CUBIE_SSH_USER", "codex")
 DEFAULT_IDENTITY = "~/.ssh/id_ed25519"
 DEFAULT_TIMEOUT = 8
 
@@ -65,9 +65,13 @@ set -u
 stage="$1"
 boot_sha256_out=""
 boot_sha256_err=""
+stage_sha256_out=""
+stage_sha256_err=""
+stage_bashn_out=""
+stage_bashn_err=""
 sudo_out=""
 sudo_err=""
-trap 'rm -f "${boot_sha256_out:-}" "${boot_sha256_err:-}" "${sudo_out:-}" "${sudo_err:-}"' EXIT
+trap 'rm -f "${boot_sha256_out:-}" "${boot_sha256_err:-}" "${stage_sha256_out:-}" "${stage_sha256_err:-}" "${stage_bashn_out:-}" "${stage_bashn_err:-}" "${sudo_out:-}" "${sudo_err:-}"' EXIT
 printf 'hostname='; hostname
 printf 'arch='; uname -m
 if [ -r /proc/device-tree/model ]; then
@@ -90,11 +94,13 @@ for file in Image sun60i-a733-cubie-a7s.dtb config manifest.txt SHA256SUMS insta
   fi
 done
 if command -v sha256sum >/dev/null 2>&1 && [ -f SHA256SUMS ]; then
-  if sha256sum -c SHA256SUMS >/tmp/cubie-stage-sha256.out 2>/tmp/cubie-stage-sha256.err; then
+  stage_sha256_out="$(mktemp)"
+  stage_sha256_err="$(mktemp)"
+  if sha256sum -c SHA256SUMS >"$stage_sha256_out" 2>"$stage_sha256_err"; then
     printf 'sha256_status=ok\n'
   else
     printf 'sha256_status=fail\n'
-    sed 's/^/sha256_error=/' /tmp/cubie-stage-sha256.err | head -5
+    sed 's/^/sha256_error=/' "$stage_sha256_err" | head -5
   fi
 else
   printf 'sha256_status=unavailable\n'
@@ -187,11 +193,13 @@ if [ -f install-extlinux-entry.sh ]; then
   else
     printf 'boot_sha256_status=not-installed\n'
   fi
-  if bash -n install-extlinux-entry.sh >/tmp/cubie-stage-bashn.out 2>/tmp/cubie-stage-bashn.err; then
+  stage_bashn_out="$(mktemp)"
+  stage_bashn_err="$(mktemp)"
+  if bash -n install-extlinux-entry.sh >"$stage_bashn_out" 2>"$stage_bashn_err"; then
     printf 'installer_syntax=ok\n'
   else
     printf 'installer_syntax=fail\n'
-    sed 's/^/installer_error=/' /tmp/cubie-stage-bashn.err | head -5
+    sed 's/^/installer_error=/' "$stage_bashn_err" | head -5
   fi
 else
   printf 'installer_syntax=missing\n'

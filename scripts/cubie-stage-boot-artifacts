@@ -15,7 +15,7 @@ case "${1:-}" in
     target_host="$1"
     ;;
 esac
-target_user="${CUBIE_SSH_USER:-radxa}"
+target_user="${CUBIE_SSH_USER:-codex}"
 target_identity="${CUBIE_SSH_IDENTITY:-${HOME}/.ssh/id_ed25519}"
 artifact_dir="${A733_BOOT_ARTIFACT_DIR:-/srv/projects/kernel-work/outgoing/a733-v4-abc8d07b0a63-20260606T152409Z}"
 artifact_name="$(basename "${artifact_dir}")"
@@ -37,7 +37,8 @@ usage() {
 Usage: scripts/cubie-stage-boot-artifacts [TARGET_IP]
 
 Copies the exact A733 v4 Image/DTB/config/manifest from AMD into the target
-board user's home directory and writes a sudo-required installer script.
+board user's home directory and writes an installer script. The lab default is
+the passwordless `codex` automation user on each Cubie.
 
 Defaults:
   AMD_VALIDATION_HOST=${amd_host}
@@ -256,12 +257,12 @@ Staged exact A733 v4 artifacts on ${target_host}:${remote_stage}
 
 No /boot files were changed. No reboot was requested.
 
-Human/root install step on the board:
+Root install step on the board:
   cd ${remote_stage}
-  sudo ./install-extlinux-entry.sh
+  sudo -n ./install-extlinux-entry.sh
 
-Then from this repo, start UART capture before selecting the boot entry:
-  scripts/cubie-manual-boot-session 180 ${capture_label}
+Then from this repo, start the interactive UART boot session before selecting the boot entry:
+  scripts/cubie-uart-interactive-boot-session ${capture_label}
 
 Select this non-default U-Boot label over UART:
   ${label}

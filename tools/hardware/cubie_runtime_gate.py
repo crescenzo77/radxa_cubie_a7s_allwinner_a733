@@ -130,11 +130,33 @@ def staging_summary(args: argparse.Namespace) -> dict[str, Any]:
     return cubie_boot_staging_status.build_status(staging_args)
 
 
-def refine_status(status: str, reason: str, staging: dict[str, Any]) -> tuple[str, str]:
+def installed_capture_labels(staging: dict[str, Any]) -> set[str]:
+    rows = staging.get("rows") if isinstance(staging.get("rows"), list) else []
+    return {
+        str(row.get("capture_label"))
+        for row in rows
+        if row.get("root_install_complete") and row.get("capture_label")
+    }
+
+
+def refine_status(status: str, reason: str, staging: dict[str, Any], captures: list[dict[str, Any]]) -> tuple[str, str]:
     if staging.get("skipped"):
         return status, reason
     installed_count = int(staging.get("installed_count") or 0)
     ready_count = int(staging.get("ready_count") or 0)
+    labels = installed_capture_labels(staging)
+    if installed_count > 0 and labels:
+        captured_labels = {
+            str(item.get("label"))
+            for item in captures
+            if item.get("label") and (item.get("local_bytes") or 0) > 0
+        }
+        if labels.isdisjoint(captured_labels):
+            wanted = ", ".join(sorted(labels))
+            return (
+                "boot-selection-required",
+                f"installed boot entry has no matching UART capture for {wanted}",
+            )
     if ready_count > 0 and installed_count == 0:
         return (
             "root-install-required",
@@ -250,7 +272,7 @@ def build_gate(args: argparse.Namespace) -> dict[str, Any]:
         reason = str(inventory.get("inventory_error") or inventory.get("inventory_missing"))
     else:
         status, reason = classify(captures, mapping)
-        status, reason = refine_status(status, reason, staging)
+        status, reason = refine_status(status, reason, staging, captures)
     non_empty = [item for item in captures if (item.get("local_bytes") or 0) > 0]
     marker_hits = [item for item in captures if item.get("markers")]
     ssh_open = [item for item in network.get("results", []) if item.get("tcp_status") == "open"]

@@ -262,7 +262,7 @@ def next_safe_action(staging: dict[str, Any], inventory: dict[str, Any]) -> str:
         ip = row.get("ip") or "unknown IP"
         return (
             f"On `{md_escape(host)}` `{md_escape(ip)}`, run "
-            f"`cd {md_escape(stage)}` then `sudo ./install-extlinux-entry.sh`. "
+            f"`cd {md_escape(stage)}` then `sudo -n ./install-extlinux-entry.sh`. "
             f"After that, run `scripts/cubie-uart-interactive-boot-session {md_escape(capture)}` "
             f"and run `setenv drm_debug 1; run bootcmd`, then select "
             f"`{md_escape(label)}` over UART. Expected bootargs: "

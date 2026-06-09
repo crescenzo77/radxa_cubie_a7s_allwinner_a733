@@ -17,7 +17,7 @@ adapters.
 
 ```text
 private workflow repo is dirty
-cubie runtime proof is root-install-required
+cubie runtime proof is boot-selection-required
 A733 export shape is not maintainer-ready: too-many-patches, local-ccu-binding, local-ccu-driver, local-pinctrl-binding, local-pinctrl-driver, standalone-mmc-compatible, maintainers-sun60i-pattern, missing-depends-on, missing-depends-on
 ```
 
@@ -46,11 +46,10 @@ target=cubie-3 ip=192.168.50.95
 stage=kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609
 extlinux_label=a733-v4-abc8d07b0a63-partuuid-ro-proof
 extlinux_menu_label=A733 v4 abc8d07b0a63 PARTUUID ro proof
-sudo_status=password-required
+sudo_status=noninteractive-ok
 uart_preflight_status=ok
 uart_preflight_host=192.168.50.11
-status=root-install-required
-required_confirmation=--confirm-target-ip 192.168.50.95
+status=boot-selection-required
 ```
 
 The corrected-root proof label append line is:

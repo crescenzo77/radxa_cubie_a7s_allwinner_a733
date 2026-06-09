@@ -49,7 +49,7 @@ device=${device}
 baud=${baud}
 
 Use this for Cubie3 now:
-  1. Reboot Cubie3 from another terminal: ssh radxa@192.168.50.95 'sudo reboot'
+  1. Reboot Cubie3 from another terminal: ssh codex@192.168.50.95 'sudo -n reboot'
   2. If testing the corrected-root proof, run in U-Boot:
      setenv drm_debug 1
      run bootcmd

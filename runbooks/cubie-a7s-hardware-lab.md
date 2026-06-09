@@ -195,7 +195,7 @@ Current status as of the latest generated runtime proof bundle:
 
 - bundle:
   `task-packets/kernel/runtime-proof/cubie-runtime-proof-20260606T190204771023Z`
-- runtime gate: `root-install-required`
+- runtime gate: `boot-selection-required`
 - target: `cubie-3` at `192.168.50.95`
 - stage:
   `kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609`
@@ -203,7 +203,7 @@ Current status as of the latest generated runtime proof bundle:
 - visible U-Boot menu label: `A733 v4 abc8d07b0a63 PARTUUID ro proof`
 - append line:
   `console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel drm_debug=1 root=PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e rootfstype=ext4 rootwait ro rootflags=noload init=/bin/sh`
-- sudo status: `password-required`
+- sudo status: `noninteractive-ok` via the Cubie `codex` automation user
 - UART preflight: `ok` on Strix `192.168.50.11`
 - excluded kernel-work target remains `192.168.50.65`
 
@@ -219,25 +219,24 @@ dry-run before any live board action:
 scripts/a733-patch-prep-checklist --preflight
 ```
 
-If that passes, run this from an interactive Codex terminal when the operator
-is ready to type the Cubie sudo password. The command starts on the Mac, but
-the live work runs on Strix:
+If that passes, run this from an interactive Codex terminal. The command starts
+on the Mac, but the live root-install/UART work runs on Strix:
 
 ```sh
 ssh -tt enzo@192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95'
 ```
 
-The helper prints the selected board and staged artifact path, opens an SSH TTY
-to `radxa@192.168.50.95`, and runs the staged root installer with `sudo`. After
-the install succeeds, it verifies the installed `/boot` files. The current
-Cubie3 extlinux menu has many old test labels before the clean v4 label, so use
-the interactive UART helper below for the boot selection rather than a passive
-capture-only helper.
+The helper prints the selected board and staged artifact path, uses
+`codex@192.168.50.95` for noninteractive sudo when a root install is still
+needed, and otherwise proceeds directly to the UART boot-selection handoff. The
+current Cubie3 extlinux menu has many old test labels before the clean v4
+label, so use the interactive UART helper below for the boot selection rather
+than a passive capture-only helper.
 
 The exact dry-run handoff currently resolves to:
 
 ```sh
-ssh -tt -o BatchMode=no -o ConnectTimeout=8 -i /Users/enzo/.ssh/id_ed25519 radxa@192.168.50.95 'cd kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609 && sudo ./install-extlinux-entry.sh'
+ssh -tt -o BatchMode=no -o ConnectTimeout=8 -i /Users/enzo/.ssh/id_ed25519 codex@192.168.50.95 'cd kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609 && sudo -n ./install-extlinux-entry.sh'
 /Users/enzo/projects/homelab/scripts/cubie-root-install-handoff --wait 90 --interval 5.0 --run-capture
 ```
 
@@ -255,7 +254,7 @@ ssh -tt enzo@192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-m
 In a second terminal, still dispatching through Strix, reboot Cubie3 only:
 
 ```sh
-ssh enzo@192.168.50.11 'ssh radxa@192.168.50.95 "sudo reboot"'
+ssh enzo@192.168.50.11 'ssh codex@192.168.50.95 "sudo -n reboot"'
 ```
 
 Then in U-Boot, run this RAM-only variable before booting the menu:

@@ -46,7 +46,8 @@ def select_target(staging: dict[str, Any]) -> dict[str, Any] | None:
 def install_argv(row: dict[str, Any], args: argparse.Namespace) -> list[str]:
     ip = str(row.get("ip") or "")
     stage = str(row.get("stage") or args.stage)
-    remote = f"cd {shlex.quote(stage)} && sudo ./install-extlinux-entry.sh"
+    sudo = "sudo -n" if row.get("sudo_status") == "noninteractive-ok" else "sudo"
+    remote = f"cd {shlex.quote(stage)} && {sudo} ./install-extlinux-entry.sh"
     return [
         "ssh",
         "-tt",

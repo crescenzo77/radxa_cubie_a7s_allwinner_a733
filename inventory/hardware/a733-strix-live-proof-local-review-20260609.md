@@ -66,13 +66,16 @@ Action taken:
 - A follow-up search found no `drm_debug` occurrences in checked DTS, DTSI, or
   YAML files under the local A733/public kernel trees or the Strix copies; the
   token remains confined to lab bootargs and documentation.
+- The Cubie `codex` automation user now passes Strix-to-Cubie2 and
+  Strix-to-Cubie3 SSH plus `sudo -n true`; Cubie3's corrected-root extlinux
+  entry is installed and checksum-verified.
 
 ## Remaining Blocker
 
 The actual maintainer-path blocker is unchanged:
 
 ```text
-exact v4 Cubie runtime proof is root-install-required
+exact v4 Cubie runtime proof is boot-selection-required
 ```
 
 Next live action remains:

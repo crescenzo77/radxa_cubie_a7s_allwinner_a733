@@ -116,10 +116,10 @@ scripts/cubie-boot-staging-status \
   --json
 ```
 
-That status currently reports `ready_for_root_install: true`,
-`root_install_complete: false`, `sha256_status: ok`, `installer_syntax: ok`,
-and `sudo_status: password-required`. No `/boot` files were changed while
-staging this installer.
+The latest status after the Cubie `codex` automation-user setup reports
+`ready_for_root_install: true`, `root_install_complete: true`,
+`sha256_status: ok`, `boot_sha256_status: ok`, `installer_syntax: ok`, and
+`sudo_status: noninteractive-ok`.
 
 The planned `PARTUUID` was verified read-only on Cubie3 before installing the
 label:
@@ -135,15 +135,16 @@ lsblk: mmcblk0p3 ext4 rootfs UUID=6f750720-329a-45f0-a4b5-abc5797b040a PARTUUID=
 This closes the pre-install review risk that the corrected proof label might
 point at the wrong partition.
 
-The next operator action is:
+The historical manual root-install command was:
 
 ```sh
 ssh -tt -o BatchMode=no -o ConnectTimeout=8 -i /Users/enzo/.ssh/id_ed25519 \
-  radxa@192.168.50.95 \
-  'cd kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609 && sudo ./install-extlinux-entry.sh'
+  codex@192.168.50.95 \
+  'cd kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609 && sudo -n ./install-extlinux-entry.sh'
 ```
 
-After the install succeeds, start the UART capture before rebooting:
+The current next operator action is boot selection/runtime proof. Start the
+UART capture before rebooting:
 
 ```sh
 ssh -tt enzo@192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-uart-interactive-boot-session a733-v4-abc8d07b0a63-partuuid-ro-proof'

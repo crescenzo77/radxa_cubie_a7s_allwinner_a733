@@ -22,6 +22,7 @@ STRIX_HOST = os.environ.get("KERNEL_STRIX_HOST", "192.168.50.11")
 STRIX_SSH_TARGET = os.environ.get("KERNEL_STRIX_SSH_TARGET", f"enzo@{STRIX_HOST}")
 STRIX_REPO = os.environ.get("KERNEL_STRIX_REPO", "/srv/projects/homelab")
 STRIX_REMOTE = os.environ.get("KERNEL_STRIX_REMOTE", "mac-mini")
+CUBIE_SSH_USER = os.environ.get("CUBIE_SSH_USER", "codex")
 PRIVATE_ORIGIN_REMOTES = [
     item.strip()
     for item in os.environ.get("KERNEL_PRIVATE_ORIGIN_REMOTES", "origin,mac-mini").split(",")
@@ -275,7 +276,7 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
             )
             human_required = True
             human_gate = (
-                "Cubie sudo password and live UART/operator control are required on Strix; "
+                "Live UART/operator control is required on Strix; "
                 "Codex Desktop should dispatch the Strix command, not run UART locally on the Mac."
             )
             evidence_gate = (
@@ -290,7 +291,7 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
         capture_label = labels[0] if labels else f"{Path(stage).name}-boot" if stage else "cubie-manual-boot"
         next_command = f"scripts/cubie-uart-interactive-boot-session {shlex.quote(capture_label)}"
         if installed and installed[0].get("ip"):
-            next_reboot_command = f"ssh radxa@{installed[0]['ip']} 'sudo reboot'"
+            next_reboot_command = f"ssh {CUBIE_SSH_USER}@{installed[0]['ip']} 'sudo -n reboot'"
         human_required = True
         human_gate = (
             "Live U-Boot intervention is required: set RAM-only `drm_debug=1`, "
@@ -443,6 +444,11 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
     cubie_next = data["cubie_runtime_gate"].get("next_shell") or data["cubie_runtime_gate"].get("next_command")
     if data["cubie_runtime_gate"].get("status") != "runtime-ready" and cubie_next:
         next_action = str(cubie_next)
+    elif data["cubie_runtime_gate"].get("status") != "runtime-ready":
+        next_action = str(
+            data["cubie_runtime_gate"].get("next_action")
+            or "capture and gate the exact v4 corrected-root Cubie runtime proof before patch prep"
+        )
     elif not data["a733_series_shape"].get("ok"):
         next_action = (
             "after corrected-root runtime proof, reshape the public export to "

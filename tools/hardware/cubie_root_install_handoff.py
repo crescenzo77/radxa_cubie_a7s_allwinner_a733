@@ -48,13 +48,15 @@ def install_command(row: dict[str, Any], user: str) -> str:
     ip = row.get("ip") or "unknown-ip"
     stage = row.get("stage") or cubie_boot_staging_status.DEFAULT_STAGE
     target = shlex.quote(f"{user}@{ip}")
-    remote = f"cd {shlex.quote(stage)} && sudo ./install-extlinux-entry.sh"
+    sudo = "sudo -n" if row.get("sudo_status") == "noninteractive-ok" else "sudo"
+    remote = f"cd {shlex.quote(stage)} && {sudo} ./install-extlinux-entry.sh"
     return f"ssh -t {target} {shlex.quote(remote)}"
 
 
 def local_board_command(row: dict[str, Any]) -> str:
     stage = row.get("stage") or cubie_boot_staging_status.DEFAULT_STAGE
-    return f"cd {shlex.quote(stage)}\nsudo ./install-extlinux-entry.sh"
+    sudo = "sudo -n" if row.get("sudo_status") == "noninteractive-ok" else "sudo"
+    return f"cd {shlex.quote(stage)}\n{sudo} ./install-extlinux-entry.sh"
 
 
 def capture_label(row: dict[str, Any]) -> str:
