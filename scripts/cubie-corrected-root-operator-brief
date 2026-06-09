@@ -5,6 +5,8 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 next_action="$("${repo_root}/scripts/kernel-workflow-status" --maintainer-next-action)"
 blockers="$("${repo_root}/scripts/kernel-workflow-status" --maintainer-ready-blockers)"
+backup_status="$("${repo_root}/scripts/kernel-workflow-status" --workflow-backup-status)"
+waiting_actions="$("${repo_root}/scripts/kernel-workflow-status" --dispatcher-waiting-actions)"
 
 cat <<BRIEF
 # Cubie Corrected-Root Operator Brief
@@ -19,6 +21,18 @@ Current maintainer-readiness blockers:
 
 \`\`\`text
 ${blockers}
+\`\`\`
+
+Workflow backup posture:
+
+\`\`\`text
+${backup_status}
+\`\`\`
+
+Safe dispatcher actions while waiting:
+
+\`\`\`text
+${waiting_actions}
 \`\`\`
 
 Read-only install/session preflight:

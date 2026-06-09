@@ -1,5 +1,17 @@
 # Agent Status
 
+## 2026-06-09 operator brief dispatcher context
+
+- Updated `scripts/cubie-corrected-root-operator-brief` to include workflow
+  backup posture and safe dispatcher waiting actions.
+- The brief now shows that the private workflow repo is backed up to its local
+  mirror, the public kernel repo is GitHub/mirror backed, and the advisory idle
+  queue is empty.
+- The live maintainer next action remains the corrected-root Cubie
+  install/session; the added context is read-only guardrail material.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 dispatcher idle queue guard
 
 - Updated `scripts/kernel-workflow-status --dispatcher-waiting-actions` to
