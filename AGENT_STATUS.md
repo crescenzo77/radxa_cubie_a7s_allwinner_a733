@@ -1,5 +1,17 @@
 # Agent Status
 
+## 2026-06-09 corrected-root review markers
+
+- Updated `scripts/cubie-corrected-root-proof-gate` to surface non-fatal
+  warning/error/call-trace review markers in UART logs.
+- The markers do not automatically fail an otherwise complete proof, but they
+  are included in Markdown and JSON output so they can be assessed before using
+  a capture as maintainer evidence.
+- Updated the corrected-root proof plan and Cubie hardware runbook to document
+  this review step.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 corrected-root exact load gate tightened
 
 - Updated `scripts/cubie-corrected-root-proof-gate` to require separate U-Boot

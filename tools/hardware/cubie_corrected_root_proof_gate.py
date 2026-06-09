@@ -54,6 +54,8 @@ ERROR_PATTERNS: list[tuple[str, str]] = [
     ("old_uuid_root", r"Disabling rootwait; root= is invalid|root=UUID=6f750720-329a-45f0-a4b5-abc5797b040a"),
 ]
 
+REVIEW_MARKER_RE = re.compile(r"\b(?:WARNING|ERROR|WARN_ON|BUG:|Call trace:)\b", re.IGNORECASE)
+
 
 def read_log(path: Path) -> str:
     data = path.read_bytes()
@@ -86,6 +88,22 @@ def find_errors(text: str) -> dict[str, dict[str, Any]]:
     return results
 
 
+def find_review_markers(text: str, limit: int = 20) -> list[str]:
+    markers: list[str] = []
+    seen: set[str] = set()
+    for line in text.splitlines():
+        if not REVIEW_MARKER_RE.search(line):
+            continue
+        clean = " ".join(line.split())
+        if not clean or clean in seen:
+            continue
+        seen.add(clean)
+        markers.append(clean[:500])
+        if len(markers) >= limit:
+            break
+    return markers
+
+
 def excerpt_for(text: str, offset: int, radius: int = 160) -> str:
     start = max(0, offset - radius)
     end = min(len(text), offset + radius)
@@ -106,6 +124,7 @@ def build_gate(path: Path) -> dict[str, Any]:
     text = read_log(path)
     checks = find_matches(text, CHECKS)
     errors = find_errors(text)
+    review_markers = find_review_markers(text)
     status, reason = classify(checks, errors)
     return {
         "status": status,
@@ -114,6 +133,7 @@ def build_gate(path: Path) -> dict[str, Any]:
         "bytes": path.stat().st_size,
         "checks": checks,
         "errors": errors,
+        "review_markers": review_markers,
         "human_required": status != "pass",
     }
 
@@ -138,6 +158,15 @@ def markdown(data: dict[str, Any]) -> str:
     for key, value in data["errors"].items():
         excerpt = str(value.get("excerpt") or "").replace("|", "/")
         lines.append(f"| `{key}` | `{value['present']}` | {excerpt or '-'} |")
+    lines.extend(["", "## Review Markers", ""])
+    markers = data.get("review_markers") or []
+    if markers:
+        lines.append("These markers do not automatically fail the gate, but must be reviewed before using the log as maintainer evidence.")
+        lines.append("")
+        for marker in markers:
+            lines.append(f"- {str(marker).replace('|', '/')}")
+    else:
+        lines.append("None found.")
     return "\n".join(lines) + "\n"
 
 

@@ -203,6 +203,9 @@ scripts/cubie-corrected-root-proof-gate path/to/candidate.uart.log
 Use `--strict` in automation. The gate must report `status: pass`; old logs
 that still contain `root=UUID=...`, `Bad Linux ARM64 Image magic`, panic/Oops,
 or vendor FDT mutation failures are not acceptable runtime proof.
+The gate also surfaces `WARNING`, `ERROR`, `WARN_ON`, `BUG:`, and call-trace
+markers for human review. These do not automatically fail an otherwise complete
+proof, but they must be assessed before using the log as maintainer evidence.
 
 For the standard corrected-root label, the interactive UART helper runs this
 latest-log gate automatically after pulling logs:

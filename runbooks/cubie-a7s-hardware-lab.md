@@ -271,6 +271,9 @@ The log must include exact U-Boot Image load, exact DTB load, and RAM-only
 proof needs to show the vendor FDT creation hang was crossed.
 The log must also show read-only root intent or mount evidence, such as `ro` in
 `/proc/cmdline` or a read-only `/` mount line.
+The gate surfaces warning/error/call-trace markers for human review without
+automatically failing the log; review those lines before treating the capture
+as maintainer evidence.
 
 For the corrected-root label, `scripts/cubie-uart-interactive-boot-session`
 also runs the latest-log helper after pulling logs:
