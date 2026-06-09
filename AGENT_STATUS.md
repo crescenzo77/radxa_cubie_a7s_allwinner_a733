@@ -1,5 +1,23 @@
 # Agent Status
 
+## 2026-06-09 corrected-root gate defaults
+
+- Updated the Cubie runtime/staging gate defaults to the corrected-root proof
+  stage: `kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609`.
+- `scripts/kernel-workflow-status --json` now reports
+  `cubie_runtime_gate.status: root-install-required` with reason
+  `selected proof artifacts are staged and checksum-verified, but not installed
+  into /boot`.
+- The top-level next command is now the operator-gated Cubie3 install:
+  `scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95`.
+- The stale older UART captures with panic/error markers remain visible in the
+  evidence section, but they no longer mask the newer uninstalled corrected-root
+  proof label.
+- Updated `runbooks/cubie-a7s-hardware-lab.md` so the current handoff uses
+  `a733-v4-abc8d07b0a63-partuuid-ro-proof`, the visible menu label
+  `A733 v4 abc8d07b0a63 PARTUUID ro proof`, and the RAM-only U-Boot
+  `setenv drm_debug 1` step.
+
 ## 2026-06-09 A733 corrected-root proof installer staged
 
 - Added a narrow `CUBIE_EXTLINUX_APPEND_OVERRIDE` path to

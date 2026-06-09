@@ -128,17 +128,22 @@ def staging_summary(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def refine_status(status: str, reason: str, staging: dict[str, Any]) -> tuple[str, str]:
-    if status not in {"manual-capture-required", "uart-mapping-ready"}:
-        return status, reason
     if staging.get("skipped"):
         return status, reason
     installed_count = int(staging.get("installed_count") or 0)
+    ready_count = int(staging.get("ready_count") or 0)
+    if ready_count > 0 and installed_count == 0:
+        return (
+            "root-install-required",
+            "selected proof artifacts are staged and checksum-verified, but not installed into /boot",
+        )
+    if status not in {"manual-capture-required", "uart-mapping-ready"}:
+        return status, reason
     if installed_count > 0:
         return (
             "boot-selection-required",
             "boot entry is installed, but no mainline boot capture exists yet",
         )
-    ready_count = int(staging.get("ready_count") or 0)
     if ready_count > 0:
         return (
             "root-install-required",

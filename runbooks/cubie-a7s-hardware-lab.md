@@ -198,8 +198,11 @@ Current status as of the latest generated runtime proof bundle:
 - runtime gate: `root-install-required`
 - target: `cubie-3` at `192.168.50.95`
 - stage:
-  `kernel-boot-artifacts/a733-v4-abc8d07b0a63-20260606T152409Z`
-- temporary bootargs: `drm_debug=1`
+  `kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609`
+- extlinux label: `a733-v4-abc8d07b0a63-partuuid-ro-proof`
+- visible U-Boot menu label: `A733 v4 abc8d07b0a63 PARTUUID ro proof`
+- append line:
+  `console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel drm_debug=1 root=PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e rootfstype=ext4 rootwait ro rootflags=noload init=/bin/sh`
 - sudo status: `password-required`
 - UART preflight: `ok` on Strix `192.168.50.11`
 - excluded kernel-work target remains `192.168.50.65`
@@ -208,7 +211,9 @@ Run this from an interactive Codex terminal when the operator is ready to type
 the Cubie sudo password:
 
 ```sh
-scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95
+scripts/cubie-interactive-root-install-session \
+  --stage kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609 \
+  --confirm-target-ip 192.168.50.95
 ```
 
 The helper prints the selected board and staged artifact path, opens an SSH TTY
@@ -221,14 +226,14 @@ capture-only helper.
 The exact dry-run handoff currently resolves to:
 
 ```sh
-ssh -tt -o BatchMode=no -o ConnectTimeout=8 -i /Users/enzo/.ssh/id_ed25519 radxa@192.168.50.95 'cd kernel-boot-artifacts/a733-v4-abc8d07b0a63-20260606T152409Z && sudo ./install-extlinux-entry.sh'
+ssh -tt -o BatchMode=no -o ConnectTimeout=8 -i /Users/enzo/.ssh/id_ed25519 radxa@192.168.50.95 'cd kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609 && sudo ./install-extlinux-entry.sh'
 /Users/enzo/projects/homelab/scripts/cubie-root-install-handoff --wait 90 --interval 5.0 --run-capture
 ```
 
 For the boot proof, run this from an interactive Codex terminal:
 
 ```sh
-scripts/cubie-uart-interactive-boot-session a733-v4-abc8d07b0a63-20260606T152409Z-boot
+scripts/cubie-uart-interactive-boot-session a733-v4-abc8d07b0a63-partuuid-ro-proof
 ```
 
 In a second terminal, reboot Cubie3 only:
@@ -237,11 +242,18 @@ In a second terminal, reboot Cubie3 only:
 ssh radxa@192.168.50.95 'sudo reboot'
 ```
 
+Then in U-Boot, run this RAM-only variable before booting the menu:
+
+```text
+setenv drm_debug 1
+run bootcmd
+```
+
 Then manually select this non-default U-Boot label over the confirmed Cubie3
 UART:
 
 ```text
-a733-v4-abc8d07b0a63-uart-proof
+A733 v4 abc8d07b0a63 PARTUUID ro proof
 ```
 
 Do not use the board IP `192.168.50.65` for any kernel proof work, even if it
