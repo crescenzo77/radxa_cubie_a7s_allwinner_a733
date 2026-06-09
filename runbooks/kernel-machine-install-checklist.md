@@ -50,6 +50,7 @@ scripts/kernel-workflow-status --runtime-strict
 scripts/kernel-workflow-status --maintainer-ready-strict
 scripts/kernel-workflow-status --maintainer-ready-blockers
 scripts/kernel-workflow-status --maintainer-next-action
+scripts/kernel-workflow-status --maintainer-operator-brief-shell
 scripts/kernel-workflow-status --next-action
 scripts/kernel-workflow-status --next-command
 scripts/kernel-workflow-status --next-shell
@@ -66,6 +67,8 @@ public hygiene gates to pass. Use `--maintainer-ready-blockers` when a compact
 blocker list is easier to hand to a local review lane than the full dashboard.
 Use `--maintainer-next-action` when Codex needs the ordered next step toward
 maintainer readiness rather than the generic Cubie runtime action.
+Use `--maintainer-operator-brief-shell` when the operator should preview the
+live proof step before entering sudo credentials or UART.
 
 ## Mac Dispatcher
 

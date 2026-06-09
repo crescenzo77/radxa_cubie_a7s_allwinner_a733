@@ -1,5 +1,24 @@
 # Agent Status
 
+## 2026-06-09 maintainer operator brief shell
+
+- Added `scripts/kernel-workflow-status --maintainer-operator-brief-shell` so
+  the dispatcher can print the read-only corrected-root operator brief command
+  from the same status surface as the maintainer blockers and next action.
+- The command currently prints:
+  `cd /Users/enzo/projects/homelab && scripts/cubie-corrected-root-operator-brief`.
+- Added the same shell command to the `maintainer_ready.operator_brief_shell`
+  JSON block.
+- Updated `runbooks/kernel-machine-install-checklist.md` to document when to
+  use the operator brief before entering sudo credentials or UART.
+- Validation: `python3 -m py_compile tools/inventory/kernel_workflow_status.py`,
+  `bash -n scripts/kernel-workflow-status`,
+  `scripts/kernel-workflow-status --maintainer-operator-brief-shell`, and JSON
+  assertion that the operator brief shell points at
+  `scripts/cubie-corrected-root-operator-brief`.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 corrected-root operator brief
 
 - Added `scripts/cubie-corrected-root-operator-brief`, a read-only Markdown

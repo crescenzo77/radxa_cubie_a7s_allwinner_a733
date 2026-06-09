@@ -16,6 +16,7 @@ PUBLIC_REPO = Path(
     os.environ.get("KERNEL_PUBLIC_REPO", "/Users/enzo/projects/Home Lab/cubie-a7s-armbian")
 )
 DEFAULT_TIMEOUT = 30
+OPERATOR_BRIEF = "scripts/cubie-corrected-root-operator-brief"
 
 
 def run(
@@ -322,7 +323,12 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
         next_action = "do not prepare or send maintainer-facing patches; clear the listed blockers first"
     else:
         next_action = "maintainer-ready gates pass; proceed to patch-prep validation and human review"
-    return {"ok": not blockers, "blockers": blockers, "next_action": next_action}
+    return {
+        "ok": not blockers,
+        "blockers": blockers,
+        "next_action": next_action,
+        "operator_brief_shell": f"cd {shlex.quote(str(REPO_ROOT))} && {OPERATOR_BRIEF}",
+    }
 
 
 def build_status(args: argparse.Namespace) -> dict[str, Any]:
@@ -522,6 +528,11 @@ def main() -> int:
         action="store_true",
         help="Print the ordered next action for maintainer-readiness.",
     )
+    parser.add_argument(
+        "--maintainer-operator-brief-shell",
+        action="store_true",
+        help="Print a copy-pasteable read-only operator brief command.",
+    )
     parser.add_argument("--strict", action="store_true")
     parser.add_argument(
         "--runtime-strict",
@@ -554,6 +565,8 @@ def main() -> int:
         print("\n".join(blockers) if blockers else "none")
     elif args.maintainer_next_action:
         print(data["maintainer_ready"].get("next_action") or "none")
+    elif args.maintainer_operator_brief_shell:
+        print(data["maintainer_ready"].get("operator_brief_shell") or "none")
     elif args.json:
         print(json.dumps(data, indent=2, sort_keys=True))
     else:
