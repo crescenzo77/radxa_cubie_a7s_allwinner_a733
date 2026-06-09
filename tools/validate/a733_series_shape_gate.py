@@ -21,6 +21,7 @@ FORBIDDEN_SUBJECTS = {
 }
 
 REQUIRED_SUBJECTS = {
+    "board-binding": re.compile(r"\bdt-bindings:\s+arm:\s+sunxi:.*\bRadxa Cubie A7S\b", re.IGNORECASE),
     "soc-dtsi": re.compile(r"\barm64:\s+dts:\s+allwinner:.*\bA733\b.*\bSoC\b", re.IGNORECASE),
     "board-dts": re.compile(r"\barm64:\s+dts:\s+allwinner:.*\bRadxa Cubie A7S\b", re.IGNORECASE),
 }
@@ -143,7 +144,7 @@ def classify(path: Path, max_patches: int) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("path", help="Patch file or directory containing 000*.patch files")
-    parser.add_argument("--max-patches", type=int, default=2)
+    parser.add_argument("--max-patches", type=int, default=3)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 

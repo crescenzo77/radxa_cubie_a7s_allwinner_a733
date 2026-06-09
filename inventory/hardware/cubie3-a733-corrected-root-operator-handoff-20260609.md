@@ -99,8 +99,9 @@ submission mail.
 - Do not expand the first slice into Ethernet/GMAC, VPU, display, Wi-Fi,
   Bluetooth, USB-C, PCIe, or other unproven hardware blocks.
 - After proof passes, the likely maintainer-facing direction remains a narrow
-  SoC DTSI plus Radxa Cubie A7S board DTS slice with explicit `Depends-on:`
-  references for the active A733 CCU/PRCM and pinctrl prerequisites.
+  board-compatible binding plus SoC DTSI plus Radxa Cubie A7S board DTS slice
+  with explicit `Depends-on:` references for the active A733 CCU/PRCM and
+  pinctrl prerequisites.
 
 ## Safe Waiting Command
 

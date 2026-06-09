@@ -43,7 +43,11 @@ unresolved.
 
 Expected target shape, subject to maintainer feedback:
 
-1. `arm64: dts: allwinner: Add sun60i-a733.dtsi`
+1. `dt-bindings: arm: sunxi: Add Radxa Cubie A7S`
+   - document `radxa,cubie-a7s`
+   - pair it with `allwinner,sun60i-a733`
+   - keep this to board/SoC compatibles only
+2. `arm64: dts: allwinner: Add sun60i-a733.dtsi`
    - compatible and basic SoC structure
    - CPU nodes
    - timer
@@ -52,7 +56,7 @@ Expected target shape, subject to maintainer feedback:
    - SDMMC0
    - phandles/clock/reset/pinctrl references matching the accepted or current
      prerequisite RFCs
-2. `arm64: dts: allwinner: Add Radxa Cubie A7S board`
+3. `arm64: dts: allwinner: Add Radxa Cubie A7S board`
    - `model`
    - board compatible
    - `chosen { stdout-path = "serial0:115200n8"; }`
@@ -85,9 +89,10 @@ scripts/a733-series-shape-gate /path/to/exported/patches
 For the current public `patches/` export this gate must fail, because that
 directory still contains the local 9-patch scaffolding series. A candidate
 sendable export should not pass this gate unless it is shaped as the narrow
-DTS/board slice, includes the two active prerequisite `Depends-on:` IDs, and
-does not include local CCU/PRCM, pinctrl, standalone MMC compatible,
-MAINTAINERS, vendor-U-Boot workaround, or unrelated hardware feature patches.
+board binding + SoC DTSI + board DTS slice, includes the two active
+prerequisite `Depends-on:` IDs, and does not include local CCU/PRCM, pinctrl,
+standalone MMC compatible, MAINTAINERS, vendor-U-Boot workaround, or unrelated
+hardware feature patches.
 
 ## Anti-Goals
 

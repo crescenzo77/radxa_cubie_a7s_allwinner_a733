@@ -336,7 +336,7 @@ def a733_series_shape_summary(data: dict[str, Any]) -> dict[str, Any]:
     else:
         next_action = (
             "do not send the current public patch export; reshape to the narrow "
-            "DTS/board series after corrected-root runtime proof"
+            "board-binding/SoC-DTSI/board-DTS series after corrected-root runtime proof"
         )
     return {
         "ok": gate.get("status") == "PASS",
@@ -445,7 +445,7 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
     elif not data["a733_series_shape"].get("ok"):
         next_action = (
             "after corrected-root runtime proof, reshape the public export to "
-            "the narrow A733 DTS/board series before patch-prep validation"
+            "the narrow A733 board-binding/SoC-DTSI/board-DTS series before patch-prep validation"
         )
     elif not data["public_hygiene"].get("ok"):
         next_action = "remove public hygiene matches before public backup or patch prep"
