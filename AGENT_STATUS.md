@@ -1,5 +1,21 @@
 # Agent Status
 
+## 2026-06-09 dispatcher topology consistency
+
+- Re-checked the Codex Desktop dispatcher/offload docs after the Strix headQ6
+  model correction.
+- Updated `runbooks/kernel-token-offload.md` with an explicit dispatcher
+  contract: use local lanes to compress/review context, but keep maintainer
+  authority with git state, proof logs, validation output, UART evidence, and
+  human approval.
+- Updated `inventory/models/llm-runtime-topology.md` so the AMD host section
+  matches the current kernel offload lanes on `8001`, `8092`, and embedding
+  lane `8091`; older AMD `8083`/`8084` endpoints are now marked historical.
+- Validation: `scripts/kernel-token-offload status` showed AMD fast, AMD
+  research, Strix review, and Qdrant healthy.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 specific maintainer health blockers
 
 - Updated `scripts/kernel-workflow-status --maintainer-ready-blockers` so it

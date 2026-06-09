@@ -13,6 +13,30 @@ model disagreements instead of raw bulk text whenever possible.
 Local model output is advisory. It never replaces git, proof logs, build
 results, hardware logs, or human approval.
 
+The current local lanes are compose-managed LLM containers. For the broader map
+of LLM runtimes, agents, tools, hooks, gates, and skill/MCP notes, read
+`inventory/models/llm-agents-tools-quick-reference.md`.
+
+## Dispatcher Contract
+
+Codex Desktop is the dispatcher and coordinator for kernel work. It should use
+the local LLM lanes to reduce bulk context before making decisions, but it keeps
+the maintainer-facing authority chain local and explicit: current git state,
+proof logs, build/schema/checkpatch output, hardware UART evidence, and human
+approval.
+
+When a kernel task reaches a human or hardware gate, Codex should record the
+state, commit only the relevant workflow/documentation changes, back them up to
+the configured remotes or mirrors, and then take the next maintainer-safe action
+that does not pretend the gate has passed.
+
+For A733/Cubie A7S work, the dispatcher must preserve the current guardrails:
+do not prepare a maintainer-facing series until the exact v4 boot/runtime proof
+passes, do not submit the local CCU or pinctrl scaffolding while the external
+RFCs are active, do not add vendor U-Boot workarounds to upstream DTS, and do
+not expand the first slice into Ethernet, display, VPU, Wi-Fi, Bluetooth,
+USB-C, or PCIe.
+
 ## Live Lanes
 
 Primary local lanes:
