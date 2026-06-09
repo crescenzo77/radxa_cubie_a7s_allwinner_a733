@@ -21,6 +21,7 @@ DEFAULT_TIMEOUT = 30
 STRIX_HOST = os.environ.get("KERNEL_STRIX_HOST", "192.168.50.11")
 STRIX_REPO = os.environ.get("KERNEL_STRIX_REPO", "/srv/projects/homelab")
 STRIX_REMOTE = os.environ.get("KERNEL_STRIX_REMOTE", "mac-mini")
+PRIVATE_GITHUB_REMOTE = os.environ.get("KERNEL_PRIVATE_GITHUB_REMOTE", "github")
 OPERATOR_BRIEF = "scripts/cubie-corrected-root-operator-brief"
 PATCH_PREP_CHECKLIST = "scripts/a733-patch-prep-checklist"
 BACKUP_APPROVAL_BRIEF = "scripts/kernel-backup-approval-brief"
@@ -454,9 +455,13 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
 
 def workflow_backup_summary(data: dict[str, Any]) -> dict[str, Any]:
     homelab = data["homelab"]
+    homelab_github = data["homelab_github"]
     public_repo = data["public_repo"]
     public_mirror = data["public_mirror"]
-    private_github_backed = bool(homelab.get("remote_matches") and homelab.get("remote_is_github"))
+    private_github_backed = bool(
+        (homelab.get("remote_matches") and homelab.get("remote_is_github"))
+        or (homelab_github.get("remote_matches") and homelab_github.get("remote_is_github"))
+    )
     next_action = "backup posture is current"
     if not homelab.get("remote_matches"):
         next_action = f"push private workflow repo to configured origin `{homelab.get('remote')}`"
@@ -472,6 +477,7 @@ def workflow_backup_summary(data: dict[str, Any]) -> dict[str, Any]:
     return {
         "ok": bool(
             homelab.get("remote_matches")
+            and private_github_backed
             and public_repo.get("remote_matches")
             and public_repo.get("remote_is_github")
             and public_mirror.get("remote_matches")
@@ -479,6 +485,8 @@ def workflow_backup_summary(data: dict[str, Any]) -> dict[str, Any]:
         "private_origin_backed": bool(homelab.get("remote_matches")),
         "private_github_backed": private_github_backed,
         "private_remote_url": homelab.get("remote_url") or "",
+        "private_github_remote": PRIVATE_GITHUB_REMOTE,
+        "private_github_remote_url": homelab_github.get("remote_url") or "",
         "public_github_backed": bool(public_repo.get("remote_matches") and public_repo.get("remote_is_github")),
         "public_remote_url": public_repo.get("remote_url") or "",
         "public_mirror_backed": bool(public_mirror.get("remote_matches")),
@@ -486,7 +494,7 @@ def workflow_backup_summary(data: dict[str, Any]) -> dict[str, Any]:
         "note": (
             "private workflow repo is backed up only to its configured origin; "
             "no GitHub remote is configured"
-            if homelab.get("remote_matches") and not homelab.get("remote_is_github")
+            if homelab.get("remote_matches") and not private_github_backed
             else ""
         ),
     }
@@ -617,9 +625,18 @@ def goal_completion_audit(data: dict[str, Any]) -> dict[str, Any]:
             ),
         },
         {
-            "requirement": "private workflow work is backed up at stopping points",
-            "status": "pass" if data["workflow_backup"].get("private_origin_backed") else "fail",
-            "evidence": data["workflow_backup"].get("note") or "private workflow origin matches HEAD",
+            "requirement": "private workflow work is backed up locally and to GitHub at stopping points",
+            "status": "pass"
+            if data["workflow_backup"].get("private_origin_backed")
+            and data["workflow_backup"].get("private_github_backed")
+            else "fail",
+            "evidence": (
+                "private workflow origin and GitHub remote both match HEAD"
+                if data["workflow_backup"].get("private_origin_backed")
+                and data["workflow_backup"].get("private_github_backed")
+                else data["workflow_backup"].get("note")
+                or "private workflow local origin or GitHub backup is incomplete"
+            ),
         },
     ]
     incomplete = [item for item in checks if item["status"] != "pass"]
@@ -663,7 +680,7 @@ def stopping_point_audit(data: dict[str, Any]) -> dict[str, Any]:
             if workflow_backup.get("private_origin_backed") and not workflow_backup.get("private_github_backed")
             else ("ok" if workflow_backup.get("private_github_backed") else "fail"),
             "detail": (
-                "no GitHub remote is configured; do not invent or add one without explicit human approval"
+                "no matching GitHub remote is configured; do not invent or add one without explicit human approval"
                 if not workflow_backup.get("private_github_backed")
                 else "private workflow GitHub remote matches HEAD"
             ),
@@ -768,6 +785,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     )
     data = {
         "homelab": git_status(REPO_ROOT, "origin"),
+        "homelab_github": git_status(REPO_ROOT, PRIVATE_GITHUB_REMOTE),
         "public_repo": git_status(PUBLIC_REPO, "public")
         if PUBLIC_REPO.exists()
         else missing_git_status(PUBLIC_REPO, "public"),
@@ -823,7 +841,12 @@ def markdown(data: dict[str, Any]) -> str:
         "| area | state |",
         "| --- | --- |",
         f"| private workflow repo | clean={md_bool(homelab.get('clean'))}, backed_up={md_bool(homelab.get('remote_matches'))}, head=`{homelab.get('head_short', '')}` |",
-        f"| private workflow remote | `{homelab.get('remote_url', '') or 'none'}`; github={md_bool(homelab.get('remote_is_github'))} |",
+        f"| private workflow origin | `{homelab.get('remote_url', '') or 'none'}` |",
+        (
+            f"| private workflow GitHub remote | `{workflow_backup.get('private_github_remote')}` -> "
+            f"`{workflow_backup.get('private_github_remote_url') or 'none'}`; "
+            f"backed_up={md_bool(workflow_backup.get('private_github_backed'))} |"
+        ),
         f"| workflow backup posture | private_github={md_bool(workflow_backup.get('private_github_backed'))}, public_github={md_bool(workflow_backup.get('public_github_backed'))}, public_mirror={md_bool(workflow_backup.get('public_mirror_backed'))} |",
         f"| public kernel repo | clean={md_bool(public_repo.get('clean'))}, github_backed_up={md_bool(public_repo.get('remote_matches') and public_repo.get('remote_is_github'))}, head=`{public_repo.get('head_short', '')}` |",
         f"| public kernel GitHub remote | `{public_repo.get('remote_url', '') or 'none'}` |",
@@ -1066,6 +1089,8 @@ def main() -> int:
         print(f"private_origin_backed={md_bool(backup.get('private_origin_backed'))}")
         print(f"private_github_backed={md_bool(backup.get('private_github_backed'))}")
         print(f"private_remote_url={backup.get('private_remote_url') or 'none'}")
+        print(f"private_github_remote={backup.get('private_github_remote') or 'none'}")
+        print(f"private_github_remote_url={backup.get('private_github_remote_url') or 'none'}")
         print(f"public_github_backed={md_bool(backup.get('public_github_backed'))}")
         print(f"public_mirror_backed={md_bool(backup.get('public_mirror_backed'))}")
         print(f"next_action={backup.get('next_action') or 'none'}")
