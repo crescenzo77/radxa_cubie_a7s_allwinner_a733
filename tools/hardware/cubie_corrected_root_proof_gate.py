@@ -134,6 +134,17 @@ def build_gate(path: Path) -> dict[str, Any]:
     errors = find_errors(text)
     review_markers = find_review_markers(text)
     status, reason = classify(checks, errors)
+    upstream_limitations = []
+    if checks.get("uboot_drm_workaround", {}).get("ok"):
+        upstream_limitations.append(
+            {
+                "key": "uboot_drm_workaround",
+                "summary": (
+                    "drm_debug=1 is a RAM-only vendor U-Boot workaround for proof collection; "
+                    "it is not upstream DTS evidence and must not be encoded in submitted device trees"
+                ),
+            }
+        )
     return {
         "status": status,
         "reason": reason,
@@ -142,6 +153,7 @@ def build_gate(path: Path) -> dict[str, Any]:
         "checks": checks,
         "errors": errors,
         "review_markers": review_markers,
+        "upstream_limitations": upstream_limitations,
         "human_required": status != "pass",
     }
 
@@ -166,6 +178,13 @@ def markdown(data: dict[str, Any]) -> str:
     for key, value in data["errors"].items():
         excerpt = str(value.get("excerpt") or "").replace("|", "/")
         lines.append(f"| `{key}` | `{value['present']}` | {excerpt or '-'} |")
+    lines.extend(["", "## Upstream Limitations", ""])
+    limitations = data.get("upstream_limitations") or []
+    if limitations:
+        for limitation in limitations:
+            lines.append(f"- `{limitation.get('key')}`: {limitation.get('summary')}")
+    else:
+        lines.append("None found.")
     lines.extend(["", "## Review Markers", ""])
     markers = data.get("review_markers") or []
     if markers:

@@ -47,6 +47,12 @@ Kernel panic - not syncing: VFS: Unable to mount root fs
 LOG
 
 "${gate}" "${pass_log}" --strict >/dev/null
+"${gate}" "${pass_log}" >"${tmpdir}/pass.out"
+if ! grep -q 'not upstream DTS evidence' "${tmpdir}/pass.out"; then
+  printf 'passing proof report did not mark drm_debug as lab-only\n' >&2
+  cat "${tmpdir}/pass.out" >&2
+  exit 1
+fi
 
 if "${gate}" "${missing_gic_log}" --strict >"${tmpdir}/missing-gic.out" 2>&1; then
   printf 'expected missing GIC CPU7 redistributor proof to fail\n' >&2
