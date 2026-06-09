@@ -1,5 +1,20 @@
 # Agent Status
 
+## 2026-06-09 operator brief includes blockers
+
+- Updated `scripts/cubie-corrected-root-operator-brief` to include the current
+  `scripts/kernel-workflow-status --maintainer-ready-blockers` output.
+- The brief now shows why the live action remains the corrected-root runtime
+  proof: workflow health is not strict-clean, Cubie runtime proof is
+  `root-install-required`, and the A733 export shape is still the blocked
+  9-patch scaffolding series.
+- Validation: `bash -n scripts/cubie-corrected-root-operator-brief` and
+  `scripts/cubie-corrected-root-operator-brief` rendering the blocker list,
+  Cubie3 target, corrected-root menu label, RAM-only `drm_debug=1` step, and
+  proof gates.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 maintainer operator brief shell
 
 - Added `scripts/kernel-workflow-status --maintainer-operator-brief-shell` so

@@ -4,6 +4,7 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 next_action="$("${repo_root}/scripts/kernel-workflow-status" --maintainer-next-action)"
+blockers="$("${repo_root}/scripts/kernel-workflow-status" --maintainer-ready-blockers)"
 
 cat <<BRIEF
 # Cubie Corrected-Root Operator Brief
@@ -12,6 +13,12 @@ Maintainer-path next action:
 
 \`\`\`sh
 ${next_action}
+\`\`\`
+
+Current maintainer-readiness blockers:
+
+\`\`\`text
+${blockers}
 \`\`\`
 
 Read-only install/session preflight:
