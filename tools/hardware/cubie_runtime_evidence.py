@@ -235,7 +235,7 @@ def next_safe_action(staging: dict[str, Any], inventory: dict[str, Any]) -> str:
         label = row.get("extlinux_menu_label") or row.get("extlinux_label") or "the staged non-default label"
         bootargs = row.get("extlinux_append_override") or row.get("extlinux_extra_args") or "none"
         return (
-            f"Run `scripts/cubie-manual-boot-session 180 {md_escape(capture)}`, "
+            f"Run `scripts/cubie-uart-interactive-boot-session {md_escape(capture)}`, "
             f"then manually reboot/reset Cubie3 and select `{md_escape(label)}` "
             f"over UART after `setenv drm_debug 1; run bootcmd`. Expected "
             f"bootargs: `{md_escape(bootargs)}`."
@@ -263,7 +263,7 @@ def next_safe_action(staging: dict[str, Any], inventory: dict[str, Any]) -> str:
         return (
             f"On `{md_escape(host)}` `{md_escape(ip)}`, run "
             f"`cd {md_escape(stage)}` then `sudo ./install-extlinux-entry.sh`. "
-            f"After that, run `scripts/cubie-manual-boot-session 180 {md_escape(capture)}` "
+            f"After that, run `scripts/cubie-uart-interactive-boot-session {md_escape(capture)}` "
             f"and run `setenv drm_debug 1; run bootcmd`, then select "
             f"`{md_escape(label)}` over UART. Expected bootargs: "
             f"`{md_escape(bootargs)}`.{excluded_note}"

@@ -225,7 +225,7 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
         return (
             "run the staged install-extlinux-entry.sh"
             f"{sudo_hint}"
-            f"{target_hint}, then run scripts/cubie-manual-boot-session 180 "
+            f"{target_hint}, then run scripts/cubie-uart-interactive-boot-session "
             f"{capture_label}{label_hint}"
         )
     if status == "boot-artifact-staging-required":

@@ -241,6 +241,11 @@ ssh -tt -o BatchMode=no -o ConnectTimeout=8 -i /Users/enzo/.ssh/id_ed25519 radxa
 /Users/enzo/projects/homelab/scripts/cubie-root-install-handoff --wait 90 --interval 5.0 --run-capture
 ```
 
+`--run-capture` now opens the interactive UART boot session, not the passive
+two-port capture window. That is required for the corrected-root proof because
+the operator must enter `setenv drm_debug 1`, run `bootcmd`, and select the
+non-default U-Boot menu label.
+
 For the boot proof, keep the UART session on Strix:
 
 ```sh
@@ -305,13 +310,13 @@ copy, updates extlinux, and runs `sync` before reporting success.
 Use `scripts/cubie-root-install-handoff` to print the current root-install
 handoff from verified staging state. It is read-only and reports the exact
 sudo/root install command, whether non-interactive sudo is available, and the
-post-install UART capture command. With `--strict`, it returns non-zero until
-the installed boot files and checksums are detected.
+post-install interactive UART boot command. With `--strict`, it returns
+non-zero until the installed boot files and checksums are detected.
 
 If Codex should wait while the human performs the root install, run
 `scripts/cubie-root-install-handoff --wait 600 --run-capture`. It polls for the
-installed/checksummed boot entry and starts the UART capture session only after
-that gate passes. It does not reboot or power-cycle the board.
+installed/checksummed boot entry and starts the interactive UART boot session
+only after that gate passes. It does not reboot or power-cycle the board.
 
 After the root install is already complete, prefer
 `scripts/cubie-uart-interactive-boot-session` for Cubie3. It opens `picocom` on

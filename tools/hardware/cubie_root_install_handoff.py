@@ -58,7 +58,7 @@ def capture_label(row: dict[str, Any]) -> str:
 
 def capture_command(row: dict[str, Any]) -> str:
     capture = capture_label(row)
-    return f"scripts/cubie-manual-boot-session 180 {shlex.quote(capture)}"
+    return f"scripts/cubie-uart-interactive-boot-session {shlex.quote(capture)}"
 
 
 def interactive_install_command(row: dict[str, Any]) -> str:
@@ -81,8 +81,7 @@ def strix_interactive_install_command(row: dict[str, Any]) -> str:
 
 def capture_argv(row: dict[str, Any]) -> list[str]:
     return [
-        str(REPO_ROOT / "scripts" / "cubie-manual-boot-session"),
-        "180",
+        str(REPO_ROOT / "scripts" / "cubie-uart-interactive-boot-session"),
         capture_label(row),
     ]
 
@@ -226,7 +225,7 @@ def main() -> int:
     parser.add_argument(
         "--run-capture",
         action="store_true",
-        help="After installed artifacts are verified, run the UART capture session. This does not reboot or power-cycle.",
+        help="After installed artifacts are verified, run the interactive UART boot session. This does not reboot or power-cycle.",
     )
     args = parser.parse_args()
 

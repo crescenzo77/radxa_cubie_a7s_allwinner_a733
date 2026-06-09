@@ -284,6 +284,7 @@ def main() -> int:
         print(f"required_confirmation=--confirm-target-ip {row.get('ip')}")
     print(f"install_command={shell_join(install_cmd)}")
     if not args.no_capture:
+        print("post_install_mode=interactive-uart-boot")
         print(f"post_install_command={shell_join(capture_cmd)}")
 
     if args.dry_run:
