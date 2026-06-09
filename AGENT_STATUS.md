@@ -1,5 +1,19 @@
 # Agent Status
 
+## 2026-06-09 idle review ledger consumed
+
+- Backfilled the ignored idle-review ledger from existing review-matrix cards.
+- Consumed the two relevant A733 advisory cards:
+  `a733-corrected-root-proof-handoff-review-20260609.md` and
+  `a733-maintainer-readiness-blockers-20260609.md`.
+- Both cards reinforce the current guardrails: do not reshape/send patches
+  before corrected-root runtime proof, and keep the next action on the
+  interactive Cubie proof session.
+- Ledger status now reports `backfillable_missing_or_stale=0`,
+  `unconsumed_reviewed=0`, and `idle_review_candidates=0`.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 goal completion audit
 
 - Added `scripts/kernel-workflow-status --goal-completion-audit` to prevent
