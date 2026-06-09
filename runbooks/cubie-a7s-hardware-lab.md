@@ -189,13 +189,13 @@ proves the selected mainline boot. Use `--json` for machine-readable output,
 and use `--strict` only when a non-zero exit should stop an automation until
 runtime proof is ready.
 
-## Current Cubie3 Root-Install Handoff
+## Current Cubie3 Runtime Proof
 
 Current status as of the latest generated runtime proof bundle:
 
 - bundle:
-  `task-packets/kernel/runtime-proof/cubie-runtime-proof-20260606T190204771023Z`
-- runtime gate: `boot-selection-required`
+  `task-packets/kernel/runtime-proof/cubie-runtime-proof-20260609T173735985692Z`
+- runtime gate: `runtime-ready`
 - target: `cubie-3` at `192.168.50.95`
 - stage:
   `kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609`
@@ -205,11 +205,19 @@ Current status as of the latest generated runtime proof bundle:
   `console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel drm_debug=1 root=PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e rootfstype=ext4 rootwait ro rootflags=noload init=/bin/sh`
 - sudo status: `noninteractive-ok` via the Cubie `codex` automation user
 - UART preflight: `ok` on Strix `192.168.50.11`
+- proof log:
+  `tools/hardware-logs/cubie-uart/20260609T172722Z-a733-v4-abc8d07b0a63-partuuid-ro-proof-ttyUSB0.uart.log`
+- proof gate: `scripts/cubie-latest-corrected-root-proof --strict` passes
 - excluded kernel-work target remains `192.168.50.65`
 
 Execution host rule: Codex Desktop on the Mac is the cockpit only. Dispatch
 the live root-install, UART, and U-Boot-selection session to Strix because
 Strix owns the Cubie USB serial adapters.
+
+The current maintainer-path blocker is no longer live Cubie boot proof. The
+next technical step is to reshape the public export into the narrow
+maintainer-facing A733 board-binding/SoC-DTSI/board-DTS series, while preserving
+the guardrail that the current 9-patch tree is only local scaffolding.
 
 First run the read-only A733 preflight. It checks the dispatcher/offload lanes,
 backup posture, dirty workflow state, UART readiness, and Cubie root-install

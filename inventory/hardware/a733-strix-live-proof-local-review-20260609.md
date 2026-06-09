@@ -69,20 +69,19 @@ Action taken:
 - The Cubie `codex` automation user now passes Strix-to-Cubie2 and
   Strix-to-Cubie3 SSH plus `sudo -n true`; Cubie3's corrected-root extlinux
   entry is installed and checksum-verified.
+- The Strix live UART proof for
+  `a733-v4-abc8d07b0a63-partuuid-ro-proof` was captured at
+  `tools/hardware-logs/cubie-uart/20260609T172722Z-a733-v4-abc8d07b0a63-partuuid-ro-proof-ttyUSB0.uart.log`
+  and passes `scripts/cubie-latest-corrected-root-proof --strict`.
 
 ## Remaining Blocker
 
-The actual maintainer-path blocker is unchanged:
+The actual maintainer-path blocker has advanced:
 
 ```text
-exact v4 Cubie runtime proof is boot-selection-required
-```
-
-Next live action remains:
-
-```sh
-ssh -tt enzo@192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95'
+A733 export shape is not maintainer-ready: too-many-patches, local CCU/pinctrl scaffolding, standalone MMC compatible, MAINTAINERS sun60i pattern, missing Depends-on headers
 ```
 
 Do not reshape the public patch export, draft maintainer-facing mail, or claim
-runtime proof until the corrected-root UART proof passes the strict gate.
+runtime proof beyond the captured evidence without preserving the strict gate
+result and the upstream guardrails.

@@ -6,7 +6,7 @@ addresses, or local workflow notes into upstream kernel submission material.
 ## Current Maintainer-Path Next Action
 
 ```sh
-ssh -tt enzo@192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95'
+after corrected-root runtime proof, reshape the public export to the narrow A733 board-binding/SoC-DTSI/board-DTS series before patch-prep validation
 ```
 
 Codex Desktop on the Mac is only the dispatcher. The live root-install, UART,
@@ -17,7 +17,6 @@ adapters.
 
 ```text
 private workflow repo is dirty
-cubie runtime proof is boot-selection-required
 A733 export shape is not maintainer-ready: too-many-patches, local-ccu-binding, local-ccu-driver, local-pinctrl-binding, local-pinctrl-driver, standalone-mmc-compatible, maintainers-sun60i-pattern, missing-depends-on, missing-depends-on
 ```
 
@@ -51,6 +50,20 @@ uart_preflight_status=ok
 uart_preflight_host=192.168.50.11
 status=boot-selection-required
 ```
+
+## Runtime Proof Result
+
+```text
+runtime_gate=runtime-ready
+proof_log=tools/hardware-logs/cubie-uart/20260609T172722Z-a733-v4-abc8d07b0a63-partuuid-ro-proof-ttyUSB0.uart.log
+proof_bundle=task-packets/kernel/runtime-proof/cubie-runtime-proof-20260609T173735985692Z
+proof_gate=scripts/cubie-latest-corrected-root-proof --strict PASS
+```
+
+The proof shows the exact v4 Image and DTB loading, RAM-only `drm_debug=1`,
+Linux `7.1.0-rc6-gabc8d07b0a63`, `Machine model: Radxa Cubie A7S`, 8 CPUs,
+GICv3 redistributors, A733 pinctrl/UART0, `sunxi-mmc 4020000.mmc`, `mmcblk0: p1
+p2 p3`, and read-only `mmcblk0p3` root mount via the corrected PARTUUID.
 
 The corrected-root proof label append line is:
 

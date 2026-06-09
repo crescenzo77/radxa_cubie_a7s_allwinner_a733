@@ -159,6 +159,19 @@ run bootcmd
 
 and select `a733-v4-abc8d07b0a63-partuuid-ro-proof`.
 
+## Proof Result
+
+The corrected-root UART proof was captured on Strix and copied back to the Mac
+repo:
+
+```text
+tools/hardware-logs/cubie-uart/20260609T172722Z-a733-v4-abc8d07b0a63-partuuid-ro-proof-ttyUSB0.uart.log
+```
+
+`scripts/cubie-latest-corrected-root-proof --strict` passes. The runtime gate is
+now `runtime-ready`; the next blocker is reshaping the public A733 export, not
+further boot/root proof.
+
 ## Expected Pass Evidence
 
 Capture a UART log that shows:

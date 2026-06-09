@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cubie_network_status
 import cubie_boot_staging_status
 import cubie_event_log
+import cubie_runtime_gate
 import cubie_uart_map_candidates
 import cubie_uart_report
 
@@ -120,12 +121,44 @@ def excluded_rows(inventory: dict[str, Any]) -> list[str]:
     return rows
 
 
-def evidence_status(captures: list[dict[str, Any]], net: dict[str, Any]) -> tuple[str, list[str]]:
+def runtime_gate_args(
+    inventory_path: Path,
+    log_dir: Path,
+    event_log: Path,
+    network_timeout: float,
+    port: int,
+) -> SimpleNamespace:
+    return SimpleNamespace(
+        inventory=str(inventory_path),
+        log_dir=str(log_dir),
+        event_log=str(event_log),
+        network_timeout=network_timeout,
+        port=port,
+        skip_network=False,
+        skip_staging=False,
+        staging_targets=",".join(cubie_boot_staging_status.DEFAULT_TARGETS),
+        staging_stage=cubie_boot_staging_status.DEFAULT_STAGE,
+        staging_user=cubie_boot_staging_status.DEFAULT_USER,
+        staging_identity=cubie_boot_staging_status.DEFAULT_IDENTITY,
+        staging_timeout=cubie_boot_staging_status.DEFAULT_TIMEOUT,
+    )
+
+
+def evidence_status(captures: list[dict[str, Any]], net: dict[str, Any], gate: dict[str, Any] | None = None) -> tuple[str, list[str]]:
     non_empty = [item for item in captures if (item.get("local_bytes") or 0) > 0]
     marker_hits = [item for item in captures if item.get("markers")]
     ssh_open = [item for item in net.get("results", []) if item.get("tcp_status") == "open"]
     notes = []
-    if non_empty:
+    if gate and gate.get("status") == "runtime-ready":
+        status = "runtime-ready"
+        proof = gate.get("corrected_root_proof") or {}
+        notes.append(
+            "Exact corrected-root UART proof gate passed for "
+            f"{proof.get('label') or 'the installed label'}."
+        )
+        if proof.get("log_path"):
+            notes.append(f"Proof log: {proof.get('log_path')}.")
+    elif non_empty:
         status = "uart-data-present-runtime-proof-unproven"
         notes.append(
             f"{len(non_empty)} UART capture(s) contain data, but this does not "
@@ -311,7 +344,10 @@ def build_packet(
     net = cubie_network_status.check_boards(boards, network_timeout, port)
     captures = cubie_uart_report.load_captures(log_dir)
     events = latest_events(event_log)
-    status, notes = evidence_status(captures, net)
+    gate = cubie_runtime_gate.build_gate(
+        runtime_gate_args(inventory_path, log_dir, event_log, network_timeout, port)
+    )
+    status, notes = evidence_status(captures, net, gate)
     non_empty = [item for item in captures if (item.get("local_bytes") or 0) > 0]
     mapping = mapping_candidate_summary(inventory, inventory_path, log_dir, event_log)
     staging = boot_staging_status()

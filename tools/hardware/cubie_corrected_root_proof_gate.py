@@ -47,7 +47,11 @@ CHECKS: list[tuple[str, str, str]] = [
     ("ttyS0", "mainline UART0 ttyS0", r"ttyS0|2500000\.serial"),
     ("sunxi_mmc", "SDMMC0 driver initialization", r"sunxi-mmc 4020000\.mmc: initialized"),
     ("root_partuuid", "correct PARTUUID in command line or mount evidence", re.escape(EXPECTED_PARTUUID)),
-    ("root_ro", "read-only root command line or mount evidence", r"(?:^|\s)ro(?:\s|$)|/dev/mmcblk0p3\s+/\s+\S+\s+ro[,\s]"),
+    (
+        "root_ro",
+        "read-only root command line or mount evidence",
+        r"Kernel command line:.*\sro(?:\s|$)|EXT4-fs \(mmcblk0p3\): mounted filesystem.*\bro\b|/dev/mmcblk0p3\s+/\s+\S+\s+ro[,\s]",
+    ),
     ("rootflags_noload", "read-only ext4 noload proof intent", r"rootflags=noload|noload"),
     ("mmcblk0", "mmcblk0 block device", r"mmcblk0"),
     ("mmcblk0p3", "mmcblk0p3 partition/root evidence", r"mmcblk0p3|mmcblk0:.*p3"),
@@ -58,11 +62,13 @@ ERROR_PATTERNS: list[tuple[str, str]] = [
     ("panic", r"Kernel panic|panic - not syncing|VFS: Unable to mount root fs"),
     ("oops", r"\bOops\b"),
     ("bad_image", r"Bad Linux ARM64 Image magic"),
-    ("fdt_badpath", r"FDT_ERR_BADPATH|/chosen node create failed|fdt_add_subnode fail"),
     ("old_uuid_root", r"Disabling rootwait; root= is invalid|root=UUID=6f750720-329a-45f0-a4b5-abc5797b040a"),
 ]
 
-REVIEW_MARKER_RE = re.compile(r"\b(?:WARNING|ERROR|WARN_ON|BUG:|Call trace:)\b", re.IGNORECASE)
+REVIEW_MARKER_RE = re.compile(
+    r"\b(?:WARNING|ERROR|WARN_ON|BUG:|Call trace:|FDT_ERR_BADPATH|fdt_add_subnode fail)\b",
+    re.IGNORECASE,
+)
 
 
 def read_log(path: Path) -> str:

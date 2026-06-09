@@ -7,6 +7,7 @@ next_action="$("${repo_root}/scripts/kernel-workflow-status" --maintainer-next-a
 blockers="$("${repo_root}/scripts/kernel-workflow-status" --maintainer-ready-blockers)"
 backup_status="$("${repo_root}/scripts/kernel-workflow-status" --workflow-backup-status)"
 waiting_actions="$("${repo_root}/scripts/kernel-workflow-status" --dispatcher-waiting-actions)"
+runtime_status="$("${repo_root}/scripts/cubie-runtime-gate" --json | python3 -c 'import json,sys; d=json.load(sys.stdin); p=d.get("corrected_root_proof") or {}; print("runtime_status={}".format(d.get("status") or "unknown")); print("runtime_reason={}".format(d.get("reason") or "unknown")); print("proof_status={}".format(p.get("status") or "unknown")); print("proof_log={}".format(p.get("log_path") or "none"))')"
 
 cat <<BRIEF
 # Cubie Corrected-Root Operator Brief
@@ -43,7 +44,13 @@ Safe dispatcher actions while waiting:
 ${waiting_actions}
 \`\`\`
 
-Read-only install/session preflight:
+Runtime proof status:
+
+\`\`\`text
+${runtime_status}
+\`\`\`
+
+Read-only install/session preflight for re-runs:
 
 \`\`\`text
 BRIEF
@@ -55,7 +62,7 @@ BRIEF
 cat <<'BRIEF'
 ```
 
-Live U-Boot step, RAM only:
+If re-running the live proof, use this U-Boot step, RAM only:
 
 ```text
 setenv drm_debug 1

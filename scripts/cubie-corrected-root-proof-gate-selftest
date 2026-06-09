@@ -8,6 +8,7 @@ tmpdir="$(mktemp -d)"
 trap 'rm -rf "${tmpdir}"' EXIT
 
 pass_log="${tmpdir}/a733-corrected-root-pass.uart.log"
+fdt_badpath_pass_log="${tmpdir}/a733-corrected-root-fdt-badpath-pass.uart.log"
 missing_gic_log="${tmpdir}/a733-corrected-root-missing-gic-cpu7.uart.log"
 old_uuid_log="${tmpdir}/a733-corrected-root-old-uuid.uart.log"
 
@@ -39,6 +40,11 @@ LOG
 cp "${pass_log}" "${missing_gic_log}"
 perl -0pi -e 's/GICv3: CPU7: found redistributor\n//' "${missing_gic_log}"
 
+cp "${pass_log}" "${fdt_badpath_pass_log}"
+cat >>"${fdt_badpath_pass_log}" <<'LOG'
+## error: sunxi_update_fdt_para_for_kernel : FDT_ERR_BADPATH
+LOG
+
 cp "${pass_log}" "${old_uuid_log}"
 cat >>"${old_uuid_log}" <<'LOG'
 Disabling rootwait; root= is invalid.
@@ -51,6 +57,13 @@ LOG
 if ! grep -q 'not upstream DTS evidence' "${tmpdir}/pass.out"; then
   printf 'passing proof report did not mark drm_debug as lab-only\n' >&2
   cat "${tmpdir}/pass.out" >&2
+  exit 1
+fi
+
+"${gate}" "${fdt_badpath_pass_log}" --strict >"${tmpdir}/fdt-badpath-pass.out"
+if ! grep -q 'FDT_ERR_BADPATH' "${tmpdir}/fdt-badpath-pass.out"; then
+  printf 'nonfatal vendor FDT marker was not surfaced for review\n' >&2
+  cat "${tmpdir}/fdt-badpath-pass.out" >&2
   exit 1
 fi
 

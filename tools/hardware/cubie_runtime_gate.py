@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import cubie_event_log
 import cubie_boot_staging_status
+import cubie_corrected_root_proof_gate
 import cubie_network_status
 import cubie_uart_map_candidates
 import cubie_uart_report
@@ -187,6 +188,45 @@ def capture_label_for(stage: str, rows: list[dict[str, Any]]) -> str:
     return f"{Path(stage).name}-boot" if stage else "cubie-manual-boot"
 
 
+def capture_log_path(capture: dict[str, Any]) -> Path:
+    path = Path(str(capture.get("log_path") or ""))
+    if path.is_absolute():
+        return path
+    return REPO_ROOT / path
+
+
+def exact_corrected_root_proof(staging: dict[str, Any], captures: list[dict[str, Any]]) -> dict[str, Any]:
+    labels = installed_capture_labels(staging)
+    if not labels:
+        return {"status": "not-applicable", "labels": []}
+    matches = [
+        item
+        for item in captures
+        if item.get("label") in labels and (item.get("local_bytes") or 0) > 0
+    ]
+    if not matches:
+        return {"status": "missing", "labels": sorted(labels)}
+    matches.sort(key=lambda item: str(item.get("captured_at_utc") or item.get("log_path") or ""))
+    latest = matches[-1]
+    path = capture_log_path(latest)
+    try:
+        proof = cubie_corrected_root_proof_gate.build_gate(path)
+    except OSError as exc:
+        return {
+            "status": "error",
+            "labels": sorted(labels),
+            "log_path": str(path),
+            "reason": str(exc),
+        }
+    return {
+        "status": proof.get("status"),
+        "labels": sorted(labels),
+        "label": latest.get("label"),
+        "log_path": str(path),
+        "reason": proof.get("reason"),
+    }
+
+
 def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
     if status == "inventory-invalid":
         return "fix the Cubie hardware inventory before relying on runtime evidence"
@@ -267,9 +307,19 @@ def build_gate(args: argparse.Namespace) -> dict[str, Any]:
     mapping = mapping_summary(inventory, inventory_path, log_dir, event_log)
     network = network_summary(inventory_path, args.network_timeout, args.port, args.skip_network)
     staging = staging_summary(args)
+    corrected_root_proof = exact_corrected_root_proof(staging, captures)
     if inventory.get("inventory_error") or inventory.get("inventory_missing"):
         status = "inventory-invalid"
         reason = str(inventory.get("inventory_error") or inventory.get("inventory_missing"))
+    elif corrected_root_proof.get("status") == "pass":
+        status = "runtime-ready"
+        reason = f"corrected-root proof gate passed for {corrected_root_proof.get('label')}"
+    elif corrected_root_proof.get("status") in {"fail", "incomplete", "error"}:
+        status = "runtime-log-needs-triage"
+        reason = (
+            f"corrected-root proof gate {corrected_root_proof.get('status')}: "
+            f"{corrected_root_proof.get('reason')}"
+        )
     else:
         status, reason = classify(captures, mapping)
         status, reason = refine_status(status, reason, staging, captures)
@@ -287,6 +337,7 @@ def build_gate(args: argparse.Namespace) -> dict[str, Any]:
         "inventory_missing": inventory.get("inventory_missing", ""),
         "log_dir": str(log_dir),
         "event_log": str(event_log),
+        "corrected_root_proof": corrected_root_proof,
         "captures": {
             "total": len(captures),
             "non_empty": len(non_empty),
