@@ -107,6 +107,13 @@ Check all local offload lanes:
 scripts/kernel-token-offload status
 ```
 
+Check the structured dispatcher contract for the three model lanes plus
+Qdrant:
+
+```sh
+scripts/kernel-offload-status-smoke
+```
+
 Search existing evidence before planning a patch:
 
 ```sh
