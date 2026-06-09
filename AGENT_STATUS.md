@@ -1,5 +1,23 @@
 # Agent Status
 
+## 2026-06-09 Cubie maintainer next-action dry-run
+
+- Ran read-only preflight:
+  `scripts/cubie-interactive-root-install-session --confirm-target-ip
+  192.168.50.95 --dry-run`.
+- Dry-run selected `cubie-3` at `192.168.50.95`, stage
+  `kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609`, label
+  `a733-v4-abc8d07b0a63-partuuid-ro-proof`, and visible menu label
+  `A733 v4 abc8d07b0a63 PARTUUID ro proof`.
+- Corrected-root append was present with `root=PARTUUID=...`,
+  `rootfstype=ext4`, `rootwait`, `ro`, `rootflags=noload`, and
+  `init=/bin/sh`.
+- UART preflight passed on Strix `192.168.50.11` with the confirmed by-path
+  adapter list. Sudo remains `password-required`, so the live step must stay
+  interactive.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 maintainer next-action command
 
 - Added `scripts/kernel-workflow-status --maintainer-next-action`, which
