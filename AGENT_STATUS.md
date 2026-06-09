@@ -1,5 +1,33 @@
 # Agent Status
 
+## 2026-06-09 corrected-root review and PARTUUID proof
+
+- Ran a three-lane local review matrix for
+  `task-packets/kernel/reviews/a733-corrected-root-proof-handoff-review-20260609.md`.
+- Ignored review artifact hashes:
+  - request packet:
+    `e1ac460e11689959794ef0e194fd06f404e715e696e0757b2af489de0a1e01b5`
+  - matrix markdown:
+    `1debe6bf276487e7abe3887970f13438dc952c9f1fe95754558e6df2cec7b837`
+  - matrix manifest:
+    `274e6175b3ce0462bec8966b6bebf8f9acacaa5ac99c3b93e887823404d16485`
+- Review consensus: guardrails are preserved and the corrected-root handoff is
+  maintainer-safe in shape, but AMD research identified one actionable
+  pre-install evidence gap: verify the `PARTUUID` on Cubie3 before sudo install.
+- Verified read-only over SSH that Cubie3 `/` is `/dev/mmcblk0p3` ext4 with
+  filesystem UUID `6f750720-329a-45f0-a4b5-abc5797b040a` and
+  `PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e`.
+- `/dev/disk/by-partuuid/db375e07-7682-4d4e-b8bc-a923dd0b027e` resolves to
+  `../../mmcblk0p3`.
+- Updated the corrected-root proof plan with the verified partition evidence.
+- Added
+  `inventory/hardware/a733-upstream-minimal-series-strategy-20260609.md` to
+  record that the local 9-patch export should not be sent as-is; after runtime
+  proof, the expected sendable shape is a smaller SoC DTSI plus Cubie A7S board
+  DTS series stacked on the active/current CCU and pinctrl prerequisites.
+- No `/boot` files were changed, no reboot was requested, and no runtime proof
+  was claimed.
+
 ## 2026-06-09 workflow backup visibility
 
 - Updated `scripts/kernel-workflow-status` JSON and markdown output to include

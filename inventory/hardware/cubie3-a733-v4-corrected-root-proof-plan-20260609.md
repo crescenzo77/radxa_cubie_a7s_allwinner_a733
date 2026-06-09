@@ -121,6 +121,20 @@ That status currently reports `ready_for_root_install: true`,
 and `sudo_status: password-required`. No `/boot` files were changed while
 staging this installer.
 
+The planned `PARTUUID` was verified read-only on Cubie3 before installing the
+label:
+
+```text
+hostname: cubie-3
+/proc/cmdline root: UUID=6f750720-329a-45f0-a4b5-abc5797b040a
+findmnt /: /dev/mmcblk0p3 ext4 rw,relatime
+lsblk: mmcblk0p3 ext4 rootfs UUID=6f750720-329a-45f0-a4b5-abc5797b040a PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e MOUNTPOINT=/
+/dev/disk/by-partuuid/db375e07-7682-4d4e-b8bc-a923dd0b027e -> ../../mmcblk0p3
+```
+
+This closes the pre-install review risk that the corrected proof label might
+point at the wrong partition.
+
 The next operator action is:
 
 ```sh

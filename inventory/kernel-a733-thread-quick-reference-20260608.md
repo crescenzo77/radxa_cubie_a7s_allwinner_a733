@@ -198,6 +198,12 @@ Policy:
 - Expected sendable direction is a smaller DTS/board enablement series stacked
   on accepted or current CCU/PRCM and pinctrl prerequisites, unless maintainers
   request a different dependency plan.
+- Current private strategy note:
+  `inventory/hardware/a733-upstream-minimal-series-strategy-20260609.md`.
+  It records that the local 9-patch v4 export should not be sent as-is; the
+  expected sendable shape after runtime proof is a smaller SoC DTSI plus Cubie
+  A7S board DTS series with explicit dependency handling for Junhui Liu's
+  CCU/PRCM RFC and Andre Przywara's pinctrl RFC.
 
 ## Subsystem Guardrails
 
