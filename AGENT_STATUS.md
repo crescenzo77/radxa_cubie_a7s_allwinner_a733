@@ -1,5 +1,18 @@
 # Agent Status
 
+## 2026-06-09 corrected-root exact load gate tightened
+
+- Updated `scripts/cubie-corrected-root-proof-gate` to require separate U-Boot
+  evidence for exact v4 Image load, exact v4 DTB load, and the RAM-only
+  `drm_debug` workaround.
+- This prevents a capture with only one retrieved boot artifact, or a
+  mid-kernel fragment plus `drm_debug`, from counting as the full
+  corrected-root proof.
+- Updated the corrected-root proof plan and Cubie hardware runbook to align
+  the operator checklist with the deterministic gate.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 corrected-root read-only gate tightened
 
 - Updated `scripts/cubie-corrected-root-proof-gate` to require explicit

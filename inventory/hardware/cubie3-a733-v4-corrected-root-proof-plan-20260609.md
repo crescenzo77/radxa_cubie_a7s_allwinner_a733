@@ -165,8 +165,9 @@ Capture a UART log that shows:
 - the exact v4 Image and `sun60i-a733-cubie-a7s.dtb` being loaded
 - U-Boot prints `drm debug mode: 1` or otherwise proceeds past the previous
   FDT creation hang
-- the deterministic proof gate can see U-Boot handoff/load evidence, not only
-  a mid-kernel log fragment
+- the deterministic proof gate can see exact Image load, exact DTB load, and
+  U-Boot RAM `drm_debug` workaround evidence, not only a mid-kernel log
+  fragment
 - `Linux version 7.1.0-rc6-gabc8d07b0a63`
 - `Machine model: Radxa Cubie A7S`
 - all 8 CPUs booted

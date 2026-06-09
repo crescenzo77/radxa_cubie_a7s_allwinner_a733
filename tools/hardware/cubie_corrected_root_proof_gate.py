@@ -17,9 +17,19 @@ EXPECTED_PARTUUID = "db375e07-7682-4d4e-b8bc-a923dd0b027e"
 
 CHECKS: list[tuple[str, str, str]] = [
     (
-        "uboot_handoff",
-        "U-Boot handoff/load evidence",
-        r"drm debug mode:\s*1|Retrieving file: /boot/mainline-a733-v4-abc8d07b0a63/(?:Image|sun60i-a733-cubie-a7s\.dtb)",
+        "uboot_image_load",
+        "U-Boot loaded exact v4 Image",
+        r"Retrieving file: /boot/mainline-a733-v4-abc8d07b0a63/Image",
+    ),
+    (
+        "uboot_dtb_load",
+        "U-Boot loaded exact v4 DTB",
+        r"Retrieving file: /boot/mainline-a733-v4-abc8d07b0a63/sun60i-a733-cubie-a7s\.dtb",
+    ),
+    (
+        "uboot_drm_workaround",
+        "U-Boot RAM drm_debug workaround crossed",
+        r"drm debug mode:\s*1",
     ),
     ("kernel_version", "exact v4 kernel version", re.escape(EXPECTED_KERNEL)),
     ("machine_model", "Radxa Cubie A7S model", re.escape(EXPECTED_MODEL)),
