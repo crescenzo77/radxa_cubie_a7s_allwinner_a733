@@ -74,6 +74,21 @@ The proof must show mainline Linux enumerating `mmcblk0` and partitions,
 including `mmcblk0p3`, or equivalent root-device evidence. The old
 `root=UUID=...` panic is not runtime proof.
 
+## Local Shape Gate
+
+Before any A733 export is treated as maintainer-facing, run:
+
+```sh
+scripts/a733-series-shape-gate /path/to/exported/patches
+```
+
+For the current public `patches/` export this gate must fail, because that
+directory still contains the local 9-patch scaffolding series. A candidate
+sendable export should not pass this gate unless it is shaped as the narrow
+DTS/board slice, includes the two active prerequisite `Depends-on:` IDs, and
+does not include local CCU/PRCM, pinctrl, standalone MMC compatible,
+MAINTAINERS, vendor-U-Boot workaround, or unrelated hardware feature patches.
+
 ## Anti-Goals
 
 - No vendor-DTB pollution: no `arm,sun60iw2p1`, vendor path aliases,

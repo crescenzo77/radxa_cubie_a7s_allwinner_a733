@@ -1,5 +1,21 @@
 # Agent Status
 
+## 2026-06-09 A733 maintainer-shape export gate
+
+- Added `scripts/a733-series-shape-gate`, backed by
+  `tools/validate/a733_series_shape_gate.py`, to prevent the local A733
+  scaffolding export from being mistaken for a maintainer-facing series.
+- The gate fails exported patches that include local A733 CCU/PRCM,
+  pinctrl, standalone MMC-compatible, MAINTAINERS `sun60i`, vendor-U-Boot
+  workaround, hard-coded memory, or unrelated hardware feature work.
+- The gate expects the narrow DTS/board shape and the two current prerequisite
+  `Depends-on:` IDs before a candidate export can pass.
+- Validation: current public `patches/` fails as expected with the 9-patch
+  CCU/pinctrl/MMC/MAINTAINERS findings; a synthetic 2-patch DTS/board export
+  with both dependencies passes.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 dispatcher human-gate status
 
 - Updated `scripts/kernel-workflow-status` output, via
