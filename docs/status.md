@@ -1,40 +1,35 @@
 # Current Status
 
-Last updated: 2026-06-06.
+Last updated: 2026-06-09.
 
-## Draft Review Export
+## Maintainer-Shape Review Export
 
 - Linux fork: `https://github.com/crescenzo77/linux.git`
-- branch: `candidate/a733-platform-clean-v4`
+- previous full-validation branch: `candidate/a733-platform-clean-v4`
 - base: `6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5`
 - base subject: `Merge tag 'for-7.1/dm-fixes-3' of git://git.kernel.org/pub/scm/linux/kernel/git/device-mapper/linux-dm`
-- head: `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
-- head subject: `MAINTAINERS: add Allwinner sun60i pattern`
+- previous full-validation head: `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
+- previous full-validation head subject: `MAINTAINERS: add Allwinner sun60i pattern`
 
 The base commit is reachable from the updated `torvalds/linux` `master` ref
 observed locally at `8e65320d91cdc3b241d4b94855c88459b91abf66`.
 
-This export is a public review snapshot only. It is not a sendable candidate
-series while the CCU/PRCM and pinctrl overlap questions remain unresolved.
+The current `patches/` export is a 3-patch maintainer-shape review snapshot:
+board compatible binding, A733 SoC DTSI, and Cubie A7S board DTS. It is not a
+mailed submission. Before sending, regenerate from a clean kernel branch stacked
+on the current or accepted CCU/PRCM and pinctrl prerequisite work.
 
-The patch files were regenerated from the v4 candidate branch after removing a
-deprecated pinctrl include, removing unused child-bus properties from the GIC
-node, and tightening the RFC dependency language. Before any submission,
-regenerate the series again from the final clean kernel candidate branch and
-rerun validation so the source branch, patch files, and proof records describe
-the same code.
+The earlier 9-patch v4 export remains historical validation evidence only. The
+local CCU/PRCM, pinctrl, standalone MMC binding, and MAINTAINERS scaffolding
+patches are no longer part of the current public review export.
 
 ## Scope
 
-The current public draft export prepares minimal platform support:
+The current public review export prepares a narrow first enablement slice:
 
 - Radxa Cubie A7S board compatible
-- A733 CCU binding and initial driver support
-- A733 pinctrl binding and driver support
-- A733 MMC compatible
 - initial A733 SoC DTSI
 - Cubie A7S DTS with UART0 console and MMC0 storage
-- explicit Allwinner `sun60i` MAINTAINERS pattern
 
 Ethernet is intentionally out of scope. The public series must not claim
 Ethernet support until reset, clocking, wrapper setup, MDIO, PHY reset, PHY
@@ -46,10 +41,12 @@ The current exported series does not contain:
 
 - nonstandard metadata trailers
 - deferred parent IRQ registration or an irq_domain bypass
+- local CCU/PRCM or pinctrl driver patches
+- standalone MMC binding or MAINTAINERS scaffolding patches
 - Ethernet nodes, generic DWMAC fallback enablement, or STMMAC glue changes
 - VPU, Cedrus, media-driver, or VPU clock/DTS changes
 
-Review-blocker cleanup now present in v4:
+Relevant cleanup retained from the v4 validation work:
 
 - new CCU and pinctrl binding maintainer blocks list
   `Enzo Adriano <enzo.adriano.code@gmail.com>`
@@ -62,13 +59,10 @@ Review-blocker cleanup now present in v4:
   nodes
 - the A733 pinctrl draft does not include deprecated `linux/of_device.h`
 
-The draft CCU and pinctrl binding maintainer entries are not a request to own
-or supersede any external prerequisite series. If the final sendable path is
-stacked on accepted or current CCU/PRCM and pinctrl prerequisite work, drop the
-duplicate local binding patches and their draft maintainer entries when
-regenerating the DTS-only series. If a maintainer asks this branch to carry
-binding work, revisit those maintainer entries during final human review before
-submission.
+The duplicate local CCU and pinctrl binding maintainer entries from v4 are no
+longer part of the current export. If a maintainer asks this branch to carry
+binding work after all, revisit those maintainer entries during final human
+review before submission.
 
 Future IRQ, Ethernet, or VPU work is blocked by the workflow rules in
 `docs/mainline-cleanup-workflow.md` until it is split by subsystem, justified
@@ -81,7 +75,7 @@ in commit messages, and validated per patch.
 - Andre Przywara posted an RFC A733 pinctrl series:
   `https://lore.kernel.org/r/20250821004232.8134-1-andre.przywara@arm.com`
 
-Dependency evidence checked on 2026-06-06:
+Dependency evidence rechecked in the private workflow on 2026-06-09:
 
 - CCU/PRCM: public archives show Junhui Liu's 8-patch RFC series,
   `[PATCH RFC 0/8] clk: sunxi-ng: Add support for Allwinner A733 CCU and
@@ -97,9 +91,9 @@ Dependency evidence checked on 2026-06-06:
   compatible in the RFC thread.
   Reference: `https://www.spinics.net/lists/linux-gpio/msg118661.html`
 
-The CCU and pinctrl portions of this series must not be sent upstream until
-they are rebased on, coordinated with, or explicitly justified against that
-in-flight work.
+The current DTS patches carry explicit dependency references for both RFCs.
+The local CCU and pinctrl portions must not be sent upstream while this overlap
+is unresolved unless maintainers ask for that plan.
 
 The expected sendable direction is a smaller SoC DTSI plus Cubie A7S board DTS
 series stacked on accepted or current CCU/PRCM and pinctrl prerequisites,
@@ -115,21 +109,47 @@ Current local review consensus:
 - A733 GMAC remains out of scope until clock/reset identifiers, wrapper setup,
   MDIO, PHY reset, PHY power, and link behavior are proven.
 
-Real upstream-readiness blockers:
+Current upstream-readiness blockers:
 
-- capture a boot/runtime proof on `cubie2` or `cubie3` using the exact kernel
-  image, configuration, command line, and DTB that would support the DTS
-  enablement claim
-- after hardware proof exists, build a DTS-only candidate branch rebased on
-  the accepted or current CCU/PRCM and pinctrl prerequisite work
-- regenerate the patch export from that branch and rerun validation,
-  maintainer, bisectability, and runtime checks
+- build a clean kernel candidate branch rebased on the accepted or current
+  CCU/PRCM and pinctrl prerequisite work
+- regenerate the 3-patch export from that exact branch
+- rerun validation, maintainer, bisectability, and runtime checks against the
+  regenerated export
+- perform final human review of trailers, recipients, and cover-letter claims
 
-## Validation Record
+Runtime proof for the exact v4 Image and DTB has been captured in the private
+workflow and passes its strict corrected-root proof gate. Raw logs and lab
+details remain outside this public repository.
 
-The current v4 patch files have been regenerated from
-`candidate/a733-platform-clean-v4`. The v4 proof IDs below were produced by
-the validation container.
+## Current 3-Patch Validation Record
+
+Checks run on the current maintainer-shape review export:
+
+- series shape gate: pass, exactly three non-cover patches
+- public hygiene gate over tracked public-facing files: pass, no private lab
+  addresses, local paths, local model stack names, or AI/provider metadata
+  found
+- `git diff --check`: pass
+- `git apply --numstat patches/000[1-3]-*.patch`: pass, all exported patch
+  files parse as patches
+- `scripts/get_maintainer.pl --nogit --nogit-fallback --norolestats` over the
+  exported patches: pass, produced the expected Devicetree, Allwinner, ARM,
+  and Linux kernel maintainer/list recipients
+- `scripts/checkpatch.pl --strict --no-tree` over the exported patches:
+  `0 errors`; two reviewed `FILE_PATH_CHANGES` warnings for new DTS files and
+  MAINTAINERS coverage
+
+The MAINTAINERS warnings are intentional review items for this narrow export.
+The earlier local `sun60i` MAINTAINERS scaffolding was dropped because the
+current sendable direction is to stack DTS work on the active CCU/PRCM and
+pinctrl prerequisites rather than expanding platform ownership in this slice.
+
+## Historical v4 Validation Record
+
+The v4 9-patch files were regenerated from `candidate/a733-platform-clean-v4`.
+The proof IDs below describe that historical validation export, not the current
+3-patch maintainer-shape review export.
 
 Current v4 repository hygiene checks run during this cleanup:
 

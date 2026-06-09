@@ -1,85 +1,59 @@
 From abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
-Date: Fri, 5 Jun 2026 23:47:13 -0400
-Subject: [PATCH 0/9] arm64: dts: allwinner: add initial A733/Cubie A7S support
+Date: Tue, 9 Jun 2026 13:47:00 -0400
+Subject: [PATCH 0/3] arm64: dts: allwinner: add A733/Cubie A7S DTS support
 
-Draft-only public review export. Do not send this series upstream as-is.
+Maintainer-shape review export. Do not mail this directory without a final
+human review, regeneration from the exact kernel branch, and current
+maintainer recipient checks.
 
-This series prepares minimal platform bring-up for the Allwinner A733 SoC
-and Radxa Cubie A7S board:
+This series adds initial DTS support for the Allwinner A733 SoC and the Radxa
+Cubie A7S board:
 
 - Radxa Cubie A7S board compatible
-- initial A733 CCU binding and driver
-- A733 pinctrl binding and driver
-- A733 MMC compatible
-- initial A733 SoC DTSI
-- Cubie A7S DTS with UART0 console and MMC0 storage
-- explicit Allwinner sun60i MAINTAINERS pattern
+- initial A733 SoC DTSI with CPUs, timer, GICv3, UART0, and SDMMC0
+- Cubie A7S board DTS enabling UART0 console and SD card boot storage
 
-Ethernet, VPU/Cedrus, display, Wi-Fi, Bluetooth, and other board
-peripherals are intentionally out of scope.
+This export intentionally drops the local CCU/PRCM, pinctrl, standalone MMC
+binding, and MAINTAINERS scaffolding patches from the earlier 9-patch draft.
+Those areas overlap active A733 RFC work and should be coordinated as external
+prerequisites unless maintainers ask for a different plan.
 
-Known blockers before upstream submission:
+Depends-on: 20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech
+Depends-on: 20250821004232.8134-1-andre.przywara@arm.com
 
-- Junhui Liu has posted an RFC A733 CCU/PRCM series:
-  https://lore.kernel.org/r/20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech
-- Andre Przywara has posted an RFC A733 pinctrl series:
-  https://lore.kernel.org/r/20250821004232.8134-1-andre.przywara@arm.com
-- The CCU and pinctrl portions must be rebased on, coordinated with, or
-  explicitly justified against that in-flight work.
-- The expected sendable direction is a smaller board/SoC DTS series stacked
-  on the accepted or current CCU and pinctrl prerequisites, unless subsystem
-  maintainers ask for a different dependency plan.
-- A hardware boot/runtime record is still required for the exact kernel,
-  DTB, board, and command line before runtime claims are made.
-- Final human review must verify all trailers and recipients against current
-  kernel documentation and subsystem expectations.
+Ethernet, VPU/Cedrus, display, Wi-Fi, Bluetooth, USB-C, PCIe, and other board
+peripherals are intentionally out of scope. Vendor U-Boot workarounds used for
+private lab proof collection are not encoded in these device trees.
 
-This export addresses the current public-review cleanup issues by removing
-nonstandard metadata trailers, adding the missing MAINTAINERS pattern,
-using the author's contact in new binding maintainer blocks, adding asymmetric
-CPU capacities, and replacing the irregular GICv3 redistributor size with a
-normal 8-core window.
+The corrected-root Cubie A7S runtime proof has now been captured in the private
+homelab workflow and passes its strict proof gate. The proof shows the exact v4
+Image and DTB loading, Linux 7.1.0-rc6-gabc8d07b0a63, Radxa Cubie A7S machine
+model, 8 CPUs, GICv3 redistributors, A733 pinctrl/UART0, SDMMC0 enumeration,
+mmcblk0 partition discovery, and a read-only mmcblk0p3 root mount via the
+corrected PARTUUID path.
 
-Enzo Adriano (9):
+Open work before mailing:
+
+- regenerate this 3-patch shape from a clean kernel branch stacked on the
+  current or accepted CCU/PRCM and pinctrl prerequisites
+- rerun checkpatch, dt_binding_check, dtbs_check, build, maintainer-recipient,
+  and bisectability checks against that exact branch
+- re-check the A733 CCU/PRCM and pinctrl RFC status before sending
+- perform final human review of trailers, recipients, and cover-letter claims
+
+Enzo Adriano (3):
   dt-bindings: arm: sunxi: add Radxa Cubie A7S
-  dt-bindings: clock: add Allwinner A733 CCU
-  clk: sunxi-ng: add Allwinner A733 CCU support
-  dt-bindings: pinctrl: add Allwinner A733 pin controller
-  pinctrl: sunxi: add Allwinner A733 pin controller
-  dt-bindings: mmc: add Allwinner A733 compatible
   arm64: dts: allwinner: add Allwinner A733 SoC
   arm64: dts: allwinner: add Radxa Cubie A7S
-  MAINTAINERS: add Allwinner sun60i pattern
 
- .../devicetree/bindings/arm/sunxi.yaml        |   5 +
- .../clock/allwinner,sun60i-a733-ccu.yaml      |  58 +++++
- .../bindings/mmc/allwinner,sun4i-a10-mmc.yaml |   3 +
- .../allwinner,sun60i-a733-pinctrl.yaml        | 136 ++++++++++++
- MAINTAINERS                                   |   1 +
- arch/arm64/boot/dts/allwinner/Makefile        |   1 +
- .../dts/allwinner/sun60i-a733-cubie-a7s.dts   |  49 +++++
- .../arm64/boot/dts/allwinner/sun60i-a733.dtsi | 199 ++++++++++++++++++
- drivers/clk/sunxi-ng/Kconfig                  |  11 +
- drivers/clk/sunxi-ng/Makefile                 |   2 +
- drivers/clk/sunxi-ng/ccu-sun60i-a733.c        |  96 +++++++++
- drivers/clk/sunxi-ng/ccu-sun60i-a733.h        |  11 +
- drivers/pinctrl/sunxi/Kconfig                 |  10 +
- drivers/pinctrl/sunxi/Makefile                |   1 +
- drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c   |  53 +++++
- include/dt-bindings/clock/sun60i-a733-ccu.h   |  12 ++
- include/dt-bindings/reset/sun60i-a733-ccu.h   |   9 +
- 17 files changed, 657 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml
- create mode 100644 Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml
+ Documentation/devicetree/bindings/arm/sunxi.yaml        |   5 +
+ arch/arm64/boot/dts/allwinner/Makefile                  |   1 +
+ arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts |  49 ++++
+ arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi          | 199 ++++++++++++++++
+ 4 files changed, 254 insertions(+)
  create mode 100644 arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts
  create mode 100644 arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
- create mode 100644 drivers/clk/sunxi-ng/ccu-sun60i-a733.c
- create mode 100644 drivers/clk/sunxi-ng/ccu-sun60i-a733.h
- create mode 100644 drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c
- create mode 100644 include/dt-bindings/clock/sun60i-a733-ccu.h
- create mode 100644 include/dt-bindings/reset/sun60i-a733-ccu.h
-
 
 base-commit: 6f3ed7fec72fc8979b2a8c7219c0a9fcfc8d07b5
 --

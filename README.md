@@ -13,41 +13,38 @@ answer three questions:
 Local lab automation, raw model output, generated kernels, DTBs, UART captures,
 and private machine details do not belong on this branch.
 
-## Current Draft Export
+## Current Review Export
 
-The current public artifact is a 9-patch draft review export in
-[patches/](patches/). It is not a sendable upstream candidate series.
+The current public artifact is a 3-patch maintainer-shape review export in
+[patches/](patches/). It is not mailed, and it still needs regeneration from
+the final clean kernel branch plus full validation before any upstream send.
 
-The current authoritative development branch is in the Linux fork:
+The previous full validation branch remains in the Linux fork:
 
 ```text
 https://github.com/crescenzo77/linux.git
 candidate/a733-platform-clean-v4
 ```
 
-The draft export currently covers:
+The current review export covers:
 
 - Radxa Cubie A7S board compatible
-- initial Allwinner A733 CCU binding and driver
-- A733 pinctrl binding and driver
-- A733 MMC compatible
 - initial A733 SoC DTSI
 - Cubie A7S DTS with UART0 console and MMC0 storage
-- explicit Allwinner `sun60i` MAINTAINERS pattern
 
 Ethernet is not enabled and no Ethernet support is claimed.
 
-The CCU/PRCM and pinctrl portions are blocked from upstream submission until
-their relationship to the in-flight Linux RFCs is resolved. The series is not
-ready to send upstream until the open items in [docs/status.md](docs/status.md)
-are resolved.
+The CCU/PRCM and pinctrl work is treated as external prerequisite work through
+explicit `Depends-on:` references. The local CCU, pinctrl, standalone MMC
+binding, and MAINTAINERS scaffolding patches from the earlier 9-patch draft are
+not part of the current review export.
 
-The expected sendable direction is to carry only the SoC DTSI and Cubie A7S
-board DTS work that depends on CCU and pinctrl support, stacked on the accepted
-or current prerequisite branches, unless subsystem maintainers ask for a
-different plan. Any exported patches must be regenerated from a clean kernel
-branch after this decision is made, and the exact kernel/DTB must be booted on
-the target Cubie A7S hardware before runtime claims are made.
+The expected sendable direction is this narrow board-compatible plus DTS slice
+stacked on the accepted or current CCU/PRCM and pinctrl prerequisite branches,
+unless subsystem maintainers ask for a different plan. Runtime proof for the
+exact v4 kernel and DTB has been captured in the private workflow; raw logs
+remain out of public git. Before mailing, regenerate the patches from a clean
+kernel branch that matches the prerequisite state and rerun all validation.
 
 ## Submission Discipline
 

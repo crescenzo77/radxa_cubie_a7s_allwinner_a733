@@ -1,7 +1,7 @@
 From 0ab80736ca9c35c7f4a517abc2bc2dc8373518da Mon Sep 17 00:00:00 2001
 From: Enzo Adriano <enzo.adriano.code@gmail.com>
 Date: Wed, 3 Jun 2026 23:28:50 -0400
-Subject: [PATCH 7/9] arm64: dts: allwinner: add Allwinner A733 SoC
+Subject: [PATCH 2/3] arm64: dts: allwinner: add Allwinner A733 SoC
 
 Add the initial A733 SoC description with CPUs, timers, interrupt
 controller, clocks, pinctrl, UART0, and MMC0.
@@ -11,6 +11,9 @@ devices that are proven on their hardware.
 
 Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
 ---
+Depends-on: 20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech
+Depends-on: 20250821004232.8134-1-andre.przywara@arm.com
+
  .../arm64/boot/dts/allwinner/sun60i-a733.dtsi | 199 ++++++++++++++++++
  1 file changed, 199 insertions(+)
  create mode 100644 arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
@@ -222,4 +225,3 @@ index 000000000000..6c89153cc246
 +};
 -- 
 2.50.1 (Apple Git-155)
-
