@@ -14,9 +14,17 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-PUBLIC_REPO = Path(
-    os.environ.get("KERNEL_PUBLIC_REPO", "/Users/enzo/projects/Home Lab/cubie-a7s-armbian")
-)
+DEFAULT_PUBLIC_REPO_CANDIDATES = [
+    "/srv/projects/cubie-a7s-armbian-public",
+    "/Users/enzo/projects/Home Lab/cubie-a7s-armbian",
+]
+if os.environ.get("KERNEL_PUBLIC_REPO"):
+    PUBLIC_REPO = Path(os.environ["KERNEL_PUBLIC_REPO"])
+else:
+    PUBLIC_REPO = next(
+        (Path(candidate) for candidate in DEFAULT_PUBLIC_REPO_CANDIDATES if Path(candidate).exists()),
+        Path(DEFAULT_PUBLIC_REPO_CANDIDATES[-1]),
+    )
 DEFAULT_LINUX_TREE_CANDIDATES = [
     "/srv/projects/cubie-a7s-armbian/sources/mainline-linux",
     "/srv/projects/kernel-work/scratch/strix-mainline-linux",

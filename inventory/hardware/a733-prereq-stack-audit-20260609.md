@@ -33,6 +33,15 @@ workflow status tool chooses the first existing host-local path from:
 This keeps Codex Desktop as the dispatcher while allowing Strix and AMD to use
 their local kernel trees instead of a Mac-only path.
 
+For the public review export, Strix now has a separate clean mirror at:
+
+```text
+/srv/projects/cubie-a7s-armbian-public
+```
+
+Do not confuse that with the older dirty Strix working checkout at
+`/srv/projects/cubie-a7s-armbian`.
+
 It checks the chosen Linux tree for:
 
 - A733 RTC binding/header/RTC CCU driver support.

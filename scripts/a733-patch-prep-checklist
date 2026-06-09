@@ -2,7 +2,13 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-public_repo="${KERNEL_PUBLIC_REPO:-/Users/enzo/projects/Home Lab/cubie-a7s-armbian}"
+if [ -n "${KERNEL_PUBLIC_REPO:-}" ]; then
+  public_repo="${KERNEL_PUBLIC_REPO}"
+elif [ -e /srv/projects/cubie-a7s-armbian-public ]; then
+  public_repo="/srv/projects/cubie-a7s-armbian-public"
+else
+  public_repo="/Users/enzo/projects/Home Lab/cubie-a7s-armbian"
+fi
 if [ -n "${KERNEL_TREE_PATH:-}" ]; then
   kernel_tree="${KERNEL_TREE_PATH}"
 elif [ -e /srv/projects/cubie-a7s-armbian/sources/mainline-linux ]; then
