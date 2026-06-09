@@ -70,6 +70,8 @@ if [ "${preflight}" = "1" ]; then
     scripts/kernel-workflow-status --stopping-point-audit
   run_gate "Cubie corrected-root session dry-run" \
     scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95 --dry-run
+  run_gate "Strix-dispatched Cubie proof dry-run" \
+    scripts/cubie-strix-live-proof-dry-run
   printf '\nA733 patch-prep preflight gates passed.\n'
   printf '\nNext live action:\n'
   scripts/kernel-workflow-status --maintainer-next-action
@@ -169,7 +171,11 @@ To check read-only dispatcher, backup, and Cubie session readiness while waiting
 
    cd ${repo_root} && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95 --dry-run
 
-13. Dispatcher stopping-point audit:
+13. Strix-dispatched Cubie proof dry-run:
+
+   cd ${repo_root} && scripts/cubie-strix-live-proof-dry-run
+
+14. Dispatcher stopping-point audit:
 
    cd ${repo_root} && scripts/kernel-workflow-status --stopping-point-audit
 

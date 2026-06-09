@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+strix_host="${KERNEL_STRIX_HOST:-192.168.50.11}"
+strix_repo="${KERNEL_STRIX_REPO:-/srv/projects/homelab}"
+strix_remote="${KERNEL_STRIX_REMOTE:-mac-mini}"
+target_ip="${CUBIE_TARGET_IP:-192.168.50.95}"
+
+local_host_tokens() {
+  printf '%s\n' localhost 127.0.0.1 ::1
+  hostname 2>/dev/null || true
+  hostname -f 2>/dev/null || true
+  hostname -I 2>/dev/null | tr ' ' '\n' || true
+  ip -o addr show 2>/dev/null | awk '{print $4}' | cut -d/ -f1 || true
+  ifconfig 2>/dev/null | awk '/inet / {print $2}' || true
+}
+
+is_local_strix_host() {
+  [ -n "${strix_host}" ] || return 1
+  local_host_tokens | awk 'NF' | grep -Fx -- "${strix_host}" >/dev/null
+}
+
+dry_run_command() {
+  printf 'cd %s && git pull --ff-only %s main && scripts/cubie-interactive-root-install-session --confirm-target-ip %s --dry-run' \
+    "$(printf '%q' "${strix_repo}")" \
+    "$(printf '%q' "${strix_remote}")" \
+    "$(printf '%q' "${target_ip}")"
+}
+
+if is_local_strix_host; then
+  output="$(cd "${strix_repo}" && git pull --ff-only "${strix_remote}" main && scripts/cubie-interactive-root-install-session --confirm-target-ip "${target_ip}" --dry-run)"
+else
+  output="$(ssh -o BatchMode=yes -o ConnectTimeout=8 "${strix_host}" "$(dry_run_command)")"
+fi
+
+printf '%s\n' "${output}"
+
+require_line() {
+  local pattern="$1"
+  local message="$2"
+  if ! printf '%s\n' "${output}" | grep -Eq "${pattern}"; then
+    printf 'FAIL: %s\n' "${message}" >&2
+    exit 1
+  fi
+}
+
+require_line '^uart_preflight_status=ok$' 'Strix UART preflight did not pass'
+require_line '^post_install_mode=interactive-uart-boot$' 'post-install proof mode is not interactive UART boot'
+require_line '^status=(root-install-required|boot-selection-required)$' 'Cubie proof dry-run did not reach an expected live-proof state'
+require_line '^post_install_command=.*cubie-root-install-handoff .*--run-capture' 'post-install handoff command is missing --run-capture'
+
+printf 'cubie-strix-live-proof-dry-run=pass\n'
