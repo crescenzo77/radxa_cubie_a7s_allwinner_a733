@@ -332,8 +332,9 @@ def a733_series_shape_summary(data: dict[str, Any]) -> dict[str, Any]:
     finding_kinds = [str(item.get("kind")) for item in findings if item.get("kind")]
     if gate.get("status") == "PASS":
         next_action = (
-            "series shape is maintainer-aligned; require corrected-root runtime "
-            "proof and normal kernel validation before patch prep"
+            "series shape is maintainer-aligned for review; require regeneration "
+            "from the exact prerequisite branch, normal kernel validation, and "
+            "final human review before mailing"
         )
     else:
         next_action = (
@@ -566,8 +567,8 @@ def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
         actions.append("advisory idle review queue is empty; do not run a no-op sweep")
     if not data["a733_series_shape"].get("ok"):
         actions.append(
-            "preserve series guardrail: current export is scaffolding; "
-            "do not create maintainer-facing patches before corrected-root proof"
+            "preserve series guardrail: current export is not maintainer-aligned; "
+            "do not create or send maintainer-facing patches before reshaping it"
         )
     if not data["a733_rfc_recheck"].get("ok"):
         actions.append(
@@ -596,11 +597,11 @@ def goal_completion_audit(data: dict[str, Any]) -> dict[str, Any]:
         },
         {
             "requirement": "maintainer guardrails are enforced before patch prep",
-            "status": "pass" if not data["a733_series_shape"].get("ok") else "review",
+            "status": "pass" if data["a733_series_shape"].get("ok") else "fail",
             "evidence": (
-                "current 9-patch scaffolding export is blocked from maintainer use"
-                if not data["a733_series_shape"].get("ok")
-                else "series-shape gate passes; verify this is backed by runtime proof"
+                "series-shape gate passes for the narrow three-patch review export"
+                if data["a733_series_shape"].get("ok")
+                else "series-shape gate blocks the current export from maintainer use"
             ),
         },
         {
@@ -728,11 +729,11 @@ def stopping_point_audit(data: dict[str, Any]) -> dict[str, Any]:
         },
         {
             "name": "maintainer guardrail",
-            "status": "ok" if not data["a733_series_shape"].get("ok") else "review",
+            "status": "ok" if data["a733_series_shape"].get("ok") else "attention",
             "detail": (
-                "current public export is blocked as scaffolding; do not send it"
-                if not data["a733_series_shape"].get("ok")
-                else "series shape passes; still require exact runtime proof before patch prep"
+                "series shape passes for the narrow review export; do not mail before final branch regeneration and validation"
+                if data["a733_series_shape"].get("ok")
+                else "current public export is not maintainer-aligned; do not send it"
             ),
         },
         {
@@ -880,7 +881,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"| Cubie runtime gate | `{cubie.get('status')}` |",
         f"| human gate | required={md_bool(cubie.get('human_required'))}; {cubie.get('human_gate') or 'none'} |",
         f"| evidence gate | {cubie.get('evidence_gate') or 'none'} |",
-        f"| A733 series shape | `{a733_shape.get('status')}`, patches={a733_shape.get('patch_count')}, sendable={md_bool(a733_shape.get('ok'))} |",
+        f"| A733 series shape | `{a733_shape.get('status')}`, patches={a733_shape.get('patch_count')}, shape_ok={md_bool(a733_shape.get('ok'))} |",
         f"| A733 RFC overlap recheck | fresh_today={md_bool(a733_rfc_recheck.get('ok'))}, date=`{a733_rfc_recheck.get('date') or 'missing'}` |",
         f"| corrected-root proof gate selftest | ok={md_bool(proof_gate_selftest.get('ok'))} |",
         f"| public hygiene | `{public_hygiene.get('status')}`, matches={public_hygiene.get('match_count')}, clean={md_bool(public_hygiene.get('ok'))} |",

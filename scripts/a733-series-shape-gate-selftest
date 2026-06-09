@@ -79,12 +79,18 @@ if ! grep -q 'missing-board-binding' "${tmpdir}/missing-binding.out"; then
 fi
 
 if [ -d "${public_repo}/patches" ]; then
-  if "${gate}" "${public_repo}/patches" >"${tmpdir}/current-public.out" 2>&1; then
-    printf 'expected current public scaffolding export to remain blocked\n' >&2
+  if ! "${gate}" "${public_repo}/patches" >"${tmpdir}/current-public.out" 2>&1; then
+    printf 'expected current public review export to pass shape gate\n' >&2
+    cat "${tmpdir}/current-public.out" >&2
     exit 1
   fi
-  if ! grep -q 'too-many-patches' "${tmpdir}/current-public.out"; then
-    printf 'current public export failure did not include too-many-patches\n' >&2
+  if ! grep -q '^status=PASS$' "${tmpdir}/current-public.out"; then
+    printf 'current public export did not report PASS\n' >&2
+    cat "${tmpdir}/current-public.out" >&2
+    exit 1
+  fi
+  if ! grep -q '^patch_count=3$' "${tmpdir}/current-public.out"; then
+    printf 'current public export did not report three non-cover patches\n' >&2
     cat "${tmpdir}/current-public.out" >&2
     exit 1
   fi

@@ -179,9 +179,10 @@ To check read-only dispatcher, backup, and Cubie session readiness while waiting
 
    cd ${repo_root} && scripts/kernel-workflow-status --stopping-point-audit
 
-The current 9-patch scaffolding export is not sendable. A future sendable
-candidate must be the narrow board binding + SoC DTSI + board DTS slice, carry
-the two active Depends-on IDs for the A733 CCU and pinctrl RFCs, avoid vendor
+The current public export is a narrow board binding + SoC DTSI + board DTS
+review slice. It is still not a mailed submission: regenerate it from the exact
+clean kernel branch stacked on the current or accepted prerequisites, carry the
+two active Depends-on IDs for the A733 CCU and pinctrl RFCs, avoid vendor
 U-Boot workaround state in DTS, and avoid Ethernet, VPU, display, wireless,
 USB-C, PCIe, and other feature creep.
 CHECKLIST
