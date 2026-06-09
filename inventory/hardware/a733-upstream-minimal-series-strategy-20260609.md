@@ -74,6 +74,21 @@ The A733 MMC compatible now has an explicit blocker: if the chosen base does
 not already document it, carry a focused binding patch before the DTS user or
 use only an already documented compatible if that is technically correct.
 
+## Prerequisite Stack Gate
+
+Before regenerating the candidate export, run the chosen-tree audit:
+
+```sh
+KERNEL_TREE_PATH=/path/to/clean/a733-prereq-tree \
+  scripts/kernel-workflow-status --a733-prereq-stack-status
+```
+
+The current `/Users/enzo/projects/linux-a733` tree fails this audit because it
+is dirty, lacks the A733 RTC prerequisite binding/header/RTC CCU driver, lacks
+the A733 R-CCU/PRCM pieces from the current CCU RFC, and still has a
+three-input A733 CCU binding/DTSI shape. Do not regenerate maintainer-facing
+patches from that tree.
+
 ## Runtime Proof Required First
 
 The exact v4 kernel and DTB have a clean corrected-root UART proof using:
@@ -96,12 +111,12 @@ scripts/a733-series-shape-gate /path/to/exported/patches
 
 For the current public `patches/` export this gate passes because the export
 has been reshaped away from the historical 9-patch scaffolding. Passing the
-shape gate is not enough: `scripts/a733-prereq-api-audit` must also pass before
-candidate regeneration. A candidate export should be limited to board binding,
-optional A733 MMC binding, SoC DTSI, and board DTS patches; it must carry the
-active RTC, CCU/PRCM, and pinctrl `Depends-on:` IDs and avoid local CCU/PRCM,
-pinctrl, MAINTAINERS, vendor-U-Boot workaround, or unrelated hardware feature
-patches.
+shape gate is not enough: `scripts/a733-prereq-stack-audit` and
+`scripts/a733-prereq-api-audit` must also pass before candidate regeneration.
+A candidate export should be limited to board binding, optional A733 MMC
+binding, SoC DTSI, and board DTS patches; it must carry the active RTC,
+CCU/PRCM, and pinctrl `Depends-on:` IDs and avoid local CCU/PRCM, pinctrl,
+MAINTAINERS, vendor-U-Boot workaround, or unrelated hardware feature patches.
 
 ## Anti-Goals
 

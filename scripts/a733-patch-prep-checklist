@@ -3,6 +3,7 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 public_repo="${KERNEL_PUBLIC_REPO:-/Users/enzo/projects/Home Lab/cubie-a7s-armbian}"
+kernel_tree="${KERNEL_TREE_PATH:-/Users/enzo/projects/linux-a733}"
 
 usage() {
   cat <<USAGE
@@ -64,6 +65,8 @@ if [ "${preflight}" = "1" ]; then
     scripts/cubie-corrected-root-proof-gate-selftest
   run_gate "A733 series shape gate selftest" \
     scripts/a733-series-shape-gate-selftest
+  run_gate "A733 prerequisite stack audit" \
+    scripts/a733-prereq-stack-audit "${kernel_tree}"
   run_gate "A733 prerequisite API audit" \
     scripts/a733-prereq-api-audit "${public_repo}/patches"
   run_gate "backup approval brief" \
@@ -96,6 +99,8 @@ if [ "${run}" = "1" ]; then
     scripts/kernel-workflow-status --maintainer-ready-strict
   run_gate "A733 series shape gate" \
     scripts/a733-series-shape-gate "${public_repo}/patches"
+  run_gate "A733 prerequisite stack audit" \
+    scripts/a733-prereq-stack-audit "${kernel_tree}"
   run_gate "A733 prerequisite API audit" \
     scripts/a733-prereq-api-audit "${public_repo}/patches"
   run_gate "public hygiene gate" \
@@ -148,7 +153,16 @@ To check read-only dispatcher, backup, and Cubie session readiness while waiting
    refresh the public A733 CCU/pinctrl overlap scan and keep local CCU/pinctrl
    patches out of the sendable slice unless maintainers request otherwise.
 
-7. A733 prerequisite API audit:
+7. A733 prerequisite stack audit:
+
+   cd ${repo_root} && scripts/a733-prereq-stack-audit "${kernel_tree}"
+
+   This must pass for the exact clean Linux tree chosen for candidate
+   regeneration. It catches missing A733 RTC prerequisite support, stale
+   three-clock A733 CCU binding/DTSI state, missing pinctrl support, and
+   missing MMC binding coverage before a patch export is regenerated.
+
+8. A733 prerequisite API audit:
 
    cd ${repo_root} && scripts/a733-prereq-api-audit "${public_repo}/patches"
 
@@ -156,44 +170,44 @@ To check read-only dispatcher, backup, and Cubie session readiness while waiting
    exports that have the right patch shape but still mismatch the active
    CCU/pinctrl/MMC prerequisite APIs.
 
-8. Public hygiene gate:
+9. Public hygiene gate:
 
    cd ${repo_root} && scripts/kernel-public-hygiene-gate "${public_repo}"
 
-9. Corrected-root proof gate selftest:
+10. Corrected-root proof gate selftest:
 
    cd ${repo_root} && scripts/cubie-corrected-root-proof-gate-selftest
 
    This guards the exact-v4 UART proof classifier before any captured log is
    treated as maintainer evidence.
 
-10. Backup posture:
+11. Backup posture:
 
    cd ${repo_root} && scripts/kernel-workflow-status --workflow-backup-status
 
-11. Workflow dirty status:
+12. Workflow dirty status:
 
    cd ${repo_root} && scripts/kernel-workflow-status --workflow-dirty-status
 
-12. Backup approval brief:
+13. Backup approval brief:
 
    cd ${repo_root} && scripts/kernel-backup-approval-brief
 
-13. Cubie corrected-root session dry-run:
+14. Cubie corrected-root session dry-run:
 
    cd ${repo_root} && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95 --dry-run
 
-14. Strix-dispatched Cubie proof dry-run:
+15. Strix-dispatched Cubie proof dry-run:
 
    cd ${repo_root} && scripts/cubie-strix-live-proof-dry-run
 
-15. Dispatcher stopping-point audit:
+16. Dispatcher stopping-point audit:
 
    cd ${repo_root} && scripts/kernel-workflow-status --stopping-point-audit
 
 The current public export is a narrow board binding + SoC DTSI + board DTS
 review slice. A regenerated candidate may add one MMC binding patch if the
-chosen base does not already document `allwinner,sun60i-a733-mmc`. It is still
+chosen base does not already document \`allwinner,sun60i-a733-mmc\`. It is still
 not a mailed submission: regenerate it from the exact clean kernel branch
 stacked on the current or accepted prerequisites, carry the active Depends-on
 IDs for the A733 RTC, CCU, and pinctrl work, avoid vendor U-Boot workaround

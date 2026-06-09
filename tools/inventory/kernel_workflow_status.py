@@ -17,6 +17,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 PUBLIC_REPO = Path(
     os.environ.get("KERNEL_PUBLIC_REPO", "/Users/enzo/projects/Home Lab/cubie-a7s-armbian")
 )
+LINUX_TREE = Path(os.environ.get("KERNEL_TREE_PATH", "/Users/enzo/projects/linux-a733"))
 DEFAULT_TIMEOUT = 30
 STRIX_HOST = os.environ.get("KERNEL_STRIX_HOST", "192.168.50.11")
 STRIX_SSH_TARGET = os.environ.get("KERNEL_STRIX_SSH_TARGET", f"enzo@{STRIX_HOST}")
@@ -402,6 +403,41 @@ def a733_prereq_api_summary(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def a733_prereq_stack_summary(data: dict[str, Any]) -> dict[str, Any]:
+    if not data.get("ok"):
+        return {
+            "ok": False,
+            "status": "unknown",
+            "root": str(LINUX_TREE),
+            "git_head": "",
+            "git_branch": "",
+            "git_dirty": False,
+            "finding_kinds": [],
+            "next_action": data.get("error", "A733 prerequisite stack audit failed"),
+        }
+    gate = data["data"]
+    findings = gate.get("findings") if isinstance(gate.get("findings"), list) else []
+    finding_kinds = [str(item.get("kind")) for item in findings if item.get("kind")]
+    git = gate.get("git") if isinstance(gate.get("git"), dict) else {}
+    if gate.get("status") == "PASS":
+        next_action = "chosen A733 prerequisite stack satisfies the checked RTC/CCU/pinctrl/MMC API surface"
+    else:
+        next_action = (
+            "choose or build a clean A733 prerequisite stack before regenerating "
+            "the candidate DTS export"
+        )
+    return {
+        "ok": gate.get("status") == "PASS",
+        "status": gate.get("status", "unknown"),
+        "root": gate.get("root", str(LINUX_TREE)),
+        "git_head": git.get("head_short", ""),
+        "git_branch": git.get("branch", ""),
+        "git_dirty": bool(git.get("dirty")),
+        "finding_kinds": finding_kinds,
+        "next_action": next_action,
+    }
+
+
 def latest_rfc_recheck_path() -> Path:
     candidates = sorted(RFC_RECHECK_DIR.glob(RFC_RECHECK_GLOB))
     return candidates[-1] if candidates else RFC_RECHECK_DIR / "a733-rfc-recheck-missing.md"
@@ -464,6 +500,11 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
             "A733 prerequisite API audit is not clean: "
             + ", ".join(data["a733_prereq_api"].get("finding_kinds", []) or ["unknown"])
         )
+    if not data["a733_prereq_stack"].get("ok"):
+        blockers.append(
+            "A733 prerequisite stack audit is not clean: "
+            + ", ".join(data["a733_prereq_stack"].get("finding_kinds", []) or ["unknown"])
+        )
     if not data["public_repo"].get("remote_is_github"):
         blockers.append("public kernel repo public remote is not GitHub")
     if not data["a733_rfc_recheck"].get("ok"):
@@ -487,6 +528,11 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
             "after corrected-root runtime proof, reshape the public export to "
             "the narrow A733 board-binding/optional-MMC-binding/SoC-DTSI/board-DTS "
             "series before patch-prep validation"
+        )
+    elif not data["a733_prereq_stack"].get("ok"):
+        next_action = (
+            "choose or build a clean A733 prerequisite stack before regenerating "
+            "the candidate DTS export"
         )
     elif not data["a733_prereq_api"].get("ok"):
         next_action = (
@@ -613,6 +659,11 @@ def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
             "resolve prerequisite API audit before candidate regeneration: "
             + str(data["a733_prereq_api"].get("next_action"))
         )
+    if not data["a733_prereq_stack"].get("ok"):
+        actions.append(
+            "choose or build clean A733 prerequisite stack: "
+            + str(data["a733_prereq_stack"].get("next_action"))
+        )
     if not data["a733_rfc_recheck"].get("ok"):
         actions.append(
             "refresh external overlap evidence before patch prep: "
@@ -661,6 +712,15 @@ def goal_completion_audit(data: dict[str, Any]) -> dict[str, Any]:
             "requirement": "A733 DTS matches prerequisite API assumptions",
             "status": "pass" if data["a733_prereq_api"].get("ok") else "fail",
             "evidence": data["a733_prereq_api"].get("next_action") or "",
+        },
+        {
+            "requirement": "chosen A733 prerequisite stack is cleanly audited",
+            "status": "pass" if data["a733_prereq_stack"].get("ok") else "fail",
+            "evidence": (
+                data["a733_prereq_stack"].get("next_action")
+                + " on "
+                + str(data["a733_prereq_stack"].get("root") or "unknown tree")
+            ),
         },
         {
             "requirement": "A733 CCU/pinctrl RFC overlap state is freshly rechecked",
@@ -871,6 +931,17 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
             ok_codes=(0, 1),
         )
     )
+    a733_prereq_stack = a733_prereq_stack_summary(
+        command_json(
+            [
+                str(REPO_ROOT / "scripts" / "a733-prereq-stack-audit"),
+                str(LINUX_TREE),
+                "--json",
+            ],
+            timeout=args.timeout,
+            ok_codes=(0, 1),
+        )
+    )
     proof_gate_selftest = proof_gate_selftest_summary(
         command_text([str(REPO_ROOT / "scripts" / "cubie-corrected-root-proof-gate-selftest")], timeout=args.timeout)
     )
@@ -890,6 +961,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         "a733_series_shape": a733_series_shape,
         "public_hygiene": public_hygiene,
         "a733_prereq_api": a733_prereq_api,
+        "a733_prereq_stack": a733_prereq_stack,
         "a733_rfc_recheck": rfc_recheck_summary(),
         "proof_gate_selftest": proof_gate_selftest,
     }
@@ -920,6 +992,7 @@ def markdown(data: dict[str, Any]) -> str:
     cubie = data["cubie_runtime_gate"]
     a733_shape = data["a733_series_shape"]
     a733_prereq_api = data["a733_prereq_api"]
+    a733_prereq_stack = data["a733_prereq_stack"]
     a733_rfc_recheck = data["a733_rfc_recheck"]
     proof_gate_selftest = data["proof_gate_selftest"]
     public_hygiene = data["public_hygiene"]
@@ -952,6 +1025,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"| evidence gate | {cubie.get('evidence_gate') or 'none'} |",
         f"| A733 series shape | `{a733_shape.get('status')}`, patches={a733_shape.get('patch_count')}, shape_ok={md_bool(a733_shape.get('ok'))} |",
         f"| A733 prerequisite API audit | `{a733_prereq_api.get('status')}`, clean={md_bool(a733_prereq_api.get('ok'))} |",
+        f"| A733 prerequisite stack | `{a733_prereq_stack.get('status')}`, clean={md_bool(a733_prereq_stack.get('ok'))}, tree=`{a733_prereq_stack.get('root')}` |",
         f"| A733 RFC overlap recheck | fresh_today={md_bool(a733_rfc_recheck.get('ok'))}, date=`{a733_rfc_recheck.get('date') or 'missing'}` |",
         f"| corrected-root proof gate selftest | ok={md_bool(proof_gate_selftest.get('ok'))} |",
         f"| public hygiene | `{public_hygiene.get('status')}`, matches={public_hygiene.get('match_count')}, clean={md_bool(public_hygiene.get('ok'))} |",
@@ -990,6 +1064,16 @@ def markdown(data: dict[str, Any]) -> str:
     if a733_prereq_api.get("finding_kinds"):
         lines.append("")
         lines.append("Findings: " + ", ".join(a733_prereq_api["finding_kinds"]))
+    lines.extend(["", "## A733 Prerequisite Stack Audit", "", str(a733_prereq_stack.get("next_action") or "none")])
+    lines.append(
+        f"Tree: `{a733_prereq_stack.get('root')}`; "
+        f"branch=`{a733_prereq_stack.get('git_branch') or 'unknown'}`; "
+        f"head=`{a733_prereq_stack.get('git_head') or 'unknown'}`; "
+        f"dirty={md_bool(a733_prereq_stack.get('git_dirty'))}"
+    )
+    if a733_prereq_stack.get("finding_kinds"):
+        lines.append("")
+        lines.append("Findings: " + ", ".join(a733_prereq_stack["finding_kinds"]))
     lines.extend(["", "## A733 RFC Overlap Freshness", "", str(a733_rfc_recheck.get("next_action") or "none")])
     if a733_rfc_recheck.get("path"):
         lines.append(f"Evidence packet: `{a733_rfc_recheck.get('path')}`")
@@ -1060,6 +1144,7 @@ def maintainer_ready_failed(data: dict[str, Any]) -> bool:
             runtime_strict_failed(data),
             not data["a733_series_shape"].get("ok"),
             not data["a733_prereq_api"].get("ok"),
+            not data["a733_prereq_stack"].get("ok"),
             not data["public_hygiene"].get("ok"),
             not data["public_repo"].get("clean"),
             not data["public_repo"].get("remote_matches"),
@@ -1130,6 +1215,11 @@ def main() -> int:
         help="Print freshness of the local A733 CCU/pinctrl RFC overlap recheck.",
     )
     parser.add_argument(
+        "--a733-prereq-stack-status",
+        action="store_true",
+        help="Print compact status for the chosen A733 prerequisite Linux tree.",
+    )
+    parser.add_argument(
         "--proof-gate-selftest-status",
         action="store_true",
         help="Print corrected-root proof gate selftest status.",
@@ -1161,7 +1251,7 @@ def main() -> int:
         help=(
             "Exit non-zero unless the public A733 path is ready for maintainer "
             "preparation: workflow health, runtime proof, series shape, hygiene, "
-            "and public backups must all pass."
+            "prerequisite stack/API, and public backups must all pass."
         ),
     )
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
@@ -1211,6 +1301,16 @@ def main() -> int:
         print(f"next_action={recheck.get('next_action') or 'none'}")
         if recheck.get("error"):
             print(f"error={recheck['error']}")
+    elif args.a733_prereq_stack_status:
+        stack = data["a733_prereq_stack"]
+        print(f"status={stack.get('status') or 'unknown'}")
+        print(f"clean={md_bool(stack.get('ok'))}")
+        print(f"tree={stack.get('root') or 'unknown'}")
+        print(f"branch={stack.get('git_branch') or 'unknown'}")
+        print(f"head={stack.get('git_head') or 'unknown'}")
+        print(f"dirty={md_bool(stack.get('git_dirty'))}")
+        print("findings=" + ",".join(stack.get("finding_kinds") or []))
+        print(f"next_action={stack.get('next_action') or 'none'}")
     elif args.proof_gate_selftest_status:
         selftest = data["proof_gate_selftest"]
         print(f"ok={md_bool(selftest.get('ok'))}")

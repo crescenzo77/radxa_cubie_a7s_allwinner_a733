@@ -57,6 +57,19 @@ After this audit, the public review export metadata was updated to carry the
 RTC `Depends-on:` ID as well as the CCU/PRCM and pinctrl IDs. That fixes the
 dependency declaration, but not the remaining DTS/API mismatch.
 
+A companion chosen-tree audit now exists:
+
+```sh
+scripts/a733-prereq-stack-audit /path/to/linux-tree
+scripts/kernel-workflow-status --a733-prereq-stack-status
+```
+
+On 2026-06-09 it reports that `/Users/enzo/projects/linux-a733` is not a clean
+candidate regeneration base: the tree is dirty, lacks the A733 RTC prerequisite
+binding/header/RTC CCU driver, lacks the A733 R-CCU/PRCM pieces from the current
+CCU RFC, and still has a three-input A733 CCU binding/DTSI shape. See
+`inventory/hardware/a733-prereq-stack-audit-20260609.md`.
+
 ### CCU Clock Inputs
 
 Junhui Liu's A733 CCU RFC binding patch documents the main CCU example as:
@@ -114,12 +127,13 @@ compatible if that is technically correct.
 Do not prepare or send maintainer-facing patches yet. The next kernel-facing
 action is to resolve this prerequisite API audit:
 
-1. Choose the exact clean base and prerequisite stack.
-2. Include or identify the accepted A733 RTC prerequisite used by the CCU.
-3. Reconcile the A733 CCU clock inputs with the current CCU/RTC binding shape.
-4. Resolve A733 MMC compatible binding coverage.
-5. Regenerate the review export from that clean branch.
-6. Rerun shape, prerequisite API, public hygiene, checkpatch, binding, DTB,
+1. Choose or build the exact clean base and prerequisite stack.
+2. Run `scripts/a733-prereq-stack-audit` against that tree.
+3. Include or identify the accepted A733 RTC prerequisite used by the CCU.
+4. Reconcile the A733 CCU clock inputs with the current CCU/RTC binding shape.
+5. Resolve A733 MMC compatible binding coverage.
+6. Regenerate the review export from that clean branch.
+7. Rerun shape, prerequisite API, public hygiene, checkpatch, binding, DTB,
    build, bisectability, maintainer-recipient, and runtime gates.
 
 This preserves the guardrails: no vendor U-Boot pollution, no Ethernet/VPU/

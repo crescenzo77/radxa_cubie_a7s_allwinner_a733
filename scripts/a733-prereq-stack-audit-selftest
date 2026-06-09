@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+gate="${repo_root}/scripts/a733-prereq-stack-audit"
+
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "${tmpdir}"' EXIT
+
+complete="${tmpdir}/complete"
+missing_mmc="${tmpdir}/missing-mmc"
+dtsi_mismatch="${tmpdir}/dtsi-mismatch"
+missing_rtc="${tmpdir}/missing-rtc"
+
+make_complete_tree() {
+  local root="$1"
+  install -d \
+    "${root}/Documentation/devicetree/bindings/rtc" \
+    "${root}/Documentation/devicetree/bindings/clock" \
+    "${root}/Documentation/devicetree/bindings/pinctrl" \
+    "${root}/Documentation/devicetree/bindings/mmc" \
+    "${root}/include/dt-bindings/clock" \
+    "${root}/include/dt-bindings/reset" \
+    "${root}/drivers/clk/sunxi-ng" \
+    "${root}/drivers/pinctrl/sunxi" \
+    "${root}/arch/arm64/boot/dts/allwinner"
+
+  cat >"${root}/Documentation/devicetree/bindings/rtc/allwinner,sun6i-a31-rtc.yaml" <<'EOF'
+compatible:
+  contains:
+    const: allwinner,sun60i-a733-rtc
+EOF
+  : >"${root}/include/dt-bindings/clock/sun60i-a733-rtc.h"
+  : >"${root}/drivers/clk/sunxi-ng/ccu-sun60i-a733-rtc.c"
+
+  cat >"${root}/Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml" <<'EOF'
+compatible:
+  const: allwinner,sun60i-a733-ccu
+clock-names:
+  items:
+    - const: hosc
+    - const: losc
+    - const: iosc
+    - const: losc-fanout
+EOF
+  : >"${root}/include/dt-bindings/clock/sun60i-a733-ccu.h"
+  : >"${root}/include/dt-bindings/reset/sun60i-a733-ccu.h"
+  : >"${root}/drivers/clk/sunxi-ng/ccu-sun60i-a733.c"
+  : >"${root}/include/dt-bindings/clock/sun60i-a733-r-ccu.h"
+  : >"${root}/include/dt-bindings/reset/sun60i-a733-r-ccu.h"
+  : >"${root}/drivers/clk/sunxi-ng/ccu-sun60i-a733-r.c"
+
+  cat >"${root}/Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml" <<'EOF'
+compatible:
+  const: allwinner,sun60i-a733-pinctrl
+EOF
+  : >"${root}/drivers/pinctrl/sunxi/pinctrl-sun60i-a733.c"
+
+  cat >"${root}/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml" <<'EOF'
+compatible:
+  oneOf:
+    - items:
+        - const: allwinner,sun60i-a733-mmc
+        - const: allwinner,sun20i-d1-mmc
+EOF
+
+  cat >"${root}/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi" <<'EOF'
+/ {
+	soc {
+		ccu: clock-controller@2002000 {
+			compatible = "allwinner,sun60i-a733-ccu";
+			clocks = <&rtc 2>, <&rtc 1>, <&rtc 0>, <&rtc 4>;
+			clock-names = "hosc", "losc", "iosc", "losc-fanout";
+		};
+	};
+};
+EOF
+}
+
+make_complete_tree "${complete}"
+cp -R "${complete}" "${missing_mmc}"
+cp -R "${complete}" "${dtsi_mismatch}"
+cp -R "${complete}" "${missing_rtc}"
+
+"${gate}" "${complete}" >/dev/null
+
+cat >"${missing_mmc}/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml" <<'EOF'
+compatible:
+  const: allwinner,sun20i-d1-mmc
+EOF
+if "${gate}" "${missing_mmc}" >"${tmpdir}/missing-mmc.out" 2>&1; then
+  printf 'expected missing MMC binding coverage to fail\n' >&2
+  exit 1
+fi
+if ! grep -q 'mmc-binding-missing' "${tmpdir}/missing-mmc.out"; then
+  printf 'missing MMC failure did not name mmc-binding-missing\n' >&2
+  cat "${tmpdir}/missing-mmc.out" >&2
+  exit 1
+fi
+
+cat >"${dtsi_mismatch}/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi" <<'EOF'
+/ {
+	soc {
+		ccu: clock-controller@2002000 {
+			compatible = "allwinner,sun60i-a733-ccu";
+			clocks = <&osc24M>, <&osc32k>, <&iosc>;
+			clock-names = "hosc", "losc", "iosc";
+		};
+	};
+};
+EOF
+if "${gate}" "${dtsi_mismatch}" >"${tmpdir}/dtsi-mismatch.out" 2>&1; then
+  printf 'expected DTSI CCU clock mismatch to fail\n' >&2
+  exit 1
+fi
+if ! grep -q 'dtsi-ccu-clock-names-missing-losc-fanout' "${tmpdir}/dtsi-mismatch.out"; then
+  printf 'DTSI mismatch failure did not name losc-fanout finding\n' >&2
+  cat "${tmpdir}/dtsi-mismatch.out" >&2
+  exit 1
+fi
+
+rm "${missing_rtc}/include/dt-bindings/clock/sun60i-a733-rtc.h"
+if "${gate}" "${missing_rtc}" >"${tmpdir}/missing-rtc.out" 2>&1; then
+  printf 'expected missing RTC clock header to fail\n' >&2
+  exit 1
+fi
+if ! grep -q 'rtc-clock-header-missing' "${tmpdir}/missing-rtc.out"; then
+  printf 'missing RTC failure did not name rtc-clock-header-missing\n' >&2
+  cat "${tmpdir}/missing-rtc.out" >&2
+  exit 1
+fi
+
+printf 'a733-prereq-stack-audit-selftest=pass\n'
