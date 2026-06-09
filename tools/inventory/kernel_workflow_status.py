@@ -85,8 +85,12 @@ def missing_git_status(repo: Path, remote: str) -> dict[str, Any]:
     }
 
 
-def command_json(argv: list[str], timeout: int = DEFAULT_TIMEOUT) -> dict[str, Any]:
-    proc = run(argv, cwd=REPO_ROOT, timeout=timeout)
+def command_json(
+    argv: list[str],
+    timeout: int = DEFAULT_TIMEOUT,
+    ok_codes: tuple[int, ...] = (0,),
+) -> dict[str, Any]:
+    proc = run(argv, cwd=REPO_ROOT, timeout=timeout, ok_codes=ok_codes)
     if not proc["ok"]:
         return {"ok": False, "error": proc["stderr"] or proc["stdout"], "returncode": proc["returncode"]}
     try:
@@ -219,6 +223,37 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def a733_series_shape_summary(data: dict[str, Any]) -> dict[str, Any]:
+    if not data.get("ok"):
+        return {
+            "ok": False,
+            "status": "unknown",
+            "patch_count": 0,
+            "finding_kinds": [],
+            "next_action": data.get("error", "A733 series-shape gate failed"),
+        }
+    gate = data["data"]
+    findings = gate.get("findings") if isinstance(gate.get("findings"), list) else []
+    finding_kinds = [str(item.get("kind")) for item in findings if item.get("kind")]
+    if gate.get("status") == "PASS":
+        next_action = (
+            "series shape is maintainer-aligned; require corrected-root runtime "
+            "proof and normal kernel validation before patch prep"
+        )
+    else:
+        next_action = (
+            "do not send the current public patch export; reshape to the narrow "
+            "DTS/board series after corrected-root runtime proof"
+        )
+    return {
+        "ok": gate.get("status") == "PASS",
+        "status": gate.get("status", "unknown"),
+        "patch_count": gate.get("patch_count", 0),
+        "finding_kinds": finding_kinds,
+        "next_action": next_action,
+    }
+
+
 def build_status(args: argparse.Namespace) -> dict[str, Any]:
     machine = machine_summary(
         command_json([str(REPO_ROOT / "scripts" / "kernel-machine-readiness"), "--json"], timeout=args.timeout)
@@ -235,6 +270,17 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
             timeout=args.timeout,
         )
     )
+    a733_series_shape = a733_series_shape_summary(
+        command_json(
+            [
+                str(REPO_ROOT / "scripts" / "a733-series-shape-gate"),
+                str(PUBLIC_REPO / "patches"),
+                "--json",
+            ],
+            timeout=args.timeout,
+            ok_codes=(0, 1),
+        )
+    )
     return {
         "homelab": git_status(REPO_ROOT, "origin"),
         "public_repo": git_status(PUBLIC_REPO, "public")
@@ -247,6 +293,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         "local_offload": offload,
         "idle_ledger": ledger,
         "cubie_runtime_gate": cubie,
+        "a733_series_shape": a733_series_shape,
     }
 
 
@@ -262,6 +309,7 @@ def markdown(data: dict[str, Any]) -> str:
     offload = data["local_offload"]
     ledger = data["idle_ledger"]
     cubie = data["cubie_runtime_gate"]
+    a733_shape = data["a733_series_shape"]
 
     lines = [
         "# Kernel Workflow Status",
@@ -279,6 +327,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"| Cubie runtime gate | `{cubie.get('status')}` |",
         f"| human gate | required={md_bool(cubie.get('human_required'))}; {cubie.get('human_gate') or 'none'} |",
         f"| evidence gate | {cubie.get('evidence_gate') or 'none'} |",
+        f"| A733 series shape | `{a733_shape.get('status')}`, patches={a733_shape.get('patch_count')}, sendable={md_bool(a733_shape.get('ok'))} |",
         f"| next command | `{cubie.get('next_shell') or cubie.get('next_command') or 'none'}` |",
         f"| next reboot command | `{cubie.get('next_reboot_shell') or cubie.get('next_reboot_command') or 'none'}` |",
         "",
@@ -304,6 +353,10 @@ def markdown(data: dict[str, Any]) -> str:
         lines.extend(["", "## Human Gate", "", str(cubie["human_gate"])])
     if cubie.get("evidence_gate"):
         lines.extend(["", "## Evidence Gate", "", str(cubie["evidence_gate"])])
+    lines.extend(["", "## A733 Series Shape", "", str(a733_shape.get("next_action") or "none")])
+    if a733_shape.get("finding_kinds"):
+        lines.append("")
+        lines.append("Findings: " + ", ".join(a733_shape["finding_kinds"]))
     return "\n".join(lines) + "\n"
 
 

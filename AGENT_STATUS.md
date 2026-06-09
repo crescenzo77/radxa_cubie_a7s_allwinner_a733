@@ -1,5 +1,22 @@
 # Agent Status
 
+## 2026-06-09 workflow status includes A733 shape gate
+
+- Integrated `scripts/a733-series-shape-gate` into
+  `scripts/kernel-workflow-status` so the dispatcher dashboard reports whether
+  the current public A733 `patches/` export is maintainer-shaped.
+- Current dashboard state is intentionally `A733 series shape: FAIL` with
+  `patches=9`, because the public export still contains local CCU/pinctrl,
+  standalone MMC-compatible, and MAINTAINERS scaffolding plus missing
+  prerequisite `Depends-on:` markers.
+- Fixed `command_json()` so expected non-zero JSON-producing gates can be
+  parsed as data when explicitly allowed, instead of turning expected failures
+  into raw dashboard text.
+- Validation: `python3 -m py_compile tools/inventory/kernel_workflow_status.py`,
+  `scripts/kernel-workflow-status --json`, and `scripts/kernel-workflow-status`.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 A733 maintainer-shape export gate
 
 - Added `scripts/a733-series-shape-gate`, backed by
