@@ -380,6 +380,68 @@ def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
     return actions
 
 
+def goal_completion_audit(data: dict[str, Any]) -> dict[str, Any]:
+    checks = [
+        {
+            "requirement": "Codex Desktop dispatcher/offload documentation exists",
+            "status": "pass" if data["local_offload"].get("ok") else "fail",
+            "evidence": (
+                "local offload lanes are healthy and dispatcher runbook/status surfaces exist"
+                if data["local_offload"].get("ok")
+                else "local offload lanes are not all healthy"
+            ),
+        },
+        {
+            "requirement": "maintainer guardrails are enforced before patch prep",
+            "status": "pass" if not data["a733_series_shape"].get("ok") else "review",
+            "evidence": (
+                "current 9-patch scaffolding export is blocked from maintainer use"
+                if not data["a733_series_shape"].get("ok")
+                else "series-shape gate passes; verify this is backed by runtime proof"
+            ),
+        },
+        {
+            "requirement": "exact v4 Cubie runtime proof is captured",
+            "status": "fail" if data["cubie_runtime_gate"].get("status") != "runtime-ready" else "pass",
+            "evidence": f"cubie runtime gate is {data['cubie_runtime_gate'].get('status')}",
+        },
+        {
+            "requirement": "maintainer-facing A733 patch shape is ready",
+            "status": "fail" if not data["a733_series_shape"].get("ok") else "pass",
+            "evidence": data["a733_series_shape"].get("next_action") or "",
+        },
+        {
+            "requirement": "public kernel material is hygienic and GitHub/mirror backed",
+            "status": "pass"
+            if data["public_hygiene"].get("ok")
+            and data["public_repo"].get("remote_matches")
+            and data["public_repo"].get("remote_is_github")
+            and data["public_mirror"].get("remote_matches")
+            else "fail",
+            "evidence": (
+                "public repo hygiene passes and public GitHub plus ThinkCentre mirror match"
+                if data["public_hygiene"].get("ok")
+                and data["public_repo"].get("remote_matches")
+                and data["public_repo"].get("remote_is_github")
+                and data["public_mirror"].get("remote_matches")
+                else "public hygiene or backup checks are incomplete"
+            ),
+        },
+        {
+            "requirement": "private workflow work is backed up at stopping points",
+            "status": "pass" if data["workflow_backup"].get("private_origin_backed") else "fail",
+            "evidence": data["workflow_backup"].get("note") or "private workflow origin matches HEAD",
+        },
+    ]
+    incomplete = [item for item in checks if item["status"] != "pass"]
+    return {
+        "complete": not incomplete,
+        "checks": checks,
+        "incomplete": incomplete,
+        "next_action": data["maintainer_ready"].get("next_action") or "none",
+    }
+
+
 def build_status(args: argparse.Namespace) -> dict[str, Any]:
     machine = machine_summary(
         command_json([str(REPO_ROOT / "scripts" / "kernel-machine-readiness"), "--json"], timeout=args.timeout)
@@ -436,6 +498,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     data["workflow_backup"] = workflow_backup_summary(data)
     data["maintainer_ready"] = maintainer_ready_summary(data)
     data["dispatcher_waiting_actions"] = dispatcher_waiting_actions(data)
+    data["goal_completion_audit"] = goal_completion_audit(data)
     return data
 
 
@@ -456,6 +519,7 @@ def markdown(data: dict[str, Any]) -> str:
     maintainer_ready = data["maintainer_ready"]
     workflow_backup = data["workflow_backup"]
     waiting_actions = data["dispatcher_waiting_actions"]
+    goal_audit = data["goal_completion_audit"]
 
     lines = [
         "# Kernel Workflow Status",
@@ -477,6 +541,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"| A733 series shape | `{a733_shape.get('status')}`, patches={a733_shape.get('patch_count')}, sendable={md_bool(a733_shape.get('ok'))} |",
         f"| public hygiene | `{public_hygiene.get('status')}`, matches={public_hygiene.get('match_count')}, clean={md_bool(public_hygiene.get('ok'))} |",
         f"| maintainer ready | {md_bool(maintainer_ready.get('ok'))}; blockers={len(maintainer_ready.get('blockers', []))} |",
+        f"| goal complete | {md_bool(goal_audit.get('complete'))}; incomplete={len(goal_audit.get('incomplete', []))} |",
         f"| next command | `{cubie.get('next_shell') or cubie.get('next_command') or 'none'}` |",
         f"| next reboot command | `{cubie.get('next_reboot_shell') or cubie.get('next_reboot_command') or 'none'}` |",
         "",
@@ -516,6 +581,9 @@ def markdown(data: dict[str, Any]) -> str:
     lines.extend(["", "## Dispatcher Waiting Actions", ""])
     for action in waiting_actions:
         lines.append(f"- {action}")
+    lines.extend(["", "## Goal Completion Audit", ""])
+    for item in goal_audit.get("checks", []):
+        lines.append(f"- {item['status']}: {item['requirement']} - {item['evidence']}")
     if workflow_backup.get("note"):
         lines.extend(["", "## Workflow Backup Note", "", str(workflow_backup["note"])])
     return "\n".join(lines) + "\n"
@@ -614,6 +682,11 @@ def main() -> int:
         action="store_true",
         help="Print safe dispatcher actions while a human/hardware gate is pending.",
     )
+    parser.add_argument(
+        "--goal-completion-audit",
+        action="store_true",
+        help="Print requirement-level audit for the persistent kernel-maintainer goal.",
+    )
     parser.add_argument("--strict", action="store_true")
     parser.add_argument(
         "--runtime-strict",
@@ -659,6 +732,12 @@ def main() -> int:
             print(f"note={backup['note']}")
     elif args.dispatcher_waiting_actions:
         print("\n".join(data["dispatcher_waiting_actions"]) or "none")
+    elif args.goal_completion_audit:
+        audit = data["goal_completion_audit"]
+        print(f"complete={md_bool(audit.get('complete'))}")
+        for item in audit.get("checks", []):
+            print(f"{item['status']}: {item['requirement']} - {item['evidence']}")
+        print(f"next_action={audit.get('next_action') or 'none'}")
     elif args.json:
         print(json.dumps(data, indent=2, sort_keys=True))
     else:

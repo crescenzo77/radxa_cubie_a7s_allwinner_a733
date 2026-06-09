@@ -1,5 +1,18 @@
 # Agent Status
 
+## 2026-06-09 goal completion audit
+
+- Added `scripts/kernel-workflow-status --goal-completion-audit` to prevent
+  confusing dispatcher workflow progress with completion of the kernel
+  maintainer objective.
+- The audit checks dispatcher/offload health, maintainer guardrails, exact v4
+  Cubie runtime proof, sendable A733 patch shape, public hygiene/backups, and
+  private workflow backup state.
+- Current audit is expected to fail because corrected-root runtime proof and
+  maintainer-facing series shape are still incomplete.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 operator brief dispatcher context
 
 - Updated `scripts/cubie-corrected-root-operator-brief` to include workflow

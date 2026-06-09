@@ -56,6 +56,17 @@ patches.
 If the idle-review ledger has zero candidates, the command reports that state
 instead of recommending a no-op local-model sweep.
 
+Before declaring the persistent kernel-maintainer goal complete, run:
+
+```sh
+scripts/kernel-workflow-status --goal-completion-audit
+```
+
+This audit is stricter than a workflow-health check. It must show the exact
+runtime proof, maintainer-facing patch shape, public hygiene, backups, and
+dispatcher/offload requirements as complete before Codex can treat the goal as
+done.
+
 For A733/Cubie A7S work, the dispatcher must preserve the current guardrails:
 do not prepare a maintainer-facing series until the exact v4 boot/runtime proof
 passes, do not submit the local CCU or pinctrl scaffolding while the external
