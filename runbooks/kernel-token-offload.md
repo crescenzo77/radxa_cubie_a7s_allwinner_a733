@@ -186,6 +186,13 @@ All commands write Markdown and JSON cards under:
 task-packets/kernel/context-cards/
 ```
 
+That directory is generated dispatcher state and is ignored by git. Treat the
+Mac/Codex Desktop checkout as authoritative for idle-review ledger status.
+Strix should receive tracked workflow updates through `git pull --ff-only
+mac-mini main`, but its checkout may not have the Mac-generated context-card
+cache. Use Strix for the live UART/root-install work, not as the source of
+truth for whether Mac-local idle reviews have already been consumed.
+
 ## Mandatory Offload Gates
 
 Before Codex reads a large artifact directly, run local offload first:
