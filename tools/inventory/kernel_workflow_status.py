@@ -577,6 +577,11 @@ def md_bool(value: object) -> str:
     return "yes" if value else "no"
 
 
+def dirty_count(repo_status: dict[str, Any]) -> int:
+    status = str(repo_status.get("status_short") or "")
+    return len([line for line in status.splitlines() if line.strip()])
+
+
 def markdown(data: dict[str, Any]) -> str:
     public_repo = data["public_repo"]
     public_mirror = data["public_mirror"]
@@ -756,6 +761,11 @@ def main() -> int:
         help="Print the next safe backup action without inventing remotes.",
     )
     parser.add_argument(
+        "--workflow-dirty-status",
+        action="store_true",
+        help="Print compact private/public git cleanliness for dispatcher preflight.",
+    )
+    parser.add_argument(
         "--dispatcher-waiting-actions",
         action="store_true",
         help="Print safe dispatcher actions while a human/hardware gate is pending.",
@@ -811,6 +821,11 @@ def main() -> int:
             print(f"note={backup['note']}")
     elif args.workflow_backup_next_action:
         print(data["workflow_backup"].get("next_action") or "none")
+    elif args.workflow_dirty_status:
+        print(f"private_clean={md_bool(data['homelab'].get('clean'))}")
+        print(f"private_dirty_count={dirty_count(data['homelab'])}")
+        print(f"public_clean={md_bool(data['public_repo'].get('clean'))}")
+        print(f"public_dirty_count={dirty_count(data['public_repo'])}")
     elif args.dispatcher_waiting_actions:
         print("\n".join(data["dispatcher_waiting_actions"]) or "none")
     elif args.goal_completion_audit:

@@ -56,6 +56,8 @@ if [ "${preflight}" = "1" ]; then
     scripts/kernel-offload-status-smoke
   run_gate "backup posture" \
     scripts/kernel-workflow-status --workflow-backup-status
+  run_gate "workflow dirty status" \
+    scripts/kernel-workflow-status --workflow-dirty-status
   run_gate "backup approval brief" \
     scripts/kernel-backup-approval-brief
   run_gate "Cubie corrected-root session dry-run" \
@@ -120,11 +122,15 @@ To check read-only dispatcher, backup, and Cubie session readiness while waiting
 
    cd ${repo_root} && scripts/kernel-workflow-status --workflow-backup-status
 
-7. Backup approval brief:
+7. Workflow dirty status:
+
+   cd ${repo_root} && scripts/kernel-workflow-status --workflow-dirty-status
+
+8. Backup approval brief:
 
    cd ${repo_root} && scripts/kernel-backup-approval-brief
 
-8. Cubie corrected-root session dry-run:
+9. Cubie corrected-root session dry-run:
 
    cd ${repo_root} && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95 --dry-run
 
