@@ -21,6 +21,7 @@ DEFAULT_TIMEOUT = 30
 OPERATOR_BRIEF = "scripts/cubie-corrected-root-operator-brief"
 PATCH_PREP_CHECKLIST = "scripts/a733-patch-prep-checklist"
 BACKUP_APPROVAL_BRIEF = "scripts/kernel-backup-approval-brief"
+PROOF_GATE_SELFTEST = "scripts/cubie-corrected-root-proof-gate-selftest"
 REQUIRED_OFFLOAD_TARGETS = {"amd-fast", "amd-research", "strix-review"}
 RFC_RECHECK_GLOB = "a733-rfc-recheck-*.md"
 RFC_RECHECK_DIR = REPO_ROOT / "task-packets/kernel/research"
@@ -190,6 +191,22 @@ def ledger_summary(text: dict[str, Any]) -> dict[str, Any]:
         key, value = line.split("=", 1)
         result["values"][key] = value
     return result
+
+
+def proof_gate_selftest_summary(text: dict[str, Any]) -> dict[str, Any]:
+    stdout = text.get("stdout") or ""
+    ok = bool(text.get("ok")) and "cubie-corrected-root-proof-gate-selftest=pass" in stdout
+    return {
+        "ok": ok,
+        "returncode": text.get("returncode"),
+        "stdout": stdout,
+        "stderr": text.get("stderr") or "",
+        "next_action": (
+            "corrected-root proof gate selftest passes"
+            if ok
+            else "fix scripts/cubie-corrected-root-proof-gate-selftest before trusting Cubie runtime proof logs"
+        ),
+    }
 
 
 def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
@@ -386,6 +403,8 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
             "A733 CCU/pinctrl RFC overlap recheck is stale or missing: "
             + str(data["a733_rfc_recheck"].get("date") or data["a733_rfc_recheck"].get("error") or "unknown")
         )
+    if not data["proof_gate_selftest"].get("ok"):
+        blockers.append("corrected-root proof gate selftest is failing")
 
     cubie_next = data["cubie_runtime_gate"].get("next_shell") or data["cubie_runtime_gate"].get("next_command")
     if data["cubie_runtime_gate"].get("status") != "runtime-ready" and cubie_next:
@@ -403,6 +422,8 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
         next_action = "push the public kernel repo to the ThinkCentre mirror before patch prep"
     elif not data["a733_rfc_recheck"].get("ok"):
         next_action = "run a fresh A733 CCU/pinctrl RFC overlap recheck before patch prep"
+    elif not data["proof_gate_selftest"].get("ok"):
+        next_action = "fix the corrected-root proof gate selftest before patch prep"
     elif blockers:
         next_action = "do not prepare or send maintainer-facing patches; clear the listed blockers first"
     else:
@@ -506,6 +527,11 @@ def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
             "refresh external overlap evidence before patch prep: "
             + str(data["a733_rfc_recheck"].get("next_action"))
         )
+    if not data["proof_gate_selftest"].get("ok"):
+        actions.append(
+            "fix proof classifier before live proof use: "
+            + str(data["proof_gate_selftest"].get("next_action"))
+        )
     return actions
 
 
@@ -551,6 +577,11 @@ def goal_completion_audit(data: dict[str, Any]) -> dict[str, Any]:
                     "refresh before patch prep"
                 )
             ),
+        },
+        {
+            "requirement": "corrected-root proof classifier selftest passes",
+            "status": "pass" if data["proof_gate_selftest"].get("ok") else "fail",
+            "evidence": data["proof_gate_selftest"].get("next_action") or "",
         },
         {
             "requirement": "public kernel material is hygienic and GitHub/mirror backed",
@@ -661,6 +692,11 @@ def stopping_point_audit(data: dict[str, Any]) -> dict[str, Any]:
             ),
         },
         {
+            "name": "corrected-root proof gate selftest",
+            "status": "ok" if data["proof_gate_selftest"].get("ok") else "fail",
+            "detail": data["proof_gate_selftest"].get("next_action") or "unknown",
+        },
+        {
             "name": "next safe action",
             "status": "human-required" if cubie.get("human_required") else "ok",
             "detail": data["maintainer_ready"].get("next_action") or "none",
@@ -711,6 +747,9 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
             ok_codes=(0, 1),
         )
     )
+    proof_gate_selftest = proof_gate_selftest_summary(
+        command_text([str(REPO_ROOT / "scripts" / "cubie-corrected-root-proof-gate-selftest")], timeout=args.timeout)
+    )
     data = {
         "homelab": git_status(REPO_ROOT, "origin"),
         "public_repo": git_status(PUBLIC_REPO, "public")
@@ -726,6 +765,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         "a733_series_shape": a733_series_shape,
         "public_hygiene": public_hygiene,
         "a733_rfc_recheck": rfc_recheck_summary(),
+        "proof_gate_selftest": proof_gate_selftest,
     }
     data["workflow_backup"] = workflow_backup_summary(data)
     data["maintainer_ready"] = maintainer_ready_summary(data)
@@ -754,6 +794,7 @@ def markdown(data: dict[str, Any]) -> str:
     cubie = data["cubie_runtime_gate"]
     a733_shape = data["a733_series_shape"]
     a733_rfc_recheck = data["a733_rfc_recheck"]
+    proof_gate_selftest = data["proof_gate_selftest"]
     public_hygiene = data["public_hygiene"]
     maintainer_ready = data["maintainer_ready"]
     workflow_backup = data["workflow_backup"]
@@ -779,6 +820,7 @@ def markdown(data: dict[str, Any]) -> str:
         f"| evidence gate | {cubie.get('evidence_gate') or 'none'} |",
         f"| A733 series shape | `{a733_shape.get('status')}`, patches={a733_shape.get('patch_count')}, sendable={md_bool(a733_shape.get('ok'))} |",
         f"| A733 RFC overlap recheck | fresh_today={md_bool(a733_rfc_recheck.get('ok'))}, date=`{a733_rfc_recheck.get('date') or 'missing'}` |",
+        f"| corrected-root proof gate selftest | ok={md_bool(proof_gate_selftest.get('ok'))} |",
         f"| public hygiene | `{public_hygiene.get('status')}`, matches={public_hygiene.get('match_count')}, clean={md_bool(public_hygiene.get('ok'))} |",
         f"| maintainer ready | {md_bool(maintainer_ready.get('ok'))}; blockers={len(maintainer_ready.get('blockers', []))} |",
         f"| goal complete | {md_bool(goal_audit.get('complete'))}; incomplete={len(goal_audit.get('incomplete', []))} |",
@@ -816,6 +858,9 @@ def markdown(data: dict[str, Any]) -> str:
         lines.append(f"Evidence packet: `{a733_rfc_recheck.get('path')}`")
     if a733_rfc_recheck.get("days_old") is not None:
         lines.append(f"Days old: {a733_rfc_recheck.get('days_old')}")
+    lines.extend(["", "## Corrected-Root Proof Gate Selftest", "", str(proof_gate_selftest.get("next_action") or "none")])
+    if proof_gate_selftest.get("stderr"):
+        lines.append(f"stderr: `{proof_gate_selftest.get('stderr')}`")
     lines.extend(["", "## Public Hygiene", "", str(public_hygiene.get("next_action") or "none")])
     if public_hygiene.get("kinds"):
         lines.append("")
@@ -863,6 +908,8 @@ def strict_blockers(data: dict[str, Any]) -> list[str]:
         blockers.append("local offload lanes are not all healthy")
     if not data["public_hygiene"].get("ok"):
         blockers.append("public hygiene gate is not clean")
+    if not data["proof_gate_selftest"].get("ok"):
+        blockers.append("corrected-root proof gate selftest is failing")
     return blockers
 
 
@@ -881,6 +928,7 @@ def maintainer_ready_failed(data: dict[str, Any]) -> bool:
             not data["public_repo"].get("remote_is_github"),
             not data["public_mirror"].get("remote_matches"),
             not data["a733_rfc_recheck"].get("ok"),
+            not data["proof_gate_selftest"].get("ok"),
         ]
     )
 
@@ -942,6 +990,11 @@ def main() -> int:
         "--a733-rfc-recheck-status",
         action="store_true",
         help="Print freshness of the local A733 CCU/pinctrl RFC overlap recheck.",
+    )
+    parser.add_argument(
+        "--proof-gate-selftest-status",
+        action="store_true",
+        help="Print corrected-root proof gate selftest status.",
     )
     parser.add_argument(
         "--dispatcher-waiting-actions",
@@ -1018,6 +1071,15 @@ def main() -> int:
         print(f"next_action={recheck.get('next_action') or 'none'}")
         if recheck.get("error"):
             print(f"error={recheck['error']}")
+    elif args.proof_gate_selftest_status:
+        selftest = data["proof_gate_selftest"]
+        print(f"ok={md_bool(selftest.get('ok'))}")
+        print(f"returncode={selftest.get('returncode')}")
+        print(f"next_action={selftest.get('next_action') or 'none'}")
+        if selftest.get("stdout"):
+            print(f"stdout={selftest['stdout']}")
+        if selftest.get("stderr"):
+            print(f"stderr={selftest['stderr']}")
     elif args.dispatcher_waiting_actions:
         print("\n".join(data["dispatcher_waiting_actions"]) or "none")
     elif args.goal_completion_audit:
