@@ -18,6 +18,9 @@ PUBLIC_REPO = Path(
     os.environ.get("KERNEL_PUBLIC_REPO", "/Users/enzo/projects/Home Lab/cubie-a7s-armbian")
 )
 DEFAULT_TIMEOUT = 30
+STRIX_HOST = os.environ.get("KERNEL_STRIX_HOST", "192.168.50.11")
+STRIX_REPO = os.environ.get("KERNEL_STRIX_REPO", "/srv/projects/homelab")
+STRIX_REMOTE = os.environ.get("KERNEL_STRIX_REMOTE", "mac-mini")
 OPERATOR_BRIEF = "scripts/cubie-corrected-root-operator-brief"
 PATCH_PREP_CHECKLIST = "scripts/a733-patch-prep-checklist"
 BACKUP_APPROVAL_BRIEF = "scripts/kernel-backup-approval-brief"
@@ -116,6 +119,19 @@ def command_text(argv: list[str], timeout: int = DEFAULT_TIMEOUT) -> dict[str, A
         "stdout": proc["stdout"],
         "stderr": proc["stderr"],
     }
+
+
+def strix_dispatch_shell(command: str, *, tty: bool = False) -> str:
+    remote = (
+        f"cd {shlex.quote(STRIX_REPO)} && "
+        f"git pull --ff-only {shlex.quote(STRIX_REMOTE)} main && "
+        f"{command}"
+    )
+    argv = ["ssh"]
+    if tty:
+        argv.append("-tt")
+    argv.extend([STRIX_HOST, remote])
+    return shlex.join(argv)
 
 
 def machine_summary(data: dict[str, Any]) -> dict[str, Any]:
@@ -241,8 +257,8 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
             )
             human_required = True
             human_gate = (
-                "Cubie sudo password and live UART/operator control are required; "
-                "do not install the extlinux label non-interactively."
+                "Cubie sudo password and live UART/operator control are required on Strix; "
+                "Codex Desktop should dispatch the Strix command, not run UART locally on the Mac."
             )
             evidence_gate = (
                 "After install and boot capture, run "
@@ -277,9 +293,9 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
         "evidence_gate": evidence_gate,
         "next_action": gate.get("next_action"),
         "next_command": next_command,
-        "next_shell": f"cd {shlex.quote(str(REPO_ROOT))} && {next_command}" if next_command else "",
+        "next_shell": strix_dispatch_shell(next_command, tty=human_required) if next_command else "",
         "next_reboot_command": next_reboot_command,
-        "next_reboot_shell": next_reboot_command,
+        "next_reboot_shell": strix_dispatch_shell(next_reboot_command) if next_reboot_command else "",
     }
 
 

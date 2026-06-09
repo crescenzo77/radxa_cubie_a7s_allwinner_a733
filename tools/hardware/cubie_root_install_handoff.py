@@ -66,6 +66,19 @@ def interactive_install_command(row: dict[str, Any]) -> str:
     return f"scripts/cubie-interactive-root-install-session --confirm-target-ip {shlex.quote(str(ip))}"
 
 
+def strix_interactive_install_command(row: dict[str, Any]) -> str:
+    return shlex.join(
+        [
+            "ssh",
+            "-tt",
+            "192.168.50.11",
+            "cd /srv/projects/homelab && "
+            "git pull --ff-only mac-mini main && "
+            f"{interactive_install_command(row)}",
+        ]
+    )
+
+
 def capture_argv(row: dict[str, Any]) -> list[str]:
     return [
         str(REPO_ROOT / "scripts" / "cubie-manual-boot-session"),
@@ -135,11 +148,13 @@ def render(staging: dict[str, Any], args: argparse.Namespace) -> str:
                 f"Target: `{host}` `{ip}`",
                 f"Sudo preflight: `{ready.get('sudo_status', 'unknown')}`",
                 "",
-                "Preferred command from this repo:",
+                "Preferred live command from Codex Desktop:",
                 "",
                 "```sh",
-                interactive_install_command(ready),
+                strix_interactive_install_command(ready),
                 "```",
+                "",
+                "This keeps the live UART/root-install session on Strix, where the USB serial adapters are attached.",
                 "",
                 "Run on the board:",
                 "",

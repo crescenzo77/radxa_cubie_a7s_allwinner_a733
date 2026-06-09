@@ -222,10 +222,12 @@ sudo apt install -y \
 Current required interactive handoff:
 
 ```sh
-cd /Users/enzo/projects/homelab
 scripts/cubie-corrected-root-operator-brief
-scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95
+ssh -tt 192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95'
 ```
+
+Codex Desktop runs on the Mac, but live Cubie root-install, UART, and U-Boot
+selection work belongs on Strix because the serial adapters are attached there.
 
 ## Permanent Exclusion
 

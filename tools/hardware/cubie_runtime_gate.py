@@ -214,8 +214,11 @@ def next_action(status: str, staging: dict[str, Any] | None = None) -> str:
             selection = labels[0] if labels else "the staged non-default boot label"
             target_ip = ready[0].get("ip") if ready else "TARGET_IP"
             return (
-                "run scripts/cubie-interactive-root-install-session "
-                f"--confirm-target-ip {target_ip} from an interactive terminal; "
+                "from Codex Desktop, dispatch to Strix: "
+                "ssh -tt 192.168.50.11 'cd /srv/projects/homelab && "
+                "git pull --ff-only mac-mini main && "
+                "scripts/cubie-interactive-root-install-session "
+                f"--confirm-target-ip {target_ip}'; "
                 "enter the Cubie sudo password when prompted, then use the capture it starts "
                 f"to select {selection}"
             )

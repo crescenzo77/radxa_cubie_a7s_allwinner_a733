@@ -146,7 +146,7 @@ ssh -tt -o BatchMode=no -o ConnectTimeout=8 -i /Users/enzo/.ssh/id_ed25519 \
 After the install succeeds, start the UART capture before rebooting:
 
 ```sh
-scripts/cubie-uart-interactive-boot-session a733-v4-abc8d07b0a63-partuuid-ro-proof
+ssh -tt 192.168.50.11 'cd /srv/projects/homelab && git pull --ff-only mac-mini main && scripts/cubie-uart-interactive-boot-session a733-v4-abc8d07b0a63-partuuid-ro-proof'
 ```
 
 Then in U-Boot, run:

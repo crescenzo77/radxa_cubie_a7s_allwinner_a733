@@ -17,6 +17,14 @@ Maintainer-path next action:
 ${next_action}
 \`\`\`
 
+Execution host rule:
+
+\`\`\`text
+Codex Desktop on the Mac is the cockpit only. Live Cubie root-install, UART,
+and U-Boot selection work runs on Strix over SSH because Strix owns the USB
+serial adapters.
+\`\`\`
+
 Current maintainer-readiness blockers:
 
 \`\`\`text
