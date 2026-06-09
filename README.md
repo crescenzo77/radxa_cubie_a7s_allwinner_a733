@@ -45,6 +45,9 @@ unless subsystem maintainers ask for a different plan. Runtime proof for the
 exact v4 kernel and DTB has been captured in the private workflow; raw logs
 remain out of public git. Before mailing, regenerate the patches from a clean
 kernel branch that matches the prerequisite state and rerun all validation.
+Current prerequisite API reconciliation is still open: the DTS must be checked
+against the active A733 CCU clock-input binding, and the A733 MMC compatible
+must either be documented in the series or already exist in the chosen base.
 
 ## Submission Discipline
 

@@ -113,6 +113,13 @@ Current upstream-readiness blockers:
 
 - build a clean kernel candidate branch rebased on the accepted or current
   CCU/PRCM and pinctrl prerequisite work
+- reconcile the DTS with the active A733 CCU RFC clock-input API before branch
+  regeneration; the RFC binding models the main CCU with `hosc`, `losc`,
+  `iosc`, and `losc-fanout`, while the current review DTSI still has only
+  `hosc`, `losc`, and `iosc`
+- resolve A733 MMC compatible coverage before branch regeneration; the current
+  review DTSI uses `allwinner,sun60i-a733-mmc`, which must be documented in the
+  series or already present in the chosen base
 - regenerate the 3-patch export from that exact branch
 - rerun validation, maintainer, bisectability, and runtime checks against the
   regenerated export
@@ -139,6 +146,13 @@ Checks run on the current maintainer-shape review export:
 - `scripts/checkpatch.pl --strict --no-tree` over the exported patches:
   `0 errors`; two reviewed `FILE_PATH_CHANGES` warnings for new DTS files and
   MAINTAINERS coverage
+
+Prerequisite API audit result for this review export:
+
+- fail: current A733 CCU node does not match the active CCU RFC clock-input
+  shape because it omits `losc-fanout`
+- fail: current export uses `allwinner,sun60i-a733-mmc` without carrying the
+  matching MMC binding update or identifying a chosen base that already has it
 
 The MAINTAINERS warnings are intentional review items for this narrow export.
 The earlier local `sun60i` MAINTAINERS scaffolding was dropped because the
