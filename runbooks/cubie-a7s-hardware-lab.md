@@ -207,8 +207,16 @@ Current status as of the latest generated runtime proof bundle:
 - UART preflight: `ok` on Strix `192.168.50.11`
 - excluded kernel-work target remains `192.168.50.65`
 
-Run this from an interactive Codex terminal when the operator is ready to type
-the Cubie sudo password:
+First run the read-only A733 preflight. It checks the dispatcher/offload lanes,
+backup posture, dirty workflow state, UART readiness, and Cubie root-install
+dry-run before any live board action:
+
+```sh
+scripts/a733-patch-prep-checklist --preflight
+```
+
+If that passes, run this from an interactive Codex terminal when the operator
+is ready to type the Cubie sudo password:
 
 ```sh
 scripts/cubie-interactive-root-install-session \
@@ -310,11 +318,12 @@ reruns the runtime evidence/gate reports after the session exits. It does not
 reboot or power-cycle the board.
 
 If the install should be driven from one interactive Codex terminal session, run
-`scripts/cubie-interactive-root-install-session`. It opens an SSH TTY to the
-verified staged board, lets the human type the sudo password directly into that
-TTY, then verifies the installed boot files and starts the UART capture helper.
-It refuses to run an install that needs interactive sudo without an interactive
-TTY.
+`scripts/a733-patch-prep-checklist --preflight` first, then
+`scripts/cubie-interactive-root-install-session`. The installer opens an SSH TTY
+to the verified staged board, lets the human type the sudo password directly
+into that TTY, then verifies the installed boot files and starts the UART
+capture helper. It refuses to run an install that needs interactive sudo without
+an interactive TTY.
 
 `scripts/cubie-uart-inventory-proposal` is also read-only. It emits a proposed
 board UART mapping only after a strong candidate exists; it never edits the
