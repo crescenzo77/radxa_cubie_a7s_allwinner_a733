@@ -29,6 +29,7 @@ CHECKS: list[tuple[str, str, str]] = [
     ("ttyS0", "mainline UART0 ttyS0", r"ttyS0|2500000\.serial"),
     ("sunxi_mmc", "SDMMC0 driver initialization", r"sunxi-mmc 4020000\.mmc: initialized"),
     ("root_partuuid", "correct PARTUUID in command line or mount evidence", re.escape(EXPECTED_PARTUUID)),
+    ("root_ro", "read-only root command line or mount evidence", r"(?:^|\s)ro(?:\s|$)|/dev/mmcblk0p3\s+/\s+\S+\s+ro[,\s]"),
     ("rootflags_noload", "read-only ext4 noload proof intent", r"rootflags=noload|noload"),
     ("mmcblk0", "mmcblk0 block device", r"mmcblk0"),
     ("mmcblk0p3", "mmcblk0p3 partition/root evidence", r"mmcblk0p3|mmcblk0:.*p3"),

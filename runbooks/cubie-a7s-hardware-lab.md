@@ -269,6 +269,8 @@ errors remain failures.
 The log must include U-Boot handoff/load evidence, not only a mid-kernel
 fragment, because the proof needs to show the RAM-only `drm_debug=1` path got
 past the vendor FDT creation hang.
+The log must also show read-only root intent or mount evidence, such as `ro` in
+`/proc/cmdline` or a read-only `/` mount line.
 
 For the corrected-root label, `scripts/cubie-uart-interactive-boot-session`
 also runs the latest-log helper after pulling logs:

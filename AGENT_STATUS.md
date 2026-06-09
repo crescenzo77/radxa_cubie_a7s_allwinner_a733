@@ -1,5 +1,17 @@
 # Agent Status
 
+## 2026-06-09 corrected-root read-only gate tightened
+
+- Updated `scripts/cubie-corrected-root-proof-gate` to require explicit
+  read-only root evidence in addition to `rootflags=noload`.
+- The proof gate now looks for `ro` in the command line or a read-only `/`
+  mount line, preventing a writable-root boot from counting as the first
+  corrected-root proof.
+- Updated the corrected-root proof plan and Cubie hardware runbook to keep the
+  operator checklist aligned with the deterministic gate.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 corrected-root handoff gate tightened
 
 - Updated `scripts/cubie-corrected-root-proof-gate` to require U-Boot

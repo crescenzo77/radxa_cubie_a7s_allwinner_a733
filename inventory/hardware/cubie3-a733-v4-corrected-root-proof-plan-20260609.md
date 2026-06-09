@@ -176,7 +176,9 @@ Capture a UART log that shows:
 - `sunxi-mmc 4020000.mmc: initialized`
 - `mmcblk0` and partition 3 enumeration, or equivalent kernel partition
   listing that supports the chosen root argument
-- a read-only shell through `init=/bin/sh` or a read-only root mount
+- explicit read-only root intent or mount evidence (`ro` in `/proc/cmdline` or
+  a read-only `/` mount)
+- a shell through `init=/bin/sh` or a root mount
 - no kernel panic, Oops, or new warning that undercuts the DTS claims
 
 Inside the shell, collect:
