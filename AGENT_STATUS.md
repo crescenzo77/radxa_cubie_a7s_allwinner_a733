@@ -1,5 +1,21 @@
 # Agent Status
 
+## 2026-06-09 specific maintainer health blockers
+
+- Updated `scripts/kernel-workflow-status --maintainer-ready-blockers` so it
+  reports specific strict-health failures instead of the vague
+  `workflow health is not strict-clean` line.
+- Current first blocker is now `private workflow repo is dirty`, followed by
+  the unchanged Cubie runtime proof and A733 export-shape blockers.
+- Added a reusable `strict_blockers()` helper while preserving the existing
+  boolean `--strict` behavior.
+- Validation: `python3 -m py_compile tools/inventory/kernel_workflow_status.py`,
+  `bash -n scripts/kernel-workflow-status`,
+  `scripts/kernel-workflow-status --maintainer-ready-blockers`, and JSON
+  assertion that the vague workflow-health blocker is absent.
+- No board state, `/boot` files, DTS files, public repo files, or exported
+  patches were changed.
+
 ## 2026-06-09 operator brief includes blockers
 
 - Updated `scripts/cubie-corrected-root-operator-brief` to include the current

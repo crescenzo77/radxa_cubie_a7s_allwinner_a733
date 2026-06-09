@@ -282,8 +282,7 @@ def public_hygiene_summary(data: dict[str, Any]) -> dict[str, Any]:
 
 def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
     blockers: list[str] = []
-    if strict_failed(data):
-        blockers.append("workflow health is not strict-clean")
+    blockers.extend(strict_blockers(data))
     if data["cubie_runtime_gate"].get("status") != "runtime-ready":
         blockers.append(f"cubie runtime proof is {data['cubie_runtime_gate'].get('status')}")
     if not data["a733_series_shape"].get("ok"):
@@ -291,19 +290,8 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
             "A733 export shape is not maintainer-ready: "
             + ", ".join(data["a733_series_shape"].get("finding_kinds", []) or ["unknown"])
         )
-    if not data["public_hygiene"].get("ok"):
-        blockers.append(
-            "public hygiene failed: "
-            + ", ".join(data["public_hygiene"].get("kinds", []) or ["unknown"])
-        )
-    if not data["public_repo"].get("clean"):
-        blockers.append("public kernel repo is dirty")
-    if not data["public_repo"].get("remote_matches"):
-        blockers.append("public kernel repo is not backed up to its public remote")
     if not data["public_repo"].get("remote_is_github"):
         blockers.append("public kernel repo public remote is not GitHub")
-    if not data["public_mirror"].get("remote_matches"):
-        blockers.append("ThinkCentre public mirror is not backed up")
 
     cubie_next = data["cubie_runtime_gate"].get("next_shell") or data["cubie_runtime_gate"].get("next_command")
     if data["cubie_runtime_gate"].get("status") != "runtime-ready" and cubie_next:
@@ -463,18 +451,30 @@ def markdown(data: dict[str, Any]) -> str:
 
 
 def strict_failed(data: dict[str, Any]) -> bool:
-    return any(
-        [
-            not data["homelab"].get("clean"),
-            not data["homelab"].get("remote_matches"),
-            not data["public_repo"].get("clean"),
-            not data["public_repo"].get("remote_matches"),
-            not data["public_mirror"].get("remote_matches"),
-            data["machine_readiness"].get("required_missing", 1) != 0,
-            not data["local_offload"].get("ok"),
-            not data["public_hygiene"].get("ok"),
-        ]
-    )
+    return bool(strict_blockers(data))
+
+
+def strict_blockers(data: dict[str, Any]) -> list[str]:
+    blockers: list[str] = []
+    if not data["homelab"].get("clean"):
+        blockers.append("private workflow repo is dirty")
+    if not data["homelab"].get("remote_matches"):
+        blockers.append("private workflow repo is not backed up to its origin")
+    if not data["public_repo"].get("clean"):
+        blockers.append("public kernel repo is dirty")
+    if not data["public_repo"].get("remote_matches"):
+        blockers.append("public kernel repo is not backed up to its public remote")
+    if not data["public_mirror"].get("remote_matches"):
+        blockers.append("ThinkCentre public mirror is not backed up")
+    if data["machine_readiness"].get("required_missing", 1) != 0:
+        blockers.append(
+            f"machine readiness has {data['machine_readiness'].get('required_missing')} required missing checks"
+        )
+    if not data["local_offload"].get("ok"):
+        blockers.append("local offload lanes are not all healthy")
+    if not data["public_hygiene"].get("ok"):
+        blockers.append("public hygiene gate is not clean")
+    return blockers
 
 
 def runtime_strict_failed(data: dict[str, Any]) -> bool:
