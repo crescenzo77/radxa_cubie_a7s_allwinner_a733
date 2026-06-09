@@ -11,6 +11,10 @@ from pathlib import Path
 from typing import Any
 
 
+CCU_DEPENDENCY_ID = "20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech"
+RTC_DEPENDENCY_ID = "20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech"
+
+
 def patch_files(path: Path) -> list[Path]:
     if path.is_file():
         return [path]
@@ -80,6 +84,17 @@ def audit(path: Path) -> dict[str, Any]:
         return {"status": "FAIL", "root": str(path), "findings": findings}
 
     if 'compatible = "allwinner,sun60i-a733-ccu";' in added:
+        if CCU_DEPENDENCY_ID in full_text and RTC_DEPENDENCY_ID not in full_text:
+            findings.append(
+                {
+                    "kind": "rtc-dependency-missing",
+                    "detail": (
+                        "Junhui Liu's A733 CCU RFC states a functional dependency "
+                        "on the A733 RTC series, so the review export should carry "
+                        f"Depends-on: {RTC_DEPENDENCY_ID}"
+                    ),
+                }
+            )
         names = ccu_clock_names(added)
         count = ccu_clocks_cell_count(added)
         if "losc-fanout" not in names:

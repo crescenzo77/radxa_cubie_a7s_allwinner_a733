@@ -16,7 +16,6 @@ FORBIDDEN_SUBJECTS = {
     "local-ccu-driver": re.compile(r"\bclk:\s+sunxi-ng:.*\bA733\b", re.IGNORECASE),
     "local-pinctrl-binding": re.compile(r"\bdt-bindings:\s+pinctrl:.*\bA733\b", re.IGNORECASE),
     "local-pinctrl-driver": re.compile(r"\bpinctrl:\s+sunxi:.*\bA733\b", re.IGNORECASE),
-    "standalone-mmc-compatible": re.compile(r"\bdt-bindings:\s+mmc:.*\bA733\b", re.IGNORECASE),
     "maintainers-sun60i-pattern": re.compile(r"\bMAINTAINERS:.*\bsun60i\b", re.IGNORECASE),
 }
 
@@ -26,7 +25,12 @@ REQUIRED_SUBJECTS = {
     "board-dts": re.compile(r"\barm64:\s+dts:\s+allwinner:.*\bRadxa Cubie A7S\b", re.IGNORECASE),
 }
 
+OPTIONAL_SUBJECTS = {
+    "mmc-binding": re.compile(r"\bdt-bindings:\s+mmc:.*\bA733\b", re.IGNORECASE),
+}
+
 DEPENDENCY_IDS = {
+    "20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech",
     "20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech",
     "20250821004232.8134-1-andre.przywara@arm.com",
 }
@@ -124,6 +128,25 @@ def classify(path: Path, max_patches: int) -> dict[str, Any]:
     for name in missing_required:
         findings.append({"kind": f"missing-{name}", "detail": "minimal DTS/board series shape is incomplete"})
 
+    required_or_optional = [*REQUIRED_SUBJECTS.values(), *OPTIONAL_SUBJECTS.values()]
+    unexpected_subjects = []
+    for item in non_cover:
+        if not item["subject"]:
+            unexpected_subjects.append(item["name"])
+            continue
+        if not any(pattern.search(item["subject"]) for pattern in required_or_optional):
+            unexpected_subjects.append(item["subject"])
+    for subject in unexpected_subjects:
+        findings.append(
+            {
+                "kind": "unexpected-extra-patch",
+                "detail": (
+                    "only board binding, optional A733 MMC binding, SoC DTSI, "
+                    f"and board DTS patches belong in this slice: {subject}"
+                ),
+            }
+        )
+
     dependency_text = "\n".join(
         line.strip() for line in full_text.splitlines() if "Depends-on:" in line
     )
@@ -144,7 +167,7 @@ def classify(path: Path, max_patches: int) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("path", help="Patch file or directory containing 000*.patch files")
-    parser.add_argument("--max-patches", type=int, default=3)
+    parser.add_argument("--max-patches", type=int, default=4)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 

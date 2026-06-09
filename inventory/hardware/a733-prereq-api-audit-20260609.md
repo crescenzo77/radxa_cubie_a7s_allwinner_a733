@@ -15,6 +15,8 @@ This is a non-mailing audit. It does not authorize patch submission.
   `/tmp/lore-linux-sunxi-0.git`
 - CCU/PRCM RFC:
   `20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech`
+- RTC series referenced by the CCU/PRCM RFC:
+  `20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech`
 - Pinctrl RFC:
   `20250821004232.8134-1-andre.przywara@arm.com`
 - Local review matrix card:
@@ -51,6 +53,10 @@ ccu-clock-input-count
 mmc-compatible-without-binding-coverage
 ```
 
+After this audit, the public review export metadata was updated to carry the
+RTC `Depends-on:` ID as well as the CCU/PRCM and pinctrl IDs. That fixes the
+dependency declaration, but not the remaining DTS/API mismatch.
+
 ### CCU Clock Inputs
 
 Junhui Liu's A733 CCU RFC binding patch documents the main CCU example as:
@@ -70,6 +76,20 @@ clock-names = "hosc", "losc", "iosc";
 Conclusion: a clean candidate branch must reconcile the SoC DTSI with the
 chosen CCU/RTC prerequisite stack before dt-binding or DTB validation can be
 claimed.
+
+### RTC Dependency
+
+Junhui Liu's A733 CCU RFC cover letter states that the CCU work functionally
+relies on the A733 RTC series:
+
+```text
+20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech
+```
+
+The RTC series adds the A733 RTC compatible, `sun60i-a733-rtc.h`, and RTC CCU
+clock outputs including `hosc`, `osc32k`, and `osc32k-fanout`. The clean
+candidate branch therefore needs an explicit RTC prerequisite or an accepted
+base that already contains it.
 
 ### MMC Compatible Coverage
 
@@ -95,10 +115,11 @@ Do not prepare or send maintainer-facing patches yet. The next kernel-facing
 action is to resolve this prerequisite API audit:
 
 1. Choose the exact clean base and prerequisite stack.
-2. Reconcile the A733 CCU clock inputs with the current CCU/RTC binding shape.
-3. Resolve A733 MMC compatible binding coverage.
-4. Regenerate the review export from that clean branch.
-5. Rerun shape, prerequisite API, public hygiene, checkpatch, binding, DTB,
+2. Include or identify the accepted A733 RTC prerequisite used by the CCU.
+3. Reconcile the A733 CCU clock inputs with the current CCU/RTC binding shape.
+4. Resolve A733 MMC compatible binding coverage.
+5. Regenerate the review export from that clean branch.
+6. Rerun shape, prerequisite API, public hygiene, checkpatch, binding, DTB,
    build, bisectability, maintainer-recipient, and runtime gates.
 
 This preserves the guardrails: no vendor U-Boot pollution, no Ethernet/VPU/

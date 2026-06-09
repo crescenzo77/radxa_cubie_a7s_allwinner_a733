@@ -9,8 +9,10 @@ tmpdir="$(mktemp -d)"
 trap 'rm -rf "${tmpdir}"' EXIT
 
 valid="${tmpdir}/valid"
+valid_mmc="${tmpdir}/valid-mmc"
 missing_binding="${tmpdir}/missing-binding"
-mkdir -p "${valid}" "${missing_binding}"
+unexpected_extra="${tmpdir}/unexpected-extra"
+mkdir -p "${valid}" "${valid_mmc}" "${missing_binding}" "${unexpected_extra}"
 
 cat >"${valid}/0001-dt-bindings-arm-sunxi-add-Radxa-Cubie-A7S.patch" <<'PATCH'
 Subject: [PATCH 1/3] dt-bindings: arm: sunxi: add Radxa Cubie A7S
@@ -25,6 +27,7 @@ diff --git a/Documentation/devicetree/bindings/arm/sunxi.yaml b/Documentation/de
 +          - const: allwinner,sun60i-a733
 +
 --
+Depends-on: 20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech
 Depends-on: 20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech
 Depends-on: 20250821004232.8134-1-andre.przywara@arm.com
 PATCH
@@ -42,6 +45,7 @@ diff --git a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi b/arch/arm64/boot/dt
 +	uart0: serial@2500000 {};
 +};
 --
+Depends-on: 20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech
 Depends-on: 20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech
 Depends-on: 20250821004232.8134-1-andre.przywara@arm.com
 PATCH
@@ -59,6 +63,7 @@ diff --git a/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts b/arch/arm6
 +	chosen {};
 +};
 --
+Depends-on: 20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech
 Depends-on: 20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech
 Depends-on: 20250821004232.8134-1-andre.przywara@arm.com
 PATCH
@@ -66,7 +71,38 @@ PATCH
 cp "${valid}/0002-arm64-dts-allwinner-add-Allwinner-A733-SoC.patch" "${missing_binding}/0001-arm64-dts-allwinner-add-Allwinner-A733-SoC.patch"
 cp "${valid}/0003-arm64-dts-allwinner-add-Radxa-Cubie-A7S.patch" "${missing_binding}/0002-arm64-dts-allwinner-add-Radxa-Cubie-A7S.patch"
 
+cp "${valid}/0001-dt-bindings-arm-sunxi-add-Radxa-Cubie-A7S.patch" "${valid_mmc}/0001-dt-bindings-arm-sunxi-add-Radxa-Cubie-A7S.patch"
+cat >"${valid_mmc}/0002-dt-bindings-mmc-add-Allwinner-A733-compatible.patch" <<'PATCH'
+Subject: [PATCH 2/4] dt-bindings: mmc: add Allwinner A733 compatible
+
+---
+ Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml | 3 +++
+diff --git a/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml b/Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml
+@@ -1,3 +1,6 @@
++      - items:
++          - const: allwinner,sun60i-a733-mmc
++          - const: allwinner,sun20i-d1-mmc
+--
+Depends-on: 20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech
+Depends-on: 20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech
+Depends-on: 20250821004232.8134-1-andre.przywara@arm.com
+PATCH
+cp "${valid}/0002-arm64-dts-allwinner-add-Allwinner-A733-SoC.patch" "${valid_mmc}/0003-arm64-dts-allwinner-add-Allwinner-A733-SoC.patch"
+cp "${valid}/0003-arm64-dts-allwinner-add-Radxa-Cubie-A7S.patch" "${valid_mmc}/0004-arm64-dts-allwinner-add-Radxa-Cubie-A7S.patch"
+
+cp "${valid_mmc}"/*.patch "${unexpected_extra}/"
+cat >"${unexpected_extra}/0002-dt-bindings-sound-add-Allwinner-A733-audio.patch" <<'PATCH'
+Subject: [PATCH 2/4] dt-bindings: sound: add Allwinner A733 audio
+
+---
+ Documentation/devicetree/bindings/sound/allwinner,a733.yaml | 1 +
+diff --git a/Documentation/devicetree/bindings/sound/allwinner,a733.yaml b/Documentation/devicetree/bindings/sound/allwinner,a733.yaml
+@@ -0,0 +1 @@
++audio
+PATCH
+
 "${gate}" "${valid}" >/dev/null
+"${gate}" "${valid_mmc}" >/dev/null
 
 if "${gate}" "${missing_binding}" >"${tmpdir}/missing-binding.out" 2>&1; then
   printf 'expected missing board binding to fail\n' >&2
@@ -75,6 +111,16 @@ fi
 if ! grep -q 'missing-board-binding' "${tmpdir}/missing-binding.out"; then
   printf 'missing binding failure did not name missing-board-binding\n' >&2
   cat "${tmpdir}/missing-binding.out" >&2
+  exit 1
+fi
+
+if "${gate}" "${unexpected_extra}" >"${tmpdir}/unexpected-extra.out" 2>&1; then
+  printf 'expected unexpected extra patch to fail\n' >&2
+  exit 1
+fi
+if ! grep -q 'unexpected-extra-patch' "${tmpdir}/unexpected-extra.out"; then
+  printf 'unexpected extra failure did not name unexpected-extra-patch\n' >&2
+  cat "${tmpdir}/unexpected-extra.out" >&2
   exit 1
 fi
 

@@ -339,7 +339,8 @@ def a733_series_shape_summary(data: dict[str, Any]) -> dict[str, Any]:
     else:
         next_action = (
             "do not send the current public patch export; reshape to the narrow "
-            "board-binding/SoC-DTSI/board-DTS series after corrected-root runtime proof"
+            "board-binding/optional-MMC-binding/SoC-DTSI/board-DTS series after "
+            "corrected-root runtime proof"
         )
     return {
         "ok": gate.get("status") == "PASS",
@@ -484,7 +485,8 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
     elif not data["a733_series_shape"].get("ok"):
         next_action = (
             "after corrected-root runtime proof, reshape the public export to "
-            "the narrow A733 board-binding/SoC-DTSI/board-DTS series before patch-prep validation"
+            "the narrow A733 board-binding/optional-MMC-binding/SoC-DTSI/board-DTS "
+            "series before patch-prep validation"
         )
     elif not data["a733_prereq_api"].get("ok"):
         next_action = (
@@ -640,7 +642,7 @@ def goal_completion_audit(data: dict[str, Any]) -> dict[str, Any]:
             "requirement": "maintainer guardrails are enforced before patch prep",
             "status": "pass" if data["a733_series_shape"].get("ok") else "fail",
             "evidence": (
-                "series-shape gate passes for the narrow three-patch review export"
+                "series-shape gate passes for the narrow review export"
                 if data["a733_series_shape"].get("ok")
                 else "series-shape gate blocks the current export from maintainer use"
             ),
