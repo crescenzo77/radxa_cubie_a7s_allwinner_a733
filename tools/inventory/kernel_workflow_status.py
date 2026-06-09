@@ -17,7 +17,18 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 PUBLIC_REPO = Path(
     os.environ.get("KERNEL_PUBLIC_REPO", "/Users/enzo/projects/Home Lab/cubie-a7s-armbian")
 )
-LINUX_TREE = Path(os.environ.get("KERNEL_TREE_PATH", "/Users/enzo/projects/linux-a733"))
+DEFAULT_LINUX_TREE_CANDIDATES = [
+    "/srv/projects/cubie-a7s-armbian/sources/mainline-linux",
+    "/srv/projects/kernel-work/scratch/strix-mainline-linux",
+    "/Users/enzo/projects/linux-a733",
+]
+if os.environ.get("KERNEL_TREE_PATH"):
+    LINUX_TREE = Path(os.environ["KERNEL_TREE_PATH"])
+else:
+    LINUX_TREE = next(
+        (Path(candidate) for candidate in DEFAULT_LINUX_TREE_CANDIDATES if Path(candidate).exists()),
+        Path(DEFAULT_LINUX_TREE_CANDIDATES[-1]),
+    )
 DEFAULT_TIMEOUT = 30
 STRIX_HOST = os.environ.get("KERNEL_STRIX_HOST", "192.168.50.11")
 STRIX_SSH_TARGET = os.environ.get("KERNEL_STRIX_SSH_TARGET", f"enzo@{STRIX_HOST}")

@@ -3,7 +3,15 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 public_repo="${KERNEL_PUBLIC_REPO:-/Users/enzo/projects/Home Lab/cubie-a7s-armbian}"
-kernel_tree="${KERNEL_TREE_PATH:-/Users/enzo/projects/linux-a733}"
+if [ -n "${KERNEL_TREE_PATH:-}" ]; then
+  kernel_tree="${KERNEL_TREE_PATH}"
+elif [ -e /srv/projects/cubie-a7s-armbian/sources/mainline-linux ]; then
+  kernel_tree="/srv/projects/cubie-a7s-armbian/sources/mainline-linux"
+elif [ -e /srv/projects/kernel-work/scratch/strix-mainline-linux ]; then
+  kernel_tree="/srv/projects/kernel-work/scratch/strix-mainline-linux"
+else
+  kernel_tree="/Users/enzo/projects/linux-a733"
+fi
 
 usage() {
   cat <<USAGE

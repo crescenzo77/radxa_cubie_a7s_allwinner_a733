@@ -21,6 +21,18 @@ scripts/a733-prereq-stack-audit /path/to/linux-tree
 scripts/kernel-workflow-status --a733-prereq-stack-status
 ```
 
+`KERNEL_TREE_PATH` overrides the audited tree. Without that override, the
+workflow status tool chooses the first existing host-local path from:
+
+```text
+/srv/projects/cubie-a7s-armbian/sources/mainline-linux
+/srv/projects/kernel-work/scratch/strix-mainline-linux
+/Users/enzo/projects/linux-a733
+```
+
+This keeps Codex Desktop as the dispatcher while allowing Strix and AMD to use
+their local kernel trees instead of a Mac-only path.
+
 It checks the chosen Linux tree for:
 
 - A733 RTC binding/header/RTC CCU driver support.
@@ -33,7 +45,7 @@ It checks the chosen Linux tree for:
 
 ## Current Audit Result
 
-Command:
+Mac command:
 
 ```sh
 scripts/a733-prereq-stack-audit /Users/enzo/projects/linux-a733
