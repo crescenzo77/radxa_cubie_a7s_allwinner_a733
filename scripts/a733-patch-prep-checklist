@@ -55,6 +55,8 @@ if [ "${preflight}" = "1" ]; then
     scripts/kernel-offload-status-smoke
   run_gate "backup posture" \
     scripts/kernel-workflow-status --workflow-backup-status
+  run_gate "backup approval brief" \
+    scripts/kernel-backup-approval-brief
   printf '\nA733 patch-prep preflight gates passed.\n'
   exit 0
 fi
@@ -114,6 +116,10 @@ To check non-hardware dispatcher and backup readiness while waiting:
 6. Backup posture:
 
    cd ${repo_root} && scripts/kernel-workflow-status --workflow-backup-status
+
+7. Backup approval brief:
+
+   cd ${repo_root} && scripts/kernel-backup-approval-brief
 
 The current 9-patch scaffolding export is not sendable. A future sendable
 candidate must be the narrow DTS/board slice, carry the two active Depends-on
