@@ -18,6 +18,7 @@ PUBLIC_REPO = Path(
 DEFAULT_TIMEOUT = 30
 OPERATOR_BRIEF = "scripts/cubie-corrected-root-operator-brief"
 PATCH_PREP_CHECKLIST = "scripts/a733-patch-prep-checklist"
+BACKUP_APPROVAL_BRIEF = "scripts/kernel-backup-approval-brief"
 REQUIRED_OFFLOAD_TARGETS = {"amd-fast", "amd-research", "strix-review"}
 
 
@@ -422,6 +423,10 @@ def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
     backup_next = data.get("workflow_backup", {}).get("next_action")
     if backup_next and backup_next != "backup posture is current":
         actions.append(f"backup next action: {backup_next}")
+        actions.append(
+            "read backup approval brief before changing remotes: "
+            f"cd {shlex.quote(str(REPO_ROOT))} && {BACKUP_APPROVAL_BRIEF}"
+        )
     if data["local_offload"].get("ok") and idle_candidates not in ("0", 0):
         actions.append(
             "optional advisory review only: "

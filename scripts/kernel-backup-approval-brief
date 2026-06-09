@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+public_repo="${KERNEL_PUBLIC_REPO:-/Users/enzo/projects/Home Lab/cubie-a7s-armbian}"
+
+echo "# Kernel Backup Approval Brief"
+echo
+echo "Private workflow backup posture:"
+echo
+echo '```text'
+"${repo_root}/scripts/kernel-workflow-status" --workflow-backup-status
+echo '```'
+echo
+echo "Private workflow remotes:"
+echo
+echo '```text'
+git -C "${repo_root}" remote -v || true
+echo '```'
+echo
+echo "Public kernel remotes:"
+echo
+echo '```text'
+git -C "${public_repo}" remote -v || true
+echo '```'
+echo
+cat <<'BRIEF'
+The private workflow repo is currently backed up to its configured local origin.
+It is not GitHub-backed because no GitHub remote is configured for this private
+repo. Do not add a GitHub remote or push private workflow material to GitHub
+without explicit human approval of the destination URL and expected visibility.
+
+Public kernel-facing material is already tracked separately by the public repo's
+GitHub remote and ThinkCentre mirror.
+BRIEF

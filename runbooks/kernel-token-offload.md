@@ -41,6 +41,13 @@ mirror from public kernel-facing material that is backed up to GitHub and the
 ThinkCentre mirror. Do not invent or add a GitHub remote without explicit human
 approval.
 
+To review the current remote layout before approving any private GitHub backup
+change:
+
+```sh
+scripts/kernel-backup-approval-brief
+```
+
 When the maintainer path is waiting on a human/hardware gate, list only safe
 coordinator actions with:
 
