@@ -60,6 +60,8 @@ if [ "${preflight}" = "1" ]; then
     scripts/kernel-workflow-status --workflow-dirty-status
   run_gate "A733 RFC overlap freshness" \
     scripts/kernel-workflow-status --a733-rfc-recheck-status
+  run_gate "corrected-root proof gate selftest" \
+    scripts/cubie-corrected-root-proof-gate-selftest
   run_gate "backup approval brief" \
     scripts/kernel-backup-approval-brief
   run_gate "dispatcher stopping-point audit" \
@@ -80,6 +82,8 @@ if [ "${run}" = "1" ]; then
     scripts/kernel-offload-status-smoke
   run_gate "A733 RFC overlap freshness" \
     scripts/kernel-workflow-status --a733-rfc-recheck-status
+  run_gate "corrected-root proof gate selftest" \
+    scripts/cubie-corrected-root-proof-gate-selftest
   run_gate "maintainer-ready workflow gate" \
     scripts/kernel-workflow-status --maintainer-ready-strict
   run_gate "A733 series shape gate" \
@@ -134,23 +138,30 @@ To check read-only dispatcher, backup, and Cubie session readiness while waiting
 
    cd ${repo_root} && scripts/kernel-public-hygiene-gate "${public_repo}"
 
-7. Backup posture:
+7. Corrected-root proof gate selftest:
+
+   cd ${repo_root} && scripts/cubie-corrected-root-proof-gate-selftest
+
+   This guards the exact-v4 UART proof classifier before any captured log is
+   treated as maintainer evidence.
+
+8. Backup posture:
 
    cd ${repo_root} && scripts/kernel-workflow-status --workflow-backup-status
 
-8. Workflow dirty status:
+9. Workflow dirty status:
 
    cd ${repo_root} && scripts/kernel-workflow-status --workflow-dirty-status
 
-9. Backup approval brief:
+10. Backup approval brief:
 
    cd ${repo_root} && scripts/kernel-backup-approval-brief
 
-10. Cubie corrected-root session dry-run:
+11. Cubie corrected-root session dry-run:
 
    cd ${repo_root} && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95 --dry-run
 
-11. Dispatcher stopping-point audit:
+12. Dispatcher stopping-point audit:
 
    cd ${repo_root} && scripts/kernel-workflow-status --stopping-point-audit
 
