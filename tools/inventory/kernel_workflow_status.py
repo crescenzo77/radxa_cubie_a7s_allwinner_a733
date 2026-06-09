@@ -22,7 +22,8 @@ OPERATOR_BRIEF = "scripts/cubie-corrected-root-operator-brief"
 PATCH_PREP_CHECKLIST = "scripts/a733-patch-prep-checklist"
 BACKUP_APPROVAL_BRIEF = "scripts/kernel-backup-approval-brief"
 REQUIRED_OFFLOAD_TARGETS = {"amd-fast", "amd-research", "strix-review"}
-RFC_RECHECK_PATH = REPO_ROOT / "task-packets/kernel/research/a733-rfc-recheck-20260606.md"
+RFC_RECHECK_GLOB = "a733-rfc-recheck-*.md"
+RFC_RECHECK_DIR = REPO_ROOT / "task-packets/kernel/research"
 
 
 def run(
@@ -321,7 +322,14 @@ def public_hygiene_summary(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def rfc_recheck_summary(path: Path = RFC_RECHECK_PATH) -> dict[str, Any]:
+def latest_rfc_recheck_path() -> Path:
+    candidates = sorted(RFC_RECHECK_DIR.glob(RFC_RECHECK_GLOB))
+    return candidates[-1] if candidates else RFC_RECHECK_DIR / "a733-rfc-recheck-missing.md"
+
+
+def rfc_recheck_summary(path: Path | None = None) -> dict[str, Any]:
+    if path is None:
+        path = latest_rfc_recheck_path()
     if not path.exists():
         return {
             "ok": False,
