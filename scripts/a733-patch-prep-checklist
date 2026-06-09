@@ -10,8 +10,9 @@ usage: $(basename "$0") [--run|--preflight]
 
 Without arguments, print the read-only checklist. With --run, execute the
 patch-prep gates in order and stop on the first failure. With --preflight,
-execute only the dispatcher/offload and backup checks that do not require the
-live Cubie runtime proof to have passed.
+execute only read-only dispatcher, backup, and Cubie session dry-run checks
+that do not install files or require the live Cubie runtime proof to have
+passed.
 USAGE
 }
 
@@ -57,6 +58,8 @@ if [ "${preflight}" = "1" ]; then
     scripts/kernel-workflow-status --workflow-backup-status
   run_gate "backup approval brief" \
     scripts/kernel-backup-approval-brief
+  run_gate "Cubie corrected-root session dry-run" \
+    scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95 --dry-run
   printf '\nA733 patch-prep preflight gates passed.\n'
   exit 0
 fi
@@ -89,7 +92,7 @@ To execute the gates in order:
 
    cd ${repo_root} && scripts/a733-patch-prep-checklist --run
 
-To check non-hardware dispatcher and backup readiness while waiting:
+To check read-only dispatcher, backup, and Cubie session readiness while waiting:
 
    cd ${repo_root} && scripts/a733-patch-prep-checklist --preflight
 
@@ -120,6 +123,10 @@ To check non-hardware dispatcher and backup readiness while waiting:
 7. Backup approval brief:
 
    cd ${repo_root} && scripts/kernel-backup-approval-brief
+
+8. Cubie corrected-root session dry-run:
+
+   cd ${repo_root} && scripts/cubie-interactive-root-install-session --confirm-target-ip 192.168.50.95 --dry-run
 
 The current 9-patch scaffolding export is not sendable. A future sendable
 candidate must be the narrow DTS/board slice, carry the two active Depends-on
