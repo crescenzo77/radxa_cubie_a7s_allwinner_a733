@@ -11,6 +11,8 @@ else
 fi
 if [ -n "${KERNEL_TREE_PATH:-}" ]; then
   kernel_tree="${KERNEL_TREE_PATH}"
+elif [ -e /srv/projects/a733-prereq-stack-current ]; then
+  kernel_tree="/srv/projects/a733-prereq-stack-current"
 elif [ -e /srv/projects/cubie-a7s-armbian/sources/mainline-linux ]; then
   kernel_tree="/srv/projects/cubie-a7s-armbian/sources/mainline-linux"
 elif [ -e /srv/projects/kernel-work/scratch/strix-mainline-linux ]; then

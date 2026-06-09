@@ -70,10 +70,12 @@ binding/header/RTC CCU driver, lacks the A733 R-CCU/PRCM pieces from the current
 CCU RFC, and still has a three-input A733 CCU binding/DTSI shape. See
 `inventory/hardware/a733-prereq-stack-audit-20260609.md`.
 
-A later Strix scratch worktree proved that RTC and CCU/PRCM can be stacked on
-`8fde5d1d47f6`; the next unresolved stack blocker is rebasing Andre Przywara's
-A733 pinctrl RFC, beginning at patch `2/9`, plus resolving MMC compatible
-binding coverage for the regenerated export.
+A later Strix scratch worktree proved that RTC, CCU/PRCM, pinctrl, and focused
+MMC binding coverage can be stacked on `8fde5d1d47f6`. The stable Strix pointer
+is `/srv/projects/a733-prereq-stack-current`, and
+`scripts/a733-prereq-stack-audit` passes there at scratch head
+`a1f5f546f116`. The next unresolved blocker is regenerating the public review
+export against that passing stack and validating the resulting DTS/API shape.
 
 ### CCU Clock Inputs
 
@@ -132,13 +134,15 @@ compatible if that is technically correct.
 Do not prepare or send maintainer-facing patches yet. The next kernel-facing
 action is to resolve this prerequisite API audit:
 
-1. Choose or build the exact clean base and prerequisite stack.
-2. Run `scripts/a733-prereq-stack-audit` against that tree.
-3. Include or identify the accepted A733 RTC prerequisite used by the CCU.
-4. Reconcile the A733 CCU clock inputs with the current CCU/RTC binding shape.
-5. Resolve A733 MMC compatible binding coverage.
-6. Regenerate the review export from that clean branch.
-7. Rerun shape, prerequisite API, public hygiene, checkpatch, binding, DTB,
+1. Use the passing Strix prerequisite stack at
+   `/srv/projects/a733-prereq-stack-current`.
+2. Regenerate the review export from that clean branch, preserving the narrow
+   board-binding, optional-MMC-binding, SoC-DTSI, and board-DTS shape.
+3. Reconcile the regenerated A733 DTSI with the four-input CCU/RTC binding
+   shape.
+4. Include the focused MMC binding patch unless the final chosen base already
+   contains `allwinner,sun60i-a733-mmc`.
+5. Rerun shape, prerequisite API, public hygiene, checkpatch, binding, DTB,
    build, bisectability, maintainer-recipient, and runtime gates.
 
 This preserves the guardrails: no vendor U-Boot pollution, no Ethernet/VPU/

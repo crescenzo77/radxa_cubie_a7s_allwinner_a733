@@ -25,6 +25,7 @@ scripts/kernel-workflow-status --a733-prereq-stack-status
 workflow status tool chooses the first existing host-local path from:
 
 ```text
+/srv/projects/a733-prereq-stack-current
 /srv/projects/cubie-a7s-armbian/sources/mainline-linux
 /srv/projects/kernel-work/scratch/strix-mainline-linux
 /Users/enzo/projects/linux-a733
@@ -60,7 +61,7 @@ Mac command:
 scripts/a733-prereq-stack-audit /Users/enzo/projects/linux-a733
 ```
 
-Result:
+Initial result:
 
 ```text
 status=FAIL
@@ -130,23 +131,42 @@ Result:
   fails against the 7.1-rc6-era `pinctrl-sunxi.c` / `pinctrl-sunxi.h` context.
   The pinctrl apply was aborted to leave the scratch tree clean.
 
-Current scratch audit:
+Follow-up:
 
 ```text
-status=FAIL
-git_head=4420510d7223
+status=PASS
+git_head=a1f5f546f116
 git_dirty=no
-pinctrl-binding-missing
-pinctrl-driver-missing
-mmc-binding-missing
 ```
 
 Interpretation:
 
-- RTC and CCU/PRCM are no longer the immediate stack blocker in the scratch
-  path.
-- The next stack task is a deliberate rebase of Andre Przywara's pinctrl RFC
-  onto the RTC+CCU stack, beginning at pinctrl patch `2/9`.
-- The MMC compatible remains outside the prerequisite stack and still needs
-  either accepted-base coverage or one focused MMC binding patch in the final
-  regenerated export.
+- Andre Przywara's A733 pinctrl RFC was rebased far enough for the stack audit
+  to pass. Patch `2/9` was skipped because the full `pctl->flags` plumbing was
+  already present in the 7.1-rc6-era base after patch `1/9` was adapted.
+- A local scratch fixup removes leftover CCU Makefile conflict markers while
+  keeping all three A733 clock-controller object lines.
+- A focused local MMC binding commit adds `allwinner,sun60i-a733-mmc` with the
+  existing `allwinner,sun20i-d1-mmc` fallback.
+- The stable Strix pointer for this passing tree is:
+  `/srv/projects/a733-prereq-stack-current`.
+
+Validation:
+
+```text
+scripts/a733-prereq-stack-audit /srv/projects/a733-prereq-stack-current: PASS
+git diff --check 8fde5d1d47f6..HEAD: PASS
+targeted object build: PASS
+  drivers/clk/sunxi-ng/ccu-sun60i-a733.o
+  drivers/clk/sunxi-ng/ccu-sun60i-a733-r.o
+  drivers/clk/sunxi-ng/ccu-sun60i-a733-rtc.o
+  drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o
+```
+
+Known remaining validation gap:
+
+- Strix cannot run `dt_binding_check` yet because `dt-doc-validate` from the
+  `dtschema` Python package is not installed in `PATH`.
+- The scratch MMC patch passes checkpatch style except for the intentionally
+  missing human `Signed-off-by:` trailer. Do not add that trailer until the
+  human submitter authorizes the final regenerated export.

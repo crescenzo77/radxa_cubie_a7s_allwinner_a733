@@ -26,6 +26,7 @@ else:
         Path(DEFAULT_PUBLIC_REPO_CANDIDATES[-1]),
     )
 DEFAULT_LINUX_TREE_CANDIDATES = [
+    "/srv/projects/a733-prereq-stack-current",
     "/srv/projects/cubie-a7s-armbian/sources/mainline-linux",
     "/srv/projects/kernel-work/scratch/strix-mainline-linux",
     "/Users/enzo/projects/linux-a733",
