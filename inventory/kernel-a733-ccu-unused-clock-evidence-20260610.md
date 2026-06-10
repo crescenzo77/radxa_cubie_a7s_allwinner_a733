@@ -1098,6 +1098,27 @@ Conclusion: the generic coherent-mask API path is not a viable way to force a
 lower descriptor address on this platform. It does not prove or disprove a
 descriptor address-window problem; it only closes this particular test method.
 
+Commit `34018de5c4c6` tests keeping `SDXC_ACCESS_BY_AHB` set while enabling
+IDMA, instead of clearing it as mainline normally does. This changes `GCTRL`
+at DMA launch from the previous `0x20000030` shape to `0xa0000030`, proving
+the test is active.
+
+```text
+/srv/projects/kernel-work/outgoing/a733-idma-ahbaccess-34018de5c4c6-20260610T071930Z
+Image sha256: a550ad58c4ebe42fb6a1b594ff22cf9c8b509280d42f6aedbb9de4366397caf7
+DTB sha256:   ed3cc474fe72c25c3e0cb96a3fc9fa243c1c01631bf4e651031d3cba8500708b
+
+tools/hardware-logs/cubie-uart/20260610T072133Z-a733-idma-ahbaccess-34018de5c4c6-ext4load-ttyUSB0.uart.log
+sha256: 702f156eeedb6d899e5e42eb9d6f5df4d462be250bd576fae9fb539a8f8ee480
+
+diag regs dma-exit ... gctrl=0xa0000030 ... dmac=0x00000280 dlba=0x43000000 idst=0x00000000
+diag regs idma-post-cmdr ... rint=0x00000024 ... idst=0x00004000
+diag idma_des_after des0=0x8000002c size=0x00001000 buf=0xfa800000 next=0x00000000
+```
+
+Conclusion: leaving AHB/FIFO access selected during IDMA does not make the
+IDMAC consume the descriptor.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
