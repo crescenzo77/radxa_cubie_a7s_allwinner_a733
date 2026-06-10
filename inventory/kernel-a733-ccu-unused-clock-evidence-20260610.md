@@ -616,6 +616,22 @@ sha256: 54faa0a45331a4f9f3ecbf4cc8883448536c4baf0b738c009b03d6390f45441b
 Conclusion: descriptor-base shifting is not the immediate explanation for the
 DESC_READ hang.
 
+Commit `ae80052b9bbc` drops `SDXC_IDMAC_FIX_BURST`, changing the IDMAC control
+readback from `DMAC=0x282` to `DMAC=0x280`. CMD18 still reaches
+`RINTR=0x24`, and IDMAC still sticks in descriptor-read state:
+
+```text
+diag regs dma-exit ... dmac=0x00000280 dlba=0x43000000 idst=0x00000000
+diag regs idma-post-cmdr ... rint=0x00000024 ... dmac=0x00000280 idst=0x00004000
+diag post-data poll11 ... idst=0x00004000 ... dmac=0x00000280
+```
+
+SDMMC0 IDMA no-fixed-burst diagnostic:
+tools/hardware-logs/cubie-uart/20260610T062319Z-a733-idma-nofixburst-ae80052b9bbc-ext4load-ttyUSB0.uart.log
+sha256: f257e632ce7d67f56df6e626cda10bedd96c18ad92e55e927974af4cda92e31c
+
+Conclusion: fixed-burst mode is not the immediate cause.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
