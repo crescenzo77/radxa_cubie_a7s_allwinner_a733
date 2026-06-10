@@ -256,6 +256,14 @@ Runtime confirms `diag enable mmc after storage fabric clocks`, but the first
 large CMD18 still stalls with `IDST=0x4000`, `CHDA=DLBA`, and `CBDA=0`.
 Fabric-clock enable order is also not enough.
 
+Commit `1210c90a9119` allocates four coherent descriptor pages for A733 and
+sets `max_segs` from that size, matching the BSP default `req-page-count=4`.
+Runtime confirms `pages=4 size=16384` and `initialized, max. request size:
+32768 KB`; small reads continue to complete with `CHDA=0`, `CBDA=0`, and
+progressing `CBCR`/`BBCR`, but the first 256-block IDMA CMD18 still stalls at
+`IDST=0x4000`, `CHDA=DLBA`, `CBDA=0`, `CBCR=0x400`, and `BBCR=0`. BSP
+descriptor allocation page count is also not enough.
+
 Full Orange Pi BSP source was cloned on Strix at:
 `/srv/projects/kernel-work/tmp/linux-orangepi-full`, branch
 `orange-pi-6.6-sun60iw2`, commit
@@ -593,6 +601,10 @@ sha256: 15e448aceb2ce7c77d391e29f041f02efd6e16831f66e8ccddbd64c1de811363
 SDMMC0 IDMA fabric-clock enable-order diagnostic:
 tools/hardware-logs/cubie-uart/20260610T125230Z-a733-idma-fabricorder-ef54cb5fcd52-ext4load-ttyUSB0.uart.log
 sha256: 2c7b3601a1319d36bec6a3b395ad82fbf190af981e5b0786e56ee577da8a97bc
+
+SDMMC0 IDMA descriptor page-count diagnostic:
+tools/hardware-logs/cubie-uart/20260610T130516Z-a733-idma-descpages-1210c90a9119-ext4load-ttyUSB0.uart.log
+sha256: 223989ac63f47503cb59d61d44292f1e10f93c33423d34c2a022aeac690b343c
 ```
 
 ## Source Findings
