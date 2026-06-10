@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T18:49:15Z",
+  "updated_utc": "2026-06-10T19:12:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue. H013 clears the PIO rail's leftover ACCESS_BY_AHB before IDMA and still stalls. H014 identifies vendor GCTRL bit 0x00000800 as SDXC_DTIME_UNIT, a read-data-timeout scaling bit. H015 closes the cheap hidden DMA/fabric source audit. H016 proves the coherent descriptor ring is unchanged after the stall. H017-H019 close IOMMU attachment, descriptor geometry, DMA-mask, data-buffer placement, and descriptor allocation class as immediate causes. H020 found a concrete non-SDMMC delta: vendor keeps a broader CCU fabric/MSI/IOMMU clock envelope active during working SD reads, while mainline leaves most of that envelope disabled at the IDMAC stall. H021 enabled the safe MSI/IOMMU fabric subset and still stalled with descriptor word 0 unconsumed. H022 found no remaining SDMMC-local vendor write, but did confirm the vendor NSI controller and PMU path are active during known-good SD reads. The current blocker is SDMMC0 IDMAC master/fabric reachability or missing NSI/controller fabric initialization, not rootfs, card protocol, descriptor geometry, descriptor memory placement, visible SDMMC GCTRL/DMAC bits, the safe MSI/IOMMU subset alone, or board DTS scope.",
+  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010-H019 close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, and descriptor allocation class. H020-H021 show the safe MSI/IOMMU fabric subset is real but not sufficient. H022 points at vendor NSI activity. H023/H024 show NSI pre-dumps for CCU 0x580/0x584 and ports 1,11,12,14,15 complete, but the boot stalls before a post-minimum proof after entering the NSI-minimum path. The current blocker is now narrowed to the exact NSI minimum transition, likely the first CCU NSI write at 0x580/0x584 or an immediately adjacent ordering/visibility issue, not rootfs, card protocol, descriptor geometry, descriptor memory, visible SDMMC GCTRL/DMAC bits, safe MSI/IOMMU fabric subset alone, or board DTS scope.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -36,14 +36,16 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H022",
-    "status": "completed_delta_to_test",
-    "title": "Vendor SDMMC IDMAC/fabric path trace",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h022-vendor-nsi-trace-result-20260610T1849Z.json",
-    "vendor_pmu_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-h022-vendor-nsi-pmu-20260610T184700Z.txt",
-    "vendor_pmu_sha256": "a58f6071f91fbc92be099bd0f4f842a32c3e085d4a42e34d6527085d82347eea",
-    "raw_snapshot_note": "Vendor /dev/mem reads returned Bad address for this run; cubie-h022-vendor-nsi-snapshot-20260610T184616Z.json is structural only and not value evidence.",
-    "result": "H022 source/PMU trace found no new active SDMMC-local vendor runtime write. Vendor SDMMC0 still uses store/MBUS/MSI-lite clocks already covered by earlier tests. The new concrete clue is outside the SDMMC block: the vendor NSI controller is present and its PMU sampler shows nonzero bandwidth during a known-good SD read, with msi_lite2/cpu/total activity and no SMHC-named master. Queue H023 to test whether missing NSI controller clock/reset/init state is the descriptor-fetch reachability gap."
+    "id": "A733-SDMMC-H024",
+    "status": "completed_narrowed_stop",
+    "title": "NSI minimum test without CPU port reads",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h024-nsi-noncpu-result-20260610T1912Z.json",
+    "kernel_head": "bf77a6210abc",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T190703Z-a733-h024-nsi-noncpu-bf77a6210abc-ext4load-ttyUSB0.uart.log",
+    "uart_log_sha256": "c9331524149ccc78f799f6b02c8091e485289bc42bcddee14307d840efce3342",
+    "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/bf77a6210abc-h024-nsi-noncpu.patch",
+    "patch_sha256": "06fea56526484d56d0c0e2fb398b5c511ecd6a143cc3c1101555f8b9c53cff91",
+    "result": "H024 removed only the CPU0/CPU1 NSI IAG reads from H023. The kernel still reached mmcblk0, started the forced CMD18 IDMA path, applied the H021 MSI/IOMMU subset, and dumped CCU NSI plus non-CPU NSI ports 1/11/12/14/15. UART then went silent before any post-minimum, dma-entry, descriptor, or mount evidence. Because CPU ports were no longer read, the current stop is not caused by CPU IAG reads. Queue H025 to remove IAG dumps from the behavior test and split/breadcrumb the NSI minimum writes one register at a time."
   },
   "hypotheses": [
     {
@@ -611,7 +613,7 @@
     {
       "id": "A733-SDMMC-H023",
       "priority": 1,
-      "status": "ready",
+      "status": "completed_observability_hang",
       "title": "NSI controller init and IDMAC descriptor-fetch reachability",
       "question": "Does the vendor NSI controller clock/reset/init path explain why SDMMC0 IDMAC can fetch descriptors under the vendor kernel but not under mainline?",
       "test_cost": "medium; one diagnostic patch and one Cubie3 boot",
@@ -625,7 +627,64 @@
       ],
       "pass_criteria": "IDMAC consumes descriptor word 0 or advances beyond CHDA=DLBA/CBDA=0 after the NSI clock/reset diagnostic.",
       "fail_criteria": "The same descriptor checksum, OWN, CHDA, CBDA, IDST=0x4000, CBCR=0x400, BBCR=0 stall remains after the NSI diagnostic writes land.",
-      "upstream_note": "Lab-only diagnostic. Do not add an undocumented NSI node, CCU magic writes, or broad fabric policy to the upstream DTS slice without maintainer-reviewed bindings and source-backed evidence."
+      "upstream_note": "Lab-only diagnostic. Do not add an undocumented NSI node, CCU magic writes, or broad fabric policy to the upstream DTS slice without maintainer-reviewed bindings and source-backed evidence.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h023-nsi-init-result-20260610T1912Z.json",
+        "kernel_head": "e1aa70bf1439",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-h023-nsi-e1aa70bf1439-20260610T185558Z",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T185826Z-a733-h023-nsi-e1aa70bf1439-ext4load-ttyUSB0.uart.log",
+        "uart_log_sha256": "4fc0cc2c076ba18a1fa4f0ad3945114a4310c974723f5b6e8c7109b79a159a29",
+        "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/e1aa70bf1439-h023-nsi-init.patch",
+        "patch_sha256": "68f9a251f97bb9726da9fb67fb94a4457b69c634a5d46ab9d70af175eeca34b8",
+        "summary": "Completed as an observability result, not a behavior proof. The kernel reached mmcblk0, entered the forced CMD18 IDMA path, applied the H021 MSI/IOMMU subset, read CCU NSI state as ccu_nsi=0x43000005 and ccu_bus_nsi=0x00010000, and dumped NSI ports through iommu1/port 15. UART then stopped before any NSI-minimum write result, post-nsi-minimum dump, dma-entry dump, descriptor dump, or mount evidence. This initially made CPU port reads suspect, so H024 repeated the test without CPU0/CPU1 IAG reads."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H024",
+      "priority": 1,
+      "status": "completed_narrowed_stop",
+      "title": "NSI minimum test without CPU port reads",
+      "question": "Does the H023 stop come from reading CPU0/CPU1 NSI IAG ports, or from the NSI-minimum behavior transition itself?",
+      "test_cost": "medium; one two-line diagnostic patch and one Cubie3 boot",
+      "procedure": [
+        "Start on Strix from H023 commit e1aa70bf1439.",
+        "Remove only the CPU0 and CPU1 NSI IAG port dumps from sunxi_mmc_diag_dump_nsi.",
+        "Keep the H021 MSI/IOMMU subset, CCU NSI 0x580/0x584 reads, non-CPU NSI ports 1/11/12/14/15, and the same NSI-minimum behavior write.",
+        "Boot Cubie3 once from Strix with the direct U-Boot ext4load/booti flow, capture UART, then restore vendor 5.15.147-21-a733.",
+        "If the boot proceeds past the previous stop, judge CPU IAG reads unsafe and evaluate the NSI-minimum write. If it stops at the same point, close CPU IAG reads as the cause and split/breadcrumb the write path next."
+      ],
+      "pass_criteria": "The kernel reaches the NSI-minimum write log, post-minimum dump, dma-entry dump, or descriptor result after removing CPU port reads.",
+      "fail_criteria": "The kernel still goes silent immediately after the non-CPU NSI pre-dump, before post-minimum or dma-entry evidence.",
+      "upstream_note": "Lab-only diagnostic. Do not add NSI IAG nodes or undocumented CCU writes to upstream DTS.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h024-nsi-noncpu-result-20260610T1912Z.json",
+        "kernel_head": "bf77a6210abc",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-h024-nsi-noncpu-bf77a6210abc-20260610T190506Z",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T190703Z-a733-h024-nsi-noncpu-bf77a6210abc-ext4load-ttyUSB0.uart.log",
+        "uart_log_sha256": "c9331524149ccc78f799f6b02c8091e485289bc42bcddee14307d840efce3342",
+        "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/bf77a6210abc-h024-nsi-noncpu.patch",
+        "patch_sha256": "06fea56526484d56d0c0e2fb398b5c511ecd6a143cc3c1101555f8b9c53cff91",
+        "summary": "Completed and narrowed the stop. Removing CPU0/CPU1 NSI port reads did not let the test proceed. The kernel reached mmcblk0, started CMD18, applied H021 subset writes, read CCU NSI as ccu_nsi=0x43000005 and ccu_bus_nsi=0x00010000, dumped ports 1/11/12/14/15, then went silent. No diag enable A733 NSI minimum line, no 0x580/0x584 write result, no post-nsi-minimum dump, no dma-entry, and no descriptor outcome were captured. The next test should remove IAG reads from the behavior path and split the 0x580 and 0x584 writes with hard breadcrumbs/delays."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H025",
+      "priority": 1,
+      "status": "ready",
+      "title": "Split NSI minimum write with hard breadcrumbs",
+      "question": "Which exact NSI minimum transition stalls the kernel: entering the function, writing CCU 0x580, writing CCU 0x584, or the subsequent IDMA launch?",
+      "test_cost": "medium; one minimal diagnostic patch and one Cubie3 boot, possibly followed by one bit-split boot if needed",
+      "procedure": [
+        "Start on Strix from H024 commit bf77a6210abc or an equivalent branch with H021/H024 diagnostics.",
+        "Remove NSI IAG port dumps from the behavior path; for this proof, read only CCU 0x580 and 0x584 so observability cannot stall on IAG windows.",
+        "Add hard breadcrumbs with pr_emerg/dev_emerg and a short delay before entering sunxi_mmc_diag_enable_nsi_minimum, before and after the 0x580 write, before and after the 0x584 write, and before IDMA descriptor setup.",
+        "First test the full existing 0x580 bits 30/31 and 0x584 bits 0/16 sequence with breadcrumbs only. If it still stalls, use the last printed breadcrumb to split the next boot to one register or one bit only.",
+        "Keep Cubie3 direct U-Boot ext4load/booti, capture UART, restore vendor 5.15.147-21-a733, and update this queue before ending.",
+        "Do not broaden to GMAC, display, VPU, GPU, CE, DMA, USB, PCIe, or unrelated fabric bits."
+      ],
+      "pass_criteria": "The log identifies the exact transition and either reaches descriptor evidence after a specific write or proves which register/bit causes the hard stop.",
+      "fail_criteria": "No breadcrumb after pre-write is captured, meaning the test still lacks enough ordering evidence and must be reduced to a no-write control.",
+      "upstream_note": "Lab-only localization. Even if a bit helps, do not submit undocumented CCU magic; convert any finding into maintainer-facing evidence and coordinate with A733 CCU/NSI/RFC owners."
     },
     {
       "id": "A733-SDMMC-H004",

@@ -968,3 +968,35 @@ clock/reset and IAG state from kernel ioremap, then tests the minimum
 source-backed NSI clock/reset enable: CCU `0x580` bits 30/31 and CCU `0x584`
 bits 0/16. Do not add an upstream NSI node or broaden into GMAC, display, VPU,
 GPU, CE, DMA, USB, PCIe, or unrelated fabric bits.
+
+## 2026-06-10 H023/H024 Queue Update
+
+H023 head: `e1aa70bf1439` (`mmc: test A733 NSI minimum init`). Artifact:
+`/srv/projects/kernel-work/outgoing/a733-h023-nsi-e1aa70bf1439-20260610T185558Z`.
+UART:
+`tools/hardware-logs/cubie-uart/20260610T185826Z-a733-h023-nsi-e1aa70bf1439-ext4load-ttyUSB0.uart.log`,
+sha256 `4fc0cc2c076ba18a1fa4f0ad3945114a4310c974723f5b6e8c7109b79a159a29`.
+Patch:
+`tools/kernel-patches/a733-diagnostics/e1aa70bf1439-h023-nsi-init.patch`,
+sha256 `68f9a251f97bb9726da9fb67fb94a4457b69c634a5d46ab9d70af175eeca34b8`.
+
+H024 head: `bf77a6210abc` (`mmc: test A733 NSI minimum without CPU port
+reads`). Artifact:
+`/srv/projects/kernel-work/outgoing/a733-h024-nsi-noncpu-bf77a6210abc-20260610T190506Z`.
+UART:
+`tools/hardware-logs/cubie-uart/20260610T190703Z-a733-h024-nsi-noncpu-bf77a6210abc-ext4load-ttyUSB0.uart.log`,
+sha256 `c9331524149ccc78f799f6b02c8091e485289bc42bcddee14307d840efce3342`.
+Patch:
+`tools/kernel-patches/a733-diagnostics/bf77a6210abc-h024-nsi-noncpu.patch`,
+sha256 `06fea56526484d56d0c0e2fb398b5c511ecd6a143cc3c1101555f8b9c53cff91`.
+
+Result: both tests reached `mmcblk0`, started forced CMD18 IDMA, applied the
+H021 MSI/IOMMU subset, and dumped CCU NSI plus NSI ports 1/11/12/14/15. H024
+removed CPU0/CPU1 IAG reads and still stopped after the port 15 pre-dump. No
+NSI-minimum write result, post-minimum dump, dma-entry dump, descriptor result,
+or mount evidence was captured.
+
+Next queue item: H025. Remove IAG port dumps from the behavior proof, keep only
+CCU 0x580/0x584 reads, and split/breadcrumb the NSI minimum writes with hard
+pre/post messages and short delays around 0x580, 0x584, and IDMA setup. Do not
+broaden into out-of-scope fabric or peripherals.

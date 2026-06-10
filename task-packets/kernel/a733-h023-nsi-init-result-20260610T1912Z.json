@@ -1,0 +1,10 @@
+{
+  "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h023-nsi-init-result-20260610T1912Z.json",
+  "kernel_head": "e1aa70bf1439",
+  "artifact": "/srv/projects/kernel-work/outgoing/a733-h023-nsi-e1aa70bf1439-20260610T185558Z",
+  "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T185826Z-a733-h023-nsi-e1aa70bf1439-ext4load-ttyUSB0.uart.log",
+  "uart_log_sha256": "4fc0cc2c076ba18a1fa4f0ad3945114a4310c974723f5b6e8c7109b79a159a29",
+  "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/e1aa70bf1439-h023-nsi-init.patch",
+  "patch_sha256": "68f9a251f97bb9726da9fb67fb94a4457b69c634a5d46ab9d70af175eeca34b8",
+  "summary": "Completed as an observability result, not a behavior proof. The kernel reached mmcblk0, entered the forced CMD18 IDMA path, applied the H021 MSI/IOMMU subset, read CCU NSI state as ccu_nsi=0x43000005 and ccu_bus_nsi=0x00010000, and dumped NSI ports through iommu1/port 15. UART then stopped before any NSI-minimum write result, post-nsi-minimum dump, dma-entry dump, descriptor dump, or mount evidence. This initially made CPU port reads suspect, so H024 repeated the test without CPU0/CPU1 IAG reads."
+}

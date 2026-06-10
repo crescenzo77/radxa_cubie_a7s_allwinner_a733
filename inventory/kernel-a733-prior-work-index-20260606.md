@@ -76,6 +76,12 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
   init is active during known-good SD reads. The next work order is H023:
   test minimum lab-only NSI clock/reset init while keeping all GMAC, display,
   VPU, GPU, CE, DMA, USB, PCIe, and unrelated fabric bits out of scope.
+- 2026-06-10 H023/H024 update: H023 and H024 reached `mmcblk0`, applied the
+  H021 MSI/IOMMU subset, and dumped CCU NSI plus NSI ports 1/11/12/14/15.
+  Removing CPU0/CPU1 NSI reads did not move the stop; UART still went silent
+  after the port 15 pre-dump and before any NSI-minimum write result or
+  descriptor evidence. The next work order is H025: remove IAG reads from the
+  behavior proof and split/breadcrumb the CCU 0x580 and 0x584 writes.
 
 ## Guardrails
 

@@ -1,0 +1,25 @@
+From bf77a6210abcff9d1e921dc2f4c848d4e24a529b Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 15:04:56 -0400
+Subject: [PATCH] mmc: test A733 NSI minimum without CPU port reads
+
+---
+ drivers/mmc/host/sunxi-mmc.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 47f2230ffbe6..576e72c53d02 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -626,8 +626,6 @@ static void sunxi_mmc_diag_dump_nsi(struct sunxi_mmc_host *host,
+ 	sunxi_mmc_diag_dump_nsi_port(host, tag, "msi_lite2", 12);
+ 	sunxi_mmc_diag_dump_nsi_port(host, tag, "iommu0", 14);
+ 	sunxi_mmc_diag_dump_nsi_port(host, tag, "iommu1", 15);
+-	sunxi_mmc_diag_dump_nsi_port(host, tag, "cpu0", 19);
+-	sunxi_mmc_diag_dump_nsi_port(host, tag, "cpu1", 20);
+ }
+ 
+ static void sunxi_mmc_diag_set_ccu_bits(struct sunxi_mmc_host *host,
+-- 
+2.53.0
+

@@ -1,0 +1,141 @@
+From e1aa70bf14398ac19c7e8e510dc8f65ed2c2e24d Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 14:54:55 -0400
+Subject: [PATCH] mmc: test A733 NSI minimum init
+
+---
+ drivers/mmc/host/sunxi-mmc.c | 74 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 74 insertions(+)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 08aeea7d0e93..47f2230ffbe6 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -296,6 +296,7 @@ struct sunxi_mmc_host {
+ 	struct clk	*clk_mmc_mbus;
+ 	struct clk	*clk_mmc_msi_lite;
+ 	void __iomem	*diag_ccu_base;
++	void __iomem	*diag_nsi_base;
+ 
+ 	/* irq */
+ 	spinlock_t	lock;
+@@ -554,6 +555,11 @@ static u32 sunxi_mmc_diag_ccu_read(struct sunxi_mmc_host *host, u32 off)
+ 	return readl(host->diag_ccu_base + off);
+ }
+ 
++static u32 sunxi_mmc_diag_nsi_read(struct sunxi_mmc_host *host, u32 off)
++{
++	return readl(host->diag_nsi_base + off);
++}
++
+ static void sunxi_mmc_diag_dump_fabric(struct sunxi_mmc_host *host,
+ 				       const char *tag)
+ {
+@@ -581,6 +587,49 @@ static void sunxi_mmc_diag_dump_fabric(struct sunxi_mmc_host *host,
+ 		 sunxi_mmc_diag_ccu_read(host, 0xd0c));
+ }
+ 
++static void sunxi_mmc_diag_dump_nsi_port(struct sunxi_mmc_host *host,
++					 const char *tag, const char *name,
++					 u32 port)
++{
++	u32 base = port * 0x200;
++
++	dev_info(mmc_dev(host->mmc),
++		 "diag nsi %s port=%u %s mode=0x%08x qos=0x%08x pri=0x%08x io=0x%08x bw=0x%08x sat=0x%08x\n",
++		 tag, port, name,
++		 sunxi_mmc_diag_nsi_read(host, base + 0x10),
++		 sunxi_mmc_diag_nsi_read(host, base + 0x0c),
++		 sunxi_mmc_diag_nsi_read(host, base + 0x14),
++		 sunxi_mmc_diag_nsi_read(host, base + 0x18),
++		 sunxi_mmc_diag_nsi_read(host, base + 0x28),
++		 sunxi_mmc_diag_nsi_read(host, base + 0x2c));
++}
++
++static void sunxi_mmc_diag_dump_nsi(struct sunxi_mmc_host *host,
++				    const char *tag)
++{
++	if (!sunxi_mmc_diag_is_a733(host))
++		return;
++
++	if (!host->diag_ccu_base || !host->diag_nsi_base) {
++		dev_info(mmc_dev(host->mmc),
++			 "diag nsi %s unmapped ccu=%p nsi=%p\n",
++			 tag, host->diag_ccu_base, host->diag_nsi_base);
++		return;
++	}
++
++	dev_info(mmc_dev(host->mmc),
++		 "diag nsi %s ccu_nsi=0x%08x ccu_bus_nsi=0x%08x\n",
++		 tag, sunxi_mmc_diag_ccu_read(host, 0x580),
++		 sunxi_mmc_diag_ccu_read(host, 0x584));
++	sunxi_mmc_diag_dump_nsi_port(host, tag, "msi_lite0", 1);
++	sunxi_mmc_diag_dump_nsi_port(host, tag, "msi_lite1", 11);
++	sunxi_mmc_diag_dump_nsi_port(host, tag, "msi_lite2", 12);
++	sunxi_mmc_diag_dump_nsi_port(host, tag, "iommu0", 14);
++	sunxi_mmc_diag_dump_nsi_port(host, tag, "iommu1", 15);
++	sunxi_mmc_diag_dump_nsi_port(host, tag, "cpu0", 19);
++	sunxi_mmc_diag_dump_nsi_port(host, tag, "cpu1", 20);
++}
++
+ static void sunxi_mmc_diag_set_ccu_bits(struct sunxi_mmc_host *host,
+ 					u32 off, u32 mask)
+ {
+@@ -616,6 +665,23 @@ static void sunxi_mmc_diag_enable_msi_iommu_subset(struct sunxi_mmc_host *host,
+ 	sunxi_mmc_diag_set_ccu_bits(host, 0x5e0, BIT(0) | BIT(1) | BIT(31));
+ }
+ 
++static void sunxi_mmc_diag_enable_nsi_minimum(struct sunxi_mmc_host *host,
++					      struct mmc_data *data)
++{
++	if (!sunxi_mmc_diag_is_a733(host) || !host->diag_ccu_base)
++		return;
++
++	if (data->flags & MMC_DATA_WRITE)
++		return;
++	if (data->blksz != 512 || data->blocks != 8 || data->sg_len != 1)
++		return;
++
++	dev_info(mmc_dev(host->mmc),
++		 "diag enable A733 NSI minimum for CMD18 proof\n");
++	sunxi_mmc_diag_set_ccu_bits(host, 0x580, BIT(30) | BIT(31));
++	sunxi_mmc_diag_set_ccu_bits(host, 0x584, BIT(0) | BIT(16));
++}
++
+ static void sunxi_mmc_init_idma_des(struct sunxi_mmc_host *host,
+ 				    struct mmc_data *data)
+ {
+@@ -710,8 +776,12 @@ static void sunxi_mmc_start_dma(struct sunxi_mmc_host *host,
+ 	int ret;
+ 
+ 	sunxi_mmc_diag_enable_msi_iommu_subset(host, data);
++	sunxi_mmc_diag_dump_nsi(host, "pre-nsi-minimum");
++	sunxi_mmc_diag_enable_nsi_minimum(host, data);
++	sunxi_mmc_diag_dump_nsi(host, "post-nsi-minimum");
+ 	sunxi_mmc_diag_dump_regs(host, "dma-entry");
+ 	sunxi_mmc_diag_dump_fabric(host, "dma-entry");
++	sunxi_mmc_diag_dump_nsi(host, "dma-entry");
+ 	sunxi_mmc_init_idma_des(host, data);
+ 
+ 	if (!(data->flags & MMC_DATA_WRITE) && data->blksz <= 0xfff) {
+@@ -753,6 +823,7 @@ static void sunxi_mmc_start_dma(struct sunxi_mmc_host *host,
+ 		   SDXC_IDMAC_FIX_BURST | SDXC_IDMAC_IDMA_ON);
+ 	sunxi_mmc_diag_dump_regs(host, "dma-exit");
+ 	sunxi_mmc_diag_dump_fabric(host, "dma-exit");
++	sunxi_mmc_diag_dump_nsi(host, "dma-exit");
+ }
+ 
+ static void sunxi_mmc_send_manual_stop(struct sunxi_mmc_host *host,
+@@ -2059,6 +2130,9 @@ static int sunxi_mmc_resource_request(struct sunxi_mmc_host *host,
+ 		host->diag_ccu_base = devm_ioremap(&pdev->dev, 0x02002000, 0x1000);
+ 		if (!host->diag_ccu_base)
+ 			dev_warn(&pdev->dev, "diag failed to map A733 CCU registers\n");
++		host->diag_nsi_base = devm_ioremap(&pdev->dev, 0x02020000, 0x4000);
++		if (!host->diag_nsi_base)
++			dev_warn(&pdev->dev, "diag failed to map A733 NSI registers\n");
+ 	}
+ 
+ 	host->clk_ahb = devm_clk_get(&pdev->dev, "ahb");
+-- 
+2.53.0
+

@@ -1,0 +1,10 @@
+{
+  "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h024-nsi-noncpu-result-20260610T1912Z.json",
+  "kernel_head": "bf77a6210abc",
+  "artifact": "/srv/projects/kernel-work/outgoing/a733-h024-nsi-noncpu-bf77a6210abc-20260610T190506Z",
+  "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T190703Z-a733-h024-nsi-noncpu-bf77a6210abc-ext4load-ttyUSB0.uart.log",
+  "uart_log_sha256": "c9331524149ccc78f799f6b02c8091e485289bc42bcddee14307d840efce3342",
+  "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/bf77a6210abc-h024-nsi-noncpu.patch",
+  "patch_sha256": "06fea56526484d56d0c0e2fb398b5c511ecd6a143cc3c1101555f8b9c53cff91",
+  "summary": "Completed and narrowed the stop. Removing CPU0/CPU1 NSI port reads did not let the test proceed. The kernel reached mmcblk0, started CMD18, applied H021 subset writes, read CCU NSI as ccu_nsi=0x43000005 and ccu_bus_nsi=0x00010000, dumped ports 1/11/12/14/15, then went silent. No diag enable A733 NSI minimum line, no 0x580/0x584 write result, no post-nsi-minimum dump, no dma-entry, and no descriptor outcome were captured. The next test should remove IAG reads from the behavior path and split the 0x580 and 0x584 writes with hard breadcrumbs/delays."
+}
