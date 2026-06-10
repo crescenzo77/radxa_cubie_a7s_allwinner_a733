@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "id": "A733-SDMMC-H018",
+  "created_utc": "2026-06-10T17:59:05Z",
+  "status": "completed_failed_as_expected",
+  "title": "Descriptor-stamp replay without forced 64-bit DMA mask",
+  "kernel": {
+    "repo": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "branch": "codex/a733-h018-descstamp-nodmamask",
+    "head": "7adf8f1abf95c0b7834e717bef1558aae4477e3e",
+    "head_short": "7adf8f1abf95",
+    "subject": "mmc: replay A733 descriptor stamps without DMA mask"
+  },
+  "artifact": {
+    "path": "/srv/projects/kernel-work/outgoing/a733-h018-nodmamask-7adf8f1abf95-20260610T174729Z",
+    "image_sha256": "2ce0957b6b78f6d85d2cfa617bbb0213a16d055d2735eb2bcb1713f2d0b21c27",
+    "dtb_sha256": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
+    "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
+    "build_log_sha256": "08b99f5e45ee0c6485dc67e23c601522504a4b46c6f1b604365028f43da56d79",
+    "olddefconfig_log_sha256": "7c37de4c67f624f838f657aa3400d445b04e0701a45ee10a060555a2d01a214f",
+    "manifest_sha256": "4e4cb9670396ead8fba2036536692ee114f2476761cfc9d4131f1d7f1bd35569"
+  },
+  "uart": {
+    "strix_log": "/srv/projects/cubie-uart/logs/20260610T174951Z-a733-h018-nodmamask-7adf8f1abf95-ext4load-ttyUSB0.uart.log",
+    "local_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T174951Z-a733-h018-nodmamask-7adf8f1abf95-ext4load-ttyUSB0.uart.log",
+    "sha256": "5891308b45a9370cbe7ce044d891bcd9a75fbd89d75635d08fba4157db7e59ef"
+  },
+  "patch_archive": {
+    "local_path": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/7adf8f1abf95-h018-nodmamask.patch",
+    "sha256": "ff4d79cf76475a81b1f58682432c4bbc9575fe793ed485178ea921c6097fd693"
+  },
+  "observations": {
+    "booted_kernel": "Linux 7.1.0-rc5-00275-g7adf8f1abf95",
+    "card_progress": "SDXC detected and mmcblk0 created before the forced CMD18 IDMA read.",
+    "descriptor_allocation": "Removing the A733 64-bit dma_set_mask_and_coherent diagnostic path did not relocate the coherent descriptor ring: sg_dma remained 0x00000000fe100000 and DLBA remained 0x3f840000.",
+    "data_buffer_allocation": "The read data buffer moved below 4 GiB: sg0 dma=0x00000000fb800000 and descriptor buffer word became 0x3ee00000.",
+    "before_cmdr": "csum=0x22ebb674 d0={8000001c,00001000,3ee00000,3f840004} d1={00000000,a733016e,dead0001,beef0002}",
+    "after_cpu_sync": "csum=0x22ebb674 d0 and d1 unchanged; OWN remained set; IDST=0x4000; CHDA=DLBA=0x3f840000; CBDA=0; CBCR=0x400; BBCR=0."
+  },
+  "interpretation": [
+    "The forced 64-bit DMA-mask diagnostic is not required to reproduce the descriptor-fetch stall.",
+    "A data buffer above 4 GiB is not required to reproduce the stall, because H018 moved the data buffer below 4 GiB and still failed before CBDA became nonzero.",
+    "H018 did not actually test a different descriptor-ring physical window because the coherent descriptor allocation stayed at 0xfe100000.",
+    "The next proof must directly change the descriptor allocation/access class, not another visible SDMMC register or DMA mask guess."
+  ],
+  "target_restore": {
+    "status": "restored",
+    "verified_uname_r": "5.15.147-21-a733"
+  },
+  "next_hypothesis": {
+    "id": "A733-SDMMC-H019",
+    "title": "Streaming-mapped descriptor ring outside coherent CMA",
+    "summary": "Allocate the descriptor ring from normal memory and map it with dma_map_single plus explicit syncs. If IDMAC consumes that ring, coherent/CMA descriptor visibility is the suspect. If it still stalls unchanged, move below descriptor memory class toward SDMMC0 master/fabric reachability."
+  }
+}

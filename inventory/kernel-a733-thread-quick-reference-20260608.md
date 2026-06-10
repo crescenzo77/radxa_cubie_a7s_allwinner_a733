@@ -845,3 +845,28 @@ only the forced A733 64-bit `dma_set_mask_and_coherent()` diagnostic path. Keep
 the CMD49 PIO rail, read-only proof, and one-descriptor 8-block CMD18. The goal
 is to decide whether descriptor placement/allocation is causal before moving
 below visible SDMMC registers into master/fabric reachability.
+
+## 2026-06-10 H018/H019 Queue Update
+
+H018 head: `7adf8f1abf95` (`mmc: replay A733 descriptor stamps without DMA
+mask`). Artifact:
+`/srv/projects/kernel-work/outgoing/a733-h018-nodmamask-7adf8f1abf95-20260610T174729Z`.
+UART:
+`tools/hardware-logs/cubie-uart/20260610T174951Z-a733-h018-nodmamask-7adf8f1abf95-ext4load-ttyUSB0.uart.log`,
+sha256 `5891308b45a9370cbe7ce044d891bcd9a75fbd89d75635d08fba4157db7e59ef`.
+Patch:
+`tools/kernel-patches/a733-diagnostics/7adf8f1abf95-h018-nodmamask.patch`,
+sha256 `ff4d79cf76475a81b1f58682432c4bbc9575fe793ed485178ea921c6097fd693`.
+
+Result: H018 failed usefully. Removing the forced A733 64-bit DMA-mask path
+moved the data buffer below 4 GiB (`sg0 dma=0xfb800000`, descriptor buffer word
+`0x3ee00000`) but the descriptor ring remained at `sg_dma=0xfe100000`,
+`DLBA=0x3f840000`. The descriptor checksum/stamps stayed unchanged after CPU
+sync, `OWN` stayed set, `CHDA=DLBA`, `CBDA=0`, and `IDST=0x4000`.
+
+Next queue item: H019. Change the descriptor allocation/access class directly:
+use a normal streaming-mapped descriptor ring with explicit
+`dma_sync_single_for_device()` and `dma_sync_single_for_cpu()` around the
+existing H016/H018 descriptor-stamp proof. If that still leaves the descriptor
+unchanged, move below descriptor memory class toward SDMMC0 master/fabric
+reachability.
