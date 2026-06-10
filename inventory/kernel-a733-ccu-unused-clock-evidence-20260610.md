@@ -55,6 +55,10 @@ hypothesis. Changing the D1-compatible `idma_des_shift` from 2 to 0 changed
 shifted to unshifted DMA addresses, but ACMD51 still stopped with
 `RINTR=0x00000004`, `MISTA=0x00000000`, `IDST=0x00004000`, and no `DATA_OVER`.
 
+Removing `SDXC_WAIT_PRE_OVER` for ACMD51 was also falsified. The command value
+changed from `0x2373` to `0x0373`, proving the variant was active, but the same
+raw `COMMAND_DONE` only / no `DATA_OVER` state remained.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -140,6 +144,10 @@ poll ACMD51 after command launch
 force idma_des_shift=0
   -> DLBA and descriptor buffer addresses become unshifted
   -> ACMD51 failure is unchanged
+
+skip WAIT_PRE_OVER for ACMD51
+  -> CMDR changes from 0x2373 to 0x0373
+  -> ACMD51 failure is unchanged
 ```
 
 Key proof logs:
@@ -204,6 +212,10 @@ sha256: 3666cffc6a3b45d0e0395fb244cca1e92e4048aaedad34eed71ab5fc6c213563
 SDMMC0 unshifted IDMA address diagnostic:
 tools/hardware-logs/cubie-uart/20260610T040952Z-a733-idma-shift0-5086bbd04ed8-ext4load-ttyUSB0.uart.log
 sha256: 2ca936fcda1b5cbf3c5b2deb8db876c91123bff2586ebba504bf91ff4a45bc80
+
+SDMMC0 ACMD51 no-WAIT_PRE_OVER diagnostic:
+tools/hardware-logs/cubie-uart/20260610T041718Z-a733-acmd51-nowait-29a376421fd7-ext4load-ttyUSB0.uart.log
+sha256: 95d24c65563d8950680359a7a6faccd1ce97be261eb700c20222006357e19601
 ```
 
 ## Source Findings
@@ -329,9 +341,20 @@ diag post-acmd51 poll19 rint=0x00000004 mista=0x00000000 idst=0x00004000 ...
 ```
 
 This means the next useful diagnostic should not be another address-shift
-variant. Prefer checking A733 command/data prerequisites such as
-`SDXC_WAIT_PRE_OVER`, GCTRL access mode, FIFO threshold, or a controlled PIO
-read path for only the 8-byte SCR request.
+variant.
+
+Commit `29a376421fd7` restores shift 2 and skips `SDXC_WAIT_PRE_OVER` only for
+ACMD51:
+
+```text
+diag acmd51 skip WAIT_PRE_OVER
+diag acmd51 cmdr-readback=0x80000373 wait_dma=1
+diag regs acmd51-post-cmdr ... cmdr=0x00000373 ... rint=0x00000004 idst=0x00004000 ...
+diag post-acmd51 poll19 rint=0x00000004 mista=0x00000000 idst=0x00004000 ...
+```
+
+Prefer checking GCTRL access mode, FIFO threshold, or a controlled PIO read path
+for only the 8-byte SCR request next.
 
 ## Questions For CCU/RFC Review
 
