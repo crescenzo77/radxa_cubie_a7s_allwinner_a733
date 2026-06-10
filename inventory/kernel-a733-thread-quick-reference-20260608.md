@@ -233,6 +233,39 @@ Later clktrace/critical-clock progression:
   SHA256:
   `e1be8a02dc58a2c4a33e637f2de2b363770961ad0f8326db06b139d07e13c50`.
 
+## 2026-06-10 Latest SDMMC IDMAC State
+
+Current Strix diagnostic branch:
+
+```text
+/srv/projects/a733-diag-rtc-extosc-orphan
+branch: codex/a733-h027-idmac-vendor64
+head: 9c631195b6633e6ad7c82b807ec9aee9c9bed27a
+subject: mmc: test A733 vendor normal IDMAC address path
+```
+
+H027 booted on Cubie3 and verified the vendor-style normal IDMAC address path:
+64-bit DMA/coherent mask, coherent descriptor allocation, descriptor size bits
+`12`, `des_addr_shift=2`, and shifted `DLBA=0x3f840000`. The forced CMD18 still
+stalled in IDMAC `DESC_READ` with descriptor checksum unchanged, `OWN` set,
+`CHDA=DLBA`, `CBDA=0`, `IDST=0x4000`, `CBCR=0x400`, and `BBCR=0`.
+
+H027 artifacts:
+
+```text
+result JSON: /Users/enzo/projects/homelab/task-packets/kernel/a733-h027-idmac-vendor64-result-20260610T2007Z.json
+UART: /Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T200205Z-a733-h027-idmac-vendor64-9c631195b663-ttyUSB0.uart.log
+UART sha256: 98ae5bd58d7073cc99c81af963054e7a75a68aa671355597752324b1c3af02c9
+patch: /Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/9c631195b663-h027-idmac-vendor64.patch
+patch sha256: 675d28f4adb0b5bbf5f65e564861f79f4180fe168427b324f0b282a66a5690d0
+```
+
+Current blocker: SDMMC0 IDMAC descriptor-fetch reachability remains below the
+visible SDMMC registers, descriptor geometry, DMA mask/addressing, tested
+fabric clocks, and minimum NSI CCU bits. Next queue item is H028: inventory
+firmware handoff and storage-master permission evidence before any new
+behavior patch.
+
 Enhanced trace follow-up:
 
 - `0x58c`/`0x5c0` gate-write plus unlock/child trace showed all `0x5c0` AHB

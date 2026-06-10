@@ -111,3 +111,17 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
   write to test. The next work order is H027: a narrow vendor-style normal
   IDMAC DMA mask/address translation diagnostic, preserving H025 breadcrumbs
   and avoiding DTS or fabric expansion.
+
+## 2026-06-10 H027 Addendum
+
+- H027 booted Strix kernel
+  `9c631195b663 mmc: test A733 vendor normal IDMAC address path`.
+  It matched the vendor normal-IDMAC evidence by setting a 64-bit
+  DMA/coherent mask, using coherent descriptor allocation, keeping descriptor
+  size bits `12`, and using shifted `DLBA=0x3f840000`. The forced CMD18 still
+  stalled in `DESC_READ`: descriptor checksum unchanged, `OWN` set,
+  `CHDA=DLBA`, `CBDA=0`, `IDST=0x4000`, `CBCR=0x400`, and `BBCR=0`.
+- H027 closes vendor normal-IDMAC DMA mask/address translation as a standalone
+  fix. The next work order is H028: firmware handoff and storage-master
+  permission inventory across boot0/BL31/ATF/SCP/vendor U-Boot, security or
+  firewall setup, and NSI/MBUS permission tables before any new behavior patch.

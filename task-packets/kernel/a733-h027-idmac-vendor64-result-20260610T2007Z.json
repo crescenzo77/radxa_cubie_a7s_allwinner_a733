@@ -1,0 +1,58 @@
+{
+  "id": "A733-SDMMC-H027",
+  "created_utc": "2026-06-10T20:07:07Z",
+  "status": "completed_no_improvement",
+  "title": "Vendor-style normal IDMAC DMA mask/address translation proof",
+  "kernel_repo": "/srv/projects/a733-diag-rtc-extosc-orphan",
+  "kernel_branch": "codex/a733-h027-idmac-vendor64",
+  "kernel_head": "9c631195b6633e6ad7c82b807ec9aee9c9bed27a",
+  "kernel_subject": "mmc: test A733 vendor normal IDMAC address path",
+  "artifact": {
+    "path": "/srv/projects/kernel-work/outgoing/a733-h027-idmac-vendor64-9c631195b663-20260610T195427Z",
+    "manifest": {
+      "image_sha256": "1cc443b6340bbc812f4299c08f9d2fe3ac071fe3939eefdf60d962fb50121753",
+      "dtb_sha256": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
+      "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
+      "manifest_sha256": "075ee1c748af93c853b35e4bbb8626ab1d10df29ede7b8d79b91b231faa3f146",
+      "image_bytes": 43309568,
+      "dtb_bytes": 4761,
+      "config_bytes": 321548,
+      "manifest_bytes": 289
+    }
+  },
+  "uart_log": {
+    "strix_path": "/srv/projects/cubie-uart/logs/20260610T200205Z-a733-h027-idmac-vendor64-9c631195b663-ttyUSB0.uart.log",
+    "mac_path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T200205Z-a733-h027-idmac-vendor64-9c631195b663-ttyUSB0.uart.log",
+    "sha256": "98ae5bd58d7073cc99c81af963054e7a75a68aa671355597752324b1c3af02c9"
+  },
+  "uart_metadata": {
+    "mac_path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T200205Z-a733-h027-idmac-vendor64-9c631195b663-ttyUSB0.uart.log.json",
+    "sha256": "52844ff0c6ff569cb6dd76e714b4e8edc2a2593c98d6cd7a240ef55bd157264c"
+  },
+  "patch_archive": {
+    "mac_path": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/9c631195b663-h027-idmac-vendor64.patch",
+    "sha256": "675d28f4adb0b5bbf5f65e564861f79f4180fe168427b324f0b282a66a5690d0"
+  },
+  "test_changes": [
+    "Set normal IDMAC DMA/coherent mask to 64 bits for A733 before descriptor allocation.",
+    "Kept the vendor-style A733 descriptor geometry from H025/H026: size bits 12 and descriptor address shift 2.",
+    "Moved A733 normal-IDMAC descriptors to coherent allocation and skipped explicit descriptor dma_sync on that coherent path.",
+    "Logged DLBA programming, descriptor words, IDST, CHDA, CBDA, CBCR, BBCR, and the fabric snapshot at the forced CMD18."
+  ],
+  "key_evidence": [
+    "Linux version 7.1.0-rc5-00282-g9c631195b663 booted on Machine model: Radxa Cubie A7S.",
+    "sunxi-mmc logged: diag h027 normal IDMAC DMA mask set to 64 bits coherent=0xffffffffffffffff dma_mask=0xffffffffffffffff.",
+    "sunxi-mmc logged coherent descriptor allocation: pages=2 size=8192.",
+    "The forced CMD18 descriptor launched with sg_dma=0x00000000fe100000, shift=2, DLBA=0x3f840000, descriptor d0={8000001c,00001000,407a3400,3f840004}.",
+    "After command launch, IDST remained 0x00004000, CHDA equaled DLBA, CBDA remained 0, CBCR remained 0x00000400, BBCR remained 0, and the descriptor checksum stayed 0x001bc28b.",
+    "The descriptor remained CPU-visible and unchanged after CPU-side sync."
+  ],
+  "interpretation": "H027 closes the vendor-style normal IDMAC DMA mask/address hypothesis as a standalone fix. Matching the vendor normal-IDMAC 64-bit DMA mask, coherent descriptor allocation, size bits 12, and shifted DLBA path did not move SDMMC0 IDMAC past DESC_READ.",
+  "current_blocker": "A733 SDMMC0 IDMAC descriptor-fetch reachability remains blocked below the standard SDMMC visible registers, tested descriptor geometry, tested DMA API/addressing variants, safe fabric-clock subset, and minimum NSI CCU bits.",
+  "operational_notes": [
+    "Before H027 install, stale vendor-side SSH/sysfs activity left Cubie3 filesystem writes stuck; a Kasa power cycle restored vendor 5.15.147-21-a733 before artifacts were installed.",
+    "The /boot/cthu Image, DTB, config, and manifest were verified nonzero with matching SHA256 on Cubie3 before sync and boot.",
+    "Cubie3 was restored after the test and verified booted vendor kernel 5.15.147-21-a733."
+  ],
+  "next": "Do not queue another descriptor-geometry or DMA-mask variant without new source evidence. H028 should inventory firmware handoff, secure monitor, boot0/ATF/SCP, and storage-master permission evidence for SDMMC/SMHC descriptor-fetch reachability, then prepare maintainer/vendor questions if no source-backed register exists."
+}

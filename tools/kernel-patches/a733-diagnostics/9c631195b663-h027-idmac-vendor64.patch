@@ -1,0 +1,90 @@
+From 9c631195b6633e6ad7c82b807ec9aee9c9bed27a Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 15:54:13 -0400
+Subject: [PATCH] mmc: test A733 vendor normal IDMAC address path
+
+---
+ drivers/mmc/host/sunxi-mmc.c | 47 +++++++++++++++++++++++++++---------
+ 1 file changed, 35 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 9a548179dadb..8736823e2a84 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -442,13 +442,16 @@ static int sunxi_mmc_init_host(struct sunxi_mmc_host *host)
+ 	dev_info(mmc_dev(host->mmc),
+ 		 "diag skip CEATA function select funcs=0x%08x\n",
+ 		 mmc_readl(host, REG_FUNS));
+-	/* Set DMA descriptor list base address */
+-	mmc_writel(host, REG_DLBA, host->cfg->diag_idma_unshift_dlba ?
+-				      host->sg_dma :
+-				      host->sg_dma >> host->cfg->idma_des_shift);
++	/* Set DMA descriptor list base address, using the vendor v5p3x shift. */
++	mmc_writel(host, REG_DLBA,
++		    host->cfg->diag_idma_unshift_dlba ?
++		    host->sg_dma : host->sg_dma >> host->cfg->idma_des_shift);
+ 	dev_info(mmc_dev(host->mmc),
+-		 "diag dlba init sg_dma=0x%pad dlba=0x%08x unshift_dlba=%d\n",
+-		 &host->sg_dma, mmc_readl(host, REG_DLBA),
++		 "diag h027 dlba init sg_dma=0x%pad shift=%u dlba_write=0x%llx dlba=0x%08x unshift_dlba=%d\n",
++		 &host->sg_dma, host->cfg->idma_des_shift,
++		 (u64)(host->cfg->diag_idma_unshift_dlba ? host->sg_dma :
++		       host->sg_dma >> host->cfg->idma_des_shift),
++		 mmc_readl(host, REG_DLBA),
+ 		 host->cfg->diag_idma_unshift_dlba);
+ 	sunxi_mmc_diag_dump_regs(host, "init-host-post-basic-writes");
+ 
+@@ -713,11 +716,17 @@ static void sunxi_mmc_init_idma_des(struct sunxi_mmc_host *host,
+ 	 * descriptors hit the main-mem.
+ 	 */
+ 	wmb();
+-	dma_sync_single_for_device(mmc_dev(host->mmc), host->sg_dma,
+-				   host->sg_dma_size, DMA_TO_DEVICE);
+-	dev_info(mmc_dev(host->mmc),
+-		 "diag descriptor dma_sync_single_for_device size=%zu\n",
+-		 host->sg_dma_size);
++	if (host->diag_desc_streaming) {
++		dma_sync_single_for_device(mmc_dev(host->mmc), host->sg_dma,
++					   host->sg_dma_size, DMA_TO_DEVICE);
++		dev_info(mmc_dev(host->mmc),
++			 "diag descriptor dma_sync_single_for_device size=%zu\n",
++			 host->sg_dma_size);
++	} else {
++		dev_info(mmc_dev(host->mmc),
++			 "diag h027 descriptor coherent path no dma_sync size=%zu\n",
++			 host->sg_dma_size);
++	}
+ }
+ 
+ static int sunxi_mmc_map_dma(struct sunxi_mmc_host *host,
+@@ -2210,12 +2219,26 @@ static int sunxi_mmc_probe(struct platform_device *pdev)
+ 					     "Failed to set low coherent DMA mask\n");
+ 		dev_info(&pdev->dev, "diag low coherent DMA mask set to 30 bits\n");
+ 	}
++	if (sunxi_mmc_diag_is_a733(host)) {
++		ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
++		if (ret)
++			return dev_err_probe(&pdev->dev, ret,
++					     "Failed to set A733 normal IDMAC DMA mask\n");
++		dev_info(&pdev->dev,
++			 "diag h027 normal IDMAC DMA mask set to 64 bits coherent=0x%llx dma_mask=0x%llx\n",
++			 (u64)pdev->dev.coherent_dma_mask,
++			 pdev->dev.dma_mask ? (u64)*pdev->dev.dma_mask : 0);
++	}
+ 
+ 	host->sg_dma_size = PAGE_SIZE;
+ 	if (host->cfg->diag_desc_pages)
+ 		host->sg_dma_size *= host->cfg->diag_desc_pages;
+ 
+-	host->diag_desc_streaming = sunxi_mmc_diag_is_a733(host);
++	host->diag_desc_streaming = false;
++	if (sunxi_mmc_diag_is_a733(host))
++		dev_info(&pdev->dev,
++			 "diag h027 vendor normal IDMAC descriptor allocation coherent pages=%zu size=%zu\n",
++			 host->sg_dma_size / PAGE_SIZE, host->sg_dma_size);
+ 	if (host->diag_desc_streaming) {
+ 		host->sg_cpu = kzalloc(host->sg_dma_size, GFP_KERNEL);
+ 		if (!host->sg_cpu)
+-- 
+2.53.0
+
