@@ -32,6 +32,27 @@ until the task packet includes:
 The current local model review consensus is `HOLD` for independent submission
 work in these areas.
 
+## A733 Runtime Hypothesis Queue
+
+Use `a733-hypothesis-queue.json` as the first stop for any Cubie A7S/A733
+runtime session. It is the ordered work queue for the current SDMMC0 blocker,
+including falsified tests that should not be repeated without new evidence.
+
+Use `a733-sdmmc-register-dump-template.json` for fixed vendor-vs-mainline
+register comparisons. Fill the schema before proposing another visible-register
+boot variant.
+
+End a runtime session only after these gates are closed:
+
+- knowledge base update committed
+- status doc update committed
+- hypothesis queue update committed
+- relevant remotes pushed or explicitly reported as missing
+- Cubie3 restored to vendor kernel
+
+The queue copy on Strix must live at
+`/srv/projects/homelab/task-packets/kernel/a733-hypothesis-queue.json`.
+
 Before a draft is used for kernel patch work, attach local token-offload
 context cards when the task involves large inputs:
 

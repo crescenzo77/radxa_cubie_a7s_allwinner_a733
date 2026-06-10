@@ -1652,6 +1652,51 @@ Conclusion: this does not prove or disprove a 25 MHz timing hypothesis. A valid
 clock-cap test must apply after `mmc_of_parse()` or constrain the DT
 `max-frequency`.
 
+## Descriptor DMA Sync Diagnostic
+
+Commit `af23f8d6ebfd` adds an explicit descriptor-ring
+`dma_sync_single_for_device()` immediately after descriptor writes and the
+existing `wmb()`. This tests whether the A733 IDMAC descriptor-read stall is a
+descriptor visibility/coherency problem rather than descriptor shape.
+
+```text
+/srv/projects/kernel-work/outgoing/a733-idma-descsync-af23f8d6ebfd-20260610T140912Z
+Image sha256: 007d97e1f2ffa82be8e11c618b39be938468859f01d10ba6adbcd3b53bb0a7ee
+DTB sha256:   251d969288132d5f9ad682e791cd3c59acc904b3a6580b3965f71132c0092c9f
+config sha256: dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202
+build log sha256: d399d7384959ba6ce5823ec9dd0a039983219a3ddadd4610f8867f5bd63e40bc
+
+tools/hardware-logs/cubie-uart/20260610T141114Z-a733-idma-descsync-af23f8d6ebfd-ext4load-ttyUSB0.uart.log
+sha256: 79d795eb0e21f221b2e0d5f2d57d250f45bad8f801061f041902703aa0a5eb74
+
+diag descriptor dma_sync_single_for_device size=16384
+diag data cmdr-readback=0x80003352 wait_dma=1 pio=0 opcode=18 blocks=256
+diag post-data poll... rint=0x00000024 idst=0x00004000
+dlba=0x3f840000 chda=0x3f840000 cbda=0x00000000
+cbcr=0x00000400 bbcr=0x00000000
+```
+
+The proof also confirms the current stack has the post-parse 25 MHz cap active:
+`diag add_host ... f_max=25000000` and later `diag set_ios clock=25000000`.
+Even with that cap and the descriptor sync, the first large CMD18 stops in the
+same descriptor-read/data-phase state. Conclusion: pure descriptor-cache
+visibility is now a weak explanation. The next responsible step is a fixed
+vendor-vs-mainline register comparison, then a source-backed hidden-wrapper or
+storage-fabric check before any new boot variant.
+
+The first-class queue and register template are:
+
+```text
+task-packets/kernel/a733-hypothesis-queue.json
+task-packets/kernel/a733-sdmmc-register-dump-template.json
+```
+
+End-of-session gate for future A733 runtime work: the knowledge base update,
+status doc update, and hypothesis queue update must all be committed; remotes
+with configured push targets must be pushed or explicitly reported missing; and
+Cubie3 must be restored to vendor kernel before the session is considered
+closed.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible

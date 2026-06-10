@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "updated_utc": "2026-06-10T14:20:00Z",
+  "project": "radxa-cubie-a7s-allwinner-a733",
+  "active_blocker": "A733 SDMMC0 reaches card enumeration and partition table, but normal block I/O stalls on large CMD18. The latest IDMA runs stop at COMMAND_DONE|RX_DATA_REQUEST with IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0.",
+  "operator_model": {
+    "control_host": "Mac Codex Desktop",
+    "runtime_host": "strix",
+    "kernel_repo": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "test_target": "cubie3",
+    "test_target_ssh_from_strix": "codex@192.168.50.95",
+    "excluded_targets": [
+      "cubie1:192.168.50.65"
+    ],
+    "restore_after_test": "Power-cycle Cubie3 and verify vendor kernel 5.15.147-21-a733 before ending the session."
+  },
+  "session_exit_gates": {
+    "knowledge_base_update_committed": "Update and commit /Users/enzo/Documents/Homelab/kernel-a733-400b-model-prompt-20260609.md.",
+    "status_doc_update_committed": "Update and commit /Users/enzo/projects/Home Lab/cubie-a7s-armbian/docs/status.md.",
+    "hypothesis_queue_update_committed": "Update and commit this file. Sync it to /srv/projects/homelab/task-packets/kernel/a733-hypothesis-queue.json on Strix.",
+    "remote_push_checked": "Push repos with configured remotes and record any repo that has no remote.",
+    "target_restored": "Verify Cubie3 boots vendor kernel 5.15.147-21-a733."
+  },
+  "guardrails": [
+    "Do not add vendor U-Boot compatibility strings, aliases, paths, or policy nodes to upstream DTS.",
+    "Do not expand into Ethernet, VPU, display, USB-C, PCIe, or wireless.",
+    "Do not submit local A733 CCU or pinctrl scaffolding while Junhui Liu's CCU/PRCM RFC and Andre Przywara's pinctrl RFC are in flight.",
+    "Keep clk_ignore_unused and PIO bypasses as lab diagnostics only."
+  ],
+  "latest_completed_test": {
+    "id": "A733-SDMMC-H000",
+    "status": "falsified",
+    "title": "Explicitly sync the descriptor ring for DMA after descriptor writes",
+    "kernel_head": "af23f8d6ebfd6068db15ec4504ee3ac536b9b05b",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-idma-descsync-af23f8d6ebfd-20260610T140912Z",
+    "image_sha256": "007d97e1f2ffa82be8e11c618b39be938468859f01d10ba6adbcd3b53bb0a7ee",
+    "dtb_sha256": "251d969288132d5f9ad682e791cd3c59acc904b3a6580b3965f71132c0092c9f",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T141114Z-a733-idma-descsync-af23f8d6ebfd-ext4load-ttyUSB0.uart.log",
+    "uart_log_sha256": "79d795eb0e21f221b2e0d5f2d57d250f45bad8f801061f041902703aa0a5eb74",
+    "result": "The descriptor sync printk appears with size=16384, but the first large CMD18 still stops with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0. This weakens a pure descriptor-cache-visibility explanation."
+  },
+  "hypotheses": [
+    {
+      "id": "A733-SDMMC-H001",
+      "priority": 1,
+      "status": "ready",
+      "title": "Fixed vendor-vs-mainline data-phase register comparison before another boot variant",
+      "question": "Which visible SDMMC0 register differs at the same data-phase moment where vendor advances CHDA/CBDA and mainline remains in descriptor-read state?",
+      "test_cost": "low; source/log analysis first, no kernel build required",
+      "procedure": [
+        "Read the vendor SDMMC0 wide register sample and the latest mainline UART log.",
+        "Fill task-packets/kernel/a733-sdmmc-register-dump-template.json for the phases vendor-working-read, mainline-dma-entry, mainline-idma-post-cmdr, and mainline-stall-poll.",
+        "Compare GCTRL, CLKCR, WIDTH, CMDR, CARG, IMASK, RINTR, STAS, NTSR, FTRGL, THLD, DMAC, DLBA, IDST, IDIE, CHDA, CBDA, BLKSZ, BCNTR, CBCR, BBCR, FUNS, DBGC, CSDC, DRV_DL, SAMP_DL, DS_DL, SKEW_CTRL, and SMCV.",
+        "If a single non-cosmetic delta remains, create the next minimal patch from that delta only. If no visible delta remains, move to H002."
+      ],
+      "pass_criteria": "A register delta is identified that plausibly controls data/DMA progress and is absent from prior falsified tests.",
+      "fail_criteria": "No visible register delta remains; next work must inspect hidden wrapper/source behavior instead of cycling another visible-register boot variant."
+    },
+    {
+      "id": "A733-SDMMC-H002",
+      "priority": 2,
+      "status": "ready_after_H001",
+      "title": "Find hidden v5p3x wrapper or MBUS/storage behavior in vendor source",
+      "question": "Does the vendor A733 v5p3x path program a non-SDMMC register or wrapper bit required before IDMAC can fetch descriptors?",
+      "test_cost": "low to medium; source search before build",
+      "procedure": [
+        "Search the vendor driver and board code for SDMMC0, v5p3x, IDMAC, MBUS, MSI-lite, storage fabric, and wrapper register writes outside the SDMMC register window.",
+        "Record file, function, register address, value, and call path.",
+        "Only if a concrete write is found, build a minimal diagnostic that adds that one write with printk evidence.",
+        "Boot Cubie3 once, capture UART, restore vendor kernel, and update this queue."
+      ],
+      "pass_criteria": "A specific hidden register/write is found and tested.",
+      "fail_criteria": "No source-backed hidden write exists in available vendor code."
+    },
+    {
+      "id": "A733-SDMMC-H003",
+      "priority": 3,
+      "status": "ready_after_H001",
+      "title": "Lower-level CMD17 proof outside mmcblk queue setup",
+      "question": "Can a single-block read complete cleanly when issued as a targeted diagnostic instead of forcing block-layer queue geometry?",
+      "test_cost": "medium; small kernel patch and one boot",
+      "procedure": [
+        "Do not change global mmcblk queue limits.",
+        "Add a one-shot diagnostic after card init that issues or emulates one controlled 512-byte read and logs RINTR, STAS, FIFO, and data bytes.",
+        "Boot once and capture UART.",
+        "Restore Cubie3 and update the queue."
+      ],
+      "pass_criteria": "Controlled CMD17 completes and returns data, separating single-block protocol from CMD18/multi-block behavior.",
+      "fail_criteria": "CMD17 also stops at command-done/RX-request with no data-over."
+    },
+    {
+      "id": "A733-SDMMC-H004",
+      "priority": 4,
+      "status": "do_not_repeat_without_new_evidence",
+      "title": "Retest descriptor geometry, descriptor size, address shifting, DIC, chain bits, CEATA, DMAC reset, fabric-clock order, or vendor delay",
+      "question": "Previously tested visible descriptor/control variants",
+      "test_cost": "wasteful unless new source evidence changes the expected value",
+      "procedure": [
+        "Do not rerun these variants as exploratory guesses.",
+        "Only reopen a subcase if H001/H002 identifies a concrete mismatch or missing vendor behavior."
+      ],
+      "fail_history": [
+        "v5p3x 4 KiB descriptor segmentation still stalls.",
+        "32 KiB descriptor size still stalls.",
+        "Unshifted descriptor/data variants still stall.",
+        "DIC and chain-bit variants still stall.",
+        "CEATA omission and DMAC reset variants still stall.",
+        "Vendor-like DRV_DL does not fix CMD18.",
+        "Explicit descriptor dma_sync_single_for_device does not fix CMD18."
+      ]
+    }
+  ]
+}
