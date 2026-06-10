@@ -1,0 +1,75 @@
+{
+  "id": "A733-SDMMC-H022",
+  "status": "completed_delta_to_test",
+  "created_utc": "2026-06-10T18:49:15Z",
+  "target": "cubie3",
+  "vendor_kernel": "5.15.147-21-a733",
+  "question": "Which vendor driver, CCU, security, MBUS, or storage-fabric path lets SDMMC0 IDMAC issue its first descriptor read when mainline cannot?",
+  "artifacts": {
+    "vendor_pmu_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-h022-vendor-nsi-pmu-20260610T184700Z.txt",
+    "vendor_pmu_sha256": "a58f6071f91fbc92be099bd0f4f842a32c3e085d4a42e34d6527085d82347eea",
+    "raw_snapshot": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-h022-vendor-nsi-snapshot-20260610T184616Z.json",
+    "raw_snapshot_sha256": "fb75da4aa4590bbc8a6f1c2494d16a3711258faf948e96085369e79433732661",
+    "raw_snapshot_warning": "The raw snapshot is structural only. This vendor boot rejected /dev/mem reads with Bad address, leaving 83 empty values in the first sample."
+  },
+  "source_evidence": [
+    {
+      "file": "/srv/projects/kernel-work/tmp/linux-orangepi-full/bsp/configs/linux-6.6/sun60iw2p1.dtsi",
+      "summary": "Vendor SDMMC0 uses compatible allwinner,sunxi-mmc-v5p3x with osc24m, pll_periph, pll_periph_2, mmc, ahb, mmc_store, mmc_mbus, and mmc_msi_lite clocks. The store/MBUS/MSI-lite SDMMC consumers were already covered by prior tests."
+    },
+    {
+      "file": "/srv/projects/kernel-work/tmp/linux-orangepi-full/bsp/drivers/mmc/sunxi-mmc.c",
+      "summary": "The active v5p3x IDMAC launch path initializes descriptors, writes shifted DLBA, sets DMA enable, and starts IDMAC. No new A733 SDMMC-local wrapper write was found beyond previously tested paths."
+    },
+    {
+      "file": "/srv/projects/kernel-work/tmp/linux-orangepi-full/bsp/drivers/bus/sunxi-nsi.c",
+      "summary": "The vendor NSI driver initializes the NSI clock path, exposes PMU/config sysfs, and can enable IAG PMU counters through pmu_timer."
+    }
+  ],
+  "pmu_evidence": {
+    "sysfs_base": "/sys/devices/platform/soc@3000000/2020000.nsi-controller/nsi-pmu/hwmon0",
+    "read_command": "dd if=/dev/mmcblk0 of=/dev/null bs=4K count=8192 iflag=direct status=none",
+    "dd_returncode": 0,
+    "available_pmu": [
+      "gmac",
+      "msi_list0",
+      "de",
+      "eink",
+      "di",
+      "g2d",
+      "gpu",
+      "ve0",
+      "ve1",
+      "ve2",
+      "gic",
+      "msi_lite1",
+      "msi_lite2",
+      "usb_pcie",
+      "iommu0",
+      "iommu1",
+      "isp",
+      "csi",
+      "npu",
+      "cpu0",
+      "cpu1",
+      "total"
+    ],
+    "during_read_pmu_bandwidth": {
+      "msi_lite1": 0,
+      "msi_lite2": 7,
+      "iommu0": 0,
+      "iommu1": 0,
+      "cpu0": 17,
+      "cpu1": 17,
+      "total": 43
+    },
+    "after_disable_pmu_timer": 0
+  },
+  "interpretation": [
+    "H022 did not find a new SDMMC-local register write to test.",
+    "The safe MSI/IOMMU subset from H021 already covered the simple MSI-lite2 and IOMMU gate/reset angle, so the PMU result is not by itself a fix.",
+    "The remaining source-backed local hypothesis is broader but still scoped: mainline may lack vendor NSI controller clock/reset/init state needed for SDMMC0 IDMAC master reachability.",
+    "The next test must stay lab-only and must not become upstream DTS policy unless bindings and maintainer feedback justify it."
+  ],
+  "next_hypothesis": "A733-SDMMC-H023"
+}

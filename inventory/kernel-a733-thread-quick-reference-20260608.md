@@ -941,3 +941,30 @@ persisted, but the forced CMD18 still stalled with descriptor checksum
 Next queue item: H022. Trace the vendor SDMMC IDMAC/fabric path from source and
 logs before another behavior patch. Do not broaden from H021 into GMAC,
 display, VPU, GPU, CE, DMA, or unrelated fabric bits without source evidence.
+
+## 2026-06-10 H022/H023 Queue Update
+
+H022 completed without a mainline build. Vendor source still shows the known
+SDMMC0 v5p3x path and the already-tested `mmc_store`, `mmc_mbus`, and
+`mmc_msi_lite` consumers; no new SDMMC-local wrapper write was found.
+
+Vendor NSI evidence:
+`tools/hardware-logs/cubie-h022-vendor-nsi-pmu-20260610T184700Z.txt`,
+sha256 `a58f6071f91fbc92be099bd0f4f842a32c3e085d4a42e34d6527085d82347eea`.
+The vendor PMU sampler was enabled for 100 ms around a known-good SD read and
+then disabled again. During the read it showed nonzero bandwidth on
+`msi_lite2`, `cpu0`, `cpu1`, and `total`; `msi_lite1`, `iommu0`, and `iommu1`
+stayed at zero in that sample.
+
+Warning: `tools/hardware-logs/cubie-h022-vendor-nsi-snapshot-20260610T184616Z.json`
+is structural only. This vendor boot rejected `/dev/mem` reads with
+`Bad address`, so those empty register values are not evidence.
+
+Result JSON:
+`task-packets/kernel/a733-h022-vendor-nsi-trace-result-20260610T1849Z.json`.
+
+Next queue item: H023. From H021, add a lab-only diagnostic that dumps NSI
+clock/reset and IAG state from kernel ioremap, then tests the minimum
+source-backed NSI clock/reset enable: CCU `0x580` bits 30/31 and CCU `0x584`
+bits 0/16. Do not add an upstream NSI node or broaden into GMAC, display, VPU,
+GPU, CE, DMA, USB, PCIe, or unrelated fabric bits.

@@ -67,12 +67,15 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
 - Root install remains gated on an interactive sudo password for
   `radxa@192.168.50.95`.
 - Current A733 SDMMC runtime triage is tracked in
-  `task-packets/kernel/a733-hypothesis-queue.json`. As of H021, rootfs,
+  `task-packets/kernel/a733-hypothesis-queue.json`. As of H022, rootfs,
   protocol flow, descriptor geometry, visible GCTRL/DMAC bits, IOMMU, 64-bit
   DMA-mask intent, data-buffer placement, descriptor allocation class,
-  SDMMC0 fabric-clock consumers, and the safe MSI-lite/IOMMU fabric subset are
-  not the standalone fix. The next work order is H022: trace the vendor SDMMC
-  IDMAC/fabric path from source and logs before any new behavior patch.
+  SDMMC0 fabric-clock consumers, the safe MSI-lite/IOMMU fabric subset, and a
+  new SDMMC-local vendor wrapper-write search are not the standalone fix. H022
+  found the next source-backed path below SDMMC: vendor NSI controller/PMU
+  init is active during known-good SD reads. The next work order is H023:
+  test minimum lab-only NSI clock/reset init while keeping all GMAC, display,
+  VPU, GPU, CE, DMA, USB, PCIe, and unrelated fabric bits out of scope.
 
 ## Guardrails
 
