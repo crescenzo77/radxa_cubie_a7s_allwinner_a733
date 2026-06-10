@@ -79,6 +79,14 @@ in the same state. Treat the current blocker as multi-block read data-phase
 completion on A733 SDMMC, not high-speed timing, rootfs handling, card
 enumeration, or board DTS expansion.
 
+The latest CMD18 PIO/autostop diagnostic restores `SEND_AUTO_STOP` for CMD18
+and confirms the command value changes to `0x3352`, but the transfer still
+stalls with raw `RINTR=0x24` and no `DATA_OVER`. The byte counters add one
+useful clue: `CBCR=0x00000400` and `BBCR=0x00000000`, so only 1024 of the
+requested 4096 bytes reach the controller-side byte counter before progress
+stops. Next focus should be multi-block read continuation/FIFO-drain behavior,
+not auto-stop absence.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -188,6 +196,11 @@ CMD18 IDMA/PIO variants
 post-parse 25 MHz cap
   -> runtime f_max=25000000 and clock=25000000 confirmed
   -> CMD18 still reaches RINTR=0x24 with no DATA_OVER
+
+CMD18 PIO with auto-stop restored
+  -> CMDR changes to 0x3352
+  -> still RINTR=0x24 with no DATA_OVER
+  -> CBCR stops at 0x400 of 0x1000 bytes
 ```
 
 Key proof logs:
@@ -264,6 +277,10 @@ sha256: 08bd631ec13c5245290a319e99011708970508fdf87b241a5af0f305bdf3696d
 SDMMC0 CMD18 post-parse 25 MHz cap diagnostic:
 tools/hardware-logs/cubie-uart/20260610T081308Z-a733-cmd18-postparse25-ad30e10a6917-ext4load-ttyUSB0.uart.log
 sha256: 51f2c38934804d92b19dc89e24a727eb390275b2bea152a8e38b3376f4949ba6
+
+SDMMC0 CMD18 PIO/autostop diagnostic:
+tools/hardware-logs/cubie-uart/20260610T082249Z-a733-cmd18-pio-autostop-603f4149f7ea-ext4load-ttyUSB0.uart.log
+sha256: 1e5c5aa1915d4917f471475111eff8af90eb35ac1c1aa602bcf4f7c03933dc73
 ```
 
 ## Source Findings
