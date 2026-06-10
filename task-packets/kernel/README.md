@@ -63,6 +63,12 @@ review branches, `scripts/kernel-validation-floor` is the validation floor, and
 `b4 prep` is the mailing-list series manager. Flat patch files are snapshots,
 not the final source of truth for mailout.
 
+When a task packet graduates toward upstream submission, do not hand-edit patch
+numbering, trailers, or cover-letter dependencies as the primary workflow.
+Update the branch stack, regenerate the review branch, run the validation floor,
+then let `b4` manage the prepared series. The PR template in the public repo is
+the required stop-condition checklist before any human review or mail reflect.
+
 Before a draft is used for kernel patch work, attach local token-offload
 context cards when the task involves large inputs:
 

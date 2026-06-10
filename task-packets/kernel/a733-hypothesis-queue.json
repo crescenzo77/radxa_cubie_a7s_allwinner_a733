@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T16:12:37Z",
+  "updated_utc": "2026-06-10T16:20:18Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing with IDST=0x4000, CHDA=DLBA, CBDA=0, RINTR=0x24, CBCR=0x400, and BBCR=0. The next responsible step is a vendor-vs-mainline single-descriptor IDMA comparison before another boot variant.",
   "operator_model": {
@@ -18,6 +18,7 @@
     "knowledge_base_update_committed": "Update and commit /Users/enzo/Documents/Homelab/kernel-a733-400b-model-prompt-20260609.md.",
     "status_doc_update_committed": "Update and commit /Users/enzo/projects/Home Lab/cubie-a7s-armbian/docs/status.md.",
     "hypothesis_queue_update_committed": "Update and commit this file. Sync it to /srv/projects/homelab/task-packets/kernel/a733-hypothesis-queue.json on Strix.",
+    "workflow_automation_recorded": "If the upstream preparation process changed, update the public b4, validation-floor, topic-branch, PR-template, and review-export docs before ending the session.",
     "remote_push_checked": "Push repos with configured remotes and record any repo that has no remote.",
     "target_restored": "Verify Cubie3 boots vendor kernel 5.15.147-21-a733."
   },
@@ -27,6 +28,13 @@
     "Do not submit local A733 CCU or pinctrl scaffolding while Junhui Liu's CCU/PRCM RFC and Andre Przywara's pinctrl RFC are in flight.",
     "Keep clk_ignore_unused and PIO bypasses as lab diagnostics only."
   ],
+  "submission_workflow": {
+    "series_manager": "Use b4 from a clean generated review branch for final mailing-list preparation.",
+    "branch_hierarchy": "Use topic branches, candidate branches, and generated review branches; update dependent refs together with git rebase --update-refs when rebasing a stack.",
+    "validation_floor": "Run scripts/kernel-validation-floor locally; the public repo CI mirrors this floor for candidate/**, topic/**, review/**, codex/**, pull requests, and manual dispatch.",
+    "review_export": "Treat patches/ as a review snapshot only. Regenerate it from the final branch instead of editing flat patch files by hand.",
+    "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
+  },
   "latest_completed_test": {
     "id": "A733-SDMMC-H009",
     "status": "failed",

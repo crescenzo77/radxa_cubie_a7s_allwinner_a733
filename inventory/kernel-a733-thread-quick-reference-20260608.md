@@ -19,6 +19,18 @@ not a public submission artifact.
   reviews, private topology, generated images, DTBs, and scratch notes out of
   it.
 
+## Workflow Automation Contract
+
+- Final mailing preparation uses `b4` from a clean generated review branch.
+- Branch flow is topic branch -> candidate branch -> generated review branch;
+  update dependent refs together when rebasing a stack.
+- `scripts/kernel-validation-floor` is the local validation floor, mirrored by
+  the public CI on candidate/topic/review/Codex branches and pull requests.
+- `patches/` is a review snapshot and CI input, not the source of truth for
+  upstream mailout.
+- The public PR template is the stop-condition checklist for scope,
+  dependencies, validation, and trailer review.
+
 ## Hardware Map
 
 - Cubie2: `192.168.50.85`
