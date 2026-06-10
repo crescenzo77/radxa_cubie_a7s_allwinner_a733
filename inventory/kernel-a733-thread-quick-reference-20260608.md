@@ -1138,3 +1138,12 @@ recipients cleanly, but the default From was `enzo <enzo@enzos-Mac-mini.local>`.
 Strix lacks `git-send-email` and is not ready to send. Next queue item is H032:
 get explicit approval, choose a public From identity, and choose Mac, Strix, or
 another route before sending.
+
+## 2026-06-10 H032 Decision Packet
+
+H032 prepared the approval/send decision packet:
+`task-packets/kernel/a733-h032-approval-send-decision-20260610T2028Z.md`.
+
+It contains the exact approved-send command template, hold/alternate-route
+templates, and required result fields. H032 remains open until the user chooses
+send/hold/alternate route and a public From identity.

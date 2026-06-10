@@ -174,3 +174,11 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
   not have `git-send-email` installed.
 - Nothing was sent. The next work order is H032: user approval plus public From
   identity and send host/route selection.
+
+## 2026-06-10 H032 Addendum
+
+- H032 prepared
+  `task-packets/kernel/a733-h032-approval-send-decision-20260610T2028Z.md`.
+- The packet contains exact send, hold, alternate-route, and result-recording
+  templates. H032 remains open until the user chooses send/hold/alternate
+  route and a public From identity.
