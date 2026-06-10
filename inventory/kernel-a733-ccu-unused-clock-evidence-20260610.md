@@ -107,6 +107,15 @@ PIO copy can carry real block data far enough to parse partitions, but the
 bounded copy path needs better sg/offset diagnostics before it can test rootfs
 mounting.
 
+The generic sg-mapped bounded PIO copy diagnostic fixes that guard. It advances
+through partition parsing and multiple 8-block CMD18 reads with clean
+`diag fifo copy` lines (`done=512`, `copied=4096/4096`, `err=0`). The next
+blocker is a larger block-layer CMD18: `blocks=256`, `sg_len=16`, which falls
+outside the temporary PIO predicate and therefore goes back to IDMA, where it
+again sticks at `IDST=0x4000`. This proves the temporary PIO copy path is
+functionally useful for multi-block reads, and the remaining normal-I/O blocker
+is the large multi-sg IDMA path or a deliberately broader PIO fallback.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -231,6 +240,11 @@ CMD18 bounded FIFO-to-sg copy
   -> first block-layer reads complete
   -> partition table appears: mmcblk0: p1 p2 p3
   -> next 2-block CMD18 stalls with no copy line
+
+CMD18 generic sg PIO copy
+  -> multiple 8-block CMD18 reads complete with copied=4096/4096
+  -> next blocker is 256-block / 16-sg CMD18 via IDMA
+  -> IDMA still sticks at IDST=0x4000
 ```
 
 Key proof logs:
@@ -323,6 +337,10 @@ sha256: e27a37ab5428ce26db31c194d449f630367fe3e021653ea4bbe03a992cc0e562
 SDMMC0 CMD18 bounded FIFO-to-sg copy diagnostic:
 tools/hardware-logs/cubie-uart/20260610T084536Z-a733-cmd18-pio-copy-2b7e7a5431df-ext4load-ttyUSB0.uart.log
 sha256: 6a18f2cd4e6938bec34fcfc880910be9c6f0a09e9459f882e371294fc7376d36
+
+SDMMC0 CMD18 generic sg FIFO-to-sg copy diagnostic:
+tools/hardware-logs/cubie-uart/20260610T085342Z-a733-cmd18-pio-sgcopy-8836b3b94af4-ext4load-ttyUSB0.uart.log
+sha256: 66ff54f622908395637bddfb8829285b6660883b9a4f0a4e4263dce88f255813
 ```
 
 ## Source Findings
