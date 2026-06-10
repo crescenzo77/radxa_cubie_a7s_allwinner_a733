@@ -1,0 +1,49 @@
+{
+  "id": "A733-SDMMC-H030",
+  "created_utc": "2026-06-10T20:21:52Z",
+  "status": "prepared_not_sent",
+  "title": "Route descriptor-fetch question and track answers",
+  "question": "Can maintainer, Radxa, or Allwinner feedback identify the missing A733/SUN60IW2 SDMMC0 descriptor-fetch precondition for a single next runtime proof?",
+  "inputs": {
+    "h029_private_packet": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h029-maintainer-vendor-question-packet-20260610T2018Z.md",
+    "public_email_draft": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h030-public-email-draft-20260610T2021Z.txt",
+    "kernel_repo_on_strix": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "maintainer_source": "scripts/get_maintainer.pl -f drivers/mmc/host/sunxi-mmc.c arch/arm64/boot/dts/allwinner"
+  },
+  "route": {
+    "recommended_first_route": "linux-mmc plus linux-sunxi maintainers/lists",
+    "reason": "The blocker is in normal SDMMC0 IDMAC descriptor fetch. The draft is a technical question, not a DTS patch or board-series submission.",
+    "to": [
+      "Ulf Hansson <ulfh@kernel.org>"
+    ],
+    "cc": [
+      "Chen-Yu Tsai <wens@kernel.org>",
+      "Jernej Skrabec <jernej.skrabec@gmail.com>",
+      "Samuel Holland <samuel@sholland.org>",
+      "linux-mmc@vger.kernel.org",
+      "linux-arm-kernel@lists.infradead.org",
+      "linux-sunxi@lists.linux.dev",
+      "linux-kernel@vger.kernel.org"
+    ],
+    "not_included_initially": [
+      "devicetree@vger.kernel.org",
+      "Rob Herring <robh@kernel.org>",
+      "Krzysztof Kozlowski <krzk+dt@kernel.org>",
+      "Conor Dooley <conor+dt@kernel.org>"
+    ],
+    "not_included_reason": "The message asks for a runtime SDMMC/IDMAC precondition and does not propose a binding or DTS change."
+  },
+  "send_state": {
+    "sent": false,
+    "reason_not_sent": "Do not send external email from the user's identity without explicit approval.",
+    "approval_needed": "User approval to send the public-clean H030 email draft, plus working mail transport from Mac or Strix.",
+    "suggested_send_host": "strix",
+    "suggested_preflight": [
+      "Confirm From identity and mail transport.",
+      "Run a dry-run send-email or equivalent if configured.",
+      "Send the exact public draft or a user-approved edit."
+    ]
+  },
+  "response_log": [],
+  "next_id": "A733-SDMMC-H031"
+}

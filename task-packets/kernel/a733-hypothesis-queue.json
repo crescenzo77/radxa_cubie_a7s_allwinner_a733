@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T20:18:15Z",
+  "updated_utc": "2026-06-10T20:21:52Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H029 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, and the maintainer/vendor question packet. The current blocker remains SDMMC0 IDMAC descriptor-fetch reachability below the standard SDMMC visible registers, tested DMA API/addressing paths, tested CCU/NSI/fabric gates, known vendor normal-IDMAC geometry, and locally visible boot firmware evidence. H030 should route the H029 packet and track responses before any new behavior patch.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H030 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, the maintainer/vendor question packet, and the public-clean routing draft/tracker. The current blocker remains SDMMC0 IDMAC descriptor-fetch reachability below the standard SDMMC visible registers, tested DMA API/addressing paths, tested CCU/NSI/fabric gates, known vendor normal-IDMAC geometry, and locally visible boot firmware evidence. H031 should send the public-clean question after explicit approval or record the chosen route/response before any new behavior patch.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,11 +37,11 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H029",
-    "status": "completed_draft",
-    "title": "Maintainer/vendor descriptor-fetch question packet",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h029-maintainer-vendor-question-packet-20260610T2018Z.md",
-    "result": "H029 produced an editable maintainer/vendor question packet. The draft summarizes the exact IDMAC DESC_READ signature, the working PIO/rootfs proofs, H009-H028 ruled-out hypotheses, in-flight A733 CCU/pinctrl dependency posture, explicit anti-goals, and six specific questions about SDMMC0 descriptor-fetch preconditions. No kernel patch was written."
+    "id": "A733-SDMMC-H030",
+    "status": "prepared_not_sent",
+    "title": "Route descriptor-fetch question and track answers",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h030-routing-tracker-20260610T2021Z.json",
+    "result": "H030 prepared a public-clean email draft and routing tracker from the H029 packet. The recommended first route is linux-mmc plus linux-sunxi maintainers/lists. Nothing was sent because external email from the user's identity requires explicit approval and working mail transport."
   },
   "hypotheses": [
     {
@@ -798,7 +798,7 @@
     {
       "id": "A733-SDMMC-H030",
       "priority": 1,
-      "status": "ready",
+      "status": "prepared_not_sent",
       "title": "Route descriptor-fetch question and track answers",
       "question": "Can maintainer, Radxa, or Allwinner feedback identify the missing A733/SUN60IW2 SDMMC0 descriptor-fetch precondition for a single next runtime proof?",
       "test_cost": "low; coordination only unless a concrete answer arrives",
@@ -812,7 +812,32 @@
       ],
       "pass_criteria": "A response or source reference identifies one concrete next runtime proof, or the lack of response is documented with the question packet ready for another route.",
       "fail_criteria": "The next session has to reconstruct who should be asked, what was asked, or what answers were received.",
-      "upstream_note": "Coordination and evidence tracking only."
+      "upstream_note": "Coordination and evidence tracking only.",
+      "result": {
+        "routing_tracker": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h030-routing-tracker-20260610T2021Z.json",
+        "public_email_draft": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h030-public-email-draft-20260610T2021Z.txt",
+        "summary": "Prepared public-clean routing artifacts. Recommended first route is Ulf Hansson, sunxi maintainers, linux-mmc, linux-arm-kernel, linux-sunxi, and linux-kernel. DT maintainers/lists are intentionally not included in the first route because this is a runtime IDMAC question, not a binding submission. Not sent pending explicit user approval and confirmed mail transport."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H031",
+      "priority": 1,
+      "status": "ready",
+      "title": "Send approved descriptor-fetch question or record selected route",
+      "question": "After user approval, which external route should receive the public-clean A733 SDMMC0 descriptor-fetch question, and what response changes the next runtime proof?",
+      "test_cost": "low; external coordination only",
+      "procedure": [
+        "Do not build or rewrite kernel patches for H031.",
+        "Get explicit user approval before sending any external email or public issue from the user's identity.",
+        "Use the public-clean draft at task-packets/kernel/a733-h030-public-email-draft-20260610T2021Z.txt unless the user edits it.",
+        "Prefer the H030 recommended first route unless the user chooses Radxa, Allwinner, GitHub, or another channel.",
+        "Record exact sent timestamp, channel, recipients or URL, message hash, and any response in an H031 result artifact.",
+        "If a response identifies one concrete register, reset/clock ordering, firmware handoff, master ID, binding, or erratum, queue H032 as one narrow runtime proof.",
+        "If sending is not approved or mail transport is unavailable, record the blocker and keep local behavior patching paused."
+      ],
+      "pass_criteria": "The question is sent through an approved route and tracked, or a documented approval/transport blocker explains why it remains unsent.",
+      "fail_criteria": "The next session cannot tell whether the question was sent, to whom, or why not.",
+      "upstream_note": "Coordination only. No code patch should be generated from H031 unless an answer provides a concrete source-backed delta."
     },
     {
       "id": "A733-SDMMC-H004",

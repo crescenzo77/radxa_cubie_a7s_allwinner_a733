@@ -152,3 +152,15 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
 - The next work order is H030: route the question packet and log responses.
   Keep local behavior patching paused until an answer or new source reference
   identifies one concrete runtime proof.
+
+## 2026-06-10 H030 Addendum
+
+- H030 produced
+  `task-packets/kernel/a733-h030-public-email-draft-20260610T2021Z.txt` and
+  `task-packets/kernel/a733-h030-routing-tracker-20260610T2021Z.json`.
+- Recommended first route: Linux MMC plus sunxi maintainers/lists. DT
+  maintainers are not on the first route because this is a runtime IDMAC
+  question, not a binding submission.
+- Nothing was sent. The next work order is H031: get explicit approval and
+  working mail transport, then send the public-clean draft or record the chosen
+  route/blocker.

@@ -1110,3 +1110,20 @@ anti-goals. No kernel patch was written.
 Next queue item: H030. Route the H029 packet through the chosen maintainer,
 Radxa, or Allwinner channel and track responses. Do not resume local behavior
 patches until an answer or source reference names one concrete next proof.
+
+## 2026-06-10 H030 Routing Prep
+
+H030 produced:
+
+```text
+public draft: task-packets/kernel/a733-h030-public-email-draft-20260610T2021Z.txt
+routing tracker: task-packets/kernel/a733-h030-routing-tracker-20260610T2021Z.json
+```
+
+Recommended first route: Linux MMC plus sunxi maintainers/lists. The draft was
+not sent because external email from the user's identity requires explicit
+approval and working mail transport.
+
+Next queue item: H031. Send the approved public-clean question or record the
+selected route/blocker. Do not resume local behavior patches before an answer
+or source reference names one concrete next proof.

@@ -1,0 +1,89 @@
+Subject: Question: Allwinner A733 SDMMC0 IDMAC remains in DESC_READ under mainline
+To: Ulf Hansson <ulfh@kernel.org>
+Cc: Chen-Yu Tsai <wens@kernel.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>, linux-mmc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev, linux-kernel@vger.kernel.org
+
+Hi,
+
+I am working on mainline bring-up for the Radxa Cubie A7S with the Allwinner
+A733 / SUN60IW2 SoC, and I have narrowed the current SDMMC0 blocker to normal
+IDMAC descriptor fetch.
+
+Basic SDMMC0 operation is working under the local mainline diagnostic tree:
+
+- card init
+- pre-mmcblk CMD17
+- small PIO CMD18 reads
+- partition discovery
+- CMD49 cache-enable through a narrowly scoped PIO write
+- read-only EXT4 root mount and init=/bin/sh when IDMA is bypassed
+
+The remaining failure is a one-descriptor, 8-block CMD18 IDMA read. The command
+launches, but IDMAC remains in descriptor-read state:
+
+    IDST=0x00004000  (DESC_READ)
+    CHDA=DLBA
+    CBDA=0x00000000
+    CBCR=0x00000400
+    BBCR=0x00000000
+    descriptor checksum unchanged
+    descriptor OWN bit still set
+
+After a CPU-side sync, the descriptor ring is still byte-for-byte unchanged.
+That makes this look like the controller never consumes descriptor word 0, not
+a later data-transfer failure.
+
+Things already ruled out locally:
+
+- large or multi-descriptor I/O only: one 4096-byte descriptor also stalls
+- practical descriptor geometry: vendor working samples and mainline
+  diagnostics use the same 4 KiB descriptor shape and shifted addresses
+- DMAC bit 0x200: vendor working reads also show DMAC 0x200 / 0x282
+- leftover PIO/AHB access mode before IDMA
+- data buffer placement above vs below 4 GiB
+- coherent/CMA descriptors vs streaming-mapped descriptors
+- vendor-style normal IDMAC 64-bit DMA/coherent mask, descriptor size bits 12,
+  des_addr_shift=2, and shifted DLBA
+- a safe MSI/IOMMU fabric gate subset
+- minimum NSI CCU bits seen from local source/log comparison
+- local firmware/security/storage-master inventory from the available vendor
+  DT/source/logs
+
+The available vendor SDMMC0 node uses the v5p3x path and exposes the expected
+SDMMC clocks, including the store/MBUS/MSI-lite clocks, but I have not found a
+source-backed SDMMC0 IOMMU, interconnect, firewall, NSI master, or
+storage-permission property/write in the local vendor material.
+
+My questions:
+
+1. On A733/SUN60IW2, does SDMMC0 normal IDMAC descriptor fetch depend on a
+   non-obvious master permission, security/firewall, TZASC/SMPU, or firmware
+   handoff state not represented in the vendor SDMMC0 DT node?
+
+2. Is SDMMC0 descriptor fetch routed through MSI-lite1, MSI-lite2, STORE/MBUS,
+   or another SUN60IW2 fabric path that is not named as sdmmc/smhc in the
+   available vendor NSI PMU enum?
+
+3. Should SDMMC0 be represented as an IOMMU, interconnect, or NSI/MBUS master
+   in mainline DT/bindings, or is that intentionally absent on A733?
+
+4. Is there a required reset or clock ordering for SDMMC0 IDMAC descriptor
+   fetch beyond the visible SDMMC0 clocks?
+
+5. Does vendor boot0/BL31/SCP/ARISC configure an SDMMC/SMHC master permission
+   that Linux must preserve or reapply? If yes, which register block owns it?
+
+6. Is IDST=0x4000 with CHDA=DLBA, CBDA=0, and unchanged OWN descriptor a known
+   failure signature on sunxi v5p3x/v5p3-style MMC hosts?
+
+This is not a patch submission. I am trying to avoid sending undocumented
+fabric or firmware guesses upstream. A pointer to the relevant register block,
+clock/reset dependency, firmware handoff, master ID, binding expectation, or
+known erratum would let me reduce the next test to one narrow runtime proof.
+
+For scope: I am intentionally not expanding this first board slice into
+Ethernet, VPU, display, USB-C, PCIe, Wi-Fi, NPU, or GPU, and I am treating the
+A733 CCU/PRCM and pinctrl work as dependencies because related RFCs are already
+in flight.
+
+Thanks,
+Enzo
