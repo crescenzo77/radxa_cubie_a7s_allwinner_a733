@@ -264,6 +264,12 @@ progressing `CBCR`/`BBCR`, but the first 256-block IDMA CMD18 still stalls at
 `IDST=0x4000`, `CHDA=DLBA`, `CBDA=0`, `CBCR=0x400`, and `BBCR=0`. BSP
 descriptor allocation page count is also not enough.
 
+Commit `529933d155a4` adds the BSP-style command-store barrier, `wmb()`
+immediately before the `REG_CMDR` write. Runtime confirms
+`diag command launch wmb before cmdr opcode=18 blocks=256`, but the same
+256-block IDMA CMD18 still stalls at `IDST=0x4000`, `CHDA=DLBA`, `CBDA=0`,
+`CBCR=0x400`, and `BBCR=0`. BSP command-launch ordering is also not enough.
+
 Full Orange Pi BSP source was cloned on Strix at:
 `/srv/projects/kernel-work/tmp/linux-orangepi-full`, branch
 `orange-pi-6.6-sun60iw2`, commit
@@ -605,6 +611,10 @@ sha256: 2c7b3601a1319d36bec6a3b395ad82fbf190af981e5b0786e56ee577da8a97bc
 SDMMC0 IDMA descriptor page-count diagnostic:
 tools/hardware-logs/cubie-uart/20260610T130516Z-a733-idma-descpages-1210c90a9119-ext4load-ttyUSB0.uart.log
 sha256: 223989ac63f47503cb59d61d44292f1e10f93c33423d34c2a022aeac690b343c
+
+SDMMC0 IDMA command-launch barrier diagnostic:
+tools/hardware-logs/cubie-uart/20260610T131518Z-a733-idma-cmdwmb-529933d155a4-ext4load-ttyUSB0.uart.log
+sha256: d9a7bd92f935f54361c4d141b1253ddc96bf2fbd292ef980b136e1a02ed0ba91
 ```
 
 ## Source Findings
