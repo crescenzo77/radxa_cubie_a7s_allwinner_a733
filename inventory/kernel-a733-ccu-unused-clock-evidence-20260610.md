@@ -68,6 +68,17 @@ core (`unrecognised SCR structure version 5`). This proves the SD command/data
 phase works without IDMA; the remaining blocker is the A733 SDMMC IDMA path or
 the driver's IDMA setup for this controller.
 
+Later diagnostics extended the PIO proof through non-destructive SCR handling,
+small reads, 512-byte reads, and 512-byte writes, reaching
+`mmc0: new high speed SDXC card` and `mmcblk0: mmc0:544c USD00 117 GiB`. The
+first normal block-layer transfer is CMD18. Multiple IDMA variants and a CMD18
+PIO attempt all leave CMD18 at raw `COMMAND_DONE | RX_DATA_REQUEST` with no
+`DATA_OVER`. The latest timing diagnostic confirms that a post-parse 25 MHz
+host cap is active (`f_max=25000000`, `clock=25000000`), but CMD18 still stalls
+in the same state. Treat the current blocker as multi-block read data-phase
+completion on A733 SDMMC, not high-speed timing, rootfs handling, card
+enumeration, or board DTS expansion.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -162,6 +173,21 @@ SCR-only PIO diagnostic
   -> DATA_OVER appears
   -> FIFO returns non-zero words
   -> MMC core reaches SCR parse, then fails due diagnostic FIFO peeking
+
+PIO single-block read/write extension
+  -> ACMD51, SD_STATUS, CMD48, and CMD49 complete via PIO
+  -> card enumeration reaches mmcblk0
+  -> normal block-layer CMD18 is the next stop
+
+CMD18 IDMA/PIO variants
+  -> command side reaches RINTR=0x24 (COMMAND_DONE | RX_DATA_REQUEST)
+  -> no DATA_OVER
+  -> IDMA variants keep IDST at 0x4000 descriptor-read
+  -> PIO CMD18 also lacks DATA_OVER
+
+post-parse 25 MHz cap
+  -> runtime f_max=25000000 and clock=25000000 confirmed
+  -> CMD18 still reaches RINTR=0x24 with no DATA_OVER
 ```
 
 Key proof logs:
@@ -234,6 +260,10 @@ sha256: 95d24c65563d8950680359a7a6faccd1ce97be261eb700c20222006357e19601
 SDMMC0 ACMD51 SCR-only PIO diagnostic:
 tools/hardware-logs/cubie-uart/20260610T042558Z-a733-acmd51-pio-09bac31de352-ext4load-ttyUSB0.uart.log
 sha256: 08bd631ec13c5245290a319e99011708970508fdf87b241a5af0f305bdf3696d
+
+SDMMC0 CMD18 post-parse 25 MHz cap diagnostic:
+tools/hardware-logs/cubie-uart/20260610T081308Z-a733-cmd18-postparse25-ad30e10a6917-ext4load-ttyUSB0.uart.log
+sha256: 51f2c38934804d92b19dc89e24a727eb390275b2bea152a8e38b3376f4949ba6
 ```
 
 ## Source Findings
