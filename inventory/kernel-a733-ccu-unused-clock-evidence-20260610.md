@@ -1144,6 +1144,26 @@ from "IDMAC cannot read descriptors" to "multi-block read data phase does not
 complete"; IDMA descriptor-read state is likely a consequence of the same
 multi-block data-phase condition rather than the only failure.
 
+Commit `935488a31621` tries to force the block layer away from CMD18 by setting
+`mmc->max_blk_count = 1`. The kernel builds and boots, but `mmcblk` rejects the
+resulting queue geometry before root I/O:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-force-cmd17-935488a31621-20260610T073534Z
+Image sha256: 0158b411861028e281171be146c27421d317128afa5588d90a8d50a2bc7ae8d9
+DTB sha256:   ed3cc474fe72c25c3e0cb96a3fc9fa243c1c01631bf4e651031d3cba8500708b
+
+tools/hardware-logs/cubie-uart/20260610T073734Z-a733-force-cmd17-935488a31621-ext4load-ttyUSB0.uart.log
+sha256: 32a4a82076499e0e74c02aea15cc8f0bda51f6e7f77b1a59ef048d51b889c44d
+
+mmc_blk_alloc_req
+mmcblk mmc0:544c: probe with driver mmcblk failed with error -22
+```
+
+Conclusion: naively forcing `max_blk_count = 1` is not a valid CMD17 root-I/O
+proof. A future single-block-read diagnostic needs internally consistent MMC
+queue limits, or a lower-level targeted CMD17 proof outside `mmcblk` probing.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
