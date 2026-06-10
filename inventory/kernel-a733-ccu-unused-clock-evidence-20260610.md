@@ -565,6 +565,22 @@ RX request, but the internal IDMAC remains in descriptor-read state. Next work
 should inspect IDMAC descriptor format/control sequencing, not DTS/rootfs/card
 enumeration.
 
+Commit `c123c45fa61b` tests a single-descriptor format variant: omit the chain
+bit when `sg_len == 1`, leaving FD/LD/ER/OWN set. The descriptor changes from
+`des0=0x8000003c` to `des0=0x8000002c`, but the result is unchanged:
+
+```text
+diag idma_des ... des0=0x8000002c ... unshift_buf=1 no_chain=1
+diag regs idma-post-cmdr ... rint=0x00000024 ... idst=0x00004000
+diag post-data poll11 ... idst=0x00004000 ... dmac=0x00000282
+```
+
+SDMMC0 IDMA no-chain single-descriptor diagnostic:
+tools/hardware-logs/cubie-uart/20260610T060048Z-a733-idma-nochain-c123c45fa61b-ext4load-ttyUSB0.uart.log
+sha256: 9971758304337c2b87505cda37094b981c0af0003e5ce7a8ca621d1dce9b14d0
+
+Conclusion: the single-descriptor chain-bit hypothesis is falsified.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
