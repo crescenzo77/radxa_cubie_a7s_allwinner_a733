@@ -434,6 +434,24 @@ sha256: eb55893362ff8a6d1e8c0fb9b061b4c603df533f0a587e19a151442abfce6247
 The next proof should either extend the lab PIO path to 512-byte single-block
 reads or focus directly on why IDMA remains stuck when larger data reads start.
 
+Commit `1499a30e7741` extends the diagnostic PIO read path to single-block
+512-byte reads. CMD48 reads now complete via PIO and return copied data. The
+next stop is CMD49, a 512-byte write, which still uses IDMA.
+
+```text
+diag pio copy opcode=48 words=128 ...
+diag request-data opcode=49 flags=0x100 blksz=512 blocks=1
+diag idma_des ... size=0x00000200 ...
+```
+
+SDMMC0 512-byte read PIO diagnostic:
+tools/hardware-logs/cubie-uart/20260610T044931Z-a733-pio512-1499a30e7741-ext4load-ttyUSB0.uart.log
+sha256: 8b997124e8388384d2f5c26c9c1e613f2bc2e02ae413eec445231a383943810a
+
+The remaining blocker is now broader than read-DMA only: A733 IDMA also blocks
+the first observed write path. The next lab-only proof should either force PIO
+for writes as well or skip/tame the tuning/switch write path if possible.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
