@@ -1763,6 +1763,37 @@ A733 SDMMC0 IDMA descriptor-read stall. Continue H002, but narrow away from the
 direct `SAMP_DL`, calibration, explicit fabric-clock-consumer, and vendor
 SDMMC0 MSI Lite1 clock-mapping paths.
 
+## Exact SDMMC0 Req-Page-Count Diagnostic
+
+Follow-up source review corrected a nuance in the descriptor-page evidence:
+the BSP default request page count is 4, but exact vendor SDMMC0 DTS sets
+`req-page-count = <2>`. Commit `ced3b9649014` changes only the local A733
+diagnostic descriptor allocation from 4 pages to 2 pages.
+
+```text
+/srv/projects/kernel-work/outgoing/a733-idma-reqpage2-ced3b9649014-20260610T145452Z
+Image sha256: 02d464e56010dff17dd0c19875d1c70f4f071386348415675f95b96937c44882
+DTB sha256:   8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf
+config sha256: dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202
+build log sha256: 2eba9d69edc7e4aff85a004e29fc37773eb9d226cffa8df3ba33e6ec2877cc47
+
+tools/hardware-logs/cubie-uart/20260610T145658Z-a733-idma-reqpage2-ced3b9649014-ext4load-ttyUSB0.uart.log
+sha256: 217329b64d0c56e757d51964aaa679b11ab26bc3a52f2d590861b381fc512f50
+```
+
+Runtime confirms `diag descriptor dma_sync_single_for_device size=8192`, so the
+two-page allocation took effect. Result: falsified. The first large CMD18 still
+stops at `RINTR=0x24`, `IDST=0x4000`, `CHDA=DLBA`, `CBDA=0`, `CBCR=0x400`,
+and `BBCR=0`.
+
+H002 source review conclusion: no active Cubie A7S SDMMC0 wrapper write outside
+the SDMMC register window was found in the available vendor runtime path. The
+remaining `ioremap` writes in MMC code are FPGA/SUN300/CQE or commented
+diagnostic paths. Vendor `ctl-spec-caps=<0x428>` maps to retry, manual
+read-data-timeout, and CMD11 timeout handling, not a descriptor-fetch enable.
+Move to H003: prove whether a controlled single-block CMD17 can complete
+outside the normal mmcblk CMD18 queue path.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible

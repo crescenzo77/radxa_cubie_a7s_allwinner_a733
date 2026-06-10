@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T14:49:35Z",
+  "updated_utc": "2026-06-10T15:01:27Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 reaches card enumeration and partition table, but normal block I/O stalls on large CMD18. The latest IDMA runs stop at COMMAND_DONE|RX_DATA_REQUEST with IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0.",
   "operator_model": {
@@ -28,18 +28,18 @@
     "Keep clk_ignore_unused and PIO bypasses as lab diagnostics only."
   ],
   "latest_completed_test": {
-    "id": "A733-SDMMC-H002B",
+    "id": "A733-SDMMC-H002C",
     "status": "falsified",
-    "title": "Use vendor SDMMC0 MSI Lite1 clock gate instead of local MSI Lite0 mapping",
-    "kernel_head": "aaeaea620f92e05b43800a81d0f38dbef3ce399b",
-    "artifact": "/srv/projects/kernel-work/outgoing/a733-idma-msilite1-aaeaea620f92-20260610T144301Z",
-    "image_sha256": "948d61127927a22b86678ac85a2af49c57ad5917bf3ad73fd28ebb364c12cb65",
+    "title": "Match exact vendor SDMMC0 req-page-count descriptor allocation",
+    "kernel_head": "ced3b964901450d17b9bd4643ffbf7e4b91063f1",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-idma-reqpage2-ced3b9649014-20260610T145452Z",
+    "image_sha256": "02d464e56010dff17dd0c19875d1c70f4f071386348415675f95b96937c44882",
     "dtb_sha256": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
     "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
-    "build_log_sha256": "64d798366d0b5b7ec8c6519096453813dca66ec08abb9621dff78d6822591151",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T144517Z-a733-idma-msilite1-aaeaea620f92-ext4load-ttyUSB0.uart.log",
-    "uart_log_sha256": "27d015f0ce23d7f820f226a1fa1bedd95f613abea6fd917c492492ae7dba02ce",
-    "result": "Vendor A733 DTS wires SDMMC0's mmc_msi_lite clock to CLK_MSI_LITE1, which maps to the local RFC gate CLK_BUS_MSI_LITE1 at 0x59c bit 0. Changing only the local SDMMC0 mmc_msi_lite consumer from CLK_MBUS_MSI_LITE0 to CLK_BUS_MSI_LITE1 does not fix the first large CMD18. The boot still stops with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0. This falsifies the vendor-MSI-Lite1-clock-mapping hypothesis for the current IDMA stall."
+    "build_log_sha256": "2eba9d69edc7e4aff85a004e29fc37773eb9d226cffa8df3ba33e6ec2877cc47",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T145658Z-a733-idma-reqpage2-ced3b9649014-ext4load-ttyUSB0.uart.log",
+    "uart_log_sha256": "217329b64d0c56e757d51964aaa679b11ab26bc3a52f2d590861b381fc512f50",
+    "result": "Vendor SDMMC0 DTS sets req-page-count=<2>. Changing the local A733 diagnostic descriptor allocation from 4 pages to 2 pages confirms descriptor sync size=8192 but does not fix the first large CMD18. The boot still stops with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0. Exact vendor SDMMC0 request-page descriptor allocation is therefore not the direct fix."
   },
   "hypotheses": [
     {
@@ -65,7 +65,7 @@
     {
       "id": "A733-SDMMC-H002",
       "priority": 1,
-      "status": "ready",
+      "status": "completed",
       "title": "Find hidden v5p3x wrapper, timing-phase, or MBUS/storage behavior in vendor source",
       "question": "Does the vendor A733 v5p3x path program a non-SDMMC register, wrapper bit, or timing phase path required before IDMAC can fetch descriptors?",
       "test_cost": "low to medium; source search before build",
@@ -74,7 +74,10 @@
         "The active vendor phase path writes REG_SD_NTSR and saves/restores REG_SAMP_DL; the v5p3x init path does not assign the sunxi_mmc_set_samp_dl hook.",
         "The preserved-SAMP_DL diagnostic proves SAMP_DL=0x00002000 survives into the failing mainline CMD18, but IDMAC still sticks in descriptor-read state.",
         "Explicit SDMMC0 consumers for mmc_store, mmc_mbus, and mmc_msi_lite were already tested and did not fix IDMA.",
-        "Vendor A733 DTS uses CLK_MSI_LITE1 for SDMMC0; the local diagnostic changed only the SDMMC0 mmc_msi_lite consumer to CLK_BUS_MSI_LITE1 and still hit the same CMD18 IDMA descriptor-read stall."
+        "Vendor A733 DTS uses CLK_MSI_LITE1 for SDMMC0; the local diagnostic changed only the SDMMC0 mmc_msi_lite consumer to CLK_BUS_MSI_LITE1 and still hit the same CMD18 IDMA descriptor-read stall.",
+        "Vendor SDMMC0 DTS sets req-page-count=<2>; changing local descriptor allocation to two pages produced descriptor sync size=8192 and still hit the same CMD18 IDMA descriptor-read stall.",
+        "A source scan found no active A733 runtime wrapper write outside the SDMMC register window. The ioremap writes in the available MMC vendor code are FPGA/SUN300/CQE or commented diagnostic paths, not the Cubie A7S SDMMC0 runtime path.",
+        "Vendor ctl-spec-caps=<0x428> maps to retry, manual read-data-timeout, and CMD11 timeout handling. The vendor baseline still shows TMOUT=0xffffffff at idle, and this path is not a plausible descriptor-fetch enable."
       ],
       "procedure": [
         "Continue the vendor/source search outside the already-falsified direct SAMP_DL, sample-calibration, and explicit mmc_store/mmc_mbus/mmc_msi_lite paths.",
@@ -84,12 +87,13 @@
         "Boot Cubie3 once, capture UART, restore vendor kernel, and update this queue."
       ],
       "pass_criteria": "A specific hidden register/write is found and tested.",
-      "fail_criteria": "No source-backed hidden write exists in available vendor code."
+      "fail_criteria": "No source-backed hidden write exists in available vendor code.",
+      "result": "No active A733/Cubie3 SDMMC0 hidden wrapper write was found in the available vendor runtime path. Source-backed subtests for SAMP_DL preservation, SDMMC0 MSI Lite1 clock mapping, and exact SDMMC0 req-page-count descriptor allocation were all falsified. Move to the lower-level CMD17 proof."
     },
     {
       "id": "A733-SDMMC-H003",
-      "priority": 3,
-      "status": "ready_after_H001",
+      "priority": 1,
+      "status": "ready",
       "title": "Lower-level CMD17 proof outside mmcblk queue setup",
       "question": "Can a single-block read complete cleanly when issued as a targeted diagnostic instead of forcing block-layer queue geometry?",
       "test_cost": "medium; small kernel patch and one boot",
