@@ -59,6 +59,15 @@ Removing `SDXC_WAIT_PRE_OVER` for ACMD51 was also falsified. The command value
 changed from `0x2373` to `0x0373`, proving the variant was active, but the same
 raw `COMMAND_DONE` only / no `DATA_OVER` state remained.
 
+SCR-only PIO mode is the first data-path breakthrough. Commit `09bac31de352`
+skips IDMA only for the 8-byte ACMD51/SCR read, sets AHB/FIFO access, and polls
+the FIFO. ACMD51 then raises `DATA_OVER`, the IRQ finalizes the request, and
+FIFO reads return non-zero data. The card init still fails because the
+diagnostic repeatedly peeks the FIFO and corrupts the SCR consumed by the MMC
+core (`unrecognised SCR structure version 5`). This proves the SD command/data
+phase works without IDMA; the remaining blocker is the A733 SDMMC IDMA path or
+the driver's IDMA setup for this controller.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -148,6 +157,11 @@ force idma_des_shift=0
 skip WAIT_PRE_OVER for ACMD51
   -> CMDR changes from 0x2373 to 0x0373
   -> ACMD51 failure is unchanged
+
+SCR-only PIO diagnostic
+  -> DATA_OVER appears
+  -> FIFO returns non-zero words
+  -> MMC core reaches SCR parse, then fails due diagnostic FIFO peeking
 ```
 
 Key proof logs:
@@ -216,6 +230,10 @@ sha256: 2ca936fcda1b5cbf3c5b2deb8db876c91123bff2586ebba504bf91ff4a45bc80
 SDMMC0 ACMD51 no-WAIT_PRE_OVER diagnostic:
 tools/hardware-logs/cubie-uart/20260610T041718Z-a733-acmd51-nowait-29a376421fd7-ext4load-ttyUSB0.uart.log
 sha256: 95d24c65563d8950680359a7a6faccd1ce97be261eb700c20222006357e19601
+
+SDMMC0 ACMD51 SCR-only PIO diagnostic:
+tools/hardware-logs/cubie-uart/20260610T042558Z-a733-acmd51-pio-09bac31de352-ext4load-ttyUSB0.uart.log
+sha256: 08bd631ec13c5245290a319e99011708970508fdf87b241a5af0f305bdf3696d
 ```
 
 ## Source Findings
@@ -355,6 +373,24 @@ diag post-acmd51 poll19 rint=0x00000004 mista=0x00000000 idst=0x00004000 ...
 
 Prefer checking GCTRL access mode, FIFO threshold, or a controlled PIO read path
 for only the 8-byte SCR request next.
+
+Commit `09bac31de352` tests that controlled path but still uses destructive
+FIFO peeks:
+
+```text
+diag acmd51 pio mode gctrl=0xa0000010
+diag regs acmd51-post-cmdr ... rint=0x0000000c mista=0x00000008 dmac=0x00000200 ...
+diag acmd51 fifo peek w0=0x87844502 w1=0x00000000
+diag finalize opcode=51 int_sum=0x00000008 ... data=1
+mmc0: unrecognised SCR structure version 5
+```
+
+The next best step is to convert the diagnostic into a non-destructive
+SCR-only PIO transfer: read exactly two FIFO words once, copy them into the
+request buffer with the expected byte order, mark `bytes_xfered = 8`, and let
+normal enumeration continue. If that reaches `mmcblk0`, the first real fix path
+is an A733-specific PIO fallback for tiny reads or a focused IDMA-controller
+fix.
 
 ## Questions For CCU/RFC Review
 
