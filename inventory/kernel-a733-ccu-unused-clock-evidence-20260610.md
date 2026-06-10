@@ -207,6 +207,13 @@ large CMD18 still remains in descriptor-read state with `CHDA=DLBA`,
 `CBDA=0x00000000`, and `IDST=0x4000`. Vendor `REG_A12A=0` init is also not
 enough.
 
+Commit `7022671b0f01` matches the Orange Pi BSP behavior for 4 KiB IDMA
+descriptors by writing `buf_size=0x1000` instead of the max-size-zero encoding.
+The log confirms `size_full=1` and first descriptor `size=0x00001000`, but the
+same 256-block CMD18 still remains in descriptor-read state with `CHDA=DLBA`,
+`CBDA=0x00000000`, and `IDST=0x4000`. Vendor full-size descriptor semantics are
+also not enough.
+
 Full Orange Pi BSP source was cloned on Strix at:
 `/srv/projects/kernel-work/tmp/linux-orangepi-full`, branch
 `orange-pi-6.6-sun60iw2`, commit
@@ -512,6 +519,10 @@ sha256: d4f3eebcf5f4139a727ee37557b01063b586d6815cbbb2b79af7c660532705c9
 SDMMC0 IDMA vendor auto-CMD12 init diagnostic:
 tools/hardware-logs/cubie-uart/20260610T111202Z-a733-idma-a12a-32dc6d1cc929-ext4load-ttyUSB0.uart.log
 sha256: ec782e473d5551f50c1dd1bc3ff17a9f8e8295633efe3fc6b3f94aa4cb6c5a36
+
+SDMMC0 IDMA vendor full descriptor-size diagnostic:
+tools/hardware-logs/cubie-uart/20260610T112446Z-a733-idma-sizefull-7022671b0f01-ext4load-ttyUSB0.uart.log
+sha256: 116e896fd9c7a3021bf277ec5ce7d143f047f9689202774b79114151f69a53d0
 ```
 
 ## Source Findings
