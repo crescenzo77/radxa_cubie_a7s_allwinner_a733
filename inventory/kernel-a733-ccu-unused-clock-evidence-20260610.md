@@ -194,6 +194,12 @@ read threshold for 512-byte reads, `REG_THLD=0x02000001`. The 256-block CMD18
 still remains in descriptor-read state with `CHDA=DLBA`, `CBDA=0x00000000`, and
 `IDST=0x4000`. Vendor v5p3x threshold programming is also not enough.
 
+Commit `11fe8727ee3d` adds the BSP-style pre-IDMA reset sequence: poll FIFO
+reset, DMA interface reset, and IDMAC soft reset clear before enabling IDMA.
+All three resets clear (`ret=0`), but the 256-block CMD18 still remains in
+descriptor-read state with `CHDA=DLBA`, `CBDA=0x00000000`, and `IDST=0x4000`.
+Vendor pre-IDMA reset polling is also not enough.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -482,6 +488,10 @@ sha256: 8ea0190c6bee70247758b54141a760f6a81a67091fc4ad4cc5b0518a355ce7cc
 SDMMC0 IDMA vendor v5p3x read-threshold diagnostic:
 tools/hardware-logs/cubie-uart/20260610T104154Z-a733-idma-v5p3xthld-da96d0a59793-ext4load-ttyUSB0.uart.log
 sha256: 79e9cfaf7055db8c9634b2897af7781bb7f28416959c45de68fe1ddd413ac585
+
+SDMMC0 IDMA vendor pre-IDMA reset polling diagnostic:
+tools/hardware-logs/cubie-uart/20260610T110118Z-a733-idma-vendorreset-11fe8727ee3d-ext4load-ttyUSB0.uart.log
+sha256: d4f3eebcf5f4139a727ee37557b01063b586d6815cbbb2b79af7c660532705c9
 ```
 
 ## Source Findings
