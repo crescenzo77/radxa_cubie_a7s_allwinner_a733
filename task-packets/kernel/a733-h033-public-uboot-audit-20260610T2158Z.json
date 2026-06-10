@@ -1,0 +1,45 @@
+{
+  "id": "A733-SDMMC-H033",
+  "created_utc": "2026-06-10T21:58:00Z",
+  "status": "completed_no_behavior_patch",
+  "title": "Public U-Boot A733 MMC clock/reset audit",
+  "question": "Does public U-Boot A733 support reveal a specific MMC, clock, reset, or fabric delta that justifies one narrow Linux runtime patch for SDMMC0 IDMAC descriptor-fetch reachability?",
+  "inputs": {
+    "u_boot_series": "https://lists.denx.de/pipermail/u-boot/2025-November/603430.html",
+    "u_boot_branch": "https://github.com/dlan17/u-boot/tree/allwinner/A733/next",
+    "u_boot_local_repo": "/srv/projects/references/u-boot-a733",
+    "u_boot_head": "165f07a69706b92ff1200268664dddcbe0d04047",
+    "linux_repo": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "linux_branch": "codex/a733-h027-idmac-vendor64",
+    "homelab_repo": "/srv/projects/homelab"
+  },
+  "findings": [
+    {
+      "topic": "U-Boot data path",
+      "evidence": "drivers/mmc/sunxi_mmc.c sets SUNXI_MMC_GCTRL_ACCESS_BY_AHB and transfers data through mmc_trans_data_by_cpu(). The public U-Boot path does not exercise Linux-style normal IDMAC descriptor fetching.",
+      "interpretation": "A733 U-Boot proving SD/eMMC loadability does not prove the missing Linux IDMAC descriptor-fetch precondition."
+    },
+    {
+      "topic": "A733 MMC module clock math",
+      "evidence": "The public U-Boot A733 path divides the MMC PLL parent by 3 and uses the A523/A733 second-divider encoding in mmc_set_mod_clk().",
+      "interpretation": "This is a clock-rate calculation detail, but current Linux diagnostics already reach card init, CMD17, PIO CMD18, partition discovery, and read-only root mount. It is not a source-backed explanation for CHDA=DLBA/CBDA=0 IDMAC DESC_READ."
+    },
+    {
+      "topic": "Public U-Boot DT clocks and reset",
+      "evidence": "The public U-Boot A733 DTS uses only clocks <&ccu CLK_BUS_MMC0>, <&ccu CLK_MMC0> and reset <&ccu RST_BUS_MMC0> for mmc0. It does not add STORE, MBUS, MSI-lite, IOMMU, firewall, or NSI properties to the MMC node.",
+      "interpretation": "The public U-Boot DT does not reveal a hidden storage-fabric or security handoff missing from the Linux DTS."
+    },
+    {
+      "topic": "Public U-Boot CCU IDs",
+      "evidence": "The public U-Boot branch numbers CLK_MMC0 as 84, CLK_BUS_MMC0 as 88, and RST_BUS_MMC0 as 19. The local diagnostic Linux tree has different provisional A733 binding numbers and includes extra lab-only clock consumers and a raw reset cell.",
+      "interpretation": "This is relevant for eventual DTS/CCU cleanup against the in-flight Linux A733 CCU work, but it should not be patched locally as an IDMAC behavior fix while CCU RFCs are in flight."
+    },
+    {
+      "topic": "SDMMC0 interrupt",
+      "evidence": "The public U-Boot A733 DTS uses SDMMC0 interrupt GIC_SPI 40, while the local diagnostic Linux DTS currently has GIC_SPI 161.",
+      "interpretation": "This is a real DTS cleanup candidate. It is not a credible explanation for the observed polled IDMAC descriptor-fetch stall, because the diagnostic path already observes register progress and descriptor state directly."
+    }
+  ],
+  "decision": "Do not patch kernel runtime behavior from this audit. No public U-Boot source-backed delta explains the IDMAC descriptor-fetch failure. Keep waiting for maintainer/list feedback or a source reference naming one concrete register, reset/clock ordering, firmware handoff, master ID, binding, or erratum.",
+  "next": "If no maintainer response arrives, queue a documentation-only cleanup branch note for eventual public DTS alignment: remove lab-only mmc_store/mmc_mbus/mmc_msi_lite consumers, stop using raw reset cells, and verify SDMMC0 IRQ against the accepted Linux CCU/pinctrl/DTS series. Do not treat that cleanup as the descriptor-fetch fix."
+}

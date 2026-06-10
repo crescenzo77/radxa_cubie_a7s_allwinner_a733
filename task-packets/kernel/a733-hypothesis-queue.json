@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T20:39:56Z",
+  "updated_utc": "2026-06-10T21:58:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H031 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, the maintainer/vendor question packet, public-clean routing draft/tracker, and send preflight. H032 has an approval/send packet, dry-run-validated candidate From identity, guarded send helper, current upstream recheck, and passing helper selftest; it still requires explicit user approval before external coordination. The current blocker remains SDMMC0 IDMAC descriptor-fetch reachability below the tested local paths; do not resume behavior patches before the coordination decision or a new source-backed delta.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H033 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, the maintainer/vendor question packet, public-clean routing draft/tracker, send preflight, approval/send helper prep, and public U-Boot A733 MMC/clock/reset audit. The descriptor-fetch question has now been sent by the user through Gmail plain text mode; await maintainer/list feedback before another behavior patch unless a new source-backed delta appears.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,11 +37,11 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H031",
-    "status": "completed_not_sent",
-    "title": "Send approved descriptor-fetch question or record selected route",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h031-send-preflight-result-20260610T2025Z.json",
-    "result": "H031 did not send external email. Mac git-send-email is available and the draft parses in dry-run, but the default From is enzo <enzo@enzos-Mac-mini.local>. Strix lacks git-send-email and has git user.email enzo@homelab.local. Next step requires explicit approval plus a public From identity and send host/route."
+    "id": "A733-SDMMC-H033",
+    "status": "completed_no_behavior_patch",
+    "title": "Public U-Boot A733 MMC clock/reset audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h033-public-uboot-audit-20260610T2158Z.json",
+    "result": "Public U-Boot A733 support uses CPU/PIO transfers, A733-specific MMC clock math, and only normal ahb/mmc clock plus RST_BUS_MMC0 in DT. It exposes useful eventual DTS cleanup deltas, including SDMMC0 IRQ GIC_SPI 40 versus local diagnostic 161, but no source-backed IDMAC descriptor-fetch behavior patch."
   },
   "hypotheses": [
     {
@@ -846,7 +846,7 @@
     {
       "id": "A733-SDMMC-H032",
       "priority": 1,
-      "status": "requires_user_decision",
+      "status": "sent_by_user_plain_text",
       "title": "Approve and send descriptor-fetch question",
       "question": "Which approved From identity and route should be used to send the public-clean A733 SDMMC0 descriptor-fetch question?",
       "test_cost": "low; external coordination only",
@@ -867,7 +867,27 @@
       "guarded_send_helper": "/Users/enzo/projects/homelab/scripts/a733-send-descriptor-question",
       "guarded_send_helper_preflight": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h032-guarded-send-helper-20260610T2033Z.json",
       "current_upstream_recheck": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h032-current-upstream-recheck-20260610T2037Z.json",
-      "guarded_send_helper_selftest": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h032-guarded-send-helper-selftest-20260610T2039Z.json"
+      "guarded_send_helper_selftest": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h032-guarded-send-helper-selftest-20260610T2039Z.json",
+      "result": "User sent the descriptor-fetch question manually from Gmail in plain text mode after HTML bounces from linux-arm-kernel, linux-mmc, and linux-kernel. The sent subject accidentally omitted the final 'd' in 'read'; do not resend only for that typo."
+    },
+    {
+      "id": "A733-SDMMC-H033",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "Public U-Boot A733 MMC clock/reset audit",
+      "question": "Does public U-Boot A733 support reveal a specific MMC, clock, reset, or fabric delta that justifies one narrow Linux runtime patch for SDMMC0 IDMAC descriptor-fetch reachability?",
+      "test_cost": "low; source audit only, no kernel build and no board reboot",
+      "procedure": [
+        "Inspect the public U-Boot A733 series and dlan17 allwinner/A733/next branch.",
+        "Compare A733 MMC transfer path, clock math, reset IDs, SDMMC0 DT clocks, and SDMMC0 interrupt against the local diagnostic Linux tree.",
+        "Only patch Linux if U-Boot reveals a specific IDMAC-relevant precondition, not merely a DTS cleanup delta."
+      ],
+      "pass_criteria": "A concrete source-backed delta is either converted into one narrow runtime proof or recorded as not relevant to IDMAC descriptor fetch.",
+      "fail_criteria": "The next session repeats the same U-Boot audit or mistakes U-Boot PIO loadability for Linux IDMAC proof.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h033-public-uboot-audit-20260610T2158Z.json",
+        "summary": "Completed with no behavior patch. Public U-Boot transfers data through CPU/PIO and does not exercise normal IDMAC descriptors. Its A733 DT uses only ahb/mmc clocks and RST_BUS_MMC0 for SDMMC0, with no STORE/MBUS/MSI-lite/IOMMU/firewall/NSI property. It does show eventual cleanup deltas, including SDMMC0 IRQ GIC_SPI 40 versus local diagnostic GIC_SPI 161 and different provisional CCU/reset numbering, but these are not credible fixes for CHDA=DLBA/CBDA=0 DESC_READ."
+      }
     },
     {
       "id": "A733-SDMMC-H004",
