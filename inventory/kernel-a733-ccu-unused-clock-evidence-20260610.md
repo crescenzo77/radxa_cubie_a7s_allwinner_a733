@@ -392,6 +392,27 @@ normal enumeration continue. If that reaches `mmcblk0`, the first real fix path
 is an A733-specific PIO fallback for tiny reads or a focused IDMA-controller
 fix.
 
+Commit `84f2737f1d9c` did that non-destructive SCR PIO copy. It copies the two
+FIFO words into the request buffer and enumeration advances past ACMD51 into
+the next data command, CMD13/SD_STATUS (`blksz=64`). The new stop is therefore
+not SCR parsing; it is the same A733 SDMMC IDMA problem on the next data read.
+
+```text
+diag acmd51 pio copy w0=0x87844502 w1=0x00000000 offset=3016 len=8
+diag request opcode=13 ... data=1
+diag request-data opcode=13 flags=0x200 blksz=64 blocks=1
+diag idma_des ... size=0x00000040 ...
+```
+
+SDMMC0 non-destructive ACMD51 PIO copy diagnostic:
+tools/hardware-logs/cubie-uart/20260610T043400Z-a733-acmd51-pio-copy-84f2737f1d9c-ext4load-ttyUSB0.uart.log
+sha256: 227a4d1bf13140ab34bf416fe7fc4ebb66ee11f23b73527fbbc67a6ff354efa9
+
+Next best proof: generalize the temporary PIO fallback to all small read data
+requests during enumeration, at least ACMD51 and CMD13, to see whether the card
+can reach `mmcblk0`. If it does, keep the upstream path focused on IDMA setup or
+a tightly justified A733 PIO fallback.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
