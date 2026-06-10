@@ -383,6 +383,14 @@ keeps the blocker in A733 CCU/reset/storage-fabric mapping. Log:
 `tools/hardware-logs/cubie-uart/20260610T033330Z-a733-mmc-resetcell-0c658caf3956-ext4load-ttyUSB0.uart.log`
 SHA256:
 `9d2063d6bcd0a1b9d0cacd05fa5d61fa84190648c5c02d525e53fdf726792a24`.
+Commit `d628a2e9120f` then kept vendor-correlated storage fabric clocks
+critical in the lab CCU: `ahb-store`, `mbus-store`, and `mbus-msi-lite0`.
+Stacked with reset cell 35, SDMMC0 register access becomes sane and command
+enumeration advances through CMD0/CMD8/ACMD41/CMD2/CMD3/CMD9/CMD7. The new
+blocker is the first data request, ACMD51/SCR read. Log:
+`tools/hardware-logs/cubie-uart/20260610T034137Z-a733-mmc-storecrit-d628a2e9120f-ext4load-ttyUSB0.uart.log`
+SHA256:
+`9fb5580652c37be69d8efdc9c9f71414c473ea9717d6e5cb8499fd656b2eb129`.
 
 Focused evidence note:
 `inventory/kernel-a733-ccu-unused-clock-evidence-20260610.md`.

@@ -504,6 +504,70 @@ mapping for the NAND/MMC reset block and the missing vendor storage fabric
 clocks (`mmc_store`, `mmc_mbus`, `mmc_msi_lite`), not SD card detect or
 interrupt delivery.
 
+## Storage-Fabric Clock Falsification
+
+Vendor SDMMC0 lists extra storage fabric clocks:
+
+```text
+clock-names = "osc24m", "pll_periph", "pll_periph_2", "mmc", "ahb",
+              "mmc_store", "mmc_mbus", "mmc_msi_lite";
+```
+
+Mainline `sunxi-mmc` only consumes `ahb` and `mmc`, so Strix diagnostic commit
+`d628a2e9120f` keeps the closest CCU fabric gates critical in the lab CCU:
+
+```text
+ahb-store
+mbus-store
+mbus-msi-lite0
+```
+
+This test is stacked on the vendor SDMMC0 reset cell `0x23` diagnostic.
+
+Artifact:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-mmc-storecrit-d628a2e9120f-20260610T033937Z
+Image sha256: 0004cb15fefb8789669595c4d2039dc35bffbaa2f764b76472ae07e8e2c2df64
+DTB sha256:   ed3cc474fe72c25c3e0cb96a3fc9fa243c1c01631bf4e651031d3cba8500708b
+```
+
+Valid direct U-Boot capture:
+
+```text
+tools/hardware-logs/cubie-uart/20260610T034137Z-a733-mmc-storecrit-d628a2e9120f-ext4load-ttyUSB0.uart.log
+sha256: 9fb5580652c37be69d8efdc9c9f71414c473ea9717d6e5cb8499fd656b2eb129
+```
+
+Result: SDMMC0 register access becomes sane and command progress resumes:
+
+```text
+cmd0 cmdr-readback=0x80008000
+cmd0-post-cmdr ... imask=0x0000bbc6 mista=0x00000004 rint=0x00000004
+diag finalize opcode=0
+diag finalize opcode=8
+diag finalize opcode=55
+diag finalize opcode=41
+diag finalize opcode=2
+diag finalize opcode=3
+diag finalize opcode=9
+diag finalize opcode=7
+diag request opcode=51 ... data=1
+```
+
+This is the first proof that the previous all-zero/all-`0x20000000` SDMMC0
+window was caused by missing storage fabric enablement plus reset mapping, not
+the SD card, pinctrl, command timing, or interrupt delivery. The new blocker is
+the first data transfer, ACMD51/SCR read, after command-only enumeration has
+advanced.
+
+Next responsible diagnostic: trace the data path for opcode 51, especially
+IDMA setup, descriptor address, `GCTRL` DMA enable/reset bits, `IDST`, `IDIE`,
+`DMAC`, `DLBA`, FIFO/status, and whether DMA or PIO mode is appropriate for the
+first minimal proof. Keep the storage-fabric and reset-cell changes lab-only
+until reconciled with Junhui Liu's A733 CCU/PRCM and any pmdomain/storage
+fabric RFC direction.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
