@@ -270,6 +270,17 @@ immediately before the `REG_CMDR` write. Runtime confirms
 256-block IDMA CMD18 still stalls at `IDST=0x4000`, `CHDA=DLBA`, `CBDA=0`,
 `CBCR=0x400`, and `BBCR=0`. BSP command-launch ordering is also not enough.
 
+Commit `fd66f504bb80` expands the mainline diagnostic register dump to include
+the live v5p3x-visible state also sampled from the vendor kernel. The vendor
+wide sample shows working reads with `DMAC=0x282`, `IDST=0xa000/0xe000`,
+advancing `CHDA` through descriptor addresses, non-zero `CBDA` data-buffer
+addresses, and advancing `CBCR`/`BBCR`. The failing mainline run has matching
+visible control state for `FUNS=0`, `DBGC=0x1`, `CSDC=0x3`,
+`SKEW_CTRL=0x3`, `SMCV=0x02050530`, but still sticks at `IDST=0x4000`,
+`CHDA=DLBA`, `CBDA=0`, `CBCR=0x400`, and `BBCR=0`. This makes the obvious
+v5p3x visible registers a weaker suspect and points back at descriptor
+fetch/addressing or hidden wrapper/coherency behavior.
+
 Full Orange Pi BSP source was cloned on Strix at:
 `/srv/projects/kernel-work/tmp/linux-orangepi-full`, branch
 `orange-pi-6.6-sun60iw2`, commit
@@ -615,6 +626,14 @@ sha256: 223989ac63f47503cb59d61d44292f1e10f93c33423d34c2a022aeac690b343c
 SDMMC0 IDMA command-launch barrier diagnostic:
 tools/hardware-logs/cubie-uart/20260610T131518Z-a733-idma-cmdwmb-529933d155a4-ext4load-ttyUSB0.uart.log
 sha256: d9a7bd92f935f54361c4d141b1253ddc96bf2fbd292ef980b136e1a02ed0ba91
+
+SDMMC0 vendor wide register sample:
+tools/hardware-logs/cubie-uart/20260610T132339Z-cubie3-vendor-sdmmc0-wide-reg-sample.log
+sha256: 3fe99a97efad4935221d75c6175ff6ebeac6a907969d23db44a23f30ea5223d0
+
+SDMMC0 IDMA wide-register diagnostic:
+tools/hardware-logs/cubie-uart/20260610T132823Z-a733-idma-wideregs-fd66f504bb80-ext4load-ttyUSB0.uart.log
+sha256: 6cf68369666d6b1e85cde468c5694df0ba27f6b88fb738fef1972820156245cb
 ```
 
 ## Source Findings
