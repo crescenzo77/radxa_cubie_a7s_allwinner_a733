@@ -413,6 +413,27 @@ requests during enumeration, at least ACMD51 and CMD13, to see whether the card
 can reach `mmcblk0`. If it does, keep the upstream path focused on IDMA setup or
 a tightly justified A733 PIO fallback.
 
+Commit `ec9dc04be75b` generalizes the diagnostic PIO path to single-block reads
+up to 64 bytes. This carries enumeration through SCR, SD_STATUS, switch/status
+reads, 4-bit bus-width selection, and 50 MHz clock setup. The next failure is
+the first larger read, CMD48 with a 512-byte block, which falls back to IDMA and
+stops in the same class of failure.
+
+```text
+diag pio copy opcode=13 words=16 ...
+diag pio copy opcode=6 words=16 ...
+diag set_ios clock=50000000 power=2 bus_width=2 timing=2
+diag request-data opcode=48 flags=0x200 blksz=512 blocks=1
+diag idma_des ... size=0x00000200 ...
+```
+
+SDMMC0 small-read PIO diagnostic:
+tools/hardware-logs/cubie-uart/20260610T044153Z-a733-smallread-pio-ec9dc04be75b-ext4load-ttyUSB0.uart.log
+sha256: eb55893362ff8a6d1e8c0fb9b061b4c603df533f0a587e19a151442abfce6247
+
+The next proof should either extend the lab PIO path to 512-byte single-block
+reads or focus directly on why IDMA remains stuck when larger data reads start.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
