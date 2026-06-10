@@ -97,6 +97,16 @@ drained. The responsible next step is a non-destructive IRQ/threaded PIO drain
 that copies only the requested bytes into the sg buffer, plus continued IDMA
 root-cause work.
 
+A first bounded CMD18 PIO copy diagnostic copies 512-byte FIFO chunks into the
+request buffer and skips the later destructive finalize-time read for CMD18.
+This advances past the partition table read: the kernel prints
+`mmcblk0: p1 p2 p3`. The next CMD18, a two-block read, then stalls at
+`RINTR=0x24` with no copy lines, likely because the diagnostic's sg guard is
+too strict or under-instrumented for that request. This is meaningful progress:
+PIO copy can carry real block data far enough to parse partitions, but the
+bounded copy path needs better sg/offset diagnostics before it can test rootfs
+mounting.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -216,6 +226,11 @@ CMD18 destructive FIFO drain
   -> 6 drain polls advance CBCR to 0x1000 and BBCR to 0x0c00
   -> 12 drain polls reach RINTR=0x402c and MISTA=0x4000
   -> proves active FIFO service can complete CMD18 data phase
+
+CMD18 bounded FIFO-to-sg copy
+  -> first block-layer reads complete
+  -> partition table appears: mmcblk0: p1 p2 p3
+  -> next 2-block CMD18 stalls with no copy line
 ```
 
 Key proof logs:
@@ -304,6 +319,10 @@ sha256: 795db91885f52dafc4fed764f58c75da5f1d1bdfbeb8043805e8b139af3c01cf
 SDMMC0 CMD18 extended destructive FIFO-drain diagnostic:
 tools/hardware-logs/cubie-uart/20260610T083641Z-a733-cmd18-pio-drain12-d58afdb0c39e-ext4load-ttyUSB0.uart.log
 sha256: e27a37ab5428ce26db31c194d449f630367fe3e021653ea4bbe03a992cc0e562
+
+SDMMC0 CMD18 bounded FIFO-to-sg copy diagnostic:
+tools/hardware-logs/cubie-uart/20260610T084536Z-a733-cmd18-pio-copy-2b7e7a5431df-ext4load-ttyUSB0.uart.log
+sha256: 6a18f2cd4e6938bec34fcfc880910be9c6f0a09e9459f882e371294fc7376d36
 ```
 
 ## Source Findings
