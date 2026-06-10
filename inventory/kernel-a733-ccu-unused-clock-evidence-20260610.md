@@ -542,6 +542,29 @@ sha256: 155463c97aa6dbfb1c2cd1aa2c4f27fec936c37e8f3004e23c34dc1e13fed6d8
 Conclusion: the mixed address hypothesis is also falsified. Address shifting
 alone no longer looks like the explanation for A733 IDMA not progressing.
 
+Commit `ab6178c3912a` adds post-command IDMA polling for data commands. On
+CMD18, the controller reports command completion plus FIFO receive request, but
+IDMAC never advances past descriptor-read state:
+
+```text
+diag data cmdr-readback=0x80003352 wait_dma=1 pio=0 opcode=18 blocks=8
+diag regs idma-post-cmdr ... rint=0x00000024 ... idst=0x00004000
+diag post-data poll11 rint=0x00000024 ... idst=0x00004000 ... dmac=0x00000282
+```
+
+SDMMC0 IDMA post-command progress diagnostic:
+tools/hardware-logs/cubie-uart/20260610T054601Z-a733-idma-postcmd-ab6178c3912a-ext4load-ttyUSB0.uart.log
+sha256: 53f420cf8c6bbc273b8b164e69213639c0ddf4550dac4452f542b680930fc494
+
+Recovery proof:
+tools/hardware-logs/cubie-uart/20260610T055431Z-cubie3-recovery-probe-postcmd-ttyUSB0.uart.log
+sha256: 162da3d63a80d70c369483c771b8893ce6fbeeec85d36562d6242f79ff44770f
+
+Conclusion: the command engine is issuing CMD18 and the card/controller assert
+RX request, but the internal IDMAC remains in descriptor-read state. Next work
+should inspect IDMAC descriptor format/control sequencing, not DTS/rootfs/card
+enumeration.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
