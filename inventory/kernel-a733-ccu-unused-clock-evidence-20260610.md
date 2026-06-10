@@ -648,6 +648,23 @@ sha256: 4c37e25e9e8ac86d3cc4f650106bbd422a7bbe8206999e4f5a3f167759fcefdb
 
 Conclusion: explicit descriptor refetch is not the immediate cause.
 
+Commit `99eb524a1bfa` skips setting `SDXC_DMA_RESET` in `GCTRL` before the
+IDMAC soft reset. The transfer still reaches CMD18 command-done/RX-request and
+IDMAC still sticks in descriptor-read state:
+
+```text
+diag skip gctrl dma reset
+diag regs dma-exit ... gctrl=0x20000030 dmac=0x00000280 idst=0x00000000
+diag regs idma-post-cmdr ... rint=0x00000024 ... idst=0x00004000
+diag post-data poll11 ... idst=0x00004000 ... dmac=0x00000280
+```
+
+SDMMC0 IDMA no-GCTRL-DMA-reset diagnostic:
+tools/hardware-logs/cubie-uart/20260610T063800Z-a733-idma-nogctrlreset-99eb524a1bfa-ext4load-ttyUSB0.uart.log
+sha256: bed877b12e55c5f63db78347489f34f85a2bc4f9f264336d64099f3cd4f21026
+
+Conclusion: the GCTRL DMA reset pulse is not the immediate cause.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
