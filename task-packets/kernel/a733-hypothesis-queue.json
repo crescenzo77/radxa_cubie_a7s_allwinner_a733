@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T16:37:48Z",
+  "updated_utc": "2026-06-10T16:57:17Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 shows the vendor working 4 KiB descriptor geometry matches the mainline single-descriptor shape. H011 falsifies a direct REG_DMAC clear as the fix for the observed mainline DMAC bit 0x200 readback: writing zero before enable still reads back 0x200 and the transfer still stalls. The next responsible step is to identify the source/meaning of that sticky bit or close it as non-causal before any new boot variant.",
+  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue: vendor also shows DMAC 0x200/0x282 during working reads and mainline has no REG_DMAC bit-9 definition. H013 clears the PIO rail's leftover ACCESS_BY_AHB before IDMA and still stalls, leaving vendor GCTRL bit 0x00000800 as the next visible delta to source-audit before another behavior patch.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -36,20 +36,21 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H011",
+    "id": "A733-SDMMC-H013",
     "status": "failed",
-    "title": "A733 IDMAC control clear diagnostic",
-    "kernel_head": "eddc27cdf5bf28de9afaea997b8696e7198c6e5b",
-    "artifact": "/srv/projects/kernel-work/outgoing/a733-h011-dmacclear-eddc27cdf5bf-20260610T162620Z",
-    "image_sha256": "f740722dbad912832d1e3434fe3cf70873c58fa06abd1e4ece5f71bedfa9c953",
+    "title": "Clean PIO-to-IDMA DMA access mode",
+    "kernel_head": "9090e8b17962b128ed31ae12999d67d602e59125",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-h013-cleandma-9090e8b17962-20260610T164807Z",
+    "image_sha256": "4409cdd51af713dc1f3da11c82c7bf316e3db670a404903db32eab44d2fb06ae",
     "dtb_sha256": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
     "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
-    "build_log_sha256": "6acb5cad1c2422c68e6cf357fb28f0bd8ea7c8bf7984b1e7d22251d41107d503",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T163415Z-a733-h011-dmacclear-eddc27cdf5bf-ext4load-corrected-ttyUSB0.uart.log",
-    "uart_log_sha256": "1a4df27db0edbe02c189622d828053838f7418262acc50fc93161ac11be0e671",
-    "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/eddc27cdf5bf-dmac-control-clear.patch",
-    "patch_archive_sha256": "d35eae8df6c0927f6820f76cd731b527d7341c73cead64cb6976ffa807ed13c8",
-    "result": "Failed as a fix, useful as a narrowing result. Before enabling IDMAC, the diagnostic writes REG_DMAC=0, but immediate readback is still 0x00000200. The one-descriptor CMD18 transfer then stalls with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0. Directly clearing DMAC does not remove bit 0x200 or fix descriptor consumption."
+    "build_log_sha256": "5c381383be2f67a8efa913693cf4b75734e8215b8bb916be2af64669bf5967ab",
+    "olddefconfig_log_sha256": "f10d838d9dcaca8466c354d15577cd6bc2e963856264ba6de493ba3d5c338e08",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T165356Z-a733-h013-cleandma-9090e8b17962-ext4load-corrected-ttyUSB0.uart.log",
+    "uart_log_sha256": "7534e010dd6e5c7d3df56ccce1892b6e87d67cddd685ca6f4cbb069c50f4ccf4",
+    "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/9090e8b17962-clean-dma-access-mode.patch",
+    "patch_archive_sha256": "f29c126d3244319db6b04370725fc88ab4de425e62c87ba6d722f55d68d3aaa0",
+    "result": "Failed as a fix, useful as a cleanup. H013 clears ACCESS_BY_AHB before IDMA, changing the one-descriptor CMD18 launch from H009/H011 gctrl=0xa0000030 to gctrl=0x20000030. IDMAC still stalls with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0."
   },
   "hypotheses": [
     {
@@ -299,7 +300,7 @@
     {
       "id": "A733-SDMMC-H012",
       "priority": 1,
-      "status": "ready",
+      "status": "completed",
       "title": "Identify source of sticky DMAC bit 0x200",
       "question": "Is mainline's sticky DMAC bit 0x200 a causal A733 IDMAC setup difference, a read-only/derived status bit, or a non-causal artifact?",
       "test_cost": "low first; source audit plus one vendor live register sample before any build",
@@ -312,7 +313,54 @@
       ],
       "pass_criteria": "The source/meaning of bit 0x200 is identified strongly enough to justify one minimal next diagnostic or to discard it as non-causal.",
       "fail_criteria": "No source-backed meaning is found; next work must stop treating DMAC bit 0x200 as actionable and move to wrapper/coherency/fabric evidence collection.",
-      "upstream_note": "This remains private lab evidence. It does not expand the maintainer-facing DTS series or duplicate the in-flight CCU/pinctrl RFCs."
+      "upstream_note": "This remains private lab evidence. It does not expand the maintainer-facing DTS series or duplicate the in-flight CCU/pinctrl RFCs.",
+      "result": {
+        "vendor_gctrl_dmac_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T164508Z-cubie3-vendor-sdmmc0-gctrl-dmac-descmem-4k.log",
+        "vendor_gctrl_dmac_log_sha256": "28c79bbe5f104f4fcf516e46d5f1c8c6451ee91d0d146e24d4185066ac190625",
+        "summary": "Completed. Vendor working 4 KiB reads also show DMAC 0x00000200 and 0x00000282, so bit 0x200 is not a mainline-only setup clue. Mainline source defines bit 9 for IDST abnormal interrupt, but has no REG_DMAC bit-9 definition. The source-backed conclusion is that DMAC bit 0x200 should be treated as non-causal unless a later manual/BSP source names it. The vendor live sample instead exposes GCTRL=0x20000830 during working reads, while H013 proves the cleaned mainline path uses GCTRL=0x20000030 and still stalls."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H013",
+      "priority": 1,
+      "status": "completed",
+      "title": "Clean PIO-to-IDMA DMA access mode",
+      "question": "Does clearing the lab PIO rail's leftover SDXC_ACCESS_BY_AHB bit before IDMA let the one-descriptor CMD18 transfer advance?",
+      "test_cost": "medium; one host-driver patch, one build, one boot",
+      "procedure": [
+        "Remove the H011 direct REG_DMAC=0 diagnostic.",
+        "Before enabling IDMA on A733, clear SDXC_ACCESS_BY_AHB in GCTRL and log the readback.",
+        "Boot Cubie3 with the same corrected-root direct ext4load proof.",
+        "Compare GCTRL, DMAC, IDST, CHDA, CBDA, CBCR, and BBCR against H009/H011 and the H012 vendor sample.",
+        "Restore Cubie3 to vendor kernel 5.15.147-21-a733, then update this queue."
+      ],
+      "pass_criteria": "The one-descriptor CMD18 IDMA transfer advances beyond descriptor-read state or reaches partition parsing.",
+      "fail_criteria": "GCTRL no longer has ACCESS_BY_AHB set but IDST remains 0x4000 with CHDA=DLBA and CBDA=0.",
+      "upstream_note": "This is lab-only cleanup of a previous diagnostic side effect, not a DTS or upstream driver proposal.",
+      "result": {
+        "kernel_head": "9090e8b17962b128ed31ae12999d67d602e59125",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-h013-cleandma-9090e8b17962-20260610T164807Z",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T165356Z-a733-h013-cleandma-9090e8b17962-ext4load-corrected-ttyUSB0.uart.log",
+        "summary": "Failed. The diagnostic changes DMA launch to GCTRL=0x20000030, matching DMA access mode instead of the contaminated H009/H011 GCTRL=0xa0000030. The transfer still stalls at RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H014",
+      "priority": 1,
+      "status": "ready",
+      "title": "Identify vendor GCTRL bit 0x00000800",
+      "question": "What does the vendor working-read GCTRL bit 0x00000800 mean, and is it a source-backed control delta for A733 IDMAC descriptor progress?",
+      "test_cost": "low first; source/manual audit before build",
+      "procedure": [
+        "Search the available vendor BSP, U-Boot, manuals, and register definitions for SDMMC GCTRL bit 11 or literal 0x00000800 use on v5p3x/A733.",
+        "Compare H012 vendor GCTRL=0x20000830 against H013 mainline GCTRL=0x20000030 after ACCESS_BY_AHB is cleared.",
+        "If bit 0x00000800 is identified as a control bit plausibly required for IDMA, build one minimal diagnostic that sets only that bit before IDMA.",
+        "If no source-backed meaning is found, do not guess-test it; move to hidden wrapper, coherency, or storage-fabric evidence collection.",
+        "After any boot, restore Cubie3 to vendor kernel 5.15.147-21-a733 and update this queue."
+      ],
+      "pass_criteria": "A source-backed meaning for GCTRL bit 0x00000800 is found and it either justifies one minimal diagnostic patch or is ruled out.",
+      "fail_criteria": "No source-backed meaning is found; the next queue item must move away from visible GCTRL/DMAC bits.",
+      "upstream_note": "Do not add undocumented magic GCTRL bits to upstream code. This is private lab triage only unless backed by a public datasheet/BSP explanation."
     },
     {
       "id": "A733-SDMMC-H004",

@@ -29,6 +29,16 @@
       "sha256": "1a4df27db0edbe02c189622d828053838f7418262acc50fc93161ac11be0e671",
       "kernel_head": "eddc27cdf5bf28de9afaea997b8696e7198c6e5b"
     },
+    "h012_vendor_gctrl_dmac_sample": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T164508Z-cubie3-vendor-sdmmc0-gctrl-dmac-descmem-4k.log",
+      "sha256": "28c79bbe5f104f4fcf516e46d5f1c8c6451ee91d0d146e24d4185066ac190625",
+      "kernel": "5.15.147-21-a733"
+    },
+    "h013_log": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T165356Z-a733-h013-cleandma-9090e8b17962-ext4load-corrected-ttyUSB0.uart.log",
+      "sha256": "7534e010dd6e5c7d3df56ccce1892b6e87d67cddd685ca6f4cbb069c50f4ccf4",
+      "kernel_head": "9090e8b17962b128ed31ae12999d67d602e59125"
+    },
     "template": "task-packets/kernel/a733-sdmmc-register-dump-template.json"
   },
   "phase_records": {
@@ -95,6 +105,36 @@
           "0x00000000",
           "0x00000002"
         ]
+      }
+    },
+    "h012_vendor_gctrl_dmac": {
+      "phase": "vendor-live-4k-read",
+      "observations": {
+        "GCTRL_most_common": "0x20000830",
+        "DMAC_seen": [
+          "0x00000200",
+          "0x00000282"
+        ],
+        "IDST_seen": [
+          "0x00000000",
+          "0x00000002",
+          "0x00004000",
+          "0x0000a000",
+          "0x0000e000"
+        ],
+        "descriptor_shape": "des0 0x8000001c/0x0000001c, size 0x00001000, shifted data buffer, shifted next pointer"
+      }
+    },
+    "mainline_h013_idma_post_cmdr": {
+      "phase": "mainline-idma-post-cmdr-clean-dma-access",
+      "values": {
+        "GCTRL": "0x20000030",
+        "DMAC": "0x00000282",
+        "IDST": "0x00004000",
+        "CHDA": "0x3f840000",
+        "CBDA": "0x00000000",
+        "CBCR": "0x00000400",
+        "BBCR": "0x00000000"
       }
     },
     "mainline_h009_idma_post_cmdr": {
@@ -254,7 +294,21 @@
       "mainline_value": "REG_DMAC=0 write immediately reads back 0x00000200 before enable, then stalls with DMAC 0x00000282",
       "delta": "visible but not directly clearable",
       "interpretation": "DMAC bit 0x200 remains a clue only if its source/meaning is identified. H011 falsifies direct DMAC zeroing as a fix."
+    },
+    {
+      "field": "h012_dmac_bit_0x200",
+      "vendor_value": "DMAC 0x00000200 and 0x00000282 both observed during working vendor reads",
+      "mainline_value": "DMAC 0x00000200 before enable and 0x00000282 during the failing read",
+      "delta": "not mainline-only",
+      "interpretation": "DMAC bit 0x200 is not an actionable mainline-only setup delta. Mainline has no REG_DMAC bit-9 definition; treat it as non-causal unless a later source names it."
+    },
+    {
+      "field": "h013_gctrl_access_mode",
+      "vendor_value": "GCTRL commonly 0x20000830 during working reads",
+      "mainline_value": "GCTRL 0x20000030 after explicitly clearing ACCESS_BY_AHB before IDMA",
+      "delta": "remaining visible bit 0x00000800",
+      "interpretation": "Clearing ACCESS_BY_AHB removes the H009/H011 contamination but does not fix IDMA. The next visible delta is vendor GCTRL bit 0x00000800; source-audit it before any magic-bit test."
     }
   ],
-  "conclusion": "H010 closes descriptor geometry for the current blocker: vendor working 4 KiB reads and mainline failing single-descriptor reads use the same practical descriptor size and shifted address layout. H011 then tests the remaining visible DMAC bit 0x200 clue and proves direct REG_DMAC clearing is not sufficient: bit 0x200 immediately reads back and IDMAC still stalls in descriptor-read state. The next work item is H012: identify the source/meaning of bit 0x200, or discard it as non-causal and move to hidden wrapper, coherency, or fabric evidence."
+  "conclusion": "H010 closes descriptor geometry for the current blocker. H012 closes DMAC bit 0x200 as a mainline-only clue because the vendor working path also shows DMAC 0x200/0x282, and mainline has no REG_DMAC bit-9 definition. H013 then clears the prior lab PIO rail's ACCESS_BY_AHB contamination and proves clean DMA access mode alone is insufficient: GCTRL=0x20000030 still stalls in descriptor-read state. The next work item is H014: source-audit the remaining vendor-visible GCTRL bit 0x00000800 before any further behavior patch."
 }

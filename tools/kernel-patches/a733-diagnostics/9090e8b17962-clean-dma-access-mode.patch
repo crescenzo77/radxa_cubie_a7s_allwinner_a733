@@ -1,0 +1,34 @@
+From 9090e8b17962b128ed31ae12999d67d602e59125 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 12:47:46 -0400
+Subject: [PATCH] mmc: test A733 clean DMA access mode
+
+---
+ drivers/mmc/host/sunxi-mmc.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 1071ce02c605..0964d6e5a9a9 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -577,12 +577,14 @@ static void sunxi_mmc_start_dma(struct sunxi_mmc_host *host,
+ 	dev_info(mmc_dev(host->mmc),
+ 		 "diag vendor reset sequence ret=%d gctrl=0x%08x dmac=0x%08x\n",
+ 		 ret, mmc_readl(host, REG_GCTRL), mmc_readl(host, REG_DMAC));
++
+ 	if (of_device_is_compatible(mmc_dev(host->mmc)->of_node,
+ 				    "allwinner,sun60i-a733-mmc")) {
+-		mmc_writel(host, REG_DMAC, 0);
++		rval = mmc_readl(host, REG_GCTRL) & ~SDXC_ACCESS_BY_AHB;
++		mmc_writel(host, REG_GCTRL, rval);
+ 		dev_info(mmc_dev(host->mmc),
+-			 "diag a733 dmac-zero before-enable dmac=0x%08x\n",
+-			 mmc_readl(host, REG_DMAC));
++			 "diag a733 dma-access before-enable gctrl=0x%08x dmac=0x%08x\n",
++			 mmc_readl(host, REG_GCTRL), mmc_readl(host, REG_DMAC));
+ 	}
+ 
+ 	rval = mmc_readl(host, REG_GCTRL);
+-- 
+2.53.0
+

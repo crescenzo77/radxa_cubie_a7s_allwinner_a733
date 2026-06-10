@@ -729,3 +729,36 @@ Next queue item: H012. Identify the source or meaning of sticky DMAC bit
 `0x200` with a vendor live `GCTRL`/DMAC sample and source audit before any new
 kernel behavior patch. If bit `0x200` is read-only, derived, or non-causal,
 close that clue and move to hidden wrapper, coherency, or fabric evidence.
+
+## 2026-06-10 H012/H013 GCTRL Addendum
+
+H012 vendor live `GCTRL`/DMAC sample:
+
+```text
+tools/hardware-logs/cubie-uart/20260610T164508Z-cubie3-vendor-sdmmc0-gctrl-dmac-descmem-4k.log
+sha256: 28c79bbe5f104f4fcf516e46d5f1c8c6451ee91d0d146e24d4185066ac190625
+```
+
+Result: vendor working reads also show `DMAC=0x00000200` and
+`DMAC=0x00000282`. Mainline has no `REG_DMAC` bit-9 definition, so the
+`0x200` readback is not a mainline-only actionable clue. The vendor working
+state instead commonly shows `GCTRL=0x20000830`.
+
+H013 diagnostic head: `9090e8b17962` (`mmc: test A733 clean DMA access mode`).
+Artifact:
+`/srv/projects/kernel-work/outgoing/a733-h013-cleandma-9090e8b17962-20260610T164807Z`.
+Patch archive:
+`tools/kernel-patches/a733-diagnostics/9090e8b17962-clean-dma-access-mode.patch`,
+sha256 `f29c126d3244319db6b04370725fc88ab4de425e62c87ba6d722f55d68d3aaa0`.
+UART:
+`tools/hardware-logs/cubie-uart/20260610T165356Z-a733-h013-cleandma-9090e8b17962-ext4load-corrected-ttyUSB0.uart.log`,
+sha256 `7534e010dd6e5c7d3df56ccce1892b6e87d67cddd685ca6f4cbb069c50f4ccf4`.
+
+Result: H013 clears the lab PIO rail's leftover `SDXC_ACCESS_BY_AHB` before
+IDMA. The failing CMD18 now launches with `GCTRL=0x20000030` instead of
+H009/H011's contaminated `0xa0000030`, but IDMAC still stalls at
+`IDST=0x4000`, `CHDA=DLBA`, `CBDA=0`, `CBCR=0x400`, and `BBCR=0`.
+
+Next queue item: H014. Source-audit vendor `GCTRL` bit `0x00000800`
+(`0x20000830` vendor versus `0x20000030` H013) before any further behavior
+patch. Do not add an undocumented magic bit to upstream code.
