@@ -1054,6 +1054,24 @@ completes: descriptor format/control sequencing, DMA-visible address
 expectations, required storage-fabric/MBUS setup, or an A733-specific IDMAC
 mode bit not represented by the D1-compatible mainline path.
 
+Follow-up commit `298dc7dfd134` changes the descriptor publication barrier
+from `wmb()` to `dma_wmb()` before enabling IDMAC. This does not change the
+failure:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-idma-dmawmb-298dc7dfd134-20260610T065456Z
+Image sha256: 8ea655fc6d3de2fdbaed577cb533b690cfd57bc4b502f7e99467ac1b225885d5
+DTB sha256:   ed3cc474fe72c25c3e0cb96a3fc9fa243c1c01631bf4e651031d3cba8500708b
+
+tools/hardware-logs/cubie-uart/20260610T065721Z-a733-idma-dmawmb-298dc7dfd134-ext4load-ttyUSB0.uart.log
+sha256: 2b8bb5e7ae23a2317219ea215b6cec24ae259b23dd9066e21675365193a8cef2
+
+diag idma_des_after des0=0x8000002c size=0x00001000 buf=0xfb800000 next=0x00000000
+```
+
+Conclusion: a stronger descriptor write barrier alone is not the missing
+piece; IDMAC still never takes ownership of the descriptor.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
