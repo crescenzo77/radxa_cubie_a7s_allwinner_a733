@@ -1,0 +1,122 @@
+{
+  "id": "A733-SDMMC-H020",
+  "status": "completed_delta_found",
+  "completed_utc": "2026-06-10T18:30:00Z",
+  "title": "Vendor/mainline non-SDMMC fabric snapshot",
+  "kernel_head": "3b4060f731b1aac67f2dd95e8201afc423c5b9b5",
+  "kernel_subject": "mmc: snapshot A733 fabric registers during IDMAC stall",
+  "branch": "codex/a733-h020-fabric-snapshot",
+  "artifact": "/srv/projects/kernel-work/outgoing/a733-h020-fabric-3b4060f731b1-20260610T181855Z",
+  "vendor_snapshot": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-h020-vendor-fabric-snapshot-20260610T1819Z.json",
+  "vendor_snapshot_sha256": "5a95b98b4e91db903f9ac6488d668d105a73b19cee864e37987ac9fe27815baa",
+  "mainline_uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T182056Z-a733-h020-fabric-3b4060f731b1-ext4load-ttyUSB0.uart.log",
+  "mainline_uart_log_sha256": "c0951bb0b48c42ed748b950391a617342ebf2e34649a2e61888c22bfcec71d0e",
+  "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/3b4060f731b1-h020-fabric.patch",
+  "patch_sha256": "b97038389fb69d80f20dfbb729a98bc27df0a2758cf617d43e2c96ac0ebc3022",
+  "artifact_sha256": {
+    "Image": "f9d829972145835cce336c6e67cec68fbeb5f7a2b76f23bdbe87dceba09f82a7",
+    "sun60i-a733-cubie-a7s.dtb": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
+    "config": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
+    "manifest.txt": "af4964c02b5a454c4345fc380258d2a4112205d477b2dccd2b4a9f86c5e69b88"
+  },
+  "test_setup": {
+    "host": "strix",
+    "target": "cubie3",
+    "vendor_kernel": "5.15.147-21-a733",
+    "mainline_kernel": "7.1.0-rc5-00277-g3b4060f731b1",
+    "vendor_read": "dd if=/dev/mmcblk0 of=/dev/null bs=4K count=8192 iflag=direct status=none",
+    "restore_verified": "5.15.147-21-a733"
+  },
+  "comparison": [
+    {
+      "register": "ccu.MBUS_CFG",
+      "address": "0x02002588",
+      "vendor_value": "0x81000000",
+      "mainline_value": "0x81000000",
+      "delta": "none",
+      "interpretation": "MBUS root gate/config matches at the sampled phase."
+    },
+    {
+      "register": "ccu.IOMMU0_SYS",
+      "address": "0x0200258c",
+      "vendor_value": "0x00010007",
+      "mainline_value": "0x00010004",
+      "delta": "mainline lacks bits 0 and 1",
+      "interpretation": "Vendor keeps the IOMMU0 MBUS/APB sys gates enabled even though SDMMC0 is not listed as an IOMMU master."
+    },
+    {
+      "register": "ccu.BUS_MSI_LITE0",
+      "address": "0x02002594",
+      "vendor_value": "0x00030001",
+      "mainline_value": "0x00030000",
+      "delta": "mainline lacks bit 0",
+      "interpretation": "Vendor keeps MSI-lite0 bus gate enabled; mainline SDMMC0 currently consumes MSI-lite1 only."
+    },
+    {
+      "register": "ccu.BUS_MSI_LITE1",
+      "address": "0x0200259c",
+      "vendor_value": "0x00030001",
+      "mainline_value": "0x00030001",
+      "delta": "none",
+      "interpretation": "The prior MSI-lite1 mapping diagnostic matches vendor state for this gate."
+    },
+    {
+      "register": "ccu.BUS_MSI_LITE2",
+      "address": "0x020025a4",
+      "vendor_value": "0x00030001",
+      "mainline_value": "0x00030000",
+      "delta": "mainline lacks bit 0",
+      "interpretation": "Vendor keeps MSI-lite2 bus gate enabled; this was not covered by the MSI-lite1-only test."
+    },
+    {
+      "register": "ccu.IOMMU1_SYS",
+      "address": "0x020025b4",
+      "vendor_value": "0x00010007",
+      "mainline_value": "0x00010004",
+      "delta": "mainline lacks bits 0 and 1",
+      "interpretation": "Vendor keeps IOMMU1 MBUS/APB sys gates enabled."
+    },
+    {
+      "register": "ccu.AHB_FABRIC",
+      "address": "0x020025c0",
+      "vendor_value": "0xb10103f8",
+      "mainline_value": "0x01000000",
+      "delta": "mainline keeps only AHB store bit 24 from this broad vendor envelope",
+      "interpretation": "Broad delta includes many non-SDMMC domains; do not copy the whole value into upstream or lab DTS."
+    },
+    {
+      "register": "ccu.MBUS_FABRIC0",
+      "address": "0x020025e0",
+      "vendor_value": "0xf0050803",
+      "mainline_value": "0x60000000",
+      "delta": "mainline lacks IOMMU0/1, DESYS, VID_IN, and MSI-lite2-side bits",
+      "interpretation": "Safe next test should isolate only MSI/IOMMU-relevant bits first, not display/video bits."
+    },
+    {
+      "register": "ccu.MBUS_FABRIC1",
+      "address": "0x020025e4",
+      "vendor_value": "0x00000805",
+      "mainline_value": "0x00000000",
+      "delta": "mainline lacks DMA0, CE, and GMAC0 MBUS gates",
+      "interpretation": "Do not enable GMAC0 as part of the next SDMMC test; Ethernet remains out of scope."
+    },
+    {
+      "register": "ccu.MMC0_CLK",
+      "address": "0x02002d00",
+      "vendor_value": "0x83000003",
+      "mainline_value": "0x81000007",
+      "delta": "clock parent/divider differs",
+      "interpretation": "Not first H021 target because the mainline PIO rail and card init are stable at 25 MHz, while the failure is descriptor fetch."
+    },
+    {
+      "register": "ccu.MMC0_BUS_RESET",
+      "address": "0x02002d0c",
+      "vendor_value": "0x00010001",
+      "mainline_value": "0x00010001",
+      "delta": "none",
+      "interpretation": "SDMMC0 bus gate/reset line matches vendor at the sampled phase."
+    }
+  ],
+  "conclusion": "H020 found a concrete non-SDMMC delta: vendor keeps a broader fabric/MSI/IOMMU clock envelope active while mainline leaves most of that envelope disabled. The delta is too broad to copy wholesale because it includes display/video and GMAC-related bits. Queue H021 as a lab-only safe subset that enables only MSI-lite and IOMMU sys/fabric bits missing from mainline, while explicitly avoiding Ethernet, VPU/display, and DTS changes.",
+  "next": "A733-SDMMC-H021"
+}

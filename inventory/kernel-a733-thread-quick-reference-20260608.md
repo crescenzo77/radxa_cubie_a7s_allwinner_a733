@@ -894,3 +894,29 @@ snapshot before another behavior patch. Inventory only the state needed for
 SDMMC0 descriptor-fetch reachability: CCU/PRCM gates and resets, MBUS/store/
 MSI-lite fabric state, any vendor-named storage/firewall/security registers,
 and the existing SDMMC0 schema. Queue H021 only if one concrete delta remains.
+
+## 2026-06-10 H020/H021 Queue Update
+
+H020 head: `3b4060f731b1` (`mmc: snapshot A733 fabric registers during IDMAC
+stall`). Artifact:
+`/srv/projects/kernel-work/outgoing/a733-h020-fabric-3b4060f731b1-20260610T181855Z`.
+Vendor snapshot:
+`tools/hardware-logs/cubie-h020-vendor-fabric-snapshot-20260610T1819Z.json`,
+sha256 `5a95b98b4e91db903f9ac6488d668d105a73b19cee864e37987ac9fe27815baa`.
+UART:
+`tools/hardware-logs/cubie-uart/20260610T182056Z-a733-h020-fabric-3b4060f731b1-ext4load-ttyUSB0.uart.log`,
+sha256 `c0951bb0b48c42ed748b950391a617342ebf2e34649a2e61888c22bfcec71d0e`.
+Patch:
+`tools/kernel-patches/a733-diagnostics/3b4060f731b1-h020-fabric.patch`,
+sha256 `b97038389fb69d80f20dfbb729a98bc27df0a2758cf617d43e2c96ac0ebc3022`.
+
+Result: H020 found a real non-SDMMC delta. Vendor keeps a broad
+fabric/MSI/IOMMU envelope enabled during working SD reads. Mainline matches
+MBUS root, MSI-lite1, and MMC0 bus/reset, but leaves the rest disabled at the
+IDMAC stall: `iommu0=0x00010004`, `msi0=0x00030000`, `msi2=0x00030000`,
+`iommu1=0x00010004`, `ahb=0x01000000`, `mbus0=0x60000000`,
+`mbus1=0x00000000`.
+
+Next queue item: H021. Enable only the missing MSI-lite/IOMMU fabric subset in
+a lab-only diagnostic before the forced CMD18 IDMA launch. Do not enable GMAC,
+display, VPU, GPU, or broad vendor fabric bits; do not change DTS.

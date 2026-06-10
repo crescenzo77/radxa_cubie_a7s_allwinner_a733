@@ -1,0 +1,117 @@
+From 3b4060f731b1dad7dca4d1fee137e023dfb5410d Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 14:18:44 -0400
+Subject: [PATCH] mmc: snapshot A733 fabric registers during IDMAC stall
+
+---
+ drivers/mmc/host/sunxi-mmc.c | 45 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index af33747ce9b9..956a73d6cd4f 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -295,6 +295,7 @@ struct sunxi_mmc_host {
+ 	struct clk	*clk_mmc_store;
+ 	struct clk	*clk_mmc_mbus;
+ 	struct clk	*clk_mmc_msi_lite;
++	void __iomem	*diag_ccu_base;
+ 
+ 	/* irq */
+ 	spinlock_t	lock;
+@@ -548,6 +549,38 @@ static void sunxi_mmc_diag_dump_desc_ring(struct sunxi_mmc_host *host,
+ 		 mmc_readl(host, REG_BBCR));
+ }
+ 
++static u32 sunxi_mmc_diag_ccu_read(struct sunxi_mmc_host *host, u32 off)
++{
++	return readl(host->diag_ccu_base + off);
++}
++
++static void sunxi_mmc_diag_dump_fabric(struct sunxi_mmc_host *host,
++				       const char *tag)
++{
++	if (!sunxi_mmc_diag_is_a733(host))
++		return;
++
++	if (!host->diag_ccu_base) {
++		dev_info(mmc_dev(host->mmc), "diag fabric %s unmapped\n", tag);
++		return;
++	}
++
++	dev_info(mmc_dev(host->mmc),
++		 "diag fabric %s mbus=0x%08x iommu0=0x%08x msi0=0x%08x msi1=0x%08x msi2=0x%08x iommu1=0x%08x ahb=0x%08x mbus0=0x%08x mbus1=0x%08x mmc0=0x%08x bus_mmc0=0x%08x\n",
++		 tag,
++		 sunxi_mmc_diag_ccu_read(host, 0x588),
++		 sunxi_mmc_diag_ccu_read(host, 0x58c),
++		 sunxi_mmc_diag_ccu_read(host, 0x594),
++		 sunxi_mmc_diag_ccu_read(host, 0x59c),
++		 sunxi_mmc_diag_ccu_read(host, 0x5a4),
++		 sunxi_mmc_diag_ccu_read(host, 0x5b4),
++		 sunxi_mmc_diag_ccu_read(host, 0x5c0),
++		 sunxi_mmc_diag_ccu_read(host, 0x5e0),
++		 sunxi_mmc_diag_ccu_read(host, 0x5e4),
++		 sunxi_mmc_diag_ccu_read(host, 0xd00),
++		 sunxi_mmc_diag_ccu_read(host, 0xd0c));
++}
++
+ static void sunxi_mmc_init_idma_des(struct sunxi_mmc_host *host,
+ 				    struct mmc_data *data)
+ {
+@@ -642,6 +675,7 @@ static void sunxi_mmc_start_dma(struct sunxi_mmc_host *host,
+ 	int ret;
+ 
+ 	sunxi_mmc_diag_dump_regs(host, "dma-entry");
++	sunxi_mmc_diag_dump_fabric(host, "dma-entry");
+ 	sunxi_mmc_init_idma_des(host, data);
+ 
+ 	if (!(data->flags & MMC_DATA_WRITE) && data->blksz <= 0xfff) {
+@@ -682,6 +716,7 @@ static void sunxi_mmc_start_dma(struct sunxi_mmc_host *host,
+ 	mmc_writel(host, REG_DMAC,
+ 		   SDXC_IDMAC_FIX_BURST | SDXC_IDMAC_IDMA_ON);
+ 	sunxi_mmc_diag_dump_regs(host, "dma-exit");
++	sunxi_mmc_diag_dump_fabric(host, "dma-exit");
+ }
+ 
+ static void sunxi_mmc_send_manual_stop(struct sunxi_mmc_host *host,
+@@ -1646,6 +1681,7 @@ static void sunxi_mmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 			 "diag command launch wmb before cmdr opcode=%u blocks=%u\n",
+ 			 cmd->opcode, data->blocks);
+ 		sunxi_mmc_diag_dump_desc_ring(host, "before-cmdr");
++		sunxi_mmc_diag_dump_fabric(host, "before-cmdr");
+ 	}
+ 	mmc_writel(host, REG_CMDR, cmd_val);
+ 
+@@ -1679,6 +1715,8 @@ static void sunxi_mmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 		sunxi_mmc_diag_dump_regs(host, diag_pio ?
+ 							   "pio-post-cmdr" :
+ 							   "idma-post-cmdr");
++		if (!diag_pio)
++			sunxi_mmc_diag_dump_fabric(host, "idma-post-cmdr");
+ 
+ 		for (i = 0; i < polls; i++) {
+ 			udelay(diag_pio ? 200 : 500);
+@@ -1716,6 +1754,7 @@ static void sunxi_mmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 				 le32_to_cpu(pdes[0].buf_size),
+ 				 le32_to_cpu(pdes[0].buf_addr_ptr1),
+ 				 le32_to_cpu(pdes[0].buf_addr_ptr2));
++			sunxi_mmc_diag_dump_fabric(host, "after-cpu-sync");
+ 			sunxi_mmc_diag_dump_desc_ring(host, "after-cpu-sync");
+ 		}
+ 	}
+@@ -1980,6 +2019,12 @@ static int sunxi_mmc_resource_request(struct sunxi_mmc_host *host,
+ 	if (IS_ERR(host->reg_base))
+ 		return PTR_ERR(host->reg_base);
+ 
++	if (sunxi_mmc_diag_is_a733(host)) {
++		host->diag_ccu_base = devm_ioremap(&pdev->dev, 0x02002000, 0x1000);
++		if (!host->diag_ccu_base)
++			dev_warn(&pdev->dev, "diag failed to map A733 CCU registers\n");
++	}
++
+ 	host->clk_ahb = devm_clk_get(&pdev->dev, "ahb");
+ 	if (IS_ERR(host->clk_ahb)) {
+ 		dev_err(&pdev->dev, "Could not get ahb clock\n");
+-- 
+2.53.0
+

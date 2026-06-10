@@ -70,9 +70,11 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
   `task-packets/kernel/a733-hypothesis-queue.json`. As of H019, rootfs,
   protocol flow, descriptor geometry, visible GCTRL/DMAC bits, IOMMU, 64-bit
   DMA-mask intent, data-buffer placement, descriptor allocation class, and
-  SDMMC0 fabric-clock consumers are not the active blocker. The next work order
-  is H020: collect a source-backed vendor/mainline non-SDMMC fabric snapshot
-  before any behavior patch.
+  SDMMC0 fabric-clock consumers are not the active blocker. As of H020, a
+  concrete vendor/mainline CCU fabric delta exists: vendor keeps a broader
+  MSI/IOMMU/fabric envelope active during working SD reads than mainline keeps
+  at the IDMAC descriptor-fetch stall. The next work order is H021: test only
+  the safe MSI-lite/IOMMU subset and avoid GMAC/display/VPU bits.
 
 ## Guardrails
 

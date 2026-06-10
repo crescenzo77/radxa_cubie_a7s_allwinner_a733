@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T18:11:39Z",
+  "updated_utc": "2026-06-10T18:30:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue. H013 clears the PIO rail's leftover ACCESS_BY_AHB before IDMA and still stalls. H014 identifies vendor GCTRL bit 0x00000800 as SDXC_DTIME_UNIT, a read-data-timeout scaling bit. H015 closes the cheap hidden DMA/fabric source audit. H016 proves the coherent descriptor ring is unchanged after the stall. H017 found no remaining source-backed IOMMU, descriptor geometry, DMA-mask, or SDMMC0 fabric-clock delta that justifies another visible-control build. H018 removed the forced A733 64-bit DMA-mask path: the data buffer moved below 4 GiB and the stall remained unchanged, but the coherent descriptor ring stayed at 0xfe100000. H019 moved the descriptor ring to streaming-mapped normal memory at 0xfa800000 and the data buffer to 0xfa802000; the stall remained unchanged. The current blocker is below descriptor memory class: SDMMC0 IDMAC master/fabric reachability, address translation, security/firewall, or an unobserved non-SDMMC control path, not rootfs, card protocol, descriptor geometry, data-buffer >4G placement, descriptor allocation class, visible GCTRL/DMAC bits, or board DTS scope.",
+  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue. H013 clears the PIO rail's leftover ACCESS_BY_AHB before IDMA and still stalls. H014 identifies vendor GCTRL bit 0x00000800 as SDXC_DTIME_UNIT, a read-data-timeout scaling bit. H015 closes the cheap hidden DMA/fabric source audit. H016 proves the coherent descriptor ring is unchanged after the stall. H017-H019 close IOMMU attachment, descriptor geometry, DMA-mask, data-buffer placement, and descriptor allocation class as immediate causes. H020 found a concrete non-SDMMC delta: vendor keeps a broader CCU fabric/MSI/IOMMU clock envelope active during working SD reads, while mainline leaves most of that envelope disabled at the IDMAC stall. The current blocker is SDMMC0 IDMAC master/fabric reachability or an unobserved non-SDMMC control path, not rootfs, card protocol, descriptor geometry, descriptor memory placement, visible SDMMC GCTRL/DMAC bits, or board DTS scope.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -36,17 +36,19 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H019",
-    "status": "completed_failed_as_expected",
-    "title": "Streaming-mapped descriptor ring outside coherent CMA",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h019-descstream-result-20260610T1811Z.json",
-    "kernel_head": "d903e1dcbb7d",
-    "artifact": "/srv/projects/kernel-work/outgoing/a733-h019-descstream-d903e1dcbb7d-20260610T180518Z",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T180716Z-a733-h019-descstream-d903e1dcbb7d-ext4load-ttyUSB0.uart.log",
-    "uart_log_sha256": "30392cd9d2976019a258464e2b6aaa66f0c0275b5b5d67e2c071a19af4cd82cd",
-    "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/d903e1dcbb7d-h019-descstream.patch",
-    "patch_sha256": "24ab73e365c382dad6505de6a9dc9c78c7d56a75512c12c65235109511be7316",
-    "result": "Moving the descriptor ring from coherent CMA allocation to streaming-mapped normal memory did not fix descriptor fetch. The descriptor ring moved to sg_dma=0xfa800000/DLBA=0x3ea00000 and the data buffer moved to sg0 dma=0xfa802000. Descriptor checksum and stamps remained unchanged after cpu sync, OWN stayed set, CHDA stayed at DLBA, CBDA stayed zero, and IDST stayed 0x4000. H019 closes descriptor allocation class as the immediate cause."
+    "id": "A733-SDMMC-H020",
+    "status": "completed_delta_found",
+    "title": "Vendor/mainline non-SDMMC fabric snapshot",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h020-fabric-snapshot-result-20260610T1830Z.json",
+    "kernel_head": "3b4060f731b1",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-h020-fabric-3b4060f731b1-20260610T181855Z",
+    "vendor_snapshot": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-h020-vendor-fabric-snapshot-20260610T1819Z.json",
+    "vendor_snapshot_sha256": "5a95b98b4e91db903f9ac6488d668d105a73b19cee864e37987ac9fe27815baa",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T182056Z-a733-h020-fabric-3b4060f731b1-ext4load-ttyUSB0.uart.log",
+    "uart_log_sha256": "c0951bb0b48c42ed748b950391a617342ebf2e34649a2e61888c22bfcec71d0e",
+    "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/3b4060f731b1-h020-fabric.patch",
+    "patch_sha256": "b97038389fb69d80f20dfbb729a98bc27df0a2758cf617d43e2c96ac0ebc3022",
+    "result": "H020 found a concrete non-SDMMC delta. Vendor keeps a broad fabric/MSI/IOMMU clock envelope active during working SD reads: IOMMU0/1 sys gates, MSI-lite0/1/2 bus gates, broad AHB fabric, broad MBUS fabric, and MMC0 bus/reset state. Mainline at the IDMAC stall matches MBUS root, MSI-lite1, and MMC0 bus/reset, but leaves most of the vendor fabric envelope disabled. Queue H021 as a safe lab subset for MSI-lite/IOMMU fabric bits only; do not copy vendor display/video/GMAC-related bits."
   },
   "hypotheses": [
     {
@@ -525,7 +527,7 @@
     {
       "id": "A733-SDMMC-H020",
       "priority": 1,
-      "status": "ready",
+      "status": "completed_delta_found",
       "title": "Vendor/mainline non-SDMMC fabric snapshot",
       "question": "Which non-SDMMC register or security/fabric state differs when vendor SDMMC0 IDMAC can fetch descriptors but mainline cannot fetch descriptor word 0?",
       "test_cost": "low first; source-guided register inventory and vendor/mainline snapshot before any behavior patch",
@@ -540,7 +542,39 @@
       ],
       "pass_criteria": "A concrete, source-backed non-SDMMC fabric/security/reset/clock delta is found and narrowed enough for one H021 patch.",
       "fail_criteria": "No source-backed non-SDMMC delta is found; the next step must move to external evidence such as vendor driver tracing, bus/firewall documentation, or maintainer/RFC coordination rather than another local behavior guess.",
-      "upstream_note": "Private lab evidence only. Do not add undocumented fabric magic, vendor U-Boot policy, or out-of-scope peripherals to the upstream DTS slice."
+      "upstream_note": "Private lab evidence only. Do not add undocumented fabric magic, vendor U-Boot policy, or out-of-scope peripherals to the upstream DTS slice.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h020-fabric-snapshot-result-20260610T1830Z.json",
+        "kernel_head": "3b4060f731b1",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-h020-fabric-3b4060f731b1-20260610T181855Z",
+        "vendor_snapshot": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-h020-vendor-fabric-snapshot-20260610T1819Z.json",
+        "vendor_snapshot_sha256": "5a95b98b4e91db903f9ac6488d668d105a73b19cee864e37987ac9fe27815baa",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T182056Z-a733-h020-fabric-3b4060f731b1-ext4load-ttyUSB0.uart.log",
+        "uart_log_sha256": "c0951bb0b48c42ed748b950391a617342ebf2e34649a2e61888c22bfcec71d0e",
+        "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/3b4060f731b1-h020-fabric.patch",
+        "patch_sha256": "b97038389fb69d80f20dfbb729a98bc27df0a2758cf617d43e2c96ac0ebc3022",
+        "summary": "Completed with a concrete delta. Vendor keeps broader fabric/MSI/IOMMU clock state active during working SD reads: IOMMU0/1 sys, MSI-lite0/1/2 bus gates, broad AHB fabric, broad MBUS fabric, and matching MMC0 bus/reset state. Mainline matches MBUS root, MSI-lite1, and MMC0 bus/reset, but at the IDMAC stall has iommu0=0x00010004, msi0=0x00030000, msi2=0x00030000, iommu1=0x00010004, ahb=0x01000000, mbus0=0x60000000, mbus1=0x00000000. Next test is a safe MSI/IOMMU fabric subset only, not the whole vendor envelope."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H021",
+      "priority": 1,
+      "status": "ready",
+      "title": "MSI/IOMMU fabric-envelope subset",
+      "question": "Does enabling only the vendor-observed MSI-lite and IOMMU fabric gates let A733 SDMMC0 IDMAC fetch descriptor word 0?",
+      "test_cost": "medium; one lab-only CCU write diagnostic and one Cubie3 boot",
+      "procedure": [
+        "Start on Strix from H020 commit 3b4060f731b1 or an equivalent branch with descriptor stamps and fabric dumps.",
+        "Do not change DTS, do not add vendor U-Boot properties, and do not enable GMAC, display, VPU, GPU, or other unrelated domains.",
+        "Before the forced CMD18 IDMA launch on A733 only, set the missing vendor-observed MSI/IOMMU fabric bits while preserving existing register contents: CCU 0x58c bits 0 and 1, 0x594 bit 0, 0x5a4 bit 0, 0x5b4 bits 0 and 1, 0x5c0 bit 16, and 0x5e0 bits 0, 1, and 31.",
+        "Leave CCU 0x5c0 display/GPU/CPU bits, 0x5e0 DESYS/VID_IN bits, and 0x5e4 DMA/CE/GMAC bits untouched for this test.",
+        "Keep H020 fabric dumps at dma-entry, dma-exit, before-cmdr, idma-post-cmdr, and after-cpu-sync.",
+        "Boot Cubie3 once from Strix using prompt-controlled U-Boot ext4load/booti, capture UART, then restore vendor 5.15.147-21-a733.",
+        "If descriptor OWN clears, CHDA/CBDA advances, or descriptor checksum/stamps change, the blocker is in the safe MSI/IOMMU fabric subset. If unchanged, do not broaden to GMAC/display/VPU bits without new source evidence; move to vendor driver tracing or bus/firewall documentation."
+      ],
+      "pass_criteria": "IDMAC consumes descriptor word 0 or advances CHDA/CBDA after enabling only the MSI/IOMMU fabric subset.",
+      "fail_criteria": "Descriptor checksum/stamps remain unchanged with OWN set, CHDA=DLBA, CBDA=0, and IDST=0x4000.",
+      "upstream_note": "Lab-only diagnostic. Do not convert CCU register writes or broad fabric gate policy into upstream DTS or driver code."
     },
     {
       "id": "A733-SDMMC-H004",
