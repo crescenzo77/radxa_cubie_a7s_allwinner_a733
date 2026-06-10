@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T20:14:08Z",
+  "updated_utc": "2026-06-10T20:18:15Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H028 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, and local firmware/security/storage-master inventory as standalone local fixes or source-backed deltas. The current blocker remains SDMMC0 IDMAC descriptor-fetch reachability below the standard SDMMC visible registers, tested DMA API/addressing paths, tested CCU/NSI/fabric gates, known vendor normal-IDMAC geometry, and locally visible boot firmware evidence. H029 should prepare a maintainer/vendor question packet instead of guessing another behavior patch.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H029 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, and the maintainer/vendor question packet. The current blocker remains SDMMC0 IDMAC descriptor-fetch reachability below the standard SDMMC visible registers, tested DMA API/addressing paths, tested CCU/NSI/fabric gates, known vendor normal-IDMAC geometry, and locally visible boot firmware evidence. H030 should route the H029 packet and track responses before any new behavior patch.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,11 +37,11 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H028",
-    "status": "completed_no_behavior_patch",
-    "title": "Firmware handoff and storage-master permission inventory",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h028-firmware-handoff-inventory-20260610T2014Z.json",
-    "result": "H028 found no concrete local firmware, secure-monitor, NSI/MBUS, IOMMU, or storage-master permission delta suitable for another responsible behavior patch. Boot logs show boot0, BL31, SCP/ARISC, and secure-enable state but no named SDMMC/SMHC permission setup; Radxa package metadata exposes u-boot-aw2501 and linux image packages but no boot0/BL31 source; vendor DT/source show SDMMC0 clocks and v5p3x shape but no SDMMC IOMMU, interconnect, firewall, or NSI master property. Next step is H029: a maintainer/vendor question packet using H009-H028 evidence."
+    "id": "A733-SDMMC-H029",
+    "status": "completed_draft",
+    "title": "Maintainer/vendor descriptor-fetch question packet",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h029-maintainer-vendor-question-packet-20260610T2018Z.md",
+    "result": "H029 produced an editable maintainer/vendor question packet. The draft summarizes the exact IDMAC DESC_READ signature, the working PIO/rootfs proofs, H009-H028 ruled-out hypotheses, in-flight A733 CCU/pinctrl dependency posture, explicit anti-goals, and six specific questions about SDMMC0 descriptor-fetch preconditions. No kernel patch was written."
   },
   "hypotheses": [
     {
@@ -775,7 +775,7 @@
     {
       "id": "A733-SDMMC-H029",
       "priority": 1,
-      "status": "ready",
+      "status": "completed_draft",
       "title": "Maintainer/vendor descriptor-fetch question packet",
       "question": "What A733/SUN60IW2 SDMMC0 descriptor-fetch precondition is missing when mainline reaches IDST=0x4000 DESC_READ with CHDA=DLBA and CBDA=0 while vendor Linux can advance IDMAC?",
       "test_cost": "low; no kernel build and no board reboot",
@@ -789,7 +789,30 @@
       ],
       "pass_criteria": "A ready-to-send maintainer/vendor question draft exists, with evidence tight enough that the next local behavior patch depends on an answer rather than another guess.",
       "fail_criteria": "The draft still requires the next session to reconstruct H009-H028 evidence from scratch.",
-      "upstream_note": "Coordination artifact only. This is the responsible next step before another local behavior patch."
+      "upstream_note": "Coordination artifact only. This is the responsible next step before another local behavior patch.",
+      "result": {
+        "draft_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h029-maintainer-vendor-question-packet-20260610T2018Z.md",
+        "summary": "Completed without a kernel build or target reboot. The draft asks for the missing A733/SUN60IW2 SDMMC0 descriptor-fetch precondition and includes the exact DESC_READ signature, proven working paths, ruled-out local hypotheses, in-flight CCU/pinctrl dependency posture, and strict anti-goals."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H030",
+      "priority": 1,
+      "status": "ready",
+      "title": "Route descriptor-fetch question and track answers",
+      "question": "Can maintainer, Radxa, or Allwinner feedback identify the missing A733/SUN60IW2 SDMMC0 descriptor-fetch precondition for a single next runtime proof?",
+      "test_cost": "low; coordination only unless a concrete answer arrives",
+      "procedure": [
+        "Do not build or rewrite kernel patches for H030.",
+        "Review the H029 draft for public/private path cleanup before sharing outside the lab.",
+        "Choose route: Linux MMC/sunxi maintainer question, Radxa vendor question, Allwinner contact, or a public issue/discussion.",
+        "Log the exact route, date, message body or link, and any response in a new H030 result artifact.",
+        "If a response names one concrete register, clock/reset ordering, firmware handoff, master ID, binding, or erratum, queue exactly one narrow H031 runtime proof with pass/fail criteria.",
+        "If no answer is available, keep local patching paused rather than repeating descriptor, DMA-mask, clock, or broad fabric variants."
+      ],
+      "pass_criteria": "A response or source reference identifies one concrete next runtime proof, or the lack of response is documented with the question packet ready for another route.",
+      "fail_criteria": "The next session has to reconstruct who should be asked, what was asked, or what answers were received.",
+      "upstream_note": "Coordination and evidence tracking only."
     },
     {
       "id": "A733-SDMMC-H004",

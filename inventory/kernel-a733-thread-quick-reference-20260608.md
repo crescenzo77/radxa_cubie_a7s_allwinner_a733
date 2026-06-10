@@ -1096,3 +1096,17 @@ v5p3, and a 64-bit DMA mask for normal IDMAC descriptors, with the 32-bit limit
 used only for CQE. H027 should test only that normal-IDMAC DMA mask/address
 translation shape, preserving H025 breadcrumbs. Do not add DTS changes,
 vendor U-Boot compatibility, NSI nodes, or broader fabric/peripheral gates.
+
+## 2026-06-10 H029 Question Packet
+
+H029 produced the editable maintainer/vendor question draft:
+`task-packets/kernel/a733-h029-maintainer-vendor-question-packet-20260610T2018Z.md`.
+
+The draft asks for the missing A733/SUN60IW2 SDMMC0 descriptor-fetch
+precondition, with the exact `DESC_READ` signature, proven PIO/rootfs paths,
+H009-H028 ruled-out hypotheses, in-flight CCU/pinctrl dependency posture, and
+anti-goals. No kernel patch was written.
+
+Next queue item: H030. Route the H029 packet through the chosen maintainer,
+Radxa, or Allwinner channel and track responses. Do not resume local behavior
+patches until an answer or source reference names one concrete next proof.

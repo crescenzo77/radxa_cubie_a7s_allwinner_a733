@@ -140,3 +140,15 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
   question packet using H009-H028 evidence. Do not build another descriptor,
   DMA-mask, clock, or fabric patch unless that packet or new source evidence
   identifies a single concrete delta.
+
+## 2026-06-10 H029 Addendum
+
+- H029 produced
+  `task-packets/kernel/a733-h029-maintainer-vendor-question-packet-20260610T2018Z.md`.
+- The draft is a coordination artifact, not a patch. It captures the exact
+  SDMMC0 IDMAC `DESC_READ` stall signature, the working PIO/rootfs proof, the
+  H009-H028 ruled-out list, the A733 CCU/pinctrl RFC dependency posture, and
+  direct questions about SDMMC0 descriptor-fetch preconditions.
+- The next work order is H030: route the question packet and log responses.
+  Keep local behavior patching paused until an answer or new source reference
+  identifies one concrete runtime proof.
