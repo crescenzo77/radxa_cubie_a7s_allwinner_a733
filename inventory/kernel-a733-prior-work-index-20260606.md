@@ -182,3 +182,8 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
 - The packet contains exact send, hold, alternate-route, and result-recording
   templates. H032 remains open until the user chooses send/hold/alternate
   route and a public From identity.
+- H032 identity preflight also produced
+  `task-packets/kernel/a733-h032-identity-preflight-20260610T2030Z.json`.
+  Candidate From `Enzo Adriano <enzo.adriano.code@gmail.com>` is present in the
+  public patch exports and passed Mac `git send-email --dry-run`. It still
+  requires explicit approval before sending.

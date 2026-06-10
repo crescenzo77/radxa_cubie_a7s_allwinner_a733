@@ -15,7 +15,15 @@ validated. It should not be sent until the user chooses:
 ## Recommended Choice
 
 Recommended route: send the H030 public-clean draft to Linux MMC plus sunxi
-maintainers/lists from the Mac using an approved public From identity.
+maintainers/lists from the Mac using this candidate public From identity if
+the user approves it:
+
+```text
+Enzo Adriano <enzo.adriano.code@gmail.com>
+```
+
+This identity appears in the existing public patch exports as `From:` and
+`Signed-off-by:`. A Mac `git send-email --dry-run` with this identity passed.
 
 Draft:
 
@@ -42,21 +50,12 @@ user explicitly approves one of those addresses for public lists.
 
 ## Exact Mac Command After Approval
 
-Replace `PUBLIC_FROM` with the user-approved identity.
+Use this only after explicit user approval:
 
 ```sh
 git send-email \
   --confirm=always \
-  --from='PUBLIC_FROM' \
-  /Users/enzo/projects/homelab/task-packets/kernel/a733-h030-public-email-draft-20260610T2021Z.txt
-```
-
-Example placeholder:
-
-```sh
-git send-email \
-  --confirm=always \
-  --from='Enzo <public-email@example.com>' \
+  --from='Enzo Adriano <enzo.adriano.code@gmail.com>' \
   /Users/enzo/projects/homelab/task-packets/kernel/a733-h030-public-email-draft-20260610T2021Z.txt
 ```
 

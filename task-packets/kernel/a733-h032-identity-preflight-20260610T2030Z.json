@@ -1,0 +1,27 @@
+{
+  "id": "A733-SDMMC-H032",
+  "created_utc": "2026-06-10T20:30:42Z",
+  "status": "identity_preflight_only_not_sent",
+  "title": "Approved From identity candidate preflight",
+  "sent": false,
+  "candidate_from": "Enzo Adriano <enzo.adriano.code@gmail.com>",
+  "candidate_source": [
+    "/Users/enzo/projects/Home Lab/cubie-a7s-armbian/patches/0000-cover-letter.patch",
+    "/Users/enzo/projects/Home Lab/cubie-a7s-armbian/patches/0001-dt-bindings-mmc-add-Allwinner-A733-compatible.patch",
+    "/Users/enzo/projects/Home Lab/cubie-a7s-armbian/patches/0002-dt-bindings-arm-sunxi-add-Radxa-Cubie-A7S.patch",
+    "/Users/enzo/projects/Home Lab/cubie-a7s-armbian/patches/0003-arm64-dts-allwinner-add-Allwinner-A733-SoC.patch",
+    "/Users/enzo/projects/Home Lab/cubie-a7s-armbian/patches/0004-arm64-dts-allwinner-add-Radxa-Cubie-A7S.patch"
+  ],
+  "draft": {
+    "path": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h030-public-email-draft-20260610T2021Z.txt",
+    "sha256": "3d3aeca3ee6292c08699e817822c9d9c042190656118739ca88cdef6b1f0636a"
+  },
+  "dry_run": {
+    "command": "git send-email --dry-run --confirm=never --from='Enzo Adriano <enzo.adriano.code@gmail.com>' /Users/enzo/projects/homelab/task-packets/kernel/a733-h030-public-email-draft-20260610T2021Z.txt",
+    "status": "passed",
+    "from": "Enzo Adriano <enzo.adriano.code@gmail.com>",
+    "sendmail": "/usr/sbin/sendmail -i",
+    "message_id_domain": "gmail.com"
+  },
+  "next_required_user_decision": "Approve this From identity and route, or choose a different identity/route. No external email has been sent."
+}

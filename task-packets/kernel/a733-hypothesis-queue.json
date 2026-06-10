@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T20:28:00Z",
+  "updated_utc": "2026-06-10T20:30:42Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H031 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, the maintainer/vendor question packet, public-clean routing draft/tracker, and send preflight. H032 has an approval/send decision packet, but still requires explicit user approval, public From identity, and send host/route before external coordination. The current blocker remains SDMMC0 IDMAC descriptor-fetch reachability below the tested local paths; do not resume behavior patches before the coordination decision or a new source-backed delta.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H031 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, the maintainer/vendor question packet, public-clean routing draft/tracker, and send preflight. H032 has an approval/send decision packet and a dry-run-validated candidate From identity, Enzo Adriano <enzo.adriano.code@gmail.com>, but still requires explicit user approval before external coordination. The current blocker remains SDMMC0 IDMAC descriptor-fetch reachability below the tested local paths; do not resume behavior patches before the coordination decision or a new source-backed delta.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -862,7 +862,8 @@
       "pass_criteria": "The question is sent through an approved route and tracked, or the user explicitly chooses to hold/route elsewhere and that decision is recorded.",
       "fail_criteria": "The next session cannot tell what approval, From identity, route, or transport decision is needed.",
       "upstream_note": "Coordination only. No code patch should be generated from H032 unless an answer provides a concrete source-backed delta.",
-      "decision_packet": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h032-approval-send-decision-20260610T2028Z.md"
+      "decision_packet": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h032-approval-send-decision-20260610T2028Z.md",
+      "identity_preflight": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h032-identity-preflight-20260610T2030Z.json"
     },
     {
       "id": "A733-SDMMC-H004",

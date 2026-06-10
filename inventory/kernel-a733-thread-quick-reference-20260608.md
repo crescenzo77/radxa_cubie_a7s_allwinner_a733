@@ -1147,3 +1147,9 @@ H032 prepared the approval/send decision packet:
 It contains the exact approved-send command template, hold/alternate-route
 templates, and required result fields. H032 remains open until the user chooses
 send/hold/alternate route and a public From identity.
+
+H032 identity preflight:
+`task-packets/kernel/a733-h032-identity-preflight-20260610T2030Z.json`.
+Candidate From `Enzo Adriano <enzo.adriano.code@gmail.com>` is present in
+existing public patch exports and passed Mac `git send-email --dry-run`. Still
+do not send without explicit approval.
