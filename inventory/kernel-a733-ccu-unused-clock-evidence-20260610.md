@@ -170,6 +170,12 @@ the descriptor-list base address but does not advance into a current buffer
 address. The next question is descriptor-control/format expectations or an
 A733-specific IDMAC enable sequence, not whether `DLBA` is visible.
 
+Commit `e4b1b8060cf7` clears `CH` on the last descriptor while keeping
+`OWN|LD|ER`. The latest failing request had five sg entries and the final
+descriptor logged as `des0=0x80000024`, but IDMAC still remained at
+`CHDA=0x43000000`, `CBDA=0x00000000`, `IDST=0x4000`. Last-descriptor `CH`
+encoding is not the immediate cause.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -442,6 +448,10 @@ sha256: f3fd82be3af8bb1d1c134d58d133e18c7a68f51bf216bd84eef9a72cbfe4bb93
 SDMMC0 IDMAC current descriptor/buffer address diagnostic:
 tools/hardware-logs/cubie-uart/20260610T095832Z-a733-idma-chda-70cf459b45c7-ext4load-ttyUSB0.uart.log
 sha256: 9ca409ebca2fccdfeade080aebaf18da418c731a91d0840458caab33f9e754af
+
+SDMMC0 IDMA last-descriptor no-CH diagnostic:
+tools/hardware-logs/cubie-uart/20260610T100649Z-a733-idma-lastnoch-e4b1b8060cf7-ext4load-ttyUSB0.uart.log
+sha256: ed744ff7d92a7e58f426737dcd2be56026b98bdd95df2680c673a7588018d0fd
 ```
 
 ## Source Findings
