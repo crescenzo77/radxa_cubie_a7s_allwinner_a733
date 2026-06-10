@@ -156,6 +156,13 @@ is `des0=0x80000034 size=0x00000000 buf=0xfb810000 next=0x00000000`. IDMAC
 still reaches `IDST=0x4000` with no data movement. Size-zero is expected
 max-size encoding, not proof of a missing descriptor-size write.
 
+Adding explicit SDMMC0 consumers for the vendor-indicated storage fabric clocks
+does not change the IDMA failure. Commit `9bc49dc5978b` requests and enables
+`mmc_store`, `mmc_mbus`, and `mmc_msi_lite` from the MMC node. The proof still
+reaches the first 256-block CMD18 IDMA request and stalls at `IDST=0x4000` with
+`CBCR=0x400` and `BBCR=0`, so the missing explicit clock-consumer hypothesis is
+falsified for the current diagnostic stack.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -420,6 +427,10 @@ sha256: ad1b16623988b6836bdbb9589ce74a50f3286bab24856c9fe09e8eb3e76de1b8
 SDMMC0 IDMA descriptor-chain dump:
 tools/hardware-logs/cubie-uart/20260610T093919Z-a733-idma-descdump-15036671f536-ext4load-ttyUSB0.uart.log
 sha256: 910645c3799329d39d6e50025a20fd46773d9d6eba386eb79c551c4dce9390b5
+
+SDMMC0 explicit fabric-clock consumer diagnostic:
+tools/hardware-logs/cubie-uart/20260610T094917Z-a733-mmc-fabricclks-9bc49dc5978b-ext4load-ttyUSB0.uart.log
+sha256: f3fd82be3af8bb1d1c134d58d133e18c7a68f51bf216bd84eef9a72cbfe4bb93
 ```
 
 ## Source Findings
