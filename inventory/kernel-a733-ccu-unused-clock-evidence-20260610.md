@@ -244,6 +244,12 @@ still enumerates through `mmcblk0: p1 p2 p3`, and the first large CMD18 still
 stalls with `IDST=0x4000`, `CHDA=DLBA`, and `CBDA=0`. Vendor 64-bit DMA mask
 setup is also not enough.
 
+Commit `2ddba941df31` adds an A733-only MMC config using the vendor BSP SDMMC0
+descriptor segment size (`idma_des_size_bits = 15`). The first large CMD18 is
+reshaped from 32 descriptors of 4 KiB into four descriptors of 32 KiB, but
+still stalls with `IDST=0x4000`, `CHDA=DLBA`, and `CBDA=0`. BSP SDMMC0
+max-segment sizing is also not enough.
+
 Full Orange Pi BSP source was cloned on Strix at:
 `/srv/projects/kernel-work/tmp/linux-orangepi-full`, branch
 `orange-pi-6.6-sun60iw2`, commit
@@ -573,6 +579,10 @@ sha256: 6dea7ee80ab279fe62ea87567ea34a798d149ae432243e69755ca566068435b0
 SDMMC0 IDMA vendor 64-bit DMA mask diagnostic:
 tools/hardware-logs/cubie-uart/20260610T123025Z-a733-idma-dmamask-b67579cc62c1-ext4load-ttyUSB0.uart.log
 sha256: 30bd27d2170545938080d99a4ac8411efc11f08b59021878704ac485eabe2f9a
+
+SDMMC0 IDMA vendor SDMMC0 descriptor-size diagnostic:
+tools/hardware-logs/cubie-uart/20260610T124103Z-a733-idma-size15-2ddba941df31-ext4load-ttyUSB0.uart.log
+sha256: 15e448aceb2ce7c77d391e29f041f02efd6e16831f66e8ccddbd64c1de811363
 ```
 
 ## Source Findings
