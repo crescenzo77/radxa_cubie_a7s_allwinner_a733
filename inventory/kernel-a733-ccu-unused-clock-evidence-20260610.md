@@ -1019,6 +1019,41 @@ first minimal proof. Keep the storage-fabric and reset-cell changes lab-only
 until reconciled with Junhui Liu's A733 CCU/PRCM and any pmdomain/storage
 fabric RFC direction.
 
+## CMD18 IDMA Descriptor Ownership Diagnostic
+
+Strix diagnostic commit `b5b9f2cd2cea` adds a post-stall dump of the first
+IDMA descriptor after CMD18 polling. The tested artifact was:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-idma-desafter-b5b9f2cd2cea-20260610T064602Z
+Image sha256: 7e7b6ff654dbbb5309539c8b3bfda36cadefb241c98fffee94a75f200d645e0b
+DTB sha256:   ed3cc474fe72c25c3e0cb96a3fc9fa243c1c01631bf4e651031d3cba8500708b
+```
+
+Valid direct U-Boot capture:
+
+```text
+tools/hardware-logs/cubie-uart/20260610T064840Z-a733-idma-desafter-b5b9f2cd2cea-ext4load-ttyUSB0.uart.log
+sha256: 0a7abd6966e47bc562453fc6471cea1b74d73011bdac8346db6a4a8d543466c5
+```
+
+Result: the first block-layer request is still CMD18, 8 x 512 bytes, one
+scatterlist entry. The command/FIFO side reaches `RINTR=0x00000024`, while
+IDMAC stays in descriptor-read state with `IDST=0x00004000`. The descriptor is
+unchanged after twelve polls:
+
+```text
+diag idma_des sg_len=1 ... des0=0x8000002c size=0x00001000 buf=0xfd800000 next=0x00000000
+diag idma_des_after des0=0x8000002c size=0x00001000 buf=0xfd800000 next=0x00000000
+```
+
+Because the OWN bit remains set, the IDMAC does not appear to consume the
+descriptor. This falsifies a post-fetch/FIFO-completion theory for the current
+failure. The next responsible work is to explain why descriptor read never
+completes: descriptor format/control sequencing, DMA-visible address
+expectations, required storage-fabric/MBUS setup, or an A733-specific IDMAC
+mode bit not represented by the D1-compatible mainline path.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
