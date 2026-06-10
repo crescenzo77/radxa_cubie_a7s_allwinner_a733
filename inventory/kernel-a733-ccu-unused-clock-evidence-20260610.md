@@ -42,6 +42,13 @@ The next blocker is therefore the SDMMC data/DMA path after basic command
 enumeration, still within lab-only CCU/reset/storage-fabric diagnostics and not
 board DTS feature expansion.
 
+Follow-up ACMD51 polling confirms the controller clears the command start bit
+and sets raw `COMMAND_DONE`, but never sets raw `DATA_OVER`; masked status stays
+zero because ADTC reads do not mask `COMMAND_DONE`, and IDMA status remains
+`0x00004000`. This narrows the failure to the data phase not starting or not
+finishing after command acceptance, rather than a missed receive-DMA interrupt
+alone.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -119,6 +126,10 @@ keep ahb-store/mbus-store/mbus-msi-lite0 critical
 trace data/DMA path
   -> ACMD51 request mapped, IDMA descriptor prepared, DMA armed
   -> no data/DMA completion in captured tail
+
+poll ACMD51 after command launch
+  -> RINTR=0x00000004, MISTA=0x00000000, IDST=0x00004000
+  -> no DATA_OVER while CMDR start bit is clear
 ```
 
 Key proof logs:
@@ -175,6 +186,10 @@ sha256: 9fb5580652c37be69d8efdc9c9f71414c473ea9717d6e5cb8499fd656b2eb129
 SDMMC0 data/DMA trace diagnostic:
 tools/hardware-logs/cubie-uart/20260610T035245Z-a733-mmc-datadma-fdfcd44d0f78-ext4load-ttyUSB0.uart.log
 sha256: cc43ef68c7037bfc4d0eb5d696ed8237adc63bb0b4103d7dc7fc20e0ba01c41b
+
+SDMMC0 ACMD51 post-launch poll diagnostic:
+tools/hardware-logs/cubie-uart/20260610T040154Z-a733-acmd51-poll-ae9a05e1c4fc-ext4load-ttyUSB0.uart.log
+sha256: 3666cffc6a3b45d0e0395fb244cca1e92e4048aaedad34eed71ab5fc6c213563
 ```
 
 ## Source Findings
@@ -276,10 +291,20 @@ sunxi-mmc 4020000.mmc: diag regs dma-exit ... dmac=0x00000282 ... idie=0x0000000
 ```
 
 No completion follows in the captured tail. The safest next runtime proof is a
-single-purpose PIO/no-IDMA diagnostic for ACMD51/SCR, or an equally narrow
-check of the SDMMC IDMA address/descriptor programming against A733 vendor
-register behavior. Do not broaden into Ethernet, VPU, display, or public DTS
-changes.
+single-purpose check of the ACMD51 data-phase prerequisites: compare the A733
+vendor command value, FIFO/watermark, GCTRL access mode, IDMA status bit
+meaning, and descriptor/address programming for SCR reads. A PIO/no-IDMA
+diagnostic is still useful, but the poll result says the problem is earlier
+than receive-DMA completion. Do not broaden into Ethernet, VPU, display, or
+public DTS changes.
+
+Commit `ae9a05e1c4fc` adds the ACMD51 poll:
+
+```text
+diag acmd51 cmdr-readback=0x80002373 wait_dma=1
+diag regs acmd51-post-cmdr ... cmdr=0x00002373 imask=0x0000bbca mista=0x00000000 rint=0x00000004 idst=0x00004000 ...
+diag post-acmd51 poll19 rint=0x00000004 mista=0x00000000 idst=0x00004000 idie=0x00000002 dmac=0x00000282 stas=0x00059902 cmdr=0x00002373 imask=0x0000bbca
+```
 
 ## Questions For CCU/RFC Review
 
