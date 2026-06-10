@@ -1,0 +1,84 @@
+From a14ac7c15a9829c803091230369f88a8fc3bfeec Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 12:06:10 -0400
+Subject: [PATCH] mmc: test A733 single-descriptor CMD18 IDMA
+
+---
+ drivers/mmc/host/sunxi-mmc.c | 29 +++++++++++++++++++++++++----
+ 1 file changed, 25 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 79ea787cf833..091f06760cfd 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -682,11 +682,26 @@ static void sunxi_mmc_diag_write_pio(struct sunxi_mmc_host *host,
+ 	kfree(words);
+ }
+ 
+-static bool sunxi_mmc_diag_data_is_pio(struct mmc_command *cmd,
++static bool sunxi_mmc_diag_force_cmd18_idma(struct sunxi_mmc_host *host,
++						    struct mmc_command *cmd,
++						    struct mmc_data *data)
++{
++	return data &&
++		of_device_is_compatible(host->dev->of_node,
++						"allwinner,sun60i-a733-mmc") &&
++		cmd->opcode == MMC_READ_MULTIPLE_BLOCK &&
++		!(data->flags & MMC_DATA_WRITE) && data->blksz == 512 &&
++		data->blocks <= 8;
++}
++
++static bool sunxi_mmc_diag_data_is_pio(struct sunxi_mmc_host *host,
++					 struct mmc_command *cmd,
+ 					 struct mmc_data *data)
+ {
+ 	if (!data)
+ 		return false;
++	if (sunxi_mmc_diag_force_cmd18_idma(host, cmd, data))
++		return false;
+ 
+ 	if (data->blocks == 1 && data->blksz <= 512)
+ 		return true;
+@@ -828,7 +843,7 @@ static irqreturn_t sunxi_mmc_finalize_request(struct sunxi_mmc_host *host)
+ 		}
+ 
+ 		if (data) {
+-			if (sunxi_mmc_diag_data_is_pio(mrq->cmd, data) &&
++			if (sunxi_mmc_diag_data_is_pio(host, mrq->cmd, data) &&
+ 			    !(data->flags & MMC_DATA_WRITE) &&
+ 			    mrq->cmd->opcode != MMC_READ_MULTIPLE_BLOCK)
+ 				sunxi_mmc_diag_copy_read_pio(host, data,
+@@ -849,7 +864,7 @@ static irqreturn_t sunxi_mmc_finalize_request(struct sunxi_mmc_host *host)
+ 		rval |= SDXC_FIFO_RESET;
+ 		mmc_writel(host, REG_GCTRL, rval);
+ 		sunxi_mmc_diag_dump_regs(host, "finalize-data-after-cleanup");
+-		if (!sunxi_mmc_diag_data_is_pio(mrq->cmd, data))
++		if (!sunxi_mmc_diag_data_is_pio(host, mrq->cmd, data))
+ 			dma_unmap_sg(mmc_dev(host->mmc), data->sg, data->sg_len,
+ 				     mmc_get_dma_dir(data));
+ 	}
+@@ -1370,7 +1385,7 @@ static void sunxi_mmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 		 cmd->opcode, cmd->arg, cmd->flags, data ? 1 : 0,
+ 		 mmc->ios.clock, host->ferror);
+ 
+-	diag_pio = sunxi_mmc_diag_data_is_pio(cmd, data);
++	diag_pio = sunxi_mmc_diag_data_is_pio(host, cmd, data);
+ 	diag_cmd49_pio_write = data && diag_pio &&
+ 		(data->flags & MMC_DATA_WRITE) &&
+ 		cmd->opcode == SD_WRITE_EXTR_SINGLE &&
+@@ -1382,6 +1397,12 @@ static void sunxi_mmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 			 cmd->opcode, data->flags, data->blksz, data->blocks,
+ 			 data->sg_len, cmd->data->stop ? 1 : 0);
+ 
++	if (sunxi_mmc_diag_force_cmd18_idma(host, cmd, data))
++		dev_info(mmc_dev(mmc),
++			 "diag force A733 single-desc CMD18 IDMA blocks=%u blksz=%u sg_len=%u stop=%u\n",
++			 data->blocks, data->blksz, data->sg_len,
++			 cmd->data->stop ? 1 : 0);
++
+ 	if (diag_cmd49_pio_write)
+ 		dev_info(mmc_dev(mmc),
+ 			 "diag allow A733 CMD49 pio write arg=0x%08x sg_len=%u task=%s[%d]\n",
+-- 
+2.53.0
+

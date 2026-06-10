@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T15:59:35Z",
+  "updated_utc": "2026-06-10T16:12:37Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when block reads are capped to 8 blocks. H008 proves CMD49 can complete through the narrow PIO write path while all other writes remain guarded. The unresolved hardware issue remains IDMA-backed transfer handling; the next low-risk test is a single-descriptor IDMA CMD18 read with the proven PIO safety rails still present.",
+  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing with IDST=0x4000, CHDA=DLBA, CBDA=0, RINTR=0x24, CBCR=0x400, and BBCR=0. The next responsible step is a vendor-vs-mainline single-descriptor IDMA comparison before another boot variant.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -28,18 +28,18 @@
     "Keep clk_ignore_unused and PIO bypasses as lab diagnostics only."
   ],
   "latest_completed_test": {
-    "id": "A733-SDMMC-H008",
-    "status": "passed",
-    "title": "Controlled CMD49 PIO cache-enable proof",
-    "kernel_head": "5886b1f82ea4e90a40d4494ac316cfbd9b0b2858",
-    "artifact": "/srv/projects/kernel-work/outgoing/a733-cmd49pio-5886b1f82ea4-20260610T155208Z",
-    "image_sha256": "3a0d5c2515eef9fd22e6d6144a62bbac5e4d4583c98c692a46f529e1077d35cf",
+    "id": "A733-SDMMC-H009",
+    "status": "failed",
+    "title": "Single-descriptor IDMA CMD18 read proof",
+    "kernel_head": "a14ac7c15a9829c803091230369f88a8fc3bfeec",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-h009-singleidma-a14ac7c15a98-20260610T160618Z",
+    "image_sha256": "1556162017ca52b73570ba94727b865c42fa4727202ada8df2b5e65d725ec37e",
     "dtb_sha256": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
     "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
-    "build_log_sha256": "8f96223b6ab95a25c51e3daa91db0328abf9fae1aa9bb8edd4e1cd521da0c5da",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T155409Z-a733-cmd49pio-5886b1f82ea4-ttyUSB0.uart.log",
-    "uart_log_sha256": "6464fdda0264747352dfcd3df1652b2d6e2ecf3d93d3f63bba2fe80f39abf2cd",
-    "result": "Passed. CMD49 cache-enable ran through the scoped A733 PIO write path with opcode=49, one 512-byte block, and pio=1. The card then enumerated as mmcblk0, partitions p1/p2/p3 appeared, EXT4 mounted read-only on mmcblk0p3, and init=/bin/sh started. No diag block A733 write or opcode=25 write appeared in the captured proof window. This proves CMD49 write protocol mechanics without enabling general writes."
+    "build_log_sha256": "d83f1bd99dd8e7629cf1f686f831e064e09cab0a52695df4411f68d287a9fe38",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T160824Z-a733-h009-singleidma-a14ac7c15a98-ttyUSB0.uart.log",
+    "uart_log_sha256": "f4d4e25476140d8cc4373250e654b958b31dcf5db6f1a646416f0b6825067727",
+    "result": "Failed as intended for narrowing. CMD49 still completes through PIO and mmcblk0 appears, but the first 8-block CMD18 forced through IDMA stalls before partition parsing. The single descriptor is des0=0x8000001c size=0x00001000 buf=0x40574800 next=0x3f840004. Post-command state remains RINTR=0x24, IDST=0x4000, CHDA=DLBA=0x3f840000, CBDA=0, CBCR=0x400, BBCR=0. This proves the failure does not require a large or multi-descriptor request."
   },
   "hypotheses": [
     {
@@ -213,7 +213,7 @@
     {
       "id": "A733-SDMMC-H009",
       "priority": 1,
-      "status": "ready",
+      "status": "completed",
       "title": "Single-descriptor IDMA CMD18 read proof",
       "question": "Does A733 SDMMC0 IDMA fail even for one 4096-byte CMD18 descriptor, or only when the block layer emits large multi-descriptor reads?",
       "test_cost": "medium; small host-driver patch and one boot",
@@ -228,7 +228,31 @@
       ],
       "pass_criteria": "An 8-block single-descriptor IDMA CMD18 completes and the read-only root proof still reaches init=/bin/sh.",
       "fail_criteria": "The 8-block single-descriptor IDMA CMD18 stalls with IDST=0x4000 or no DATA_OVER before EXT4 can mount.",
-      "upstream_note": "This is a runtime narrowing diagnostic only. Do not present the PIO rails or request caps as an upstream fix."
+      "upstream_note": "This is a runtime narrowing diagnostic only. Do not present the PIO rails or request caps as an upstream fix.",
+      "result": {
+        "kernel_head": "a14ac7c15a9829c803091230369f88a8fc3bfeec",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-h009-singleidma-a14ac7c15a98-20260610T160618Z",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T160824Z-a733-h009-singleidma-a14ac7c15a98-ttyUSB0.uart.log",
+        "summary": "Failed as a proof, useful as a narrowing result. The first 8-block CMD18 single-descriptor IDMA read stalls before partition parsing with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0. The immediate blocker is descriptor-read progress even for one descriptor, not only large multi-descriptor block I/O."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H010",
+      "priority": 1,
+      "status": "ready",
+      "title": "Single-descriptor IDMA vendor comparison",
+      "question": "Which descriptor, DMA address, or visible IDMAC state differs between the H009 single-descriptor mainline stall and the vendor working-read baseline?",
+      "test_cost": "low; no boot before source/log comparison",
+      "procedure": [
+        "Use task-packets/kernel/a733-sdmmc-single-desc-comparison-20260610T1612Z.json as the starting evidence table.",
+        "Compare H009 against the vendor wide sample for CMDR, RINTR, STAS, THLD, DMAC, DLBA, IDST, IDIE, CHDA, CBDA, CBCR, BBCR, DRV_DL, SAMP_DL, SMCV, descriptor control, descriptor size, descriptor list address, and data-buffer address.",
+        "Inspect the vendor v5p3x descriptor setup and DMA mask/allocation path only for differences that explain a one-descriptor descriptor-read stall.",
+        "Do not build another boot variant unless the comparison identifies a concrete source-backed delta.",
+        "If a concrete delta is found, create the next minimal diagnostic patch from that one delta only."
+      ],
+      "pass_criteria": "A concrete source-backed difference is identified that can explain why vendor IDMAC advances CHDA/CBDA while mainline remains at CHDA=DLBA and CBDA=0.",
+      "fail_criteria": "No descriptor, address, or visible IDMAC setup difference remains; next work must move to hidden wrapper, coherency, or bus-fabric behavior with new evidence.",
+      "upstream_note": "This is evidence shaping only. It does not alter maintainer-facing DTS scope."
     },
     {
       "id": "A733-SDMMC-H004",

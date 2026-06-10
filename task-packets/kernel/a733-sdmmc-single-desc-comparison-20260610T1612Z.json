@@ -1,0 +1,210 @@
+{
+  "version": 1,
+  "created_utc": "2026-06-10T16:12:37Z",
+  "hypothesis_id": "A733-SDMMC-H010",
+  "title": "A733 SDMMC0 single-descriptor IDMA vendor-vs-mainline comparison",
+  "sources": {
+    "vendor_log": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T132339Z-cubie3-vendor-sdmmc0-wide-reg-sample.log",
+      "sha256": "3fe99a97efad4935221d75c6175ff6ebeac6a907969d23db44a23f30ea5223d0",
+      "kernel": "5.15.147-21-a733"
+    },
+    "mainline_log": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T160824Z-a733-h009-singleidma-a14ac7c15a98-ttyUSB0.uart.log",
+      "sha256": "f4d4e25476140d8cc4373250e654b958b31dcf5db6f1a646416f0b6825067727",
+      "kernel_head": "a14ac7c15a9829c803091230369f88a8fc3bfeec"
+    },
+    "template": "task-packets/kernel/a733-sdmmc-register-dump-template.json"
+  },
+  "phase_records": {
+    "vendor_cmd18_start": {
+      "source_line": 5,
+      "phase": "vendor-working-read",
+      "values": {
+        "CMDR": "0x00003352",
+        "RINTR": "0x00000004",
+        "STAS": "0x00009506",
+        "FTRGL": "0x200700f8",
+        "THLD": "0x02000001",
+        "DMAC": "0x00000282",
+        "DLBA": "0x3fc60800",
+        "IDST": "0x0000a000",
+        "IDIE": "0x00000002",
+        "CHDA": "0x3fc60800",
+        "CBDA": "0x428b0400",
+        "CBCR": "0x00000000",
+        "BBCR": "0x00000000",
+        "DRV_DL": "0x00010000",
+        "SAMP_DL": "0x00002000",
+        "SMCV": "0x02050530"
+      }
+    },
+    "vendor_data_progress": {
+      "source_line": 7,
+      "phase": "vendor-working-read",
+      "values": {
+        "CMDR": "0x00003352",
+        "RINTR": "0x00000024",
+        "STAS": "0x00009506",
+        "FTRGL": "0x200700f8",
+        "THLD": "0x02000001",
+        "DMAC": "0x00000282",
+        "DLBA": "0x3fc60800",
+        "IDST": "0x0000a000",
+        "IDIE": "0x00000002",
+        "CHDA": "0x3fc6080c",
+        "CBDA": "0x42b73c00",
+        "CBCR": "0x00003000",
+        "BBCR": "0x00003000",
+        "DRV_DL": "0x00010000",
+        "SAMP_DL": "0x00002000",
+        "SMCV": "0x02050530"
+      }
+    },
+    "mainline_h009_idma_post_cmdr": {
+      "source_line": 3736,
+      "phase": "mainline-idma-post-cmdr",
+      "descriptor": {
+        "sg_len": 1,
+        "sg0_length": 4096,
+        "sg0_dma": "0x00000001015d2000",
+        "des0": "0x8000001c",
+        "size": "0x00001000",
+        "buf": "0x40574800",
+        "next": "0x3f840004"
+      },
+      "values": {
+        "GCTRL": "0xa0000030",
+        "CLKCR": "0x00010000",
+        "WIDTH": "0x00000001",
+        "CMDR": "0x00003352",
+        "CARG": "0x00000000",
+        "IMASK": "0x0000fbc2",
+        "MISTA": "0x00000000",
+        "RINTR": "0x00000024",
+        "STAS": "0x02009509",
+        "NTSR": "0x81710000",
+        "FTRGL": "0x200700f8",
+        "THLD": "0x02000001",
+        "DMAC": "0x00000282",
+        "DLBA": "0x3f840000",
+        "IDST": "0x00004000",
+        "IDIE": "0x00000002",
+        "CHDA": "0x3f840000",
+        "CBDA": "0x00000000",
+        "BLKSZ": "0x00000200",
+        "BCNTR": "0x00001000",
+        "CBCR": "0x00000400",
+        "BBCR": "0x00000000",
+        "FUNS": "0x00000000",
+        "DBGC": "0x00000001",
+        "CSDC": "0x00000003",
+        "DRV_DL": "0x00010000",
+        "SAMP_DL": "0x00002000",
+        "DS_DL": "0x00000000",
+        "SKEW_CTRL": "0x00000003",
+        "SMCV": "0x02050530"
+      }
+    },
+    "mainline_h009_stall_poll11": {
+      "source_line": 3748,
+      "phase": "mainline-stall-poll",
+      "values": {
+        "CMDR": "0x00003352",
+        "IMASK": "0x0000fbc2",
+        "MISTA": "0x00000000",
+        "RINTR": "0x00000024",
+        "STAS": "0x02009509",
+        "THLD": "0x02000001",
+        "DMAC": "0x00000282",
+        "DLBA": "0x3f840000",
+        "IDST": "0x00004000",
+        "IDIE": "0x00000002",
+        "CHDA": "0x3f840000",
+        "CBDA": "0x00000000",
+        "CBCR": "0x00000400",
+        "BBCR": "0x00000000"
+      }
+    }
+  },
+  "comparison_rows": [
+    {
+      "register": "CMDR",
+      "vendor_value": "0x00003352",
+      "mainline_value": "0x00003352",
+      "delta": "none",
+      "interpretation": "CMD18 command shape matches."
+    },
+    {
+      "register": "THLD",
+      "vendor_value": "0x02000001",
+      "mainline_value": "0x02000001",
+      "delta": "none",
+      "interpretation": "Read threshold matches."
+    },
+    {
+      "register": "DMAC",
+      "vendor_value": "0x00000282",
+      "mainline_value": "0x00000282",
+      "delta": "none",
+      "interpretation": "Visible IDMAC control bits match at command launch."
+    },
+    {
+      "register": "IDST",
+      "vendor_value": "0x0000a000",
+      "mainline_value": "0x00004000",
+      "delta": "visible",
+      "interpretation": "Vendor IDMAC advances into transmit/receive interrupt state; mainline remains in descriptor-read state."
+    },
+    {
+      "register": "CHDA",
+      "vendor_value": "0x3fc6080c",
+      "mainline_value": "0x3f840000",
+      "delta": "visible",
+      "interpretation": "Vendor current descriptor advances; mainline current descriptor remains equal to DLBA."
+    },
+    {
+      "register": "CBDA",
+      "vendor_value": "0x42b73c00",
+      "mainline_value": "0x00000000",
+      "delta": "visible",
+      "interpretation": "Vendor current buffer address is non-zero; mainline never advances to a data buffer."
+    },
+    {
+      "register": "CBCR",
+      "vendor_value": "0x00003000",
+      "mainline_value": "0x00000400",
+      "delta": "visible",
+      "interpretation": "Mainline sees only the first 1024 bytes at the controller-side counter before progress stops."
+    },
+    {
+      "register": "BBCR",
+      "vendor_value": "0x00003000",
+      "mainline_value": "0x00000000",
+      "delta": "visible",
+      "interpretation": "Mainline never advances the bus-side byte counter."
+    },
+    {
+      "register": "SAMP_DL",
+      "vendor_value": "0x00002000",
+      "mainline_value": "0x00002000",
+      "delta": "none in H009",
+      "interpretation": "The earlier sample-delay visible delta is not present in H009; do not retest SAMP_DL from this result alone."
+    },
+    {
+      "field": "descriptor_count",
+      "vendor_value": "working read advances descriptors",
+      "mainline_value": "one descriptor, 4096 bytes",
+      "delta": "narrowing",
+      "interpretation": "The mainline failure does not require a large or multi-descriptor request."
+    },
+    {
+      "field": "mainline_data_dma",
+      "vendor_value": "not yet extracted from vendor descriptor memory",
+      "mainline_value": "sg0_dma=0x00000001015d2000, descriptor buf=0x40574800",
+      "delta": "open",
+      "interpretation": "H010 should inspect whether vendor constrains data buffers differently or programs a hidden high-address path."
+    }
+  ],
+  "conclusion": "H009 eliminates request size and descriptor count as necessary conditions for the IDMA failure. Visible setup registers match closely; the failure remains IDMAC descriptor consumption/progress. The next patch must be justified by a concrete vendor/source delta, not by another visible-register guess."
+}

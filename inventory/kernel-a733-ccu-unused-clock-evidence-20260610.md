@@ -1950,6 +1950,43 @@ PIO and write guards retained, to learn whether even a single 4096-byte
 descriptor fails or whether the failure requires larger multi-descriptor
 requests.
 
+## Single-Descriptor CMD18 IDMA Proof
+
+Commit `a14ac7c15a98` keeps the H008 safety rails but forces the 8-block CMD18
+read path back through IDMA instead of the proven temporary PIO copy path:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-h009-singleidma-a14ac7c15a98-20260610T160618Z
+Image sha256: 1556162017ca52b73570ba94727b865c42fa4727202ada8df2b5e65d725ec37e
+DTB sha256:   8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf
+config sha256: dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202
+build log sha256: d83f1bd99dd8e7629cf1f686f831e064e09cab0a52695df4411f68d287a9fe38
+
+tools/hardware-logs/cubie-uart/20260610T160824Z-a733-h009-singleidma-a14ac7c15a98-ttyUSB0.uart.log
+sha256: f4d4e25476140d8cc4373250e654b958b31dcf5db6f1a646416f0b6825067727
+
+tools/kernel-patches/a733-diagnostics/a14ac7c15a98-single-desc-cmd18-idma.patch
+sha256: 66d5ce0378db2cf5a6bac021f8cac5ff4bea48f10e66d48418a3432d142e0115
+```
+
+Key runtime lines:
+
+```text
+diag force A733 single-desc CMD18 IDMA blocks=8 blksz=512 sg_len=1 stop=1
+diag idma_des[0] sg_len=4096 des0=0x8000001c size=0x00001000 buf=0x40574800 next=0x3f840004
+diag regs idma-post-cmdr ... rint=0x00000024 ... idst=0x00004000 ... chda=0x3f840000 cbda=0x00000000 ... cbcr=0x00000400 bbcr=0x00000000
+diag post-data poll11 ... rint=0x00000024 ... idst=0x00004000 ... chda=0x3f840000 cbda=0x00000000 ... cbcr=0x00000400 bbcr=0x00000000
+```
+
+Result: H009 failed as a boot proof but succeeded as a narrowing diagnostic.
+The board reaches `mmcblk0`, CMD49 still works through PIO, and then the first
+8-block CMD18 IDMA read stalls before partition parsing. This proves the IDMA
+failure does not require a 256-block request, many sg entries, or multiple
+descriptors. The next work item is H010: use
+`task-packets/kernel/a733-sdmmc-single-desc-comparison-20260610T1612Z.json` to
+compare the H009 single-descriptor state against the vendor working-read
+baseline before creating another boot variant.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
