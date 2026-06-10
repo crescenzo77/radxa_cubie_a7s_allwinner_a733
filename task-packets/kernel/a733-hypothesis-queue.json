@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T15:47:22Z",
+  "updated_utc": "2026-06-10T15:59:35Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, and read-only EXT4 root mount to init=/bin/sh when block reads are capped to 8 blocks. H006 identified the first write as SD core cache-enable via CMD49/sd_write_ext_reg during mmc_sd_init_card. H007 shows that skipping SD cache enable allows the read-only root proof with no write request captured. The unresolved hardware issue remains IDMA-backed transfer handling; the next low-risk test is CMD49-only PIO write, not general writes.",
+  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when block reads are capped to 8 blocks. H008 proves CMD49 can complete through the narrow PIO write path while all other writes remain guarded. The unresolved hardware issue remains IDMA-backed transfer handling; the next low-risk test is a single-descriptor IDMA CMD18 read with the proven PIO safety rails still present.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -28,18 +28,18 @@
     "Keep clk_ignore_unused and PIO bypasses as lab diagnostics only."
   ],
   "latest_completed_test": {
-    "id": "A733-SDMMC-H007",
+    "id": "A733-SDMMC-H008",
     "status": "passed",
-    "title": "Skip SD cache-enable write and trace subsequent writes",
-    "kernel_head": "2acef0aaad0ecacd62466d95c8c41d70c43be816",
-    "artifact": "/srv/projects/kernel-work/outgoing/a733-skipcache-writetrace-2acef0aaad0e-20260610T154057Z",
-    "image_sha256": "d334dd2d7b89c272e19b0a128a672c6362533dbda8eb8cb14a8b1fd62c55ce13",
+    "title": "Controlled CMD49 PIO cache-enable proof",
+    "kernel_head": "5886b1f82ea4e90a40d4494ac316cfbd9b0b2858",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-cmd49pio-5886b1f82ea4-20260610T155208Z",
+    "image_sha256": "3a0d5c2515eef9fd22e6d6144a62bbac5e4d4583c98c692a46f529e1077d35cf",
     "dtb_sha256": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
     "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
-    "build_log_sha256": "fee4a1aa5532dcc66e792f91bee0f4425e53c965bf9fa43bf91034febe9f5954",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T154257Z-a733-skipcache-writetrace-2acef0aaad0e-ttyUSB0.uart.log",
-    "uart_log_sha256": "2af9185917984ff0b3e036cb896ca3d287a5e8f176e74bd230548e03b85d75e6",
-    "result": "Passed. H006 showed the first write was SD cache enable via CMD49/sd_write_ext_reg in mmc_sd_init_card. H007 skipped only that cache-enable write on A733 while keeping the write guard. The kernel then discovered mmcblk0 p1/p2/p3, mounted EXT4 read-only on mmcblk0p3, and reached init=/bin/sh. No diag block A733 write, opcode=25, or opcode=49 write appeared in the captured window. Skipping SD cache enable is therefore sufficient for the read-only proof, but the proper next diagnostic is a controlled CMD49-only PIO write, not a broad write path."
+    "build_log_sha256": "8f96223b6ab95a25c51e3daa91db0328abf9fae1aa9bb8edd4e1cd521da0c5da",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T155409Z-a733-cmd49pio-5886b1f82ea4-ttyUSB0.uart.log",
+    "uart_log_sha256": "6464fdda0264747352dfcd3df1652b2d6e2ecf3d93d3f63bba2fe80f39abf2cd",
+    "result": "Passed. CMD49 cache-enable ran through the scoped A733 PIO write path with opcode=49, one 512-byte block, and pio=1. The card then enumerated as mmcblk0, partitions p1/p2/p3 appeared, EXT4 mounted read-only on mmcblk0p3, and init=/bin/sh started. No diag block A733 write or opcode=25 write appeared in the captured proof window. This proves CMD49 write protocol mechanics without enabling general writes."
   },
   "hypotheses": [
     {
@@ -188,7 +188,7 @@
     {
       "id": "A733-SDMMC-H008",
       "priority": 1,
-      "status": "ready",
+      "status": "completed",
       "title": "Controlled CMD49 PIO cache-enable proof",
       "question": "Can the SD cache-enable CMD49 write complete through a narrowly scoped PIO write path, without enabling arbitrary block writes?",
       "test_cost": "medium; small host-driver patch and one boot",
@@ -202,7 +202,33 @@
       ],
       "pass_criteria": "CMD49 completes via PIO, card init proceeds, and either read-only root mounts with no later writes or the next write issuer is captured.",
       "fail_criteria": "CMD49 PIO fails or causes a media-risky write path outside the scoped command.",
-      "upstream_note": "This tests write protocol mechanics only. It is not a final upstream write-path design."
+      "upstream_note": "This tests write protocol mechanics only. It is not a final upstream write-path design.",
+      "result": {
+        "kernel_head": "5886b1f82ea4e90a40d4494ac316cfbd9b0b2858",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-cmd49pio-5886b1f82ea4-20260610T155208Z",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T155409Z-a733-cmd49pio-5886b1f82ea4-ttyUSB0.uart.log",
+        "summary": "Passed. CMD49 cache-enable completed through the narrowly scoped PIO write path (`diag allow A733 CMD49 pio write`, `diag pio write opcode=49`, `diag finalize opcode=49`). The run then printed `mmcblk0: p1 p2 p3`, mounted EXT4 read-only on `mmcblk0p3`, and ran `/bin/sh` as init. No general write was enabled."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H009",
+      "priority": 1,
+      "status": "ready",
+      "title": "Single-descriptor IDMA CMD18 read proof",
+      "question": "Does A733 SDMMC0 IDMA fail even for one 4096-byte CMD18 descriptor, or only when the block layer emits large multi-descriptor reads?",
+      "test_cost": "medium; small host-driver patch and one boot",
+      "procedure": [
+        "Keep the H008 safety rails: CMD49-only PIO write, all other writes guarded, and block-layer limits capped to 8 blocks.",
+        "For this test only, force the 8-block CMD18 path back through IDMA instead of the proven PIO read path.",
+        "Log descriptor control, descriptor size, DLBA, CHDA, CBDA, RINTR, IDST, CBCR, BBCR, and whether DATA_OVER appears.",
+        "Boot Cubie3 once with the same PARTUUID read-only root proof.",
+        "If the first 8-block IDMA CMD18 stalls before EXT4, compare the single descriptor state against the vendor baseline dump.",
+        "If it mounts, the immediate failure class is large or multi-descriptor IDMA, and the next test should increase descriptor count one step at a time.",
+        "Restore Cubie3 to vendor kernel 5.15.147-21-a733, then update this queue and status docs."
+      ],
+      "pass_criteria": "An 8-block single-descriptor IDMA CMD18 completes and the read-only root proof still reaches init=/bin/sh.",
+      "fail_criteria": "The 8-block single-descriptor IDMA CMD18 stalls with IDST=0x4000 or no DATA_OVER before EXT4 can mount.",
+      "upstream_note": "This is a runtime narrowing diagnostic only. Do not present the PIO rails or request caps as an upstream fix."
     },
     {
       "id": "A733-SDMMC-H004",

@@ -53,6 +53,16 @@ End a runtime session only after these gates are closed:
 The queue copy on Strix must live at
 `/srv/projects/homelab/task-packets/kernel/a733-hypothesis-queue.json`.
 
+Do not leave a session with only local notes or an uncommitted queue change.
+Cold-start recovery must be: read item one in the queue, run its procedure,
+record the proof, commit the docs, push the remotes, and restore Cubie3.
+
+Public submission preparation uses the Armbian repo automation layer:
+topic branches feed candidate branches, candidate branches feed generated
+review branches, `scripts/kernel-validation-floor` is the validation floor, and
+`b4 prep` is the mailing-list series manager. Flat patch files are snapshots,
+not the final source of truth for mailout.
+
 Before a draft is used for kernel patch work, attach local token-offload
 context cards when the task involves large inputs:
 

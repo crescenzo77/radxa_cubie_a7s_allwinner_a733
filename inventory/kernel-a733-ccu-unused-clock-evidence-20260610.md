@@ -1911,6 +1911,45 @@ process`. No `diag block A733 write`, `opcode=25`, or `opcode=49` write
 appears in the captured window. Next work item: H008 should test only CMD49
 PIO write mechanics, keeping all other writes blocked.
 
+## Controlled CMD49 PIO Write Proof
+
+Commit `5886b1f82ea4` restores the normal SD cache-enable request and adds a
+narrow A733-only PIO write allowance for exactly CMD49, one 512-byte block:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-cmd49pio-5886b1f82ea4-20260610T155208Z
+Image sha256: 3a0d5c2515eef9fd22e6d6144a62bbac5e4d4583c98c692a46f529e1077d35cf
+DTB sha256:   8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf
+config sha256: dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202
+build log sha256: 8f96223b6ab95a25c51e3daa91db0328abf9fae1aa9bb8edd4e1cd521da0c5da
+
+tools/hardware-logs/cubie-uart/20260610T155409Z-a733-cmd49pio-5886b1f82ea4-ttyUSB0.uart.log
+sha256: 6464fdda0264747352dfcd3df1652b2d6e2ecf3d93d3f63bba2fe80f39abf2cd
+
+tools/kernel-patches/a733-diagnostics/5886b1f82ea4-cmd49-pio-write.patch
+sha256: 568ffd823ed51197637ee4bace108491522824955b162c31032e6067841e1662
+```
+
+Key runtime lines:
+
+```text
+sunxi-mmc 4020000.mmc: diag allow A733 CMD49 pio write arg=0x10020800 sg_len=1 task=kworker/1:0[23]
+sunxi-mmc 4020000.mmc: diag pio write opcode=49 words=128 w0=0x00000001 w1=0x00000000 offset=0 len=512
+sunxi-mmc 4020000.mmc: diag finalize opcode=49 ... wait_dma=0 data=1
+mmcblk0: mmc0:544c USD00 117 GiB
+ mmcblk0: p1 p2 p3
+EXT4-fs (mmcblk0p3): mounted filesystem ... ro without journal.
+Run /bin/sh as init process
+```
+
+Result: H008 passed. CMD49 write protocol mechanics work through the scoped PIO
+path, while the general write guard remains in place. No `diag block A733
+write` or `opcode=25` write appears in the proof window. The next responsible
+test is H009: force only the 8-block CMD18 read back through IDMA, with CMD49
+PIO and write guards retained, to learn whether even a single 4096-byte
+descriptor fails or whether the failure requires larger multi-descriptor
+requests.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible

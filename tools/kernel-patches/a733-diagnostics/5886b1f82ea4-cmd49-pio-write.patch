@@ -1,0 +1,69 @@
+From 5886b1f82ea4e90a40d4494ac316cfbd9b0b2858 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 11:52:00 -0400
+Subject: [PATCH] mmc: test A733 CMD49 PIO write
+
+---
+ drivers/mmc/core/sd.c        |  7 +------
+ drivers/mmc/host/sunxi-mmc.c | 13 +++++++++++++
+ 2 files changed, 14 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
+index be42f299cda0..ec41def411a8 100644
+--- a/drivers/mmc/core/sd.c
++++ b/drivers/mmc/core/sd.c
+@@ -1576,12 +1576,7 @@ static int mmc_sd_init_card(struct mmc_host *host, u32 ocr,
+ 	}
+ 
+ 	/* Enable internal SD cache if supported. */
+-	if ((card->ext_perf.feature_support & SD_EXT_PERF_CACHE) &&
+-	    host->parent && host->parent->of_node &&
+-	    of_device_is_compatible(host->parent->of_node,
+-				     "allwinner,sun60i-a733-mmc")) {
+-		pr_info("%s: diag skip A733 SD cache enable\n", mmc_hostname(host));
+-	} else if (card->ext_perf.feature_support & SD_EXT_PERF_CACHE) {
++	if (card->ext_perf.feature_support & SD_EXT_PERF_CACHE) {
+ 		err = sd_enable_cache(card);
+ 		if (err)
+ 			goto free_card;
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 98eba7c8b91b..79ea787cf833 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -1362,6 +1362,7 @@ static void sunxi_mmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 	u32 cmd_val = SDXC_START | (cmd->opcode & 0x3f);
+ 	bool wait_dma = host->wait_dma;
+ 	bool diag_pio;
++	bool diag_cmd49_pio_write;
+ 	int ret;
+ 
+ 	dev_info(mmc_dev(mmc),
+@@ -1370,13 +1371,25 @@ static void sunxi_mmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 		 mmc->ios.clock, host->ferror);
+ 
+ 	diag_pio = sunxi_mmc_diag_data_is_pio(cmd, data);
++	diag_cmd49_pio_write = data && diag_pio &&
++		(data->flags & MMC_DATA_WRITE) &&
++		cmd->opcode == SD_WRITE_EXTR_SINGLE &&
++		data->blocks == 1 && data->blksz == 512;
++
+ 	if (data)
+ 		dev_info(mmc_dev(mmc),
+ 			 "diag request-data opcode=%u flags=0x%x blksz=%u blocks=%u sg_len=%u stop=%u\n",
+ 			 cmd->opcode, data->flags, data->blksz, data->blocks,
+ 			 data->sg_len, cmd->data->stop ? 1 : 0);
+ 
++	if (diag_cmd49_pio_write)
++		dev_info(mmc_dev(mmc),
++			 "diag allow A733 CMD49 pio write arg=0x%08x sg_len=%u task=%s[%d]\n",
++			 cmd->arg, data->sg_len, current->comm,
++			 task_pid_nr(current));
++
+ 	if (data && (data->flags & MMC_DATA_WRITE) &&
++	    !diag_cmd49_pio_write &&
+ 	    of_device_is_compatible(host->dev->of_node,
+ 				     "allwinner,sun60i-a733-mmc")) {
+ 		dev_info(mmc_dev(mmc),
+-- 
+2.53.0
+
