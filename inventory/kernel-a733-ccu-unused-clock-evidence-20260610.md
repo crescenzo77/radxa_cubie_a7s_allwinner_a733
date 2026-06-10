@@ -200,6 +200,13 @@ All three resets clear (`ret=0`), but the 256-block CMD18 still remains in
 descriptor-read state with `CHDA=DLBA`, `CBDA=0x00000000`, and `IDST=0x4000`.
 Vendor pre-IDMA reset polling is also not enough.
 
+Commit `32dc6d1cc929` adds the BSP-style auto-CMD12 argument init write,
+`REG_A12A=0`, and logs `REG_SMCV`. The log confirms `a12a=0x00000000` and
+`smcv=0x02050530`, so the controller reports a v5p3+ version, but the first
+large CMD18 still remains in descriptor-read state with `CHDA=DLBA`,
+`CBDA=0x00000000`, and `IDST=0x4000`. Vendor `REG_A12A=0` init is also not
+enough.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -492,6 +499,10 @@ sha256: 79e9cfaf7055db8c9634b2897af7781bb7f28416959c45de68fe1ddd413ac585
 SDMMC0 IDMA vendor pre-IDMA reset polling diagnostic:
 tools/hardware-logs/cubie-uart/20260610T110118Z-a733-idma-vendorreset-11fe8727ee3d-ext4load-ttyUSB0.uart.log
 sha256: d4f3eebcf5f4139a727ee37557b01063b586d6815cbbb2b79af7c660532705c9
+
+SDMMC0 IDMA vendor auto-CMD12 init diagnostic:
+tools/hardware-logs/cubie-uart/20260610T111202Z-a733-idma-a12a-32dc6d1cc929-ext4load-ttyUSB0.uart.log
+sha256: ec782e473d5551f50c1dd1bc3ff17a9f8e8295633efe3fc6b3f94aa4cb6c5a36
 ```
 
 ## Source Findings
