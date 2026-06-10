@@ -232,6 +232,11 @@ immediately after host reset. It returns `ret=0` but still reads
 `dmac=0x200`, then the first large CMD18 exits DMA setup as `dmac=0x282` and
 stalls in descriptor-read state. BSP init DMAC reset is also not enough.
 
+Commit `90c4ba7546b1` skips the mainline `REG_FUNS=SDXC_CEATA_ON` write,
+matching the A733 BSP's commented-out init path. Runtime logs `funcs=0`, but
+the first large CMD18 still exits DMA setup as `dmac=0x282` and stalls in
+descriptor-read state. CEATA function-select omission is also not enough.
+
 Full Orange Pi BSP source was cloned on Strix at:
 `/srv/projects/kernel-work/tmp/linux-orangepi-full`, branch
 `orange-pi-6.6-sun60iw2`, commit
@@ -553,6 +558,10 @@ sha256: a91aac7c06b6dfde4e948f562e4052865a6f094e58ee37e0665c71a19d4e28c3
 SDMMC0 IDMA vendor init DMAC reset diagnostic:
 tools/hardware-logs/cubie-uart/20260610T120837Z-a733-idma-initdmac-2c2304b4d08b-ext4load-ttyUSB0.uart.log
 sha256: 20c12b170172867f72f2a02d75ad04ec5dc3f3870449680292b5babcf808a9bb
+
+SDMMC0 IDMA no-CEATA init diagnostic:
+tools/hardware-logs/cubie-uart/20260610T122010Z-a733-idma-noceata-90c4ba7546b1-ext4load-ttyUSB0.uart.log
+sha256: 6dea7ee80ab279fe62ea87567ea34a798d149ae432243e69755ca566068435b0
 ```
 
 ## Source Findings
