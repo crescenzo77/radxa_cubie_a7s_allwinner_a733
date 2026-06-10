@@ -1,0 +1,66 @@
+From d86d9defd93ee22ced4cf3e7910cad02752bd7f0 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 14:29:38 -0400
+Subject: [PATCH] mmc: test A733 MSI IOMMU fabric subset
+
+---
+ drivers/mmc/host/sunxi-mmc.c | 36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 956a73d6cd4f..08aeea7d0e93 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -581,6 +581,41 @@ static void sunxi_mmc_diag_dump_fabric(struct sunxi_mmc_host *host,
+ 		 sunxi_mmc_diag_ccu_read(host, 0xd0c));
+ }
+ 
++static void sunxi_mmc_diag_set_ccu_bits(struct sunxi_mmc_host *host,
++					u32 off, u32 mask)
++{
++	u32 before, after;
++
++	before = sunxi_mmc_diag_ccu_read(host, off);
++	writel(before | mask, host->diag_ccu_base + off);
++	after = sunxi_mmc_diag_ccu_read(host, off);
++
++	dev_info(mmc_dev(host->mmc),
++		 "diag fabric-subset off=0x%03x mask=0x%08x before=0x%08x after=0x%08x\n",
++		 off, mask, before, after);
++}
++
++static void sunxi_mmc_diag_enable_msi_iommu_subset(struct sunxi_mmc_host *host,
++						  struct mmc_data *data)
++{
++	if (!sunxi_mmc_diag_is_a733(host) || !host->diag_ccu_base)
++		return;
++
++	if (data->flags & MMC_DATA_WRITE)
++		return;
++	if (data->blksz != 512 || data->blocks != 8 || data->sg_len != 1)
++		return;
++
++	dev_info(mmc_dev(host->mmc),
++		 "diag enable A733 MSI/IOMMU fabric subset for CMD18 proof\n");
++	sunxi_mmc_diag_set_ccu_bits(host, 0x58c, BIT(0) | BIT(1));
++	sunxi_mmc_diag_set_ccu_bits(host, 0x594, BIT(0));
++	sunxi_mmc_diag_set_ccu_bits(host, 0x5a4, BIT(0));
++	sunxi_mmc_diag_set_ccu_bits(host, 0x5b4, BIT(0) | BIT(1));
++	sunxi_mmc_diag_set_ccu_bits(host, 0x5c0, BIT(16));
++	sunxi_mmc_diag_set_ccu_bits(host, 0x5e0, BIT(0) | BIT(1) | BIT(31));
++}
++
+ static void sunxi_mmc_init_idma_des(struct sunxi_mmc_host *host,
+ 				    struct mmc_data *data)
+ {
+@@ -674,6 +709,7 @@ static void sunxi_mmc_start_dma(struct sunxi_mmc_host *host,
+ 	u32 rval;
+ 	int ret;
+ 
++	sunxi_mmc_diag_enable_msi_iommu_subset(host, data);
+ 	sunxi_mmc_diag_dump_regs(host, "dma-entry");
+ 	sunxi_mmc_diag_dump_fabric(host, "dma-entry");
+ 	sunxi_mmc_init_idma_des(host, data);
+-- 
+2.53.0
+

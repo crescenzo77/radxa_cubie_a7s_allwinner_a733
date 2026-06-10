@@ -66,15 +66,13 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
   temporary boot command line is visible in proof/status output.
 - Root install remains gated on an interactive sudo password for
   `radxa@192.168.50.95`.
-- Current A733 SDMMC runtime triage is now tracked in
-  `task-packets/kernel/a733-hypothesis-queue.json`. As of H019, rootfs,
+- Current A733 SDMMC runtime triage is tracked in
+  `task-packets/kernel/a733-hypothesis-queue.json`. As of H021, rootfs,
   protocol flow, descriptor geometry, visible GCTRL/DMAC bits, IOMMU, 64-bit
-  DMA-mask intent, data-buffer placement, descriptor allocation class, and
-  SDMMC0 fabric-clock consumers are not the active blocker. As of H020, a
-  concrete vendor/mainline CCU fabric delta exists: vendor keeps a broader
-  MSI/IOMMU/fabric envelope active during working SD reads than mainline keeps
-  at the IDMAC descriptor-fetch stall. The next work order is H021: test only
-  the safe MSI-lite/IOMMU subset and avoid GMAC/display/VPU bits.
+  DMA-mask intent, data-buffer placement, descriptor allocation class,
+  SDMMC0 fabric-clock consumers, and the safe MSI-lite/IOMMU fabric subset are
+  not the standalone fix. The next work order is H022: trace the vendor SDMMC
+  IDMAC/fabric path from source and logs before any new behavior patch.
 
 ## Guardrails
 

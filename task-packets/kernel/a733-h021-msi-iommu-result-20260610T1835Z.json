@@ -1,0 +1,82 @@
+{
+  "id": "A733-SDMMC-H021",
+  "status": "completed_failed",
+  "title": "MSI/IOMMU fabric-envelope subset",
+  "updated_utc": "2026-06-10T18:35:52Z",
+  "kernel_head": "d86d9defd93e",
+  "kernel_subject": "mmc: test A733 MSI IOMMU fabric subset",
+  "branch": "codex/a733-h021-msi-iommu-fabric",
+  "artifact": "/srv/projects/kernel-work/outgoing/a733-h021-msi-iommu-d86d9defd93e-20260610T182949Z",
+  "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T183153Z-a733-h021-msi-iommu-d86d9defd93e-ext4load-ttyUSB0.uart.log",
+  "uart_log_sha256": "a7ee99006a12ac4bbb6cb855ff8fd72ea9c3d18e27b201d1c1729e395c3547d5",
+  "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/d86d9defd93e-h021-msi-iommu-fabric.patch",
+  "patch_sha256": "a3b05b0f7804bb87c8a392ab345e505b0cc268a9745e44711946d9e6ca5ad996",
+  "target_restore": {
+    "target": "cubie3",
+    "verified_kernel": "5.15.147-21-a733"
+  },
+  "tested_bits": [
+    {
+      "offset": "0x58c",
+      "mask": "0x00000003",
+      "before": "0x00010004",
+      "after": "0x00010007"
+    },
+    {
+      "offset": "0x594",
+      "mask": "0x00000001",
+      "before": "0x00030000",
+      "after": "0x00030001"
+    },
+    {
+      "offset": "0x5a4",
+      "mask": "0x00000001",
+      "before": "0x00030000",
+      "after": "0x00030001"
+    },
+    {
+      "offset": "0x5b4",
+      "mask": "0x00000003",
+      "before": "0x00010004",
+      "after": "0x00010007"
+    },
+    {
+      "offset": "0x5c0",
+      "mask": "0x00010000",
+      "before": "0x01000000",
+      "after": "0x01010000"
+    },
+    {
+      "offset": "0x5e0",
+      "mask": "0x80000003",
+      "before": "0x60000000",
+      "after": "0xe0000003"
+    }
+  ],
+  "observed_mainline_subset_state": {
+    "mbus": "0x81000000",
+    "iommu0": "0x00010007",
+    "msi0": "0x00030001",
+    "msi1": "0x00030001",
+    "msi2": "0x00030001",
+    "iommu1": "0x00010007",
+    "ahb": "0x01010000",
+    "mbus0": "0xe0000003",
+    "mbus1": "0x00000000",
+    "mmc0": "0x81000007",
+    "bus_mmc0": "0x00010001"
+  },
+  "descriptor_result": {
+    "before_cmdr_checksum": "0x0abf1f04",
+    "after_cpu_sync_checksum": "0x0abf1f04",
+    "descriptor_word0": "0x8000001c",
+    "descriptor_size": "0x00001000",
+    "dlba": "0x3f600000",
+    "chda": "0x3f600000",
+    "cbda": "0x00000000",
+    "idst": "0x00004000",
+    "cbcr": "0x00000400",
+    "bbcr": "0x00000000"
+  },
+  "summary": "H021 enabled only the missing vendor-observed MSI-lite/IOMMU fabric subset before the forced one-descriptor CMD18. The writes landed and persisted through the stall, but IDMAC still did not consume descriptor word 0: descriptor checksum/stamps were unchanged, OWN remained set, CHDA stayed at DLBA, CBDA stayed zero, and IDST stayed 0x4000. This closes the safe MSI/IOMMU subset as a standalone fix and argues against broadening to display/GMAC/VPU fabric bits without new source evidence."
+}

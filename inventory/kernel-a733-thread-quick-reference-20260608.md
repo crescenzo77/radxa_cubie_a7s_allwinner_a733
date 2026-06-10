@@ -917,6 +917,27 @@ IDMAC stall: `iommu0=0x00010004`, `msi0=0x00030000`, `msi2=0x00030000`,
 `iommu1=0x00010004`, `ahb=0x01000000`, `mbus0=0x60000000`,
 `mbus1=0x00000000`.
 
-Next queue item: H021. Enable only the missing MSI-lite/IOMMU fabric subset in
-a lab-only diagnostic before the forced CMD18 IDMA launch. Do not enable GMAC,
-display, VPU, GPU, or broad vendor fabric bits; do not change DTS.
+Historical follow-up was H021: enable only the missing MSI-lite/IOMMU fabric
+subset in a lab-only diagnostic before the forced CMD18 IDMA launch. That test
+is now completed; see H021/H022 below.
+
+## 2026-06-10 H021/H022 Queue Update
+
+H021 head: `d86d9defd93e` (`mmc: test A733 MSI IOMMU fabric subset`).
+Artifact:
+`/srv/projects/kernel-work/outgoing/a733-h021-msi-iommu-d86d9defd93e-20260610T182949Z`.
+UART:
+`tools/hardware-logs/cubie-uart/20260610T183153Z-a733-h021-msi-iommu-d86d9defd93e-ext4load-ttyUSB0.uart.log`,
+sha256 `a7ee99006a12ac4bbb6cb855ff8fd72ea9c3d18e27b201d1c1729e395c3547d5`.
+Patch:
+`tools/kernel-patches/a733-diagnostics/d86d9defd93e-h021-msi-iommu-fabric.patch`,
+sha256 `a3b05b0f7804bb87c8a392ab345e505b0cc268a9745e44711946d9e6ca5ad996`.
+
+Result: H021 failed usefully. The safe MSI/IOMMU subset writes landed and
+persisted, but the forced CMD18 still stalled with descriptor checksum
+`0x0abf1f04` unchanged, `OWN` set, `CHDA=DLBA=0x3f600000`, `CBDA=0`,
+`IDST=0x4000`, `CBCR=0x400`, and `BBCR=0`.
+
+Next queue item: H022. Trace the vendor SDMMC IDMAC/fabric path from source and
+logs before another behavior patch. Do not broaden from H021 into GMAC,
+display, VPU, GPU, CE, DMA, or unrelated fabric bits without source evidence.
