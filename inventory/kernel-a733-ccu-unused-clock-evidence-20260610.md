@@ -87,6 +87,16 @@ requested 4096 bytes reach the controller-side byte counter before progress
 stops. Next focus should be multi-block read continuation/FIFO-drain behavior,
 not auto-stop absence.
 
+Active CMD18 FIFO-drain diagnostics prove the multi-block PIO path can be
+advanced by servicing `RX_DATA_REQUEST`. A 6-drain run advances `CBCR` to the
+full `0x1000` while `BBCR` reaches only `0x0c00`. A 12-drain run reaches
+`RINTR=0x402c` and `MISTA=0x4000`, then finalizes CMD18. This is intentionally
+destructive and over-reads the FIFO, so it is not a fix, but it proves the
+controller/card can complete the CMD18 data phase when the FIFO is actively
+drained. The responsible next step is a non-destructive IRQ/threaded PIO drain
+that copies only the requested bytes into the sg buffer, plus continued IDMA
+root-cause work.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -201,6 +211,11 @@ CMD18 PIO with auto-stop restored
   -> CMDR changes to 0x3352
   -> still RINTR=0x24 with no DATA_OVER
   -> CBCR stops at 0x400 of 0x1000 bytes
+
+CMD18 destructive FIFO drain
+  -> 6 drain polls advance CBCR to 0x1000 and BBCR to 0x0c00
+  -> 12 drain polls reach RINTR=0x402c and MISTA=0x4000
+  -> proves active FIFO service can complete CMD18 data phase
 ```
 
 Key proof logs:
@@ -281,6 +296,14 @@ sha256: 51f2c38934804d92b19dc89e24a727eb390275b2bea152a8e38b3376f4949ba6
 SDMMC0 CMD18 PIO/autostop diagnostic:
 tools/hardware-logs/cubie-uart/20260610T082249Z-a733-cmd18-pio-autostop-603f4149f7ea-ext4load-ttyUSB0.uart.log
 sha256: 1e5c5aa1915d4917f471475111eff8af90eb35ac1c1aa602bcf4f7c03933dc73
+
+SDMMC0 CMD18 destructive FIFO-drain diagnostic:
+tools/hardware-logs/cubie-uart/20260610T083043Z-a733-cmd18-pio-drain-118de0368623-ext4load-ttyUSB0.uart.log
+sha256: 795db91885f52dafc4fed764f58c75da5f1d1bdfbeb8043805e8b139af3c01cf
+
+SDMMC0 CMD18 extended destructive FIFO-drain diagnostic:
+tools/hardware-logs/cubie-uart/20260610T083641Z-a733-cmd18-pio-drain12-d58afdb0c39e-ext4load-ttyUSB0.uart.log
+sha256: e27a37ab5428ce26db31c194d449f630367fe3e021653ea4bbe03a992cc0e562
 ```
 
 ## Source Findings
