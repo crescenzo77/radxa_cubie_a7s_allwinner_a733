@@ -1184,6 +1184,27 @@ mmcblk mmc0:544c: probe with driver mmcblk failed with error -22
 Conclusion: queue capping through the host limits is not producing a valid
 CMD17 root-I/O proof. Use a lower-level targeted CMD17 diagnostic if needed.
 
+Commits `e6b5f55138f3` and `f5cb9a5d4283` restore normal queue caps and test
+CMD18 without controller auto-stop. The final commit makes CMD18 wait for
+`DATA_OVER` instead of `AUTO_COMMAND_DONE`.
+
+```text
+/srv/projects/kernel-work/outgoing/a733-cmd18-noautostop-f5cb9a5d4283-20260610T075144Z
+Image sha256: 8b146bcd92238cc54eca4eea69ce670ef4e68e9bff4f2412499ecec784ec59b3
+DTB sha256:   ed3cc474fe72c25c3e0cb96a3fc9fa243c1c01631bf4e651031d3cba8500708b
+
+tools/hardware-logs/cubie-uart/20260610T075348Z-a733-cmd18-noautostop-f5cb9a5d4283-ext4load-ttyUSB0.uart.log
+sha256: 608346c1d5e9b1033b17a2cbb224d89c49465edfb053ffef58e79c1b27c5c45d
+
+diag cmd18 skip auto-stop; wait DATA_OVER
+diag data cmdr-readback=0x80002352 wait_dma=0 pio=1 opcode=18 blocks=8
+diag post-data poll5 rint=0x00000024 ... stas=0x02009509 cmdr=0x00002352
+```
+
+Result: removing controller auto-stop does not make CMD18 complete. The
+controller still reports raw `COMMAND_DONE | RX_DATA_REQUEST` with no
+`DATA_OVER`.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
