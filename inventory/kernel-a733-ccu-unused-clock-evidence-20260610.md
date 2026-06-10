@@ -214,6 +214,19 @@ same 256-block CMD18 still remains in descriptor-read state with `CHDA=DLBA`,
 `CBDA=0x00000000`, and `IDST=0x4000`. Vendor full-size descriptor semantics are
 also not enough.
 
+A vendor-kernel SDMMC0 runtime baseline was collected on Cubie3 with read-only
+`/dev/mem` sampling while `dd` read 512 MiB from `mmcblk0p3`. Working vendor
+reads show `DMAC=0x82` or `0`, `DLBA=0x3fc60800`, `IDST=0`, `THLD=0x02000001`,
+and progressing `CBCR`/`BBCR`.
+
+Commit `afbfd0b3f209` changes finalize cleanup to write
+`REG_DMAC=SDXC_IDMAC_SOFT_RESET`, matching the BSP, instead of `REG_DMAC=0`.
+The first large CMD18 still enters with `dmac=0x200`, reports
+`vendor reset dmactl clear ... val=0x00000200`, exits DMA setup as
+`dmac=0x282`, and remains in descriptor-read state with `CHDA=DLBA`,
+`CBDA=0x00000000`, and `IDST=0x4000`. BSP cleanup reset is also not enough; the
+sticky `0x200` readback remains an open clue.
+
 Full Orange Pi BSP source was cloned on Strix at:
 `/srv/projects/kernel-work/tmp/linux-orangepi-full`, branch
 `orange-pi-6.6-sun60iw2`, commit
@@ -523,6 +536,14 @@ sha256: ec782e473d5551f50c1dd1bc3ff17a9f8e8295633efe3fc6b3f94aa4cb6c5a36
 SDMMC0 IDMA vendor full descriptor-size diagnostic:
 tools/hardware-logs/cubie-uart/20260610T112446Z-a733-idma-sizefull-7022671b0f01-ext4load-ttyUSB0.uart.log
 sha256: 116e896fd9c7a3021bf277ec5ce7d143f047f9689202774b79114151f69a53d0
+
+Cubie3 vendor-kernel SDMMC0 register sample:
+tools/hardware-logs/cubie-uart/20260610T113431Z-cubie3-vendor-sdmmc0-reg-sample.log
+sha256: dbcdadce479ae9ecb43885bbcd7ba50659e13a00e4f85fefafa4cd3dbcb80685
+
+SDMMC0 IDMA vendor DMAC cleanup-reset diagnostic:
+tools/hardware-logs/cubie-uart/20260610T113953Z-a733-idma-dmacreset-afbfd0b3f209-ext4load-ttyUSB0.uart.log
+sha256: a91aac7c06b6dfde4e948f562e4052865a6f094e58ee37e0665c71a19d4e28c3
 ```
 
 ## Source Findings
