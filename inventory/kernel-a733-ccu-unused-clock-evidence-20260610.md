@@ -31,6 +31,17 @@ update-clock error. The board still waits for the PARTUUID root device because
 no `mmcblk0` line appears yet. This narrows the next blocker to MMC card
 enumeration after the clock-update timeout is removed.
 
+Latest diagnostic result: stacking the vendor SDMMC0 reset-cell test with
+lab-only critical storage fabric clocks (`ahb-store`, `mbus-store`, and
+`mbus-msi-lite0`) restores SDMMC0 register access and advances card
+enumeration through CMD0, CMD8, ACMD41, CMD2, CMD3, CMD9, CMD7, and CMD55. The
+current stop is ACMD51/SCR, the first data transfer. Data/DMA tracing shows the
+request is mapped, the internal DMA descriptor is prepared, and `DMAC`/`IDIE`
+are armed, but no later data/DMA completion is observed in the captured tail.
+The next blocker is therefore the SDMMC data/DMA path after basic command
+enumeration, still within lab-only CCU/reset/storage-fabric diagnostics and not
+board DTS feature expansion.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -95,6 +106,19 @@ skip root unprepare for iosc/osc19M/osc24M/osc26M
   -> no mmc update-clock timeout
   -> sunxi-mmc initializes
   -> still no mmcblk0/root
+
+add vendor SDMMC0 reset cell 35
+  -> SDMMC0 readback changes from all zero to 0x20000000
+  -> still no write stick/CMD0 completion
+
+keep ahb-store/mbus-store/mbus-msi-lite0 critical
+  -> SDMMC0 register access works
+  -> command enumeration reaches selected card
+  -> first data transfer ACMD51/SCR stalls
+
+trace data/DMA path
+  -> ACMD51 request mapped, IDMA descriptor prepared, DMA armed
+  -> no data/DMA completion in captured tail
 ```
 
 Key proof logs:
@@ -139,6 +163,18 @@ sha256: 007f2cabd5c85db2e0096a8deb89707e4f796a8b3b4cf846c45987ba7adb4971
 RTC/root oscillator unprepare skip:
 tools/hardware-logs/cubie-uart/20260610T022835Z-a733-osc-keep-5e6b35b07c67-extlinux2-ttyUSB0.uart.log
 sha256: eb3e495db4491922288494ff7f386c5106fa59b4ffc52350ff9a06a3f10cce59
+
+SDMMC0 reset-cell 35 diagnostic:
+tools/hardware-logs/cubie-uart/20260610T033330Z-a733-mmc-resetcell-0c658caf3956-ext4load-ttyUSB0.uart.log
+sha256: 9d2063d6bcd0a1b9d0cacd05fa5d61fa84190648c5c02d525e53fdf726792a24
+
+SDMMC0 storage-fabric critical diagnostic:
+tools/hardware-logs/cubie-uart/20260610T034137Z-a733-mmc-storecrit-d628a2e9120f-ext4load-ttyUSB0.uart.log
+sha256: 9fb5580652c37be69d8efdc9c9f71414c473ea9717d6e5cb8499fd656b2eb129
+
+SDMMC0 data/DMA trace diagnostic:
+tools/hardware-logs/cubie-uart/20260610T035245Z-a733-mmc-datadma-fdfcd44d0f78-ext4load-ttyUSB0.uart.log
+sha256: cc43ef68c7037bfc4d0eb5d696ed8237adc63bb0b4103d7dc7fc20e0ba01c41b
 ```
 
 ## Source Findings
@@ -213,6 +249,37 @@ clk-unused: diag-skip-a733-osc-unprepare name=osc19M
 sunxi-mmc 4020000.mmc: initialized, max. request size: 2048 KB, uses new timings mode
 Waiting for root device PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e...
 ```
+
+Vendor DTB comparison then exposed that SDMMC0 uses reset cell `0x23` while the
+local RFC header names `RST_BUS_MMC0` as `0x24`, with `0x23` assigned to NAND.
+Using reset cell 35 is only a lab diagnostic, but it changes the SDMMC0
+readback pattern and is now part of the evidence that the local reset/provider
+mapping needs RFC comparison.
+
+Commit `d628a2e9120f` keeps the storage fabric gates critical for diagnosis:
+
+```text
+clk: diag-a733-store-critical ahb-store
+clk: diag-a733-store-critical mbus-store
+clk: diag-a733-store-critical mbus-msi-lite0
+sunxi-mmc 4020000.mmc: diag finalize opcode=7 ...
+sunxi-mmc 4020000.mmc: diag request opcode=51 ... data=1
+```
+
+Commit `fdfcd44d0f78` traces that first data transfer:
+
+```text
+sunxi-mmc 4020000.mmc: diag request-data opcode=51 flags=0x200 blksz=8 blocks=1 sg_len=1 stop=0
+sunxi-mmc 4020000.mmc: diag map_dma flags=0x200 blksz=8 blocks=1 sg_len=1 dma_len=1 dir=2
+sunxi-mmc 4020000.mmc: diag idma_des sg_len=1 ... des0=0x8000003c size=0x00000008 ...
+sunxi-mmc 4020000.mmc: diag regs dma-exit ... dmac=0x00000282 ... idie=0x00000002 blksz=0x00000008 bcntr=0x00000008
+```
+
+No completion follows in the captured tail. The safest next runtime proof is a
+single-purpose PIO/no-IDMA diagnostic for ACMD51/SCR, or an equally narrow
+check of the SDMMC IDMA address/descriptor programming against A733 vendor
+register behavior. Do not broaden into Ethernet, VPU, display, or public DTS
+changes.
 
 ## Questions For CCU/RFC Review
 
