@@ -499,6 +499,30 @@ Next best diagnostic: do not keep broadening PIO blindly. Either add a narrow
 manual-stop/finalize path for CMD18 PIO, or pivot to the real issue: why IDMA
 never progresses for A733 despite PIO proving register/card/data-path function.
 
+Commit `990459ec2015` tests a narrow A733 IDMA setup change: clear
+`SDXC_ACCESS_BY_AHB` before DMA and issue `SDXC_IDMAC_REFETCH_DES`, while
+restoring CMD18 to the IDMA path. It still reaches `mmcblk0`, then stalls on
+the first block-layer CMD18 read after descriptor setup:
+
+```text
+mmcblk0: mmc0:544c USD00 117 GiB
+diag request-data opcode=18 flags=0x200 blksz=512 blocks=8 sg_len=1 stop=1
+diag idma_des ... des0=0x8000003c size=0x00001000 buf=0x3f600000
+diag regs dma-exit ... gctrl=0x20000030 dmac=0x00000282 idie=0x00000002
+```
+
+SDMMC0 IDMA refetch/access-mode diagnostic:
+tools/hardware-logs/cubie-uart/20260610T051643Z-a733-idma-refetch-990459ec2015-ext4load-ttyUSB0.uart.log
+sha256: e2879f393284e44c4a38b8181633213c5be5f7d05eac705f73a50fcee11d4089
+
+Recovery proof:
+tools/hardware-logs/cubie-uart/20260610T052447Z-cubie3-recovery-probe-ttyUSB0.uart.log
+sha256: b921ddf35db7951fd4c1a796c67f10e9e0bfef94461b2b37a2e6a0eabd049da6
+
+Conclusion: the refetch/access-mode hypothesis is falsified for the current
+diagnostic stack. The blocker remains A733 SDMMC IDMA progress on normal
+multi-block I/O, not card enumeration, rootfs arguments, or board DTS scope.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
