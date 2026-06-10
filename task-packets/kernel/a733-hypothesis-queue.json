@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T17:08:13Z",
+  "updated_utc": "2026-06-10T17:22:26Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue. H013 clears the PIO rail's leftover ACCESS_BY_AHB before IDMA and still stalls. H014 identifies vendor GCTRL bit 0x00000800 as SDXC_DTIME_UNIT, a read-data-timeout scaling bit, not a plausible descriptor-fetch control. H015 closes the cheap hidden DMA/fabric source audit: 64-bit DMA mask, coherent descriptor sync, descriptor page count, MSI-lite mapping, and explicit storage-fabric consumers are already covered or falsified. The next responsible step is one hardware evidence sample for IDMAC descriptor-fetch reachability, not another visible-register guess.",
   "operator_model": {
@@ -394,13 +394,24 @@
         "Add an A733-only instrumentation patch that writes distinctive nonfunctional stamp values into unused descriptor words and adjacent descriptors before IDMA start, without changing descriptor control semantics.",
         "Immediately before REG_CMDR, log DLBA, sg_dma, descriptor physical address, descriptor words 0-3 for descriptor 0, descriptor 1 stamp words, and a short checksum of the coherent descriptor ring.",
         "After the existing post-data poll window, call dma_sync_single_for_cpu for the coherent descriptor ring only for diagnostics, then log the same descriptor words/checksum plus CHDA, CBDA, IDST, CBCR, and BBCR.",
-        "Boot Cubie3 once from Strix over UART and capture the log. Do not submit or rewrite upstream patches.",
+        "Boot Cubie3 once from Strix over UART and capture the log. The automation must verify the real U-Boot => prompt or send Ctrl-C out of the extlinux menu before issuing setenv/ext4load/booti. Do not submit or rewrite upstream patches.",
         "Interpretation rule: if descriptor word 0 OWN clears, CHDA advances, CBDA becomes the buffer address, or stamped adjacent descriptors are reflected in controller progress, IDMAC fetched descriptor memory and the blocker is later in data movement. If descriptor words remain unchanged, OWN stays set, CHDA remains DLBA, and CBDA remains zero, treat descriptor-fetch reachability or address translation as the next blocker.",
         "Restore Cubie3 to vendor kernel 5.15.147-21-a733, update this queue, update the private KB, update docs/status.md, commit, sync to Strix, and push or record blocked remotes."
       ],
       "pass_criteria": "The run proves IDMAC fetched descriptor memory or advanced beyond DLBA, narrowing the next test to data buffer movement.",
       "fail_criteria": "The run repeats unchanged descriptor memory, OWN set, CHDA=DLBA, and CBDA=0 after a CPU-side coherent sync, narrowing the next test to descriptor-fetch reachability/address translation.",
-      "upstream_note": "Instrumentation only. Do not convert descriptor stamps, lab rails, or printk tracing into upstream code."
+      "upstream_note": "Instrumentation only. Do not convert descriptor stamps, lab rails, or printk tracing into upstream code.",
+      "attempts": [
+        {
+          "attempted_utc": "2026-06-10T17:17:58Z",
+          "status": "invalid_no_kernel_boot",
+          "kernel_head": "529f1682dd48",
+          "artifact": "/srv/projects/kernel-work/outgoing/a733-h016-descstamp-529f1682dd48-20260610T171700Z",
+          "uart_log": "/srv/projects/cubie-uart/logs/20260610T171758Z-a733-h016-descstamp-529f1682dd48-ext4load-ttyUSB0.uart.log",
+          "uart_log_sha256": "3ee0a44fc2ef47139b426332539c6338d3515365052881377e595ed06d06df07",
+          "summary": "UART automation missed the real U-Boot prompt and sent direct U-Boot commands into the extlinux menu. No H016 kernel boot occurred. Cubie3 was power-cycled and restored to vendor 5.15.147-21-a733. Rerun H016 with prompt-controlled automation that reaches => or escapes extlinux with Ctrl-C before ext4load/booti."
+        }
+      ]
     },
     {
       "id": "A733-SDMMC-H004",
