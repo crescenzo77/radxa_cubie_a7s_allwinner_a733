@@ -1119,6 +1119,31 @@ diag idma_des_after des0=0x8000002c size=0x00001000 buf=0xfa800000 next=0x000000
 Conclusion: leaving AHB/FIFO access selected during IDMA does not make the
 IDMAC consume the descriptor.
 
+Commit `fe9a99200ce0` widens the diagnostic PIO path to CMD18 reads up to
+8 x 512 bytes and makes the PIO copy SG-aware. This tests whether the first
+block-layer request can progress without IDMA.
+
+```text
+/srv/projects/kernel-work/outgoing/a733-cmd18-pio-fe9a99200ce0-20260610T072756Z
+Image sha256: 5dbb9b75ce7c2539a78563db561daffc7e6f3c3420162d94d35d37323ffc4e26
+DTB sha256:   ed3cc474fe72c25c3e0cb96a3fc9fa243c1c01631bf4e651031d3cba8500708b
+
+tools/hardware-logs/cubie-uart/20260610T072957Z-a733-cmd18-pio-fe9a99200ce0-ext4load-ttyUSB0.uart.log
+sha256: 791d2227c62711b500c391f0a4254d007622cff531153c82a897f9ee13c97595
+
+diag request-data opcode=18 flags=0x200 blksz=512 blocks=8 sg_len=1 stop=1
+diag pio mode gctrl=0xa0000010
+diag data cmdr-readback=0x80003352 wait_dma=0 pio=1 opcode=18 blocks=8
+diag post-data poll5 rint=0x00000024 ... dmac=0x00000200 ... stas=0x02009509
+```
+
+Result: CMD18 does not complete even when IDMA is bypassed. It reaches raw
+`COMMAND_DONE | RX_DATA_REQUEST` (`RINTR=0x24`) with no `DATA_OVER`, no masked
+interrupt, and no PIO copy/finalize for CMD18. This narrows the next question
+from "IDMAC cannot read descriptors" to "multi-block read data phase does not
+complete"; IDMA descriptor-read state is likely a consequence of the same
+multi-block data-phase condition rather than the only failure.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
