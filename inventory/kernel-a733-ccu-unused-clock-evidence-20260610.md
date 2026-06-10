@@ -581,6 +581,23 @@ sha256: 9971758304337c2b87505cda37094b981c0af0003e5ce7a8ca621d1dce9b14d0
 
 Conclusion: the single-descriptor chain-bit hypothesis is falsified.
 
+Commit `d22345ac322c` clears `IDST` after IDMAC soft reset and before enabling
+IDMAC. The new trace proves the status register starts clear, then returns to
+descriptor-read state only after CMD18 launch:
+
+```text
+diag regs dma-after-idst-clear ... idst=0x00000000 dmac=0x00000200
+diag regs idma-post-cmdr ... rint=0x00000024 ... idst=0x00004000
+diag post-data poll11 ... idst=0x00004000 ... dmac=0x00000282
+```
+
+SDMMC0 IDMA status-clear diagnostic:
+tools/hardware-logs/cubie-uart/20260610T060825Z-a733-idma-idstclear-d22345ac322c-ext4load-ttyUSB0.uart.log
+sha256: be91743caccc0e4c6e29171320533e69627525681d3c6fe5a51bff61c6655d37
+
+Conclusion: stale IDST state is not the cause; IDMAC actively enters and sticks
+in descriptor-read state after CMD18 starts.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
