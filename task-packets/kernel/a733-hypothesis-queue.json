@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T14:32:25Z",
+  "updated_utc": "2026-06-10T14:49:35Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 reaches card enumeration and partition table, but normal block I/O stalls on large CMD18. The latest IDMA runs stop at COMMAND_DONE|RX_DATA_REQUEST with IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0.",
   "operator_model": {
@@ -28,18 +28,18 @@
     "Keep clk_ignore_unused and PIO bypasses as lab diagnostics only."
   ],
   "latest_completed_test": {
-    "id": "A733-SDMMC-H002A",
+    "id": "A733-SDMMC-H002B",
     "status": "falsified",
-    "title": "Preserve vendor/bootloader SAMP_DL and skip mainline calibration",
-    "kernel_head": "fdbc8be0126c95933b7425e4f4792b4690ff4ec8",
-    "artifact": "/srv/projects/kernel-work/outgoing/a733-idma-preservesamp-fdbc8be0126c-20260610T142506Z",
-    "image_sha256": "67ae016b0ca97b28353c63c4c0f7835e662b7b77f6c6eba83569b5f8e96ed068",
-    "dtb_sha256": "251d969288132d5f9ad682e791cd3c59acc904b3a6580b3965f71132c0092c9f",
+    "title": "Use vendor SDMMC0 MSI Lite1 clock gate instead of local MSI Lite0 mapping",
+    "kernel_head": "aaeaea620f92e05b43800a81d0f38dbef3ce399b",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-idma-msilite1-aaeaea620f92-20260610T144301Z",
+    "image_sha256": "948d61127927a22b86678ac85a2af49c57ad5917bf3ad73fd28ebb364c12cb65",
+    "dtb_sha256": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
     "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
-    "build_log_sha256": "ff76a0d196d66c233140aaef36fff35780311c04b36f677c4e41c5134fd76e35",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T142708Z-a733-idma-preservesamp-fdbc8be0126c-ext4load-ttyUSB0.uart.log",
-    "uart_log_sha256": "f774674ecf9f54d5f1f41618341218172fc44e80540229267152602d2e9732c7",
-    "result": "The boot preserved SAMP_DL=0x00002000 and disabled mainline calibration while keeping DRV_DL=0x00010000. The first large CMD18 still stops with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0. Vendor SAMP_DL/calibration is therefore not the direct fix for the IDMA descriptor-read stall."
+    "build_log_sha256": "64d798366d0b5b7ec8c6519096453813dca66ec08abb9621dff78d6822591151",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T144517Z-a733-idma-msilite1-aaeaea620f92-ext4load-ttyUSB0.uart.log",
+    "uart_log_sha256": "27d015f0ce23d7f820f226a1fa1bedd95f613abea6fd917c492492ae7dba02ce",
+    "result": "Vendor A733 DTS wires SDMMC0's mmc_msi_lite clock to CLK_MSI_LITE1, which maps to the local RFC gate CLK_BUS_MSI_LITE1 at 0x59c bit 0. Changing only the local SDMMC0 mmc_msi_lite consumer from CLK_MBUS_MSI_LITE0 to CLK_BUS_MSI_LITE1 does not fix the first large CMD18. The boot still stops with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0. This falsifies the vendor-MSI-Lite1-clock-mapping hypothesis for the current IDMA stall."
   },
   "hypotheses": [
     {
@@ -73,7 +73,8 @@
         "Orange Pi A733 v5p3x source has a direct REG_SAMP_DL programming block, but it is commented out.",
         "The active vendor phase path writes REG_SD_NTSR and saves/restores REG_SAMP_DL; the v5p3x init path does not assign the sunxi_mmc_set_samp_dl hook.",
         "The preserved-SAMP_DL diagnostic proves SAMP_DL=0x00002000 survives into the failing mainline CMD18, but IDMAC still sticks in descriptor-read state.",
-        "Explicit SDMMC0 consumers for mmc_store, mmc_mbus, and mmc_msi_lite were already tested and did not fix IDMA."
+        "Explicit SDMMC0 consumers for mmc_store, mmc_mbus, and mmc_msi_lite were already tested and did not fix IDMA.",
+        "Vendor A733 DTS uses CLK_MSI_LITE1 for SDMMC0; the local diagnostic changed only the SDMMC0 mmc_msi_lite consumer to CLK_BUS_MSI_LITE1 and still hit the same CMD18 IDMA descriptor-read stall."
       ],
       "procedure": [
         "Continue the vendor/source search outside the already-falsified direct SAMP_DL, sample-calibration, and explicit mmc_store/mmc_mbus/mmc_msi_lite paths.",
@@ -120,7 +121,8 @@
         "CEATA omission and DMAC reset variants still stall.",
         "Vendor-like DRV_DL does not fix CMD18.",
         "Explicit descriptor dma_sync_single_for_device does not fix CMD18.",
-        "Preserving vendor/bootloader SAMP_DL=0x00002000 and skipping mainline sample calibration does not fix CMD18."
+        "Preserving vendor/bootloader SAMP_DL=0x00002000 and skipping mainline sample calibration does not fix CMD18.",
+        "Using the vendor SDMMC0 MSI Lite1 clock gate via CLK_BUS_MSI_LITE1 does not fix CMD18."
       ]
     }
   ]

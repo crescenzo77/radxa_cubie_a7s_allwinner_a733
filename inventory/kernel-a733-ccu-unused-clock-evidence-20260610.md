@@ -1736,6 +1736,33 @@ calibration, and explicit `mmc_store`/`mmc_mbus`/`mmc_msi_lite` consumer
 clocks. Continue looking for an A733-specific hidden wrapper, MBUS/cache
 attribute, or IDMAC enable-sequence difference before another boot variant.
 
+## SDMMC0 MSI Lite1 Clock Mapping Diagnostic
+
+Vendor source review found one concrete DTS mismatch worth testing: the vendor
+A733 SDMMC0 node names `mmc_msi_lite` but supplies `CLK_MSI_LITE1`, while the
+local diagnostic DTS was using the MSI Lite0-side gate. In the local RFC-based
+CCU binding, the matching vendor gate is `CLK_BUS_MSI_LITE1` at offset `0x59c`,
+bit `0`. Commit `aaeaea620f92` changes only SDMMC0's `mmc_msi_lite` consumer
+to that gate.
+
+```text
+/srv/projects/kernel-work/outgoing/a733-idma-msilite1-aaeaea620f92-20260610T144301Z
+Image sha256: 948d61127927a22b86678ac85a2af49c57ad5917bf3ad73fd28ebb364c12cb65
+DTB sha256:   8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf
+config sha256: dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202
+build log sha256: 64d798366d0b5b7ec8c6519096453813dca66ec08abb9621dff78d6822591151
+
+tools/hardware-logs/cubie-uart/20260610T144517Z-a733-idma-msilite1-aaeaea620f92-ext4load-ttyUSB0.uart.log
+sha256: 27d015f0ce23d7f820f226a1fa1bedd95f613abea6fd917c492492ae7dba02ce
+```
+
+Result: falsified. The first large CMD18 still reaches the same stuck state:
+`RINTR=0x24`, `IDST=0x4000`, `CHDA=DLBA`, `CBDA=0`, `CBCR=0x400`, and
+`BBCR=0`. The vendor MSI Lite1 clock mapping is not the direct fix for the
+A733 SDMMC0 IDMA descriptor-read stall. Continue H002, but narrow away from the
+direct `SAMP_DL`, calibration, explicit fabric-clock-consumer, and vendor
+SDMMC0 MSI Lite1 clock-mapping paths.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
