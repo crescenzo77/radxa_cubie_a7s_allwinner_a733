@@ -147,6 +147,15 @@ but the live 256-block CMD18 trace still prints the first descriptor as
 the size field remains zero and whether A733's IDMA descriptor layout or size
 bit packing differs from the mainline sunxi-mmc assumption.
 
+The descriptor-chain dump narrows that question: commit `15036671f536` logs the
+full chain and shows the failing 256-block CMD18 request has two 64 KiB sg
+entries. Both descriptors encode `size=0` because each sg entry equals the
+configured 64 KiB maximum segment size. Descriptor 0 is
+`des0=0x80000018 size=0x00000000 buf=0xfb800000 next=0x43000010`; descriptor 1
+is `des0=0x80000034 size=0x00000000 buf=0xfb810000 next=0x00000000`. IDMAC
+still reaches `IDST=0x4000` with no data movement. Size-zero is expected
+max-size encoding, not proof of a missing descriptor-size write.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -407,6 +416,10 @@ sha256: bea0a91c1a0a9d1154402ec27ca0efb86ac51b4533ff5fe5928a7bf2e9e7a4ea
 SDMMC0 IDMA descriptor size-width diagnostic:
 tools/hardware-logs/cubie-uart/20260610T093021Z-a733-idma-size16-21f9e4851dfb-ext4load-ttyUSB0.uart.log
 sha256: ad1b16623988b6836bdbb9589ce74a50f3286bab24856c9fe09e8eb3e76de1b8
+
+SDMMC0 IDMA descriptor-chain dump:
+tools/hardware-logs/cubie-uart/20260610T093919Z-a733-idma-descdump-15036671f536-ext4load-ttyUSB0.uart.log
+sha256: 910645c3799329d39d6e50025a20fd46773d9d6eba386eb79c551c4dce9390b5
 ```
 
 ## Source Findings
