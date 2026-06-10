@@ -807,6 +807,9 @@ descriptor over stale CPU-visible descriptor contents.
 H016 diagnostic head: `529f1682dd48` (`mmc: trace A733 descriptor fetch
 stamps`). Artifact:
 `/srv/projects/kernel-work/outgoing/a733-h016-descstamp-529f1682dd48-20260610T171700Z`.
+Patch archive:
+`tools/kernel-patches/a733-diagnostics/529f1682dd48-desc-fetch-stamps.patch`,
+sha256 `17338559d8bbedc997f902db8f2fde621e2fb295eca79e0df868acc5e02ab63a`.
 UART:
 `tools/hardware-logs/cubie-uart/20260610T172618Z-a733-h016-descstamp-529f1682dd48-ext4load-rerun-ttyUSB0.uart.log`,
 sha256 `aaf75f763903fc3db8c6a0cb5b537ed3686126694fa66bc39da07aea3d67636a`.

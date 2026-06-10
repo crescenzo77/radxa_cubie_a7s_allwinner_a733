@@ -1,0 +1,128 @@
+From 529f1682dd485e086f765537dea4dceb1bb5c371 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 13:14:27 -0400
+Subject: [PATCH] mmc: trace A733 descriptor fetch stamps
+
+---
+ drivers/mmc/host/sunxi-mmc.c | 76 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 74 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 0964d6e5a9a9..fd64bdc4f06b 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -465,6 +465,71 @@ static int sunxi_mmc_init_host(struct sunxi_mmc_host *host)
+ 	return 0;
+ }
+ 
++static bool sunxi_mmc_diag_is_a733(struct sunxi_mmc_host *host)
++{
++	return of_device_is_compatible(host->dev->of_node,
++				       "allwinner,sun60i-a733-mmc");
++}
++
++static u32 sunxi_mmc_diag_desc_csum(struct sunxi_mmc_host *host)
++{
++	__le32 *raw = host->sg_cpu;
++	size_t words = min_t(size_t, host->sg_dma_size / sizeof(*raw), 16);
++	u32 csum = 0xa7335d1a;
++	size_t i;
++
++	for (i = 0; i < words; i++)
++		csum = (csum << 5) ^ (csum >> 2) ^ le32_to_cpu(raw[i]);
++
++	return csum;
++}
++
++static void sunxi_mmc_diag_stamp_desc_ring(struct sunxi_mmc_host *host,
++					   struct mmc_data *data)
++{
++	struct sunxi_idma_des *pdes = host->sg_cpu;
++	size_t max_desc = host->sg_dma_size / sizeof(*pdes);
++	size_t stamp = data->sg_len;
++
++	if (!sunxi_mmc_diag_is_a733(host) || stamp >= max_desc)
++		return;
++
++	/* Keep OWN clear so this stamp cannot become an active descriptor. */
++	pdes[stamp].config = cpu_to_le32(0x00000000);
++	pdes[stamp].buf_size = cpu_to_le32(0xa733016e);
++	pdes[stamp].buf_addr_ptr1 = cpu_to_le32(0xdead0001);
++	pdes[stamp].buf_addr_ptr2 = cpu_to_le32(0xbeef0002);
++
++	if (stamp + 1 >= max_desc)
++		return;
++
++	pdes[stamp + 1].config = cpu_to_le32(0x00000000);
++	pdes[stamp + 1].buf_size = cpu_to_le32(0xa733026e);
++	pdes[stamp + 1].buf_addr_ptr1 = cpu_to_le32(0xdead0003);
++	pdes[stamp + 1].buf_addr_ptr2 = cpu_to_le32(0xbeef0004);
++}
++
++static void sunxi_mmc_diag_dump_desc_ring(struct sunxi_mmc_host *host,
++					  const char *tag)
++{
++	struct sunxi_idma_des *pdes = host->sg_cpu;
++
++	if (!sunxi_mmc_diag_is_a733(host))
++		return;
++
++	dev_info(mmc_dev(host->mmc),
++		 "diag desc-ring %s dlba=0x%08x sg_dma=0x%pad csum=0x%08x d0={%08x,%08x,%08x,%08x} d1={%08x,%08x,%08x,%08x} chda=0x%08x cbda=0x%08x idst=0x%08x cbcr=0x%08x bbcr=0x%08x\n",
++		 tag, mmc_readl(host, REG_DLBA), &host->sg_dma,
++		 sunxi_mmc_diag_desc_csum(host),
++		 le32_to_cpu(pdes[0].config), le32_to_cpu(pdes[0].buf_size),
++		 le32_to_cpu(pdes[0].buf_addr_ptr1), le32_to_cpu(pdes[0].buf_addr_ptr2),
++		 le32_to_cpu(pdes[1].config), le32_to_cpu(pdes[1].buf_size),
++		 le32_to_cpu(pdes[1].buf_addr_ptr1), le32_to_cpu(pdes[1].buf_addr_ptr2),
++		 mmc_readl(host, REG_CHDA), mmc_readl(host, REG_CBDA),
++		 mmc_readl(host, REG_IDST), mmc_readl(host, REG_CBCR),
++		 mmc_readl(host, REG_BBCR));
++}
++
+ static void sunxi_mmc_init_idma_des(struct sunxi_mmc_host *host,
+ 				    struct mmc_data *data)
+ {
+@@ -491,6 +556,8 @@ static void sunxi_mmc_init_idma_des(struct sunxi_mmc_host *host,
+ 	pdes[i - 1].config |= cpu_to_le32(SDXC_IDMAC_DES0_LD);
+ 	pdes[i - 1].config &= cpu_to_le32(~SDXC_IDMAC_DES0_DIC);
+ 
++	sunxi_mmc_diag_stamp_desc_ring(host, data);
++
+ 	dev_info(mmc_dev(host->mmc),
+ 		 "diag idma_des sg_len=%u sg_dma=0x%pad shift=%u vendor_v5p3x_geom=1 size_bits=%u ftrgl=0x200700f8 no_er=1 size_full=1\n",
+ 		 data->sg_len, &host->sg_dma, host->cfg->idma_des_shift,
+@@ -1556,10 +1623,12 @@ static void sunxi_mmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 		dev_info(mmc_dev(mmc), "diag cmd0 carg-readback=0x%08x\n",
+ 			 mmc_readl(host, REG_CARG));
+ 	wmb();
+-	if (data && !diag_pio)
++	if (data && !diag_pio) {
+ 		dev_info(mmc_dev(mmc),
+ 			 "diag command launch wmb before cmdr opcode=%u blocks=%u\n",
+ 			 cmd->opcode, data->blocks);
++		sunxi_mmc_diag_dump_desc_ring(host, "before-cmdr");
++	}
+ 	mmc_writel(host, REG_CMDR, cmd_val);
+ 
+ 	if (cmd->opcode == MMC_GO_IDLE_STATE) {
+@@ -1621,12 +1690,15 @@ static void sunxi_mmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 		if (!diag_pio) {
+ 			struct sunxi_idma_des *pdes = host->sg_cpu;
+ 
++			dma_sync_single_for_cpu(mmc_dev(host->mmc), host->sg_dma,
++						host->sg_dma_size, DMA_BIDIRECTIONAL);
+ 			dev_info(mmc_dev(mmc),
+-				 "diag idma_des_after des0=0x%08x size=0x%08x buf=0x%08x next=0x%08x\n",
++				 "diag idma_des_after_cpu_sync des0=0x%08x size=0x%08x buf=0x%08x next=0x%08x\n",
+ 				 le32_to_cpu(pdes[0].config),
+ 				 le32_to_cpu(pdes[0].buf_size),
+ 				 le32_to_cpu(pdes[0].buf_addr_ptr1),
+ 				 le32_to_cpu(pdes[0].buf_addr_ptr2));
++			sunxi_mmc_diag_dump_desc_ring(host, "after-cpu-sync");
+ 		}
+ 	}
+ 
+-- 
+2.53.0
+
