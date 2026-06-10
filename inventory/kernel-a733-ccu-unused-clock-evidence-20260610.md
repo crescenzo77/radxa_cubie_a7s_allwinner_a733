@@ -49,6 +49,12 @@ zero because ADTC reads do not mask `COMMAND_DONE`, and IDMA status remains
 finishing after command acceptance, rather than a missed receive-DMA interrupt
 alone.
 
+An unshifted IDMA address diagnostic falsified the simplest descriptor-address
+hypothesis. Changing the D1-compatible `idma_des_shift` from 2 to 0 changed
+`DLBA` from `0x10c00000` to `0x43000000` and descriptor buffer pointers from
+shifted to unshifted DMA addresses, but ACMD51 still stopped with
+`RINTR=0x00000004`, `MISTA=0x00000000`, `IDST=0x00004000`, and no `DATA_OVER`.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -130,6 +136,10 @@ trace data/DMA path
 poll ACMD51 after command launch
   -> RINTR=0x00000004, MISTA=0x00000000, IDST=0x00004000
   -> no DATA_OVER while CMDR start bit is clear
+
+force idma_des_shift=0
+  -> DLBA and descriptor buffer addresses become unshifted
+  -> ACMD51 failure is unchanged
 ```
 
 Key proof logs:
@@ -190,6 +200,10 @@ sha256: cc43ef68c7037bfc4d0eb5d696ed8237adc63bb0b4103d7dc7fc20e0ba01c41b
 SDMMC0 ACMD51 post-launch poll diagnostic:
 tools/hardware-logs/cubie-uart/20260610T040154Z-a733-acmd51-poll-ae9a05e1c4fc-ext4load-ttyUSB0.uart.log
 sha256: 3666cffc6a3b45d0e0395fb244cca1e92e4048aaedad34eed71ab5fc6c213563
+
+SDMMC0 unshifted IDMA address diagnostic:
+tools/hardware-logs/cubie-uart/20260610T040952Z-a733-idma-shift0-5086bbd04ed8-ext4load-ttyUSB0.uart.log
+sha256: 2ca936fcda1b5cbf3c5b2deb8db876c91123bff2586ebba504bf91ff4a45bc80
 ```
 
 ## Source Findings
@@ -305,6 +319,19 @@ diag acmd51 cmdr-readback=0x80002373 wait_dma=1
 diag regs acmd51-post-cmdr ... cmdr=0x00002373 imask=0x0000bbca mista=0x00000000 rint=0x00000004 idst=0x00004000 ...
 diag post-acmd51 poll19 rint=0x00000004 mista=0x00000000 idst=0x00004000 idie=0x00000002 dmac=0x00000282 stas=0x00059902 cmdr=0x00002373 imask=0x0000bbca
 ```
+
+Commit `5086bbd04ed8` changes `idma_des_shift` to 0 for diagnosis:
+
+```text
+diag regs dma-entry ... dlba=0x43000000 ...
+diag idma_des ... sg_dma=0x0000000043000000 ... buf=0xfd800000 ...
+diag post-acmd51 poll19 rint=0x00000004 mista=0x00000000 idst=0x00004000 ...
+```
+
+This means the next useful diagnostic should not be another address-shift
+variant. Prefer checking A733 command/data prerequisites such as
+`SDXC_WAIT_PRE_OVER`, GCTRL access mode, FIFO threshold, or a controlled PIO
+read path for only the 8-byte SCR request.
 
 ## Questions For CCU/RFC Review
 
