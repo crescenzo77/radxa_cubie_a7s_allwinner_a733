@@ -1205,6 +1205,26 @@ Result: removing controller auto-stop does not make CMD18 complete. The
 controller still reports raw `COMMAND_DONE | RX_DATA_REQUEST` with no
 `DATA_OVER`.
 
+Commit `8d0aca0438dc` tries to cap `mmc->f_max` to 25 MHz before
+`mmc_of_parse()`, but the proof shows this is not an effective clock-cap test:
+the runtime still reports `clock=50000000` and `f_max=200000000`.
+
+```text
+/srv/projects/kernel-work/outgoing/a733-cmd18-25mhz-8d0aca0438dc-20260610T075926Z
+Image sha256: 57f4717f6f30c6a24025f1e50e50ad467f0df5177d97667cbef339880baf5fc5
+DTB sha256:   ed3cc474fe72c25c3e0cb96a3fc9fa243c1c01631bf4e651031d3cba8500708b
+
+tools/hardware-logs/cubie-uart/20260610T080137Z-a733-cmd18-25mhz-8d0aca0438dc-ext4load-ttyUSB0.uart.log
+sha256: 2cdb365a825969628eba29e030c1e10701a1b7972d970c4ebb4a76ad8aed8b25
+
+diag add_host ... f_max=200000000
+diag request-data opcode=18 ... clock=50000000
+```
+
+Conclusion: this does not prove or disprove a 25 MHz timing hypothesis. A valid
+clock-cap test must apply after `mmc_of_parse()` or constrain the DT
+`max-frequency`.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
