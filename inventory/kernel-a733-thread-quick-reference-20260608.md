@@ -870,3 +870,27 @@ use a normal streaming-mapped descriptor ring with explicit
 existing H016/H018 descriptor-stamp proof. If that still leaves the descriptor
 unchanged, move below descriptor memory class toward SDMMC0 master/fabric
 reachability.
+
+## 2026-06-10 H019/H020 Queue Update
+
+H019 head: `d903e1dcbb7d` (`mmc: test A733 streaming descriptor ring`).
+Artifact:
+`/srv/projects/kernel-work/outgoing/a733-h019-descstream-d903e1dcbb7d-20260610T180518Z`.
+UART:
+`tools/hardware-logs/cubie-uart/20260610T180716Z-a733-h019-descstream-d903e1dcbb7d-ext4load-ttyUSB0.uart.log`,
+sha256 `30392cd9d2976019a258464e2b6aaa66f0c0275b5b5d67e2c071a19af4cd82cd`.
+Patch:
+`tools/kernel-patches/a733-diagnostics/d903e1dcbb7d-h019-descstream.patch`,
+sha256 `24ab73e365c382dad6505de6a9dc9c78c7d56a75512c12c65235109511be7316`.
+
+Result: H019 failed usefully. The descriptor ring moved out of coherent CMA to
+streaming-mapped normal memory at `sg_dma=0xfa800000` / `DLBA=0x3ea00000`;
+the data buffer landed at `sg0 dma=0xfa802000`. The forced CMD18 still stalled
+with unchanged descriptor checksum/stamps, `OWN` set, `CHDA=DLBA`, `CBDA=0`,
+`IDST=0x4000`, `CBCR=0x400`, and `BBCR=0`.
+
+Next queue item: H020. Do a source-backed vendor/mainline non-SDMMC fabric
+snapshot before another behavior patch. Inventory only the state needed for
+SDMMC0 descriptor-fetch reachability: CCU/PRCM gates and resets, MBUS/store/
+MSI-lite fabric state, any vendor-named storage/firewall/security registers,
+and the existing SDMMC0 schema. Queue H021 only if one concrete delta remains.

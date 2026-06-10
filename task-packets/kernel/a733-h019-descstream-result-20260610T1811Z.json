@@ -1,0 +1,38 @@
+{
+  "id": "A733-SDMMC-H019",
+  "status": "completed_failed_as_expected",
+  "completed_utc": "2026-06-10T18:11:39Z",
+  "title": "Streaming-mapped descriptor ring outside coherent CMA",
+  "kernel_head": "d903e1dcbb7deee20c1fa68a8f8eda91768911f8",
+  "kernel_subject": "mmc: test A733 streaming descriptor ring",
+  "branch": "codex/a733-h019-descstream",
+  "artifact": "/srv/projects/kernel-work/outgoing/a733-h019-descstream-d903e1dcbb7d-20260610T180518Z",
+  "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T180716Z-a733-h019-descstream-d903e1dcbb7d-ext4load-ttyUSB0.uart.log",
+  "uart_log_sha256": "30392cd9d2976019a258464e2b6aaa66f0c0275b5b5d67e2c071a19af4cd82cd",
+  "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/d903e1dcbb7d-h019-descstream.patch",
+  "patch_sha256": "24ab73e365c382dad6505de6a9dc9c78c7d56a75512c12c65235109511be7316",
+  "artifact_sha256": {
+    "Image": "76057b8486650be95a53ab5ba423ed3a0a75dbef440b6594ca5b38f8733c265b",
+    "sun60i-a733-cubie-a7s.dtb": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
+    "config": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
+    "manifest.txt": "d92b1f1aecf47785b76b7a277762ad8c948c31a1ff849fe731d8a41fd4b729d4"
+  },
+  "test_setup": {
+    "host": "strix",
+    "target": "cubie3",
+    "uart": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1:1.0-port0",
+    "boot_method": "prompt-controlled U-Boot ext4load/booti",
+    "bootargs": "console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel drm_debug=1 root=PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e rootfstype=ext4 rootwait ro rootflags=noload init=/bin/sh",
+    "restore_verified": "5.15.147-21-a733"
+  },
+  "observations": [
+    "A733 descriptor ring used normal zeroed memory mapped with dma_map_single(DMA_BIDIRECTIONAL), not dma_alloc_coherent.",
+    "Descriptor streaming allocation logged sg_dma=0xfa800000, pages=2, size=8192.",
+    "The data buffer also landed below 4 GiB at sg0 dma=0xfa802000.",
+    "Card init still reached SDXC detection and mmcblk0 creation before the forced CMD18 IDMA read.",
+    "Before command launch: DLBA=0x3ea00000, descriptor d0={8000001c,00001000,3ea00800,3ea00004}, stamp d1={00000000,a733016e,dead0001,beef0002}, checksum=0x01bb7325.",
+    "After post-data poll and dma_sync_single_for_cpu: descriptor words and checksum were unchanged, OWN stayed set, CHDA=DLBA=0x3ea00000, CBDA=0, IDST=0x4000, CBCR=0x400, BBCR=0."
+  ],
+  "conclusion": "Changing the descriptor ring from coherent CMA allocation to streaming-mapped normal memory did not let A733 SDMMC0 IDMAC consume descriptor word 0. H019 closes coherent/CMA descriptor allocation class as the immediate cause. The current blocker is below descriptor memory class: SDMMC0 IDMAC master/fabric reachability, address translation, security/firewall, or an unobserved non-SDMMC control path.",
+  "next": "A733-SDMMC-H020"
+}

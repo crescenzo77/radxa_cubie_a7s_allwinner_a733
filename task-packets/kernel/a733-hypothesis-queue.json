@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T17:59:05Z",
+  "updated_utc": "2026-06-10T18:11:39Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue. H013 clears the PIO rail's leftover ACCESS_BY_AHB before IDMA and still stalls. H014 identifies vendor GCTRL bit 0x00000800 as SDXC_DTIME_UNIT, a read-data-timeout scaling bit. H015 closes the cheap hidden DMA/fabric source audit. H016 proves the coherent descriptor ring is unchanged after the stall. H017 found no remaining source-backed IOMMU, descriptor geometry, DMA-mask, or SDMMC0 fabric-clock delta that justifies another visible-control build. H018 removed the forced A733 64-bit DMA-mask path: the data buffer moved below 4 GiB and the stall remained unchanged, but the coherent descriptor ring stayed at 0xfe100000. The current blocker is descriptor-fetch reachability or descriptor allocation/access path for SDMMC0 IDMAC, not rootfs, card protocol, descriptor geometry, data-buffer >4G placement, visible GCTRL/DMAC bits, or board DTS scope.",
+  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue. H013 clears the PIO rail's leftover ACCESS_BY_AHB before IDMA and still stalls. H014 identifies vendor GCTRL bit 0x00000800 as SDXC_DTIME_UNIT, a read-data-timeout scaling bit. H015 closes the cheap hidden DMA/fabric source audit. H016 proves the coherent descriptor ring is unchanged after the stall. H017 found no remaining source-backed IOMMU, descriptor geometry, DMA-mask, or SDMMC0 fabric-clock delta that justifies another visible-control build. H018 removed the forced A733 64-bit DMA-mask path: the data buffer moved below 4 GiB and the stall remained unchanged, but the coherent descriptor ring stayed at 0xfe100000. H019 moved the descriptor ring to streaming-mapped normal memory at 0xfa800000 and the data buffer to 0xfa802000; the stall remained unchanged. The current blocker is below descriptor memory class: SDMMC0 IDMAC master/fabric reachability, address translation, security/firewall, or an unobserved non-SDMMC control path, not rootfs, card protocol, descriptor geometry, data-buffer >4G placement, descriptor allocation class, visible GCTRL/DMAC bits, or board DTS scope.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -36,17 +36,17 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H018",
+    "id": "A733-SDMMC-H019",
     "status": "completed_failed_as_expected",
-    "title": "Descriptor-stamp replay without forced 64-bit DMA mask",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h018-nodmamask-result-20260610T1759Z.json",
-    "kernel_head": "7adf8f1abf95",
-    "artifact": "/srv/projects/kernel-work/outgoing/a733-h018-nodmamask-7adf8f1abf95-20260610T174729Z",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T174951Z-a733-h018-nodmamask-7adf8f1abf95-ext4load-ttyUSB0.uart.log",
-    "uart_log_sha256": "5891308b45a9370cbe7ce044d891bcd9a75fbd89d75635d08fba4157db7e59ef",
-    "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/7adf8f1abf95-h018-nodmamask.patch",
-    "patch_sha256": "ff4d79cf76475a81b1f58682432c4bbc9575fe793ed485178ea921c6097fd693",
-    "result": "Removing the forced A733 64-bit dma_set_mask_and_coherent diagnostic path did not fix descriptor fetch. The data buffer moved below 4 GiB, but the coherent descriptor allocation stayed at sg_dma=0xfe100000/DLBA=0x3f840000. Descriptor checksum and stamps remained unchanged after cpu sync, OWN stayed set, CHDA stayed at DLBA, CBDA stayed zero, and IDST stayed 0x4000. Next test must directly change descriptor allocation/access class."
+    "title": "Streaming-mapped descriptor ring outside coherent CMA",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h019-descstream-result-20260610T1811Z.json",
+    "kernel_head": "d903e1dcbb7d",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-h019-descstream-d903e1dcbb7d-20260610T180518Z",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T180716Z-a733-h019-descstream-d903e1dcbb7d-ext4load-ttyUSB0.uart.log",
+    "uart_log_sha256": "30392cd9d2976019a258464e2b6aaa66f0c0275b5b5d67e2c071a19af4cd82cd",
+    "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/d903e1dcbb7d-h019-descstream.patch",
+    "patch_sha256": "24ab73e365c382dad6505de6a9dc9c78c7d56a75512c12c65235109511be7316",
+    "result": "Moving the descriptor ring from coherent CMA allocation to streaming-mapped normal memory did not fix descriptor fetch. The descriptor ring moved to sg_dma=0xfa800000/DLBA=0x3ea00000 and the data buffer moved to sg0 dma=0xfa802000. Descriptor checksum and stamps remained unchanged after cpu sync, OWN stayed set, CHDA stayed at DLBA, CBDA stayed zero, and IDST stayed 0x4000. H019 closes descriptor allocation class as the immediate cause."
   },
   "hypotheses": [
     {
@@ -495,7 +495,7 @@
     {
       "id": "A733-SDMMC-H019",
       "priority": 1,
-      "status": "ready",
+      "status": "completed_failed_as_expected",
       "title": "Streaming-mapped descriptor ring outside coherent CMA",
       "question": "Can A733 IDMAC fetch descriptors from a normal streaming-mapped descriptor ring instead of the coherent allocation at 0xfe100000?",
       "test_cost": "medium; one descriptor-allocation diagnostic patch and one Cubie3 boot",
@@ -510,7 +510,37 @@
       ],
       "pass_criteria": "IDMAC advances, clears OWN, updates CHDA/CBDA, or otherwise consumes descriptor memory from the streaming-mapped ring.",
       "fail_criteria": "Streaming-mapped descriptor memory remains unchanged after the stall, with OWN set, CHDA=DLBA, CBDA=0, and IDST=0x4000.",
-      "upstream_note": "Instrumentation only. Do not submit a streaming-descriptor rewrite; use it only to decide whether the coherent descriptor allocation path is involved."
+      "upstream_note": "Instrumentation only. Do not submit a streaming-descriptor rewrite; use it only to decide whether the coherent descriptor allocation path is involved.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h019-descstream-result-20260610T1811Z.json",
+        "kernel_head": "d903e1dcbb7d",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-h019-descstream-d903e1dcbb7d-20260610T180518Z",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T180716Z-a733-h019-descstream-d903e1dcbb7d-ext4load-ttyUSB0.uart.log",
+        "uart_log_sha256": "30392cd9d2976019a258464e2b6aaa66f0c0275b5b5d67e2c071a19af4cd82cd",
+        "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/d903e1dcbb7d-h019-descstream.patch",
+        "patch_sha256": "24ab73e365c382dad6505de6a9dc9c78c7d56a75512c12c65235109511be7316",
+        "summary": "Completed and failed as expected. The descriptor ring moved out of coherent CMA into streaming-mapped normal memory at sg_dma=0xfa800000/DLBA=0x3ea00000, and the data buffer landed at sg0 dma=0xfa802000. The forced CMD18 still stalled with descriptor checksum/stamps unchanged after dma_sync_single_for_cpu, OWN set, CHDA=DLBA, CBDA=0, IDST=0x4000, CBCR=0x400, and BBCR=0. H019 closes descriptor allocation class as the immediate cause."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H020",
+      "priority": 1,
+      "status": "ready",
+      "title": "Vendor/mainline non-SDMMC fabric snapshot",
+      "question": "Which non-SDMMC register or security/fabric state differs when vendor SDMMC0 IDMAC can fetch descriptors but mainline cannot fetch descriptor word 0?",
+      "test_cost": "low first; source-guided register inventory and vendor/mainline snapshot before any behavior patch",
+      "procedure": [
+        "Do not guess-test another SDMMC-visible control bit.",
+        "Build a source-backed register inventory for only SDMMC0 descriptor-fetch reachability: CCU/PRCM gates and resets for SDMMC0, MBUS/store/MSI-lite fabric clocks, any A733 storage/firewall/security registers named by vendor source, and the SDMMC0 register window already in the fixed schema.",
+        "On vendor kernel, collect a live Cubie3 snapshot before and after one small SD read, preferably `dd if=/dev/mmcblk0 of=/dev/null bs=4K count=1 iflag=direct`, using devmem or the existing vendor dump tool from Strix over SSH.",
+        "On the latest mainline diagnostic, collect the same register set at dma-entry, idma-post-cmdr, and post-stall, reusing UART printk if a build is necessary only for observability.",
+        "Fill a fixed comparison schema with address, register name, vendor value, mainline value, delta, source reference, and interpretation.",
+        "Only if one concrete non-SDMMC delta remains, queue exactly one minimal H021 behavior patch for that delta.",
+        "Restore Cubie3 to vendor kernel 5.15.147-21-a733, update this queue, update the private KB, update docs/status.md, commit, sync to Strix, and push or record blocked remotes."
+      ],
+      "pass_criteria": "A concrete, source-backed non-SDMMC fabric/security/reset/clock delta is found and narrowed enough for one H021 patch.",
+      "fail_criteria": "No source-backed non-SDMMC delta is found; the next step must move to external evidence such as vendor driver tracing, bus/firewall documentation, or maintainer/RFC coordination rather than another local behavior guess.",
+      "upstream_note": "Private lab evidence only. Do not add undocumented fabric magic, vendor U-Boot policy, or out-of-scope peripherals to the upstream DTS slice."
     },
     {
       "id": "A733-SDMMC-H004",

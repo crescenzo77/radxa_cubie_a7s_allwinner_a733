@@ -1,0 +1,115 @@
+From d903e1dcbb7deee20c1fa68a8f8eda91768911f8 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 14:05:07 -0400
+Subject: [PATCH] mmc: test A733 streaming descriptor ring
+
+---
+ drivers/mmc/host/sunxi-mmc.c | 64 +++++++++++++++++++++++++++++-------
+ 1 file changed, 52 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index b1b0fac87aab..af33747ce9b9 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -307,6 +307,7 @@ struct sunxi_mmc_host {
+ 	void		*sg_cpu;
+ 	size_t		sg_dma_size;
+ 	bool		wait_dma;
++	bool		diag_desc_streaming;
+ 	bool		diag_write_trace_done;
+ 
+ 	struct mmc_request *mrq;
+@@ -471,6 +472,23 @@ static bool sunxi_mmc_diag_is_a733(struct sunxi_mmc_host *host)
+ 				       "allwinner,sun60i-a733-mmc");
+ }
+ 
++static void sunxi_mmc_free_desc(struct device *dev, struct sunxi_mmc_host *host)
++{
++	if (!host->sg_cpu)
++		return;
++
++	if (host->diag_desc_streaming) {
++		dma_unmap_single(dev, host->sg_dma, host->sg_dma_size,
++				 DMA_BIDIRECTIONAL);
++		kfree(host->sg_cpu);
++	} else {
++		dma_free_coherent(dev, host->sg_dma_size,
++				  host->sg_cpu, host->sg_dma);
++	}
++
++	host->sg_cpu = NULL;
++}
++
+ static u32 sunxi_mmc_diag_desc_csum(struct sunxi_mmc_host *host)
+ {
+ 	__le32 *raw = host->sg_cpu;
+@@ -2054,14 +2072,38 @@ static int sunxi_mmc_probe(struct platform_device *pdev)
+ 	if (host->cfg->diag_desc_pages)
+ 		host->sg_dma_size *= host->cfg->diag_desc_pages;
+ 
+-	host->sg_cpu = dma_alloc_coherent(&pdev->dev, host->sg_dma_size,
+-					  &host->sg_dma, GFP_KERNEL);
+-	if (!host->sg_cpu)
+-		return dev_err_probe(&pdev->dev, -ENOMEM,
+-				     "Failed to allocate DMA descriptor mem\n");
+-	dev_info(&pdev->dev, "diag descriptor coherent allocation sg_dma=0x%pad pages=%zu size=%zu low_mask=%d\n",
+-		 &host->sg_dma, host->sg_dma_size / PAGE_SIZE,
+-		 host->sg_dma_size, host->cfg->diag_idma_low_desc_mask);
++	host->diag_desc_streaming = sunxi_mmc_diag_is_a733(host);
++	if (host->diag_desc_streaming) {
++		host->sg_cpu = kzalloc(host->sg_dma_size, GFP_KERNEL);
++		if (!host->sg_cpu)
++			return dev_err_probe(&pdev->dev, -ENOMEM,
++					     "Failed to allocate DMA descriptor mem\n");
++
++		host->sg_dma = dma_map_single(&pdev->dev, host->sg_cpu,
++					      host->sg_dma_size,
++					      DMA_BIDIRECTIONAL);
++		if (dma_mapping_error(&pdev->dev, host->sg_dma)) {
++			kfree(host->sg_cpu);
++			host->sg_cpu = NULL;
++			return dev_err_probe(&pdev->dev, -ENOMEM,
++					     "Failed to map DMA descriptor mem\n");
++		}
++
++		dev_info(&pdev->dev,
++			 "diag descriptor streaming allocation sg_cpu=%p sg_dma=0x%pad pages=%zu size=%zu\n",
++			 host->sg_cpu, &host->sg_dma,
++			 host->sg_dma_size / PAGE_SIZE, host->sg_dma_size);
++	} else {
++		host->sg_cpu = dma_alloc_coherent(&pdev->dev, host->sg_dma_size,
++						  &host->sg_dma, GFP_KERNEL);
++		if (!host->sg_cpu)
++			return dev_err_probe(&pdev->dev, -ENOMEM,
++					     "Failed to allocate DMA descriptor mem\n");
++		dev_info(&pdev->dev,
++			 "diag descriptor coherent allocation sg_dma=0x%pad pages=%zu size=%zu low_mask=%d\n",
++			 &host->sg_dma, host->sg_dma_size / PAGE_SIZE,
++			 host->sg_dma_size, host->cfg->diag_idma_low_desc_mask);
++	}
+ 
+ 	if (host->cfg->ccu_has_timings_switch) {
+ 		/*
+@@ -2172,8 +2214,7 @@ static int sunxi_mmc_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ error_free_dma:
+-	dma_free_coherent(&pdev->dev, host->sg_dma_size,
+-			  host->sg_cpu, host->sg_dma);
++	sunxi_mmc_free_desc(&pdev->dev, host);
+ 	return ret;
+ }
+ 
+@@ -2188,8 +2229,7 @@ static void sunxi_mmc_remove(struct platform_device *pdev)
+ 		disable_irq(host->irq);
+ 		sunxi_mmc_disable(host);
+ 	}
+-	dma_free_coherent(&pdev->dev, host->sg_dma_size,
+-			  host->sg_cpu, host->sg_dma);
++	sunxi_mmc_free_desc(&pdev->dev, host);
+ }
+ 
+ static int sunxi_mmc_runtime_resume(struct device *dev)
+-- 
+2.53.0
+

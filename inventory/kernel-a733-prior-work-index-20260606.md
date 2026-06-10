@@ -67,11 +67,12 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
 - Root install remains gated on an interactive sudo password for
   `radxa@192.168.50.95`.
 - Current A733 SDMMC runtime triage is now tracked in
-  `task-packets/kernel/a733-hypothesis-queue.json`. As of H017, rootfs,
+  `task-packets/kernel/a733-hypothesis-queue.json`. As of H019, rootfs,
   protocol flow, descriptor geometry, visible GCTRL/DMAC bits, IOMMU, 64-bit
-  DMA-mask intent, and SDMMC0 fabric-clock consumers are not the active
-  blocker. The next work order is H018: replay the H016 descriptor-stamp proof
-  without the forced A733 64-bit DMA-mask diagnostic path.
+  DMA-mask intent, data-buffer placement, descriptor allocation class, and
+  SDMMC0 fabric-clock consumers are not the active blocker. The next work order
+  is H020: collect a source-backed vendor/mainline non-SDMMC fabric snapshot
+  before any behavior patch.
 
 ## Guardrails
 
