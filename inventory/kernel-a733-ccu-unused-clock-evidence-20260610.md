@@ -394,6 +394,51 @@ unused-domain cleanup, then compare the SDMMC0 bus gate/reset and any pmdomain
 assignment against Junhui Liu's A733 CCU/PRCM and pmdomain RFCs. Keep this as
 runtime evidence only; do not change the upstream DTS slice yet.
 
+## MMC Init/Runtime-PM Trace
+
+Strix diagnostic commit `b9e4692d4d5c` traces SDMMC0 enable, reset,
+`sunxi_mmc_init_host()`, runtime-PM setup, and runtime suspend/resume.
+
+Artifact:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-mmc-initpm-b9e4692d4d5c-20260610T032233Z
+Image sha256: a1aa199612c46fe3e5f9e8e6308df5e88bc38705052cbc66d92cdeeb40374242
+DTB sha256:   6edbb3790de674f7011c8accd0e02d94ea5bcafa11dc127238c8a54da71c622a
+```
+
+Valid direct U-Boot capture:
+
+```text
+tools/hardware-logs/cubie-uart/20260610T032435Z-a733-mmc-initpm-b9e4692d4d5c-ext4load-ttyUSB0.uart.log
+sha256: ca55c6f70ef7750e0ac86fcc4637b6dd1f8f31a5534611681453f47f9e6b60ea
+```
+
+Key lines:
+
+```text
+sunxi-mmc 4020000.mmc: diag enable ahb on
+sunxi-mmc 4020000.mmc: diag enable mmc on
+sunxi-mmc 4020000.mmc: diag enable output on
+sunxi-mmc 4020000.mmc: diag enable sample on
+sunxi-mmc 4020000.mmc: diag reset_host done gctrl=0x00000000 clkcr=0x00000000 rint=0x00000000
+sunxi-mmc 4020000.mmc: diag regs enable-exit gctrl=0x00000000 clkcr=0x00000000 width=0x00000000 cmdr=0x00000000 carg=0x00000000 imask=0x00000000 mista=0x00000000 rint=0x00000000 stas=0x00000000 ntsr=0x00000000 ftrgl=0x00000000 timeout=0x00000000
+sunxi-mmc 4020000.mmc: diag regs init-host-post-basic-writes gctrl=0x00000000 clkcr=0x00000000 width=0x00000000 cmdr=0x00000000 carg=0x00000000 imask=0x00000000 mista=0x00000000 rint=0x00000000 stas=0x00000000 ntsr=0x00000000 ftrgl=0x00000000 timeout=0x00000000
+sunxi-mmc 4020000.mmc: diag pm_runtime enabled active=1 suspended=0
+```
+
+No runtime suspend/resume occurs before CMD0. The all-zero SDMMC0 register
+window is already present immediately after the driver enables AHB/MMC/output/
+sample clocks and resets the controller, and writes in `sunxi_mmc_init_host()`
+do not read back. This rules out runtime autosuspend as the cause and points
+back to SDMMC0 reset, bus gate, pmdomain, or register base/compatible
+assumptions in the A733 prerequisite stack.
+
+Next responsible diagnostic: compare the current SDMMC0 DTSI clock/reset cells
+and provider IDs against Junhui Liu's A733 CCU/PRCM and pmdomain RFCs and the
+vendor DTB; if those match, trace the CCU reset/gate writes for `bus-mmc0` and
+`mmc0` during `sunxi_mmc_enable()`.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible

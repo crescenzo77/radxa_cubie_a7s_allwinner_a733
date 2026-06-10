@@ -368,6 +368,13 @@ lab-only CCU cleanup skips. Log:
 `tools/hardware-logs/cubie-uart/20260610T031554Z-a733-mmc-cmdlaunch-cf7b2b08344e-ext4load-ttyUSB0.uart.log`
 SHA256:
 `77fa1d38f8338243878d9d776dcaa3c844d49b6dc346b768562b042f839e4133`.
+Follow-up commit `b9e4692d4d5c` traced enable/init/runtime-PM. The SDMMC0
+window is already all zero immediately after AHB/MMC/output/sample clocks are
+enabled and controller reset completes; `sunxi_mmc_init_host()` writes do not
+read back. Runtime PM is active and not suspended before CMD0. Log:
+`tools/hardware-logs/cubie-uart/20260610T032435Z-a733-mmc-initpm-b9e4692d4d5c-ext4load-ttyUSB0.uart.log`
+SHA256:
+`ca55c6f70ef7750e0ac86fcc4637b6dd1f8f31a5534611681453f47f9e6b60ea`.
 
 Focused evidence note:
 `inventory/kernel-a733-ccu-unused-clock-evidence-20260610.md`.
