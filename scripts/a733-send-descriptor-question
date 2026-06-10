@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+draft="${repo_root}/task-packets/kernel/a733-h030-public-email-draft-20260610T2021Z.txt"
+expected_sha="3d3aeca3ee6292c08699e817822c9d9c042190656118739ca88cdef6b1f0636a"
+default_from="Enzo Adriano <enzo.adriano.code@gmail.com>"
+mode="dry-run"
+from="${default_from}"
+
+usage() {
+  cat <<USAGE
+Usage: scripts/a733-send-descriptor-question [--dry-run|--send] [--from 'Name <addr>']
+
+Default mode is --dry-run. Sending requires all of:
+  --send
+  A733_SEND_APPROVED=yes
+  --from matching the approved public identity
+
+Draft:
+  ${draft}
+USAGE
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --dry-run)
+      mode="dry-run"
+      shift
+      ;;
+    --send)
+      mode="send"
+      shift
+      ;;
+    --from)
+      from="${2:?missing --from value}"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "unknown argument: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+actual_sha="$(shasum -a 256 "${draft}" | awk '{print $1}')"
+if [ "${actual_sha}" != "${expected_sha}" ]; then
+  echo "refusing: draft SHA mismatch" >&2
+  echo "expected=${expected_sha}" >&2
+  echo "actual=${actual_sha}" >&2
+  exit 3
+fi
+
+if [ "${mode}" = "dry-run" ]; then
+  exec git send-email --dry-run --confirm=never --from="${from}" "${draft}"
+fi
+
+if [ "${A733_SEND_APPROVED:-}" != "yes" ]; then
+  echo "refusing to send: set A733_SEND_APPROVED=yes after explicit approval" >&2
+  exit 4
+fi
+
+if [ "${from}" != "${default_from}" ]; then
+  echo "refusing to send: --from must match approved identity" >&2
+  echo "approved=${default_from}" >&2
+  echo "given=${from}" >&2
+  exit 5
+fi
+
+exec git send-email --confirm=always --from="${from}" "${draft}"

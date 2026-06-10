@@ -187,3 +187,7 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
   Candidate From `Enzo Adriano <enzo.adriano.code@gmail.com>` is present in the
   public patch exports and passed Mac `git send-email --dry-run`. It still
   requires explicit approval before sending.
+- H032 added guarded helper `scripts/a733-send-descriptor-question` and
+  dry-run result
+  `task-packets/kernel/a733-h032-guarded-send-helper-20260610T2033Z.json`.
+  It defaults to dry-run and requires explicit env/argument gates before send.

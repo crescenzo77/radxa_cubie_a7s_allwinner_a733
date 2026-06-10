@@ -1,0 +1,22 @@
+{
+  "id": "A733-SDMMC-H032",
+  "created_utc": "2026-06-10T20:33:50Z",
+  "status": "guarded_helper_ready_not_sent",
+  "helper": "/Users/enzo/projects/homelab/scripts/a733-send-descriptor-question",
+  "sent": false,
+  "safety": [
+    "Default mode is dry-run.",
+    "Draft SHA256 must match 3d3aeca3ee6292c08699e817822c9d9c042190656118739ca88cdef6b1f0636a.",
+    "Sending requires --send.",
+    "Sending requires A733_SEND_APPROVED=yes.",
+    "Sending requires --from exactly Enzo Adriano <enzo.adriano.code@gmail.com>."
+  ],
+  "dry_run": {
+    "command": "/Users/enzo/projects/homelab/scripts/a733-send-descriptor-question --dry-run",
+    "status": "passed",
+    "from": "Enzo Adriano <enzo.adriano.code@gmail.com>",
+    "sendmail": "/usr/sbin/sendmail -i"
+  },
+  "approved_send_command_after_user_approval": "A733_SEND_APPROVED=yes /Users/enzo/projects/homelab/scripts/a733-send-descriptor-question --send --from 'Enzo Adriano <enzo.adriano.code@gmail.com>'",
+  "next_required_user_decision": "Approve send, hold, or alternate route. No external email has been sent."
+}

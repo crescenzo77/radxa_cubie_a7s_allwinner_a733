@@ -1153,3 +1153,10 @@ H032 identity preflight:
 Candidate From `Enzo Adriano <enzo.adriano.code@gmail.com>` is present in
 existing public patch exports and passed Mac `git send-email --dry-run`. Still
 do not send without explicit approval.
+
+Guarded helper:
+`scripts/a733-send-descriptor-question`.
+It defaults to dry-run and refuses to send unless `--send`,
+`A733_SEND_APPROVED=yes`, the expected draft SHA256, and the approved From
+identity all match. Dry-run result:
+`task-packets/kernel/a733-h032-guarded-send-helper-20260610T2033Z.json`.
