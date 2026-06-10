@@ -176,6 +176,11 @@ descriptor logged as `des0=0x80000024`, but IDMAC still remained at
 `CHDA=0x43000000`, `CBDA=0x00000000`, `IDST=0x4000`. Last-descriptor `CH`
 encoding is not the immediate cause.
 
+Commit `3dd37fcdde22` restores normal `CH` on the last descriptor and clears
+`FD` on the first descriptor. The first descriptor logs as `des0=0x80000010`,
+but the transfer still remains at `CHDA=0x43000000`, `CBDA=0x00000000`,
+`IDST=0x4000`. First-descriptor `FD` encoding is also not the cause.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -452,6 +457,10 @@ sha256: 9ca409ebca2fccdfeade080aebaf18da418c731a91d0840458caab33f9e754af
 SDMMC0 IDMA last-descriptor no-CH diagnostic:
 tools/hardware-logs/cubie-uart/20260610T100649Z-a733-idma-lastnoch-e4b1b8060cf7-ext4load-ttyUSB0.uart.log
 sha256: ed744ff7d92a7e58f426737dcd2be56026b98bdd95df2680c673a7588018d0fd
+
+SDMMC0 IDMA first-descriptor no-FD diagnostic:
+tools/hardware-logs/cubie-uart/20260610T101406Z-a733-idma-nofd-3dd37fcdde22-ext4load-ttyUSB0.uart.log
+sha256: 43b12a6b90bab5870e8aeafe85621aa179df07e11d5a0830275bc2105192fedd
 ```
 
 ## Source Findings
