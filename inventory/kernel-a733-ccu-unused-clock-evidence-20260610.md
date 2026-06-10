@@ -116,6 +116,15 @@ again sticks at `IDST=0x4000`. This proves the temporary PIO copy path is
 functionally useful for multi-block reads, and the remaining normal-I/O blocker
 is the large multi-sg IDMA path or a deliberately broader PIO fallback.
 
+Broadening the temporary CMD18 PIO predicate to 256 blocks gives the first
+corrected-root runtime proof without IDMA. Large `blocks=256` reads complete
+via FIFO-to-sg copy (`copied=131072/131072`), ext4 mounts
+`mmcblk0p3` read-only, devtmpfs mounts, VFS pivots into the rootfs, and the
+kernel runs `/bin/sh` as init. This is not upstreamable as-is because it is a
+slow diagnostic PIO fallback and relies on the lab-only CCU/reset/storage
+scaffolding, but it proves SDMMC command/data/rootfs operation once IDMA is
+bypassed. The remaining storage blocker for a real solution is A733 SDMMC IDMA.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -245,6 +254,11 @@ CMD18 generic sg PIO copy
   -> multiple 8-block CMD18 reads complete with copied=4096/4096
   -> next blocker is 256-block / 16-sg CMD18 via IDMA
   -> IDMA still sticks at IDST=0x4000
+
+CMD18 PIO up to 256 blocks
+  -> 256-block / multi-sg reads complete with copied=131072/131072
+  -> EXT4-fs (mmcblk0p3) mounts read-only
+  -> VFS pivots into rootfs and runs /bin/sh
 ```
 
 Key proof logs:
@@ -341,6 +355,10 @@ sha256: 6a18f2cd4e6938bec34fcfc880910be9c6f0a09e9459f882e371294fc7376d36
 SDMMC0 CMD18 generic sg FIFO-to-sg copy diagnostic:
 tools/hardware-logs/cubie-uart/20260610T085342Z-a733-cmd18-pio-sgcopy-8836b3b94af4-ext4load-ttyUSB0.uart.log
 sha256: 66ff54f622908395637bddfb8829285b6660883b9a4f0a4e4263dce88f255813
+
+SDMMC0 CMD18 256-block PIO rootfs proof:
+tools/hardware-logs/cubie-uart/20260610T090142Z-a733-cmd18-pio-256-2e475c696c8b-ext4load-ttyUSB0.uart.log
+sha256: b2352908a06c57ca550d34e07b87f0d7a130f075666ae93e061b4c5faecf4f3a
 ```
 
 ## Source Findings
