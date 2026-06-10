@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T15:01:27Z",
+  "updated_utc": "2026-06-10T15:15:26Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 reaches card enumeration and partition table, but normal block I/O stalls on large CMD18. The latest IDMA runs stop at COMMAND_DONE|RX_DATA_REQUEST with IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0.",
+  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, and partition discovery. The remaining blocker is the first large IDMA-backed CMD18: it stops at COMMAND_DONE|RX_DATA_REQUEST with IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -28,18 +28,18 @@
     "Keep clk_ignore_unused and PIO bypasses as lab diagnostics only."
   ],
   "latest_completed_test": {
-    "id": "A733-SDMMC-H002C",
-    "status": "falsified",
-    "title": "Match exact vendor SDMMC0 req-page-count descriptor allocation",
-    "kernel_head": "ced3b964901450d17b9bd4643ffbf7e4b91063f1",
-    "artifact": "/srv/projects/kernel-work/outgoing/a733-idma-reqpage2-ced3b9649014-20260610T145452Z",
-    "image_sha256": "02d464e56010dff17dd0c19875d1c70f4f071386348415675f95b96937c44882",
+    "id": "A733-SDMMC-H003",
+    "status": "passed",
+    "title": "Lower-level CMD17 proof outside mmcblk queue setup",
+    "kernel_head": "2bbd04c46cc12363f246837a0c30393cbc7b12f7",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-cmd17-2bbd04c46cc1-20260610T150902Z",
+    "image_sha256": "da2df287ec1e5820f9198287af1a9f524cca5674ee8fdadb68ecf3d496dc1c0e",
     "dtb_sha256": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
     "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
-    "build_log_sha256": "2eba9d69edc7e4aff85a004e29fc37773eb9d226cffa8df3ba33e6ec2877cc47",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T145658Z-a733-idma-reqpage2-ced3b9649014-ext4load-ttyUSB0.uart.log",
-    "uart_log_sha256": "217329b64d0c56e757d51964aaa679b11ab26bc3a52f2d590861b381fc512f50",
-    "result": "Vendor SDMMC0 DTS sets req-page-count=<2>. Changing the local A733 diagnostic descriptor allocation from 4 pages to 2 pages confirms descriptor sync size=8192 but does not fix the first large CMD18. The boot still stops with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0. Exact vendor SDMMC0 request-page descriptor allocation is therefore not the direct fix."
+    "build_log_sha256": "fbb35eae506d62713f2d10388dc2b7cc6e61cd8965342650852d8672b950b83e",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T151104Z-a733-cmd17-2bbd04c46cc1-ttyUSB0.uart.log",
+    "uart_log_sha256": "8d3c1af937b37b4d702b209ee138e7b03cc58155a2ec8b169de3759d552c4480",
+    "result": "Passed. A guarded pre-add-card diagnostic issued CMD17 before mmcblk was registered. It completed with ret=0, copied 512 bytes from FIFO, and read an MBR-looking sector ending in 0xaa55. The same run then discovered mmcblk0 p1/p2/p3. Small PIO CMD18 reads of 8 blocks also completed and finalized repeatedly. The later first large IDMA-backed CMD18 of 256 blocks still stalls with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0. The blocker is now narrowed away from card init, basic read protocol, and small PIO multi-block reads, toward IDMA or large block-layer request handling."
   },
   "hypotheses": [
     {
@@ -93,7 +93,7 @@
     {
       "id": "A733-SDMMC-H003",
       "priority": 1,
-      "status": "ready",
+      "status": "completed",
       "title": "Lower-level CMD17 proof outside mmcblk queue setup",
       "question": "Can a single-block read complete cleanly when issued as a targeted diagnostic instead of forcing block-layer queue geometry?",
       "test_cost": "medium; small kernel patch and one boot",
@@ -104,7 +104,32 @@
         "Restore Cubie3 and update the queue."
       ],
       "pass_criteria": "Controlled CMD17 completes and returns data, separating single-block protocol from CMD18/multi-block behavior.",
-      "fail_criteria": "CMD17 also stops at command-done/RX-request with no data-over."
+      "fail_criteria": "CMD17 also stops at command-done/RX-request with no data-over.",
+      "result": {
+        "kernel_head": "2bbd04c46cc12363f246837a0c30393cbc7b12f7",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-cmd17-2bbd04c46cc1-20260610T150902Z",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T151104Z-a733-cmd17-2bbd04c46cc1-ttyUSB0.uart.log",
+        "summary": "Passed. Pre-mmcblk CMD17 completed with ret=0 and 512 bytes copied from FIFO. The data ended with 0xaa55, then mmcblk0 and partitions p1/p2/p3 appeared. Small PIO CMD18 reads of 8 blocks also completed. The remaining failure is the later 256-block IDMA CMD18."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H005",
+      "priority": 1,
+      "status": "ready",
+      "title": "PIO-sized block-layer rootfs proof",
+      "question": "Can Cubie3 mount the SD rootfs if block-layer reads are constrained to the small PIO-sized request shape that H003 proved works?",
+      "test_cost": "medium; small kernel patch and one boot",
+      "procedure": [
+        "Keep this as a lab diagnostic only; do not present it as an upstream fix.",
+        "Patch only the A733 diagnostic path so SDMMC0 advertises small block-layer limits, preferably max_blk_count=8, max_segs=1, max_seg_size=4096, and max_req_size=4096.",
+        "Keep the existing PIO path for reads with blocks<=8 and blksz=512.",
+        "Build Image/DTB from Strix, install into Cubie3 /boot/cthu, flush storage, and boot once over UART with the same PARTUUID ro root proof.",
+        "Capture whether EXT4 mounts and /bin/sh starts, or whether any <=8-block request still stalls.",
+        "Restore Cubie3 to vendor kernel 5.15.147-21-a733, then update this queue and status docs."
+      ],
+      "pass_criteria": "EXT4 mounts read-only and init=/bin/sh starts, proving the card/rootfs/data path works when avoiding the large IDMA request shape.",
+      "fail_criteria": "A small PIO-sized block request stalls, or the block layer still emits a large IDMA request despite the advertised limits.",
+      "upstream_note": "A pass would be a runtime proof and narrowing tool, not an acceptable final upstream design."
     },
     {
       "id": "A733-SDMMC-H004",

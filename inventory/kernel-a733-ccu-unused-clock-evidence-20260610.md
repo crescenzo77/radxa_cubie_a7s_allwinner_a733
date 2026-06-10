@@ -1794,6 +1794,47 @@ read-data-timeout, and CMD11 timeout handling, not a descriptor-fetch enable.
 Move to H003: prove whether a controlled single-block CMD17 can complete
 outside the normal mmcblk CMD18 queue path.
 
+## Pre-Block CMD17 and PIO CMD18 Diagnostic
+
+Commit `2bbd04c46cc1` adds a guarded A733-only diagnostic in the SD core after
+SD card init but before `mmc_add_card()`, plus a host-driver FIFO drain fix so
+PIO reads can complete before finalize:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-cmd17-2bbd04c46cc1-20260610T150902Z
+Image sha256: da2df287ec1e5820f9198287af1a9f524cca5674ee8fdadb68ecf3d496dc1c0e
+DTB sha256:   8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf
+config sha256: dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202
+build log sha256: fbb35eae506d62713f2d10388dc2b7cc6e61cd8965342650852d8672b950b83e
+
+tools/hardware-logs/cubie-uart/20260610T151104Z-a733-cmd17-2bbd04c46cc1-ttyUSB0.uart.log
+sha256: 8d3c1af937b37b4d702b209ee138e7b03cc58155a2ec8b169de3759d552c4480
+```
+
+Key runtime lines:
+
+```text
+mmc0: diag pre-add-card CMD17 begin
+sunxi-mmc 4020000.mmc: diag request-data opcode=17 flags=0x200 blksz=512 blocks=1 sg_len=1 stop=0
+sunxi-mmc 4020000.mmc: diag fifo copy opcode=17 done=512 todo=512 copied=512/512 ... last=0xaa550000
+mmc0: diag pre-add-card CMD17 ret=0
+mmcblk0: mmc0:544c USD00 117 GiB
+ mmcblk0: p1 p2 p3
+```
+
+Result: H003 passed. A single 512-byte CMD17 works before the block driver is
+registered. Small PIO CMD18 reads of 8 blocks also complete and finalize,
+which proves the basic SD data path and card/rootfs media are usable. The
+remaining stop is narrower: the later 256-block IDMA-backed CMD18 still stops
+at `RINTR=0x24`, `IDST=0x4000`, `CHDA=DLBA`, `CBDA=0`, `CBCR=0x400`, and
+`BBCR=0`.
+
+Next work item: H005 should test a lab-only rootfs proof that advertises
+PIO-sized block-layer limits (`max_blk_count=8`, `max_segs=1`,
+`max_seg_size=4096`, `max_req_size=4096`) so all normal reads stay inside the
+request shape now proven to work. A pass is only a narrowing/runtime proof, not
+an upstream fix.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
