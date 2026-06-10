@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T22:20:00Z",
+  "updated_utc": "2026-06-10T23:35:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H034 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public U-Boot A733 MMC/clock/reset audit, and an initial public archive monitor. The descriptor-fetch question was sent by the user through Gmail plain text mode; no public archive hit or answer is visible yet. Await maintainer/list feedback before another behavior patch unless a new source-backed delta appears.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H035 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public U-Boot A733 MMC/clock/reset audit, initial public archive monitor, and the public-U-Boot IRQ-40 clue. IRQ 40 regressed before card init completion and did not reach the known descriptor-fetch stall. The descriptor-fetch question was sent by the user through Gmail plain text mode; no public archive hit or answer is visible yet. Await maintainer/list feedback before another behavior patch unless a new source-backed delta appears.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,36 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H034",
-    "status": "completed_no_response_seen",
-    "title": "Initial public list archive monitor after plain-text resend",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h034-list-monitor-20260610T2220Z.json",
-    "result": "Searched for the A733 IDMAC subject/body and lore hits after the user's plain-text Gmail resend. No public archive URL or answer was visible yet. This may be indexing delay or moderation and does not justify another behavior patch."
+    "id": "A733-SDMMC-H035",
+    "status": "completed_regressed_earlier",
+    "title": "Test public U-Boot SDMMC0 IRQ 40 against current diagnostic kernel",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h035-mmc0-irq40-result-20260610T2335Z.json",
+    "result": "Changing only SDMMC0 from GIC_SPI 161 to GIC_SPI 40 booted Linux but regressed before normal card init completion. CMD0 posted rint=0x4/mista=0x4 with imask=0x0000bbc6, then no later card-init, mmcblk, or descriptor-fetch CMD18 evidence appeared. IRQ 40 is closed as a runtime fix candidate for the current diagnostic path."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H035",
+      "priority": 34,
+      "status": "completed_regressed_earlier",
+      "title": "Test public U-Boot SDMMC0 IRQ 40",
+      "question": "Does changing only SDMMC0 from local diagnostic GIC_SPI 161 to public-U-Boot GIC_SPI 40 improve interrupt delivery or IDMAC descriptor-fetch behavior?",
+      "test_cost": "medium; one DTS patch, one Image/DTB build, one Cubie3 UART boot",
+      "procedure": [
+        "Change only the mmc@4020000 interrupt cell to GIC_SPI 40.",
+        "Build Image and allwinner/sun60i-a733-cubie-a7s.dtb from Strix.",
+        "Install the verified artifact to Cubie3 /boot/cthu and boot once with scripts/cubie-direct-uboot-load-session.",
+        "Capture whether card init reaches mmcblk and whether the forced CMD18 descriptor-fetch stall changes.",
+        "Restore Cubie3 to vendor 5.15.147-21-a733."
+      ],
+      "pass_criteria": "The run reaches the same descriptor-stage evidence with improved interrupt/card progress or clears the DESC_READ stall.",
+      "fail_criteria": "The run regresses earlier or reaches the same descriptor-fetch stall unchanged.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h035-mmc0-irq40-result-20260610T2335Z.json",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-h035-mmc0-irq40-8d569cf9c19f-20260610T232612Z",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T232637Z-a733-h035-mmc0-irq40-8d569cf9c19f-ttyUSB0.uart.log",
+        "summary": "Failed earlier than the known descriptor-fetch stall. Linux booted and sunxi-mmc initialized, but CMD0 stopped after rint=0x4/mista=0x4 with imask=0x0000bbc6. No mmcblk or descriptor-stage evidence appeared. Public-U-Boot IRQ 40 is not a standalone fix for the current Linux diagnostic path."
+      }
+    },
     {
       "id": "A733-SDMMC-H001",
       "priority": 0,

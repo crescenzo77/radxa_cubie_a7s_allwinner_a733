@@ -1,0 +1,19 @@
+{
+  "baud": 115200,
+  "capture_seconds": 150,
+  "captured_at_utc": "20260610T232637Z",
+  "commands": [
+    "setenv drm_debug 1",
+    "ext4load mmc 0:3 0x40080000 /boot/cthu/Image",
+    "ext4load mmc 0:3 0x4fa00000 /boot/cthu/a733.dtb",
+    "fdt addr 0x4fa00000",
+    "setenv bootargs console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel drm_debug=1 root=PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e rootfstype=ext4 rootwait ro rootflags=noload init=/bin/sh",
+    "booti 0x40080000 - 0x4fa00000"
+  ],
+  "device": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1:1.0-port0",
+  "exit_code": 0,
+  "label": "a733-h035-mmc0-irq40-8d569cf9c19f",
+  "log_path": "/srv/projects/cubie-uart/logs/20260610T232637Z-a733-h035-mmc0-irq40-8d569cf9c19f-ttyUSB0.uart.log",
+  "log_sha256": "c058111e4b0532002ae7cccfc007dc7286c13e543885b1a8b27ea5b5dd7cf948",
+  "resolved_device": "/dev/ttyUSB0"
+}

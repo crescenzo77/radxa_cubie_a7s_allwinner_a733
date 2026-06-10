@@ -1,0 +1,45 @@
+{
+  "id": "A733-SDMMC-H035",
+  "created_utc": "2026-06-10T23:35:00Z",
+  "status": "completed_regressed_earlier",
+  "title": "Test public U-Boot SDMMC0 IRQ 40 against current diagnostic kernel",
+  "kernel_repo": "/srv/projects/a733-diag-rtc-extosc-orphan",
+  "kernel_branch": "codex/a733-h035-mmc0-irq40",
+  "kernel_head": "8d569cf9c19f87f241239cd37c7ec21b9b6a1d51",
+  "kernel_subject": "arm64: dts: test A733 SDMMC0 IRQ 40",
+  "artifact": {
+    "path": "/srv/projects/kernel-work/outgoing/a733-h035-mmc0-irq40-8d569cf9c19f-20260610T232612Z",
+    "image_bytes": 43309568,
+    "dtb_bytes": 4761,
+    "config_bytes": 321548,
+    "dtb_irq": "GIC_SPI 40"
+  },
+  "uart_log": {
+    "strix_path": "/srv/projects/cubie-uart/logs/20260610T232637Z-a733-h035-mmc0-irq40-8d569cf9c19f-ttyUSB0.uart.log",
+    "mac_path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T232637Z-a733-h035-mmc0-irq40-8d569cf9c19f-ttyUSB0.uart.log",
+    "sha256": "c058111e4b0532002ae7cccfc007dc7286c13e543885b1a8b27ea5b5dd7cf948"
+  },
+  "uart_metadata": {
+    "mac_path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T232637Z-a733-h035-mmc0-irq40-8d569cf9c19f-ttyUSB0.uart.log.json",
+    "sha256": "1ba62fbee5145e6930635893d6542bcefa4f66e623badc5952a82d155a091c00"
+  },
+  "test_changes": [
+    "Changed only SDMMC0 DTS interrupt from GIC_SPI 161 to GIC_SPI 40, matching the public U-Boot A733 DTS clue.",
+    "Kept the existing H027 diagnostic MMC driver, clocks, reset, descriptor geometry, and boot procedure."
+  ],
+  "key_evidence": [
+    "Linux version 7.1.0-rc5-00283-g8d569cf9c19f booted on Machine model: Radxa Cubie A7S.",
+    "The DTB disassembled to interrupts = <0x00 0x28 0x04> for mmc@4020000.",
+    "sunxi-mmc 4020000.mmc initialized and reached the first CMD0 request.",
+    "CMD0 posted rint=0x00000004 and mista=0x00000004 with imask=0x0000bbc6, then did not progress to later card init, mmcblk, or the forced descriptor-fetch CMD18.",
+    "No DESC_READ, idma-post-cmdr, after-cpu-sync, CHDA/CBDA, or descriptor checksum evidence was produced in this run."
+  ],
+  "interpretation": "IRQ 40 is not a usable fix for the current Linux diagnostic path. It regresses the boot before the known IDMAC descriptor-fetch stall, consistent with MMC completion interrupt delivery not matching the current kernel/DTB wiring.",
+  "current_blocker": "A733 SDMMC0 IDMAC descriptor-fetch reachability remains the blocker. H035 closes the public U-Boot IRQ-40 clue as a runtime fix candidate for this exact v4/v5 diagnostic lineage.",
+  "restore": {
+    "target": "cubie3",
+    "verified_kernel": "5.15.147-21-a733",
+    "verified_hostname": "cubie-3"
+  },
+  "next": "Return to the prior stance: wait for maintainer/list feedback or a source-backed delta that names one concrete register, reset/clock ordering, firmware handoff, master ID, binding, or erratum before another behavior patch."
+}

@@ -1,0 +1,26 @@
+{
+  "id": "A733-SDMMC-H035-LLM-ADVISORY",
+  "created_utc": "2026-06-10T23:42:00Z",
+  "status": "completed_no_patchworthy_delta",
+  "gateway": "http://192.168.50.225:4011/v1",
+  "source_doc": {
+    "mac": "/Users/enzo/Documents/Homelab/THINKCENTRE_MODEL_USAGE.md",
+    "thinkcentre": "/srv/projects/homelab/THINKCENTRE_MODEL_USAGE.md",
+    "sha256": "4820427035d1e6f4f1f01bd47ca6174c51e486b0cfdb3f2c1b312e95f04bbaee"
+  },
+  "models_queried": [
+    "Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding",
+    "3090 Qwen3.6 27B Dense Q4_K_M GGUF llama.cpp CUDA ctx64k chat",
+    "7900XT Qwen3.6 27B Dense Q4_K_M GGUF llama.cpp Vulkan ctx8k research",
+    "openrouter-free / Auto Free Router random available free model"
+  ],
+  "job_outputs": {
+    "local_tmp_dir": "/tmp/a733-llm-jobs"
+  },
+  "summary": [
+    "The local models and OpenRouter-free route were used for speculative next-step review while H035 documentation was being closed.",
+    "Returned suggestions centered on clock/reset delays, descriptor alignment, cache/coherency, descriptor format, and command-buffer interpretation.",
+    "Those suggestions either duplicate already closed H009-H027 evidence or require a concrete source/register reference before they should become H036."
+  ],
+  "decision": "Do not patch from these model outputs alone. Keep using the ThinkCentre gateway for bounded speculative audits, but require source-backed deltas for runtime behavior changes."
+}
