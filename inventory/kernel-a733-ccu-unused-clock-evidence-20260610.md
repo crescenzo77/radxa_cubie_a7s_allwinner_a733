@@ -133,6 +133,12 @@ limit to 8 blocks while keeping unshifted descriptor-chain pointers. The
 `RINTR=0x24` and stuck at `IDST=0x4000`. Descriptor chain-pointer shifting is
 therefore not the immediate cause.
 
+Removing `DIC` from all IDMA descriptors is also falsified. The first descriptor
+changes from `des0=0x8000001a` to `des0=0x80000018`, but the same 256-block
+CMD18 still stops at `RINTR=0x24` and `IDST=0x4000`. Completion-interrupt
+suppression is not the cause; the IDMAC still appears stuck before descriptor
+consumption or data movement.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -272,6 +278,11 @@ IDMA unshifted chain pointers
   -> next pointer changes to 0x43000010
   -> 256-block CMD18 still sticks at IDST=0x4000
   -> chain-pointer shift hypothesis falsified
+
+IDMA no-DIC descriptors
+  -> des0 changes from 0x8000001a to 0x80000018
+  -> 256-block CMD18 still sticks at IDST=0x4000
+  -> completion-interrupt suppression falsified
 ```
 
 Key proof logs:
@@ -380,6 +391,10 @@ sha256: 368ebf3b18f0caceb5fee5d1a93f36202f54e22bde5722ed35247d73299fab5b
 SDMMC0 isolated IDMA unshifted-chain-pointer diagnostic:
 tools/hardware-logs/cubie-uart/20260610T091348Z-a733-idma-unshiftnext-isolated-30dcc4c07ecf-ext4load-ttyUSB0.uart.log
 sha256: 586749de94c321895084cd62360c2e36566341abbdd14db001fc018bb74e0cc0
+
+SDMMC0 IDMA no-DIC descriptor diagnostic:
+tools/hardware-logs/cubie-uart/20260610T092214Z-a733-idma-nodic-023276e38a76-ext4load-ttyUSB0.uart.log
+sha256: bea0a91c1a0a9d1154402ec27ca0efb86ac51b4533ff5fe5928a7bf2e9e7a4ea
 ```
 
 ## Source Findings
