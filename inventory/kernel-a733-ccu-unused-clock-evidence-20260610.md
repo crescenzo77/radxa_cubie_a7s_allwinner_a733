@@ -632,6 +632,22 @@ sha256: f257e632ce7d67f56df6e626cda10bedd96c18ad92e55e927974af4cda92e31c
 
 Conclusion: fixed-burst mode is not the immediate cause.
 
+Commit `d4c41b4d2c94` also drops `SDXC_IDMAC_REFETCH_DES`, leaving only
+`SDXC_IDMAC_IDMA_ON`. The runtime readback is still `DMAC=0x280` because
+REFETCH is self-clearing in prior tests, and the failure is unchanged:
+
+```text
+diag regs dma-exit ... dmac=0x00000280 dlba=0x43000000 idst=0x00000000
+diag regs idma-post-cmdr ... rint=0x00000024 ... dmac=0x00000280 idst=0x00004000
+diag post-data poll11 ... idst=0x00004000 ... dmac=0x00000280
+```
+
+SDMMC0 IDMA no-refetch diagnostic:
+tools/hardware-logs/cubie-uart/20260610T063040Z-a733-idma-norefetch-d4c41b4d2c94-ext4load-ttyUSB0.uart.log
+sha256: 4c37e25e9e8ac86d3cc4f650106bbd422a7bbe8206999e4f5a3f167759fcefdb
+
+Conclusion: explicit descriptor refetch is not the immediate cause.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
