@@ -359,6 +359,15 @@ controller state before IRQ delivery. Log:
 `tools/hardware-logs/cubie-uart/20260610T030303Z-a733-mmc-irqtrace-a52ea49def77-direct-v2-ttyUSB0.uart.log`
 SHA256:
 `552cb242bbbc05baf84374c2425c310908e82244e7d762406d8c4ca1c7b79ed9`.
+Follow-up commit `cf7b2b08344e` traced command-launch readbacks. The valid
+direct U-Boot run shows the SDMMC0 register window reads all zero before CMD0
+and after IMASK/CARG/CMDR writes. Even initialized registers such as `TMOUT`,
+`FTRGL`, `GCTRL`, and `CLKCR` read zero. This shifts the current blocker from
+command IRQ handling to SDMMC0 bus/reset/clock-domain accessibility after the
+lab-only CCU cleanup skips. Log:
+`tools/hardware-logs/cubie-uart/20260610T031554Z-a733-mmc-cmdlaunch-cf7b2b08344e-ext4load-ttyUSB0.uart.log`
+SHA256:
+`77fa1d38f8338243878d9d776dcaa3c844d49b6dc346b768562b042f839e4133`.
 
 Focused evidence note:
 `inventory/kernel-a733-ccu-unused-clock-evidence-20260610.md`.

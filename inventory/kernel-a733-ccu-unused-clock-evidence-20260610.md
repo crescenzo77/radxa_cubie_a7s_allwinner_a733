@@ -348,6 +348,52 @@ command issue, and any A733-specific reset/clock parent assumptions in the
 CCU/RFC stack. Keep the test as a lab-only diagnostic. Do not add card-detect
 GPIOs, vendor U-Boot DTS aliases, or Ethernet/VPU/display nodes to solve this.
 
+## MMC Command-Launch Register Trace
+
+Strix diagnostic commit `cf7b2b08344e` adds lab-only readbacks around CMD0
+programming: pre-command register dump, IMASK/CARG/CMDR readbacks, and a
+post-CMDR register dump.
+
+Artifact:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-mmc-cmdlaunch-cf7b2b08344e-20260610T031016Z
+Image sha256: 05e9f4f2f5355ae4cac2976fabcce30aa240246f9c68f0ac363385ad6aa2be21
+DTB sha256:   6edbb3790de674f7011c8accd0e02d94ea5bcafa11dc127238c8a54da71c622a
+```
+
+Valid direct U-Boot capture:
+
+```text
+tools/hardware-logs/cubie-uart/20260610T031554Z-a733-mmc-cmdlaunch-cf7b2b08344e-ext4load-ttyUSB0.uart.log
+sha256: 77fa1d38f8338243878d9d776dcaa3c844d49b6dc346b768562b042f839e4133
+```
+
+Key lines:
+
+```text
+Linux version 7.1.0-rc5-00195-gcf7b2b08344e
+sunxi-mmc 4020000.mmc: diag regs cmd0-pre-lock gctrl=0x00000000 clkcr=0x00000000 width=0x00000000 cmdr=0x00000000 carg=0x00000000 imask=0x00000000 mista=0x00000000 rint=0x00000000 stas=0x00000000 ntsr=0x00000000 ftrgl=0x00000000 timeout=0x00000000
+sunxi-mmc 4020000.mmc: diag cmd0 program cmd_val=0x80008000 imask=0x0000bbc6 sdio_imask=0x00000000 wait_dma=0 use_new_timings=1 actual_clock=400000
+sunxi-mmc 4020000.mmc: diag cmd0 imask-readback=0x00000000
+sunxi-mmc 4020000.mmc: diag cmd0 carg-readback=0x00000000
+sunxi-mmc 4020000.mmc: diag cmd0 cmdr-readback=0x00000000
+sunxi-mmc 4020000.mmc: diag regs cmd0-post-cmdr gctrl=0x00000000 clkcr=0x00000000 width=0x00000000 cmdr=0x00000000 carg=0x00000000 imask=0x00000000 mista=0x00000000 rint=0x00000000 stas=0x00000000 ntsr=0x00000000 ftrgl=0x00000000 timeout=0x00000000
+```
+
+This is stronger than the prior IRQ trace: the SDMMC register window reads as
+all zero before CMD0 and immediately after writes that should be visible. That
+includes initialization registers such as `TMOUT`, `FTRGL`, `GCTRL`, and
+`CLKCR`. The current blocker is therefore likely SDMMC0 bus/reset/clock-domain
+accessibility after the lab-only CCU cleanup skips, not card detection, command
+timing, or interrupt delivery.
+
+Next responsible diagnostic: trace SDMMC0 probe/init readbacks immediately
+after reset deassert, after `sunxi_mmc_init_host()`, and before/after genpd
+unused-domain cleanup, then compare the SDMMC0 bus gate/reset and any pmdomain
+assignment against Junhui Liu's A733 CCU/PRCM and pmdomain RFCs. Keep this as
+runtime evidence only; do not change the upstream DTS slice yet.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
