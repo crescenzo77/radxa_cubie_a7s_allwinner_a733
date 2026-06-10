@@ -781,3 +781,28 @@ samples show `GCTRL=0x20000010` with `TMOUT=0xffffffff`.
 Do not build a magic `GCTRL=0x800` diagnostic. It is timeout scaling, not a
 source-backed descriptor-fetch control. Next queue item: H015, hidden DMA
 coherency/storage-fabric audit.
+
+## 2026-06-10 H015 Hidden DMA/Fabric Audit Closeout
+
+H015 audit:
+`task-packets/kernel/a733-h015-hidden-dma-fabric-audit-20260610T1708Z.json`.
+Reference UART:
+`tools/hardware-logs/cubie-uart/20260610T165356Z-a733-h013-cleandma-9090e8b17962-ext4load-corrected-ttyUSB0.uart.log`,
+sha256 `7534e010dd6e5c7d3df56ccce1892b6e87d67cddd685ca6f4cbb069c50f4ccf4`.
+
+Result: no build was warranted. Vendor and current diagnostic source now match
+or already cover the cheap hidden-DMA/fabric candidates: descriptor geometry,
+shifted descriptor/data addresses, 64-bit DMA mask, coherent descriptor
+allocation, descriptor sync, `sg_len=dma_len=1`, explicit storage fabric
+clocks, MSI-lite mapping, and descriptor page count.
+
+Key runtime clue: H013 leaves the post-stall descriptor unchanged
+(`des0=0x8000001c`, `size=0x00001000`, `buf=0x40574400`,
+`next=0x3f840004`) while `IDST=0x4000`, `CHDA=DLBA`, `CBDA=0`,
+`CBCR=0x400`, and `BBCR=0`. That favors IDMAC not consuming/fetching the
+descriptor over stale CPU-visible descriptor contents.
+
+Next queue item: H016. Build one instrumentation-only descriptor-fetch
+reachability stamp proof from Strix, keep H013 safety rails, capture before and
+after descriptor ring stamps/checksums, then restore Cubie3 to vendor
+`5.15.147-21-a733`.

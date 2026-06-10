@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T17:02:36Z",
+  "updated_utc": "2026-06-10T17:08:13Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue. H013 clears the PIO rail's leftover ACCESS_BY_AHB before IDMA and still stalls. H014 identifies vendor GCTRL bit 0x00000800 as SDXC_DTIME_UNIT, a read-data-timeout scaling bit, not a plausible descriptor-fetch control. The next responsible step is hidden wrapper, DMA coherency, or storage-fabric evidence rather than another visible GCTRL/DMAC guess.",
+  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue. H013 clears the PIO rail's leftover ACCESS_BY_AHB before IDMA and still stalls. H014 identifies vendor GCTRL bit 0x00000800 as SDXC_DTIME_UNIT, a read-data-timeout scaling bit, not a plausible descriptor-fetch control. H015 closes the cheap hidden DMA/fabric source audit: 64-bit DMA mask, coherent descriptor sync, descriptor page count, MSI-lite mapping, and explicit storage-fabric consumers are already covered or falsified. The next responsible step is one hardware evidence sample for IDMAC descriptor-fetch reachability, not another visible-register guess.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -36,13 +36,13 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H014",
+    "id": "A733-SDMMC-H015",
     "status": "completed_no_build",
-    "title": "Identify vendor GCTRL bit 0x00000800",
-    "audit": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h014-gctrl-dtime-unit-audit-20260610T1702Z.json",
-    "vendor_tmout_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T170139Z-cubie3-vendor-sdmmc0-gctrl-tmout-dtime-4k.log",
-    "vendor_tmout_log_sha256": "b86e7d06711cc48fb99ad1ab2c24396aab0893192e0fe5ebe182931ef91f3fc9",
-    "result": "Completed without a new kernel build. The Orange Pi A733 BSP defines GCTRL bit 11 as SDXC_DTIME_UNIT and sets it only in sunxi_mmc_set_rdtmout_reg_v5p3x() when scaling read-data timeout by 256. Vendor runtime pairs GCTRL=0x20000830 with TMOUT=0x01312dff and recovers to GCTRL=0x20000010/TMOUT=0xffffffff. This explains the visible bit but does not plausibly control IDMAC descriptor fetch."
+    "title": "Audit hidden DMA coherency and storage-fabric attributes",
+    "audit": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h015-hidden-dma-fabric-audit-20260610T1708Z.json",
+    "h013_uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T165356Z-a733-h013-cleandma-9090e8b17962-ext4load-corrected-ttyUSB0.uart.log",
+    "h013_uart_sha256": "7534e010dd6e5c7d3df56ccce1892b6e87d67cddd685ca6f4cbb069c50f4ccf4",
+    "result": "Completed without a new kernel build. The source/log audit finds no remaining cheap source-backed hidden coherency or storage-fabric delta: H013 already has 64-bit DMA mask, coherent descriptor allocation, descriptor sync, two descriptor pages, explicit storage fabric clocks, and sg_len=dma_len=1. Post-stall descriptor memory remains unchanged with OWN still set while CHDA=DLBA and CBDA=0, favoring IDMAC not consuming/fetching the descriptor over stale CPU-visible descriptor contents."
   },
   "hypotheses": [
     {
@@ -363,7 +363,7 @@
     {
       "id": "A733-SDMMC-H015",
       "priority": 1,
-      "status": "ready",
+      "status": "completed_no_build",
       "title": "Audit hidden DMA coherency and storage-fabric attributes",
       "question": "What hidden wrapper, DMA coherency, MBUS/storage-fabric, or DMA translation difference remains after descriptor geometry, visible DMAC, and visible GCTRL bits are closed?",
       "test_cost": "low first; source/log audit before build",
@@ -376,7 +376,31 @@
       ],
       "pass_criteria": "A source-backed hidden coherency/fabric delta is identified and either tested or queued with a precise proof plan.",
       "fail_criteria": "No source-backed delta remains; the next queue item must gather new hardware evidence rather than cycling source-visible guesses.",
-      "upstream_note": "This is private lab triage. Do not expand the upstream DTS slice or add undocumented fabric magic without source-backed evidence."
+      "upstream_note": "This is private lab triage. Do not expand the upstream DTS slice or add undocumented fabric magic without source-backed evidence.",
+      "result": {
+        "audit": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h015-hidden-dma-fabric-audit-20260610T1708Z.json",
+        "summary": "Completed without build. Vendor and current diagnostic source now match or already cover the cheap hidden-DMA/fabric candidates: descriptor geometry, shifted descriptor/data addresses, 64-bit DMA mask, coherent descriptor allocation, descriptor sync, sg_len=dma_len=1, explicit storage fabric clocks, MSI-lite mapping, and descriptor page count. H013 post-stall evidence leaves descriptor memory unchanged with OWN set while CHDA=DLBA and CBDA=0, so the next step is a hardware descriptor-fetch reachability sample rather than another source-visible control guess."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H016",
+      "priority": 1,
+      "status": "ready",
+      "title": "Descriptor-fetch reachability stamp proof",
+      "question": "Can A733 IDMAC fetch any coherent descriptor contents from the programmed DLBA, or is the descriptor read path blocked before it consumes descriptor word 0?",
+      "test_cost": "medium; one instrumentation-only kernel patch and one Cubie3 boot",
+      "procedure": [
+        "Keep the H013 safe rails: corrected DMA access mode, CMD49-only PIO write, read-only root proof, and one 8-block CMD18 forced through IDMA.",
+        "Add an A733-only instrumentation patch that writes distinctive nonfunctional stamp values into unused descriptor words and adjacent descriptors before IDMA start, without changing descriptor control semantics.",
+        "Immediately before REG_CMDR, log DLBA, sg_dma, descriptor physical address, descriptor words 0-3 for descriptor 0, descriptor 1 stamp words, and a short checksum of the coherent descriptor ring.",
+        "After the existing post-data poll window, call dma_sync_single_for_cpu for the coherent descriptor ring only for diagnostics, then log the same descriptor words/checksum plus CHDA, CBDA, IDST, CBCR, and BBCR.",
+        "Boot Cubie3 once from Strix over UART and capture the log. Do not submit or rewrite upstream patches.",
+        "Interpretation rule: if descriptor word 0 OWN clears, CHDA advances, CBDA becomes the buffer address, or stamped adjacent descriptors are reflected in controller progress, IDMAC fetched descriptor memory and the blocker is later in data movement. If descriptor words remain unchanged, OWN stays set, CHDA remains DLBA, and CBDA remains zero, treat descriptor-fetch reachability or address translation as the next blocker.",
+        "Restore Cubie3 to vendor kernel 5.15.147-21-a733, update this queue, update the private KB, update docs/status.md, commit, sync to Strix, and push or record blocked remotes."
+      ],
+      "pass_criteria": "The run proves IDMAC fetched descriptor memory or advanced beyond DLBA, narrowing the next test to data buffer movement.",
+      "fail_criteria": "The run repeats unchanged descriptor memory, OWN set, CHDA=DLBA, and CBDA=0 after a CPU-side coherent sync, narrowing the next test to descriptor-fetch reachability/address translation.",
+      "upstream_note": "Instrumentation only. Do not convert descriptor stamps, lab rails, or printk tracing into upstream code."
     },
     {
       "id": "A733-SDMMC-H004",

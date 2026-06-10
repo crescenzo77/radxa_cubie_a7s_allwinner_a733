@@ -1,0 +1,76 @@
+{
+  "id": "A733-SDMMC-H015",
+  "created_utc": "2026-06-10T17:08:13Z",
+  "status": "completed_no_build",
+  "question": "What hidden wrapper, DMA coherency, MBUS/storage-fabric, or DMA translation difference remains after descriptor geometry, visible DMAC, and visible GCTRL bits are closed?",
+  "kernel_tree": "/srv/projects/a733-diag-rtc-extosc-orphan",
+  "kernel_head": "9090e8b17962b128ed31ae12999d67d602e59125",
+  "kernel_subject": "mmc: test A733 clean DMA access mode",
+  "vendor_source": {
+    "tree": "/srv/projects/kernel-work/tmp/orangepi-a733-mmc",
+    "files": [
+      "bsp/sunxi-mmc.c",
+      "bsp/sunxi-mmc.h",
+      "bsp/sunxi-mmc-v5p3x.c",
+      "sun60iw2p1.dtsi"
+    ]
+  },
+  "comparison": [
+    {
+      "topic": "descriptor geometry",
+      "vendor_value": "v5p3x uses idma_des_size_bits=12, des_addr_shift=2, shifted DLBA/data/next descriptor addresses, FD/LD/OWN/CH descriptor flags, and 4 KiB descriptor sizing for the observed 4 KiB read",
+      "mainline_value": "current diagnostic branch uses idma_des_size_bits=12, idma_des_shift=2, shifted DLBA/data/next addresses, FD/LD/OWN/CH, and one 4 KiB descriptor for H013",
+      "delta": "none relevant",
+      "interpretation": "H010 and H013 close descriptor geometry for the current one-descriptor failure"
+    },
+    {
+      "topic": "DMA mask and coherent allocation",
+      "vendor_value": "probe sets dma_mask and coherent_dma_mask to DMA_BIT_MASK(64) before dma_alloc_coherent",
+      "mainline_value": "current diagnostic branch calls dma_set_mask_and_coherent(..., DMA_BIT_MASK(64)) before descriptor allocation",
+      "delta": "API style only",
+      "interpretation": "64-bit DMA mask was already runtime-falsified as a complete fix"
+    },
+    {
+      "topic": "descriptor cache maintenance",
+      "vendor_value": "dma_alloc_coherent descriptor ring, descriptor writes, then wmb(); no explicit dma_sync_single_for_device for the coherent ring",
+      "mainline_value": "current diagnostic branch uses dma_alloc_coherent and adds an explicit dma_sync_single_for_device diagnostic after descriptor writes",
+      "delta": "mainline diagnostic is stricter than vendor",
+      "interpretation": "descriptor sync was already runtime-falsified; removing it is not a source-backed fix"
+    },
+    {
+      "topic": "dma_map_sg",
+      "vendor_value": "dma_map_sg is required to return the same count as data->sg_len or the BSP errors out",
+      "mainline_value": "H013 one-descriptor CMD18 logs sg_len=1 and dma_len=1",
+      "delta": "none for the failing proof",
+      "interpretation": "scatterlist coalescing is not the current one-descriptor failure"
+    },
+    {
+      "topic": "storage fabric clocks",
+      "vendor_value": "SDMMC0 DTS and probe use ahb, mmc_store, mmc_mbus, and mmc_msi_lite clocks, enabled before clk_mmc",
+      "mainline_value": "current diagnostic branch gets and enables mmc_store, mmc_mbus, and mmc_msi_lite, and logs storage fabric clocks on",
+      "delta": "none currently source-backed",
+      "interpretation": "explicit fabric clocks, enable order, MSI Lite1 mapping, and descriptor page count were already runtime-falsified as complete fixes"
+    },
+    {
+      "topic": "post-stall descriptor visibility",
+      "vendor_value": "working vendor reads advance CHDA/CBDA through descriptor and buffer addresses",
+      "mainline_value": "H013 stalls with post-stall descriptor unchanged: des0=0x8000001c, size=0x00001000, buf=0x40574400, next=0x3f840004; CHDA=DLBA and CBDA=0",
+      "delta": "IDMAC does not advance from descriptor base on mainline",
+      "interpretation": "the best current evidence favors IDMAC not consuming/fetching the descriptor over stale CPU-visible descriptor contents"
+    }
+  ],
+  "runtime_evidence": {
+    "h013_uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T165356Z-a733-h013-cleandma-9090e8b17962-ext4load-corrected-ttyUSB0.uart.log",
+    "h013_uart_sha256": "7534e010dd6e5c7d3df56ccce1892b6e87d67cddd685ca6f4cbb069c50f4ccf4",
+    "key_lines": {
+      "storage_fabric": "diag enable storage fabric clocks on",
+      "dma_mask": "diag A733 DMA mask set to 64 bits",
+      "descriptor_alloc": "diag descriptor coherent allocation sg_dma=0x0x00000000fe100000 pages=2 size=8192 low_mask=0",
+      "dma_map": "diag map_dma flags=0x200 blksz=512 blocks=8 sg_len=1 dma_len=1 dir=2",
+      "descriptor_before": "diag idma_des[0] sg_len=4096 des0=0x8000001c size=0x00001000 buf=0x40574400 next=0x3f840004",
+      "stall": "diag post-data poll11 rint=0x00000024 mista=0x00000000 idst=0x00004000 idie=0x00000002 dmac=0x00000282 dlba=0x3f840000 chda=0x3f840000 cbda=0x00000000 stas=0x02009509 cmdr=0x00003352 imask=0x0000fbc2 cbcr=0x00000400 bbcr=0x00000000 thld=0x02000001",
+      "descriptor_after": "diag idma_des_after des0=0x8000001c size=0x00001000 buf=0x40574400 next=0x3f840004"
+    }
+  },
+  "conclusion": "No concrete source-backed hidden coherency or storage-fabric delta remains cheap enough to justify a behavior patch. Close H015 without build. The next responsible runtime proof should gather one new hardware evidence sample about the IDMAC descriptor-fetch path rather than cycling visible register guesses."
+}
