@@ -189,6 +189,11 @@ p3`, then the first 256-block CMD18 uses 32 4 KiB descriptors and still sticks
 at `DLBA=0x10b00000`, `CHDA=0x10b00000`, `CBDA=0x00000000`, `IDST=0x4000`.
 Vendor v5p3x descriptor geometry and FIFO threshold are therefore not enough.
 
+Commit `da96d0a59793` stacks the same v5p3x geometry and writes the BSP-style
+read threshold for 512-byte reads, `REG_THLD=0x02000001`. The 256-block CMD18
+still remains in descriptor-read state with `CHDA=DLBA`, `CBDA=0x00000000`, and
+`IDST=0x4000`. Vendor v5p3x threshold programming is also not enough.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -473,6 +478,10 @@ sha256: 43b12a6b90bab5870e8aeafe85621aa179df07e11d5a0830275bc2105192fedd
 SDMMC0 IDMA vendor v5p3x geometry diagnostic:
 tools/hardware-logs/cubie-uart/20260610T103218Z-a733-idma-v5p3xgeom-9ba363b78098-ext4load-ttyUSB0.uart.log
 sha256: 8ea0190c6bee70247758b54141a760f6a81a67091fc4ad4cc5b0518a355ce7cc
+
+SDMMC0 IDMA vendor v5p3x read-threshold diagnostic:
+tools/hardware-logs/cubie-uart/20260610T104154Z-a733-idma-v5p3xthld-da96d0a59793-ext4load-ttyUSB0.uart.log
+sha256: 79e9cfaf7055db8c9634b2897af7781bb7f28416959c45de68fe1ddd413ac585
 ```
 
 ## Source Findings
