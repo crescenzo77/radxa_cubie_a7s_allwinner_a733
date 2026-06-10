@@ -291,6 +291,63 @@ the prior update-clock timeout.
 Next trace should instrument `sunxi_mmc_irq()` and
 `sunxi_mmc_finalize_request()` for raw interrupt/status registers after CMD0.
 
+## MMC IRQ/Status Trace
+
+Strix diagnostic commit `a52ea49def77` adds lab-only traces in
+`sunxi_mmc_irq()`, `sunxi_mmc_finalize_request()`, and a short post-CMD0 poll
+of raw MMC status registers.
+
+Artifact:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-mmc-irqtrace-a52ea49def77-20260610T025633Z
+Image sha256: f6b7c965ac27caac727c8efd329f408f36f9a885b84fa61cc4ada8b33f4a46a6
+DTB sha256:   6edbb3790de674f7011c8accd0e02d94ea5bcafa11dc127238c8a54da71c622a
+```
+
+The first direct-boot attempt is invalid as a kernel result because U-Boot did
+not load a valid DTB before `booti` and then hung in vendor FDT fixups:
+
+```text
+tools/hardware-logs/cubie-uart/20260610T025837Z-a733-mmc-irqtrace-a52ea49def77-direct-ttyUSB0.uart.log
+sha256: 15ff7a0ed922b28b1065673a06fbbb56eb845ff36863fe7a30df180c0f7fa789
+```
+
+The valid retry used stricter direct U-Boot checks, including `part list mmc 0`,
+Image load verification, DTB load verification, `fdt addr`, and `fdt header`
+before booting:
+
+```text
+tools/hardware-logs/cubie-uart/20260610T030303Z-a733-mmc-irqtrace-a52ea49def77-direct-v2-ttyUSB0.uart.log
+sha256: 552cb242bbbc05baf84374c2425c310908e82244e7d762406d8c4ca1c7b79ed9
+```
+
+Key lines:
+
+```text
+Linux version 7.1.0-rc5-00194-ga52ea49def77
+Machine model: Radxa Cubie A7S
+mmc0: diag start_host caps=0x180f caps2=0x480000 power_up=1 f_min=400000 f_max=200000000
+sunxi-mmc 4020000.mmc: diag add_host done caps=0x180f caps2=0x480000 f_min=400000 f_max=200000000 removable=1 needs_poll=0
+mmc0: diag rescan try_freq=400000
+sunxi-mmc 4020000.mmc: diag request opcode=0 arg=0x00000000 flags=0xc0 data=0 clock=400000 ferror=0
+sunxi-mmc 4020000.mmc: diag post-cmd0 poll0 rint=0x00000000 mista=0x00000000 stas=0x00000000 cmdr=0x00000000 imask=0x00000000
+sunxi-mmc 4020000.mmc: diag post-cmd0 poll4 rint=0x00000000 mista=0x00000000 stas=0x00000000 cmdr=0x00000000 imask=0x00000000
+```
+
+No `diag irq` and no `diag finalize` lines appear. This makes pure interrupt
+routing the wrong first assumption: the controller does not expose any command
+progress or completion status after CMD0 in the sampled window. The current
+blocker is therefore narrower than "MMC enumeration": command launch or MMC
+controller state after the oscillator/unused-clock diagnostics, before IRQ
+delivery can matter.
+
+Safest next technical step: inspect and trace the A733 SDMMC0 register state
+around host reset, clock enable, `SUNXI_MMC_REG_CLKCR`, `SUNXI_MMC_REG_GCTRL`,
+command issue, and any A733-specific reset/clock parent assumptions in the
+CCU/RFC stack. Keep the test as a lab-only diagnostic. Do not add card-detect
+GPIOs, vendor U-Boot DTS aliases, or Ethernet/VPU/display nodes to solve this.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible

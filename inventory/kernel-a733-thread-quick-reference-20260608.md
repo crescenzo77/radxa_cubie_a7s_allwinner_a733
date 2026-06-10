@@ -350,6 +350,15 @@ CMD0. Log:
 `tools/hardware-logs/cubie-uart/20260610T024831Z-a733-mmc-trace-b839d38b3a6c-direct-ttyUSB0.uart.log`
 SHA256:
 `132d87856d41b03941e192b2749ff8ef1096871b8631262196bd14873c49432c`.
+Follow-up commit `a52ea49def77` traced IRQ/finalize paths and polled raw MMC
+status after CMD0. The valid direct U-Boot run shows no `diag irq`, no
+`diag finalize`, and repeated zero register state after CMD0:
+`rint=0x00000000 mista=0x00000000 stas=0x00000000 cmdr=0x00000000
+imask=0x00000000`. This narrows the blocker further to command launch or
+controller state before IRQ delivery. Log:
+`tools/hardware-logs/cubie-uart/20260610T030303Z-a733-mmc-irqtrace-a52ea49def77-direct-v2-ttyUSB0.uart.log`
+SHA256:
+`552cb242bbbc05baf84374c2425c310908e82244e7d762406d8c4ca1c7b79ed9`.
 
 Focused evidence note:
 `inventory/kernel-a733-ccu-unused-clock-evidence-20260610.md`.
