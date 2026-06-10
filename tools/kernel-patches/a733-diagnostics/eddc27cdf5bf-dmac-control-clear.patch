@@ -1,0 +1,30 @@
+From eddc27cdf5bf28de9afaea997b8696e7198c6e5b Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 12:25:09 -0400
+Subject: [PATCH] mmc: test A733 IDMAC control clear
+
+---
+ drivers/mmc/host/sunxi-mmc.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 091f06760cfd..1071ce02c605 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -577,6 +577,13 @@ static void sunxi_mmc_start_dma(struct sunxi_mmc_host *host,
+ 	dev_info(mmc_dev(host->mmc),
+ 		 "diag vendor reset sequence ret=%d gctrl=0x%08x dmac=0x%08x\n",
+ 		 ret, mmc_readl(host, REG_GCTRL), mmc_readl(host, REG_DMAC));
++	if (of_device_is_compatible(mmc_dev(host->mmc)->of_node,
++				    "allwinner,sun60i-a733-mmc")) {
++		mmc_writel(host, REG_DMAC, 0);
++		dev_info(mmc_dev(host->mmc),
++			 "diag a733 dmac-zero before-enable dmac=0x%08x\n",
++			 mmc_readl(host, REG_DMAC));
++	}
+ 
+ 	rval = mmc_readl(host, REG_GCTRL);
+ 	rval |= SDXC_DMA_ENABLE_BIT;
+-- 
+2.53.0
+

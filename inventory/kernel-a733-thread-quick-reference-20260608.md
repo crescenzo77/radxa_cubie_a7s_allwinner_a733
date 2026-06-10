@@ -683,3 +683,49 @@ the installed extlinux entry is needed, remember Cubie3 sudo is password-gated.
   Linux and initialized UART/MMC, but rootfs did not mount.
 - Do not turn temporary `drm_debug=1` U-Boot env handling into an upstream DTS
   or Linux patch claim.
+
+## 2026-06-10 Current Runtime State
+
+The active blocker has moved well past the original rootfs panic. Private
+diagnostics now prove SD card init, pre-`mmcblk0` CMD17, small PIO CMD18 reads,
+partition discovery, CMD49 cache-enable via scoped PIO write, and read-only
+EXT4 root mount to `init=/bin/sh` when IDMA is bypassed.
+
+H009 proves the IDMA issue does not require large block I/O: a forced
+8-block, one-descriptor CMD18 transfer still stalls with `RINTR=0x24`,
+`IDST=0x4000`, `CHDA=DLBA`, `CBDA=0`, `CBCR=0x400`, and `BBCR=0`.
+
+H010 vendor live descriptor-memory evidence:
+
+```text
+tools/hardware-logs/cubie-uart/20260610T162310Z-cubie3-vendor-sdmmc0-descmem-sample.log
+sha256: 4b6c57a300cdfa5d86217f469c99863f4d3a9ef7602197e86fd19f6f2ae9386a
+
+tools/hardware-logs/cubie-uart/20260610T162333Z-cubie3-vendor-sdmmc0-descmem-4k-sample.log
+sha256: 99ad8f9b5a3a28d7410cb5442adde8a19edb481be9490f6679bdc7edbd7f0965
+```
+
+Result: vendor working 4 KiB reads use the same practical descriptor geometry
+as H009/H011: `des0` `0x8000001c` or `0x0000001c`, size `0x00001000`,
+shifted data-buffer address, and shifted next-descriptor address. Descriptor
+geometry is closed for now.
+
+H011 diagnostic head: `eddc27cdf5bf` (`mmc: test A733 IDMAC control clear`).
+Artifact:
+`/srv/projects/kernel-work/outgoing/a733-h011-dmacclear-eddc27cdf5bf-20260610T162620Z`.
+Patch archive:
+`tools/kernel-patches/a733-diagnostics/eddc27cdf5bf-dmac-control-clear.patch`,
+sha256 `d35eae8df6c0927f6820f76cd731b527d7341c73cead64cb6976ffa807ed13c8`.
+UART:
+`tools/hardware-logs/cubie-uart/20260610T163415Z-a733-h011-dmacclear-eddc27cdf5bf-ext4load-corrected-ttyUSB0.uart.log`,
+sha256 `1a4df27db0edbe02c189622d828053838f7418262acc50fc93161ac11be0e671`.
+
+Result: H011 fails usefully. A direct `REG_DMAC=0` write before IDMAC enable
+immediately reads back `0x00000200`; the one-descriptor CMD18 transfer still
+stalls with `DMAC=0x282`, `RINTR=0x24`, `IDST=0x4000`, `CHDA=DLBA`,
+`CBDA=0`, `CBCR=0x400`, and `BBCR=0`. Do not retest direct DMAC clearing.
+
+Next queue item: H012. Identify the source or meaning of sticky DMAC bit
+`0x200` with a vendor live `GCTRL`/DMAC sample and source audit before any new
+kernel behavior patch. If bit `0x200` is read-only, derived, or non-causal,
+close that clue and move to hidden wrapper, coherency, or fabric evidence.

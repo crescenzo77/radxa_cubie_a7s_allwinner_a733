@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T16:20:18Z",
+  "updated_utc": "2026-06-10T16:37:48Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing with IDST=0x4000, CHDA=DLBA, CBDA=0, RINTR=0x24, CBCR=0x400, and BBCR=0. The next responsible step is a vendor-vs-mainline single-descriptor IDMA comparison before another boot variant.",
+  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 shows the vendor working 4 KiB descriptor geometry matches the mainline single-descriptor shape. H011 falsifies a direct REG_DMAC clear as the fix for the observed mainline DMAC bit 0x200 readback: writing zero before enable still reads back 0x200 and the transfer still stalls. The next responsible step is to identify the source/meaning of that sticky bit or close it as non-causal before any new boot variant.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -36,18 +36,20 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H009",
+    "id": "A733-SDMMC-H011",
     "status": "failed",
-    "title": "Single-descriptor IDMA CMD18 read proof",
-    "kernel_head": "a14ac7c15a9829c803091230369f88a8fc3bfeec",
-    "artifact": "/srv/projects/kernel-work/outgoing/a733-h009-singleidma-a14ac7c15a98-20260610T160618Z",
-    "image_sha256": "1556162017ca52b73570ba94727b865c42fa4727202ada8df2b5e65d725ec37e",
+    "title": "A733 IDMAC control clear diagnostic",
+    "kernel_head": "eddc27cdf5bf28de9afaea997b8696e7198c6e5b",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-h011-dmacclear-eddc27cdf5bf-20260610T162620Z",
+    "image_sha256": "f740722dbad912832d1e3434fe3cf70873c58fa06abd1e4ece5f71bedfa9c953",
     "dtb_sha256": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
     "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
-    "build_log_sha256": "d83f1bd99dd8e7629cf1f686f831e064e09cab0a52695df4411f68d287a9fe38",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T160824Z-a733-h009-singleidma-a14ac7c15a98-ttyUSB0.uart.log",
-    "uart_log_sha256": "f4d4e25476140d8cc4373250e654b958b31dcf5db6f1a646416f0b6825067727",
-    "result": "Failed as intended for narrowing. CMD49 still completes through PIO and mmcblk0 appears, but the first 8-block CMD18 forced through IDMA stalls before partition parsing. The single descriptor is des0=0x8000001c size=0x00001000 buf=0x40574800 next=0x3f840004. Post-command state remains RINTR=0x24, IDST=0x4000, CHDA=DLBA=0x3f840000, CBDA=0, CBCR=0x400, BBCR=0. This proves the failure does not require a large or multi-descriptor request."
+    "build_log_sha256": "6acb5cad1c2422c68e6cf357fb28f0bd8ea7c8bf7984b1e7d22251d41107d503",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T163415Z-a733-h011-dmacclear-eddc27cdf5bf-ext4load-corrected-ttyUSB0.uart.log",
+    "uart_log_sha256": "1a4df27db0edbe02c189622d828053838f7418262acc50fc93161ac11be0e671",
+    "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/eddc27cdf5bf-dmac-control-clear.patch",
+    "patch_archive_sha256": "d35eae8df6c0927f6820f76cd731b527d7341c73cead64cb6976ffa807ed13c8",
+    "result": "Failed as a fix, useful as a narrowing result. Before enabling IDMAC, the diagnostic writes REG_DMAC=0, but immediate readback is still 0x00000200. The one-descriptor CMD18 transfer then stalls with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0. Directly clearing DMAC does not remove bit 0x200 or fix descriptor consumption."
   },
   "hypotheses": [
     {
@@ -247,7 +249,7 @@
     {
       "id": "A733-SDMMC-H010",
       "priority": 1,
-      "status": "ready",
+      "status": "completed",
       "title": "Single-descriptor IDMA vendor comparison",
       "question": "Which descriptor, DMA address, or visible IDMAC state differs between the H009 single-descriptor mainline stall and the vendor working-read baseline?",
       "test_cost": "low; no boot before source/log comparison",
@@ -260,7 +262,57 @@
       ],
       "pass_criteria": "A concrete source-backed difference is identified that can explain why vendor IDMAC advances CHDA/CBDA while mainline remains at CHDA=DLBA and CBDA=0.",
       "fail_criteria": "No descriptor, address, or visible IDMAC setup difference remains; next work must move to hidden wrapper, coherency, or bus-fabric behavior with new evidence.",
-      "upstream_note": "This is evidence shaping only. It does not alter maintainer-facing DTS scope."
+      "upstream_note": "This is evidence shaping only. It does not alter maintainer-facing DTS scope.",
+      "result": {
+        "vendor_descmem_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T162310Z-cubie3-vendor-sdmmc0-descmem-sample.log",
+        "vendor_descmem_log_sha256": "4b6c57a300cdfa5d86217f469c99863f4d3a9ef7602197e86fd19f6f2ae9386a",
+        "vendor_descmem_4k_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T162333Z-cubie3-vendor-sdmmc0-descmem-4k-sample.log",
+        "vendor_descmem_4k_log_sha256": "99ad8f9b5a3a28d7410cb5442adde8a19edb481be9490f6679bdc7edbd7f0965",
+        "followup_h011_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T163415Z-a733-h011-dmacclear-eddc27cdf5bf-ext4load-corrected-ttyUSB0.uart.log",
+        "summary": "Vendor live descriptor memory for a 4 KiB read uses the same practical shape as H009/H011: des0 0x8000001c or 0x0000001c, size 0x00001000, shifted data-buffer address, and shifted next-descriptor address. The descriptor geometry hypothesis is closed for now. The remaining visible clue is a DMAC/readback discrepancy around bit 0x200, but H011 proves a direct REG_DMAC clear is not the fix."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H011",
+      "priority": 1,
+      "status": "completed",
+      "title": "A733 IDMAC control clear diagnostic",
+      "question": "Does clearing REG_DMAC before enabling IDMAC remove mainline's extra DMAC bit 0x200 and let a one-descriptor CMD18 transfer advance?",
+      "test_cost": "medium; one host-driver patch, one build, one boot",
+      "procedure": [
+        "Keep the H009 safety rails: CMD49-only PIO write, all other writes guarded, and a forced one-descriptor CMD18 IDMA read.",
+        "After the vendor-style DMA reset sequence, write REG_DMAC=0 before setting SDXC_DMA_ENABLE_BIT.",
+        "Log the immediate REG_DMAC readback before enable.",
+        "Boot Cubie3 with the corrected-root proof and capture descriptor plus IDMAC register state.",
+        "Restore Cubie3 to vendor kernel 5.15.147-21-a733, then update this queue and status docs."
+      ],
+      "pass_criteria": "REG_DMAC readback loses bit 0x200 and the one-descriptor CMD18 read advances beyond descriptor-read state.",
+      "fail_criteria": "REG_DMAC still reads with bit 0x200 set, or IDST remains 0x4000 with CHDA=DLBA and CBDA=0.",
+      "upstream_note": "This is lab-only source narrowing. Do not present direct DMAC clearing as an upstream fix.",
+      "result": {
+        "kernel_head": "eddc27cdf5bf28de9afaea997b8696e7198c6e5b",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-h011-dmacclear-eddc27cdf5bf-20260610T162620Z",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T163415Z-a733-h011-dmacclear-eddc27cdf5bf-ext4load-corrected-ttyUSB0.uart.log",
+        "summary": "Failed. REG_DMAC=0 immediately reads back as 0x00000200 before enable; post-command state is still DMAC=0x282, RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H012",
+      "priority": 1,
+      "status": "ready",
+      "title": "Identify source of sticky DMAC bit 0x200",
+      "question": "Is mainline's sticky DMAC bit 0x200 a causal A733 IDMAC setup difference, a read-only/derived status bit, or a non-causal artifact?",
+      "test_cost": "low first; source audit plus one vendor live register sample before any build",
+      "procedure": [
+        "Collect one vendor live 4 KiB read sample that includes GCTRL as well as DMAC, DLBA, IDST, CHDA, CBDA, CBCR, BBCR, and descriptor memory in the fixed register-dump schema.",
+        "Audit the vendor v5p3x SDMMC driver, mainline sunxi-mmc definitions, and available manuals for REG_DMAC bit 9 semantics or adjacent wrapper state.",
+        "If bit 0x200 is read-only, derived from GCTRL/reset, or otherwise non-causal, close the DMAC clue and move to hidden wrapper/coherency/fabric evidence.",
+        "Only if the audit finds a concrete source-backed control delta, build one minimal diagnostic patch that changes that delta alone.",
+        "After any boot, restore Cubie3 to vendor kernel 5.15.147-21-a733 and update this queue."
+      ],
+      "pass_criteria": "The source/meaning of bit 0x200 is identified strongly enough to justify one minimal next diagnostic or to discard it as non-causal.",
+      "fail_criteria": "No source-backed meaning is found; next work must stop treating DMAC bit 0x200 as actionable and move to wrapper/coherency/fabric evidence collection.",
+      "upstream_note": "This remains private lab evidence. It does not expand the maintainer-facing DTS series or duplicate the in-flight CCU/pinctrl RFCs."
     },
     {
       "id": "A733-SDMMC-H004",

@@ -9,10 +9,25 @@
       "sha256": "3fe99a97efad4935221d75c6175ff6ebeac6a907969d23db44a23f30ea5223d0",
       "kernel": "5.15.147-21-a733"
     },
+    "vendor_descmem_sample": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T162310Z-cubie3-vendor-sdmmc0-descmem-sample.log",
+      "sha256": "4b6c57a300cdfa5d86217f469c99863f4d3a9ef7602197e86fd19f6f2ae9386a",
+      "kernel": "5.15.147-21-a733"
+    },
+    "vendor_descmem_4k_sample": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T162333Z-cubie3-vendor-sdmmc0-descmem-4k-sample.log",
+      "sha256": "99ad8f9b5a3a28d7410cb5442adde8a19edb481be9490f6679bdc7edbd7f0965",
+      "kernel": "5.15.147-21-a733"
+    },
     "mainline_log": {
       "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T160824Z-a733-h009-singleidma-a14ac7c15a98-ttyUSB0.uart.log",
       "sha256": "f4d4e25476140d8cc4373250e654b958b31dcf5db6f1a646416f0b6825067727",
       "kernel_head": "a14ac7c15a9829c803091230369f88a8fc3bfeec"
+    },
+    "h011_log": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T163415Z-a733-h011-dmacclear-eddc27cdf5bf-ext4load-corrected-ttyUSB0.uart.log",
+      "sha256": "1a4df27db0edbe02c189622d828053838f7418262acc50fc93161ac11be0e671",
+      "kernel_head": "eddc27cdf5bf28de9afaea997b8696e7198c6e5b"
     },
     "template": "task-packets/kernel/a733-sdmmc-register-dump-template.json"
   },
@@ -59,6 +74,27 @@
         "DRV_DL": "0x00010000",
         "SAMP_DL": "0x00002000",
         "SMCV": "0x02050530"
+      }
+    },
+    "vendor_descmem_4k": {
+      "phase": "vendor-live-4k-read",
+      "observations": {
+        "descriptor_phys": "0xff182000",
+        "des0_seen": [
+          "0x8000001c",
+          "0x0000001c"
+        ],
+        "size": "0x00001000",
+        "buf_example": "0x433b9000",
+        "next_example": "0x3fc60804",
+        "dmac_seen": [
+          "0x00000082",
+          "0x00000000"
+        ],
+        "idst_seen": [
+          "0x00000000",
+          "0x00000002"
+        ]
       }
     },
     "mainline_h009_idma_post_cmdr": {
@@ -204,7 +240,21 @@
       "mainline_value": "sg0_dma=0x00000001015d2000, descriptor buf=0x40574800",
       "delta": "open",
       "interpretation": "H010 should inspect whether vendor constrains data buffers differently or programs a hidden high-address path."
+    },
+    {
+      "field": "descriptor_geometry",
+      "vendor_value": "4 KiB descriptor with des0 0x8000001c/0x0000001c, size 0x00001000, shifted buffer, shifted next pointer",
+      "mainline_value": "4 KiB descriptor with des0 0x8000001c, size 0x00001000, shifted buffer, shifted next pointer",
+      "delta": "none actionable",
+      "interpretation": "The vendor live descriptor memory matches the H009/H011 single-descriptor shape closely enough to close descriptor geometry as the immediate hypothesis."
+    },
+    {
+      "field": "h011_dmac_clear",
+      "vendor_value": "live vendor 4 KiB sample commonly reads DMAC 0x00000082 during active transfer",
+      "mainline_value": "REG_DMAC=0 write immediately reads back 0x00000200 before enable, then stalls with DMAC 0x00000282",
+      "delta": "visible but not directly clearable",
+      "interpretation": "DMAC bit 0x200 remains a clue only if its source/meaning is identified. H011 falsifies direct DMAC zeroing as a fix."
     }
   ],
-  "conclusion": "H009 eliminates request size and descriptor count as necessary conditions for the IDMA failure. Visible setup registers match closely; the failure remains IDMAC descriptor consumption/progress. The next patch must be justified by a concrete vendor/source delta, not by another visible-register guess."
+  "conclusion": "H010 closes descriptor geometry for the current blocker: vendor working 4 KiB reads and mainline failing single-descriptor reads use the same practical descriptor size and shifted address layout. H011 then tests the remaining visible DMAC bit 0x200 clue and proves direct REG_DMAC clearing is not sufficient: bit 0x200 immediately reads back and IDMAC still stalls in descriptor-read state. The next work item is H012: identify the source/meaning of bit 0x200, or discard it as non-causal and move to hidden wrapper, coherency, or fabric evidence."
 }
