@@ -1,0 +1,26 @@
+{
+  "id": "A733-SDMMC-H032",
+  "created_utc": "2026-06-10T20:37:14Z",
+  "status": "current_recheck_no_send",
+  "sent": false,
+  "purpose": "Check whether the H030/H032 public question is stale before requesting approval to send.",
+  "queries": [
+    "lore.kernel.org/all/?q=a733%20mmc",
+    "lore.kernel.org/all/?q=sun60i%20a733%20mmc",
+    "lore.kernel.org/all/?q=Allwinner%20A733%20SDMMC",
+    "lore.kernel.org/all/?q=sunxi%20v5p3x%20mmc",
+    "web search: [PATCH v2 00/10] sunxi: Add support for A733 SoC"
+  ],
+  "result": {
+    "direct_linux_mmc_a733_hits": 0,
+    "direct_sun60i_a733_mmc_hits": 0,
+    "notable_related_hit": "[PATCH v2 00/10] sunxi: Add support for A733 SoC on U-Boot/sunxi lists, including an mmc/uart patch in the series summary.",
+    "interpretation": "No current public Linux MMC/A733 thread was found that answers the SDMMC0 IDMAC DESC_READ question. The H030 draft still appears relevant; the related U-Boot A733 series does not replace the Linux runtime question."
+  },
+  "sources": [
+    "https://yhbt.net/lore/linux-sunxi/?t=20260113040247",
+    "https://yhbt.net/lore/all/?t=20260102065106",
+    "https://yhbt.net/lore/all/?t=20251130185415-"
+  ],
+  "next_required_user_decision": "Approve sending the guarded public-clean H030 question, hold, or choose an alternate route."
+}

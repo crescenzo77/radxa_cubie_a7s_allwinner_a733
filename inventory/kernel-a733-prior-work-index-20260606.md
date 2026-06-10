@@ -191,3 +191,6 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
   dry-run result
   `task-packets/kernel/a733-h032-guarded-send-helper-20260610T2033Z.json`.
   It defaults to dry-run and requires explicit env/argument gates before send.
+- H032 current upstream recheck produced
+  `task-packets/kernel/a733-h032-current-upstream-recheck-20260610T2037Z.json`.
+  No public Linux MMC/A733 answer to the IDMAC `DESC_READ` question was found.

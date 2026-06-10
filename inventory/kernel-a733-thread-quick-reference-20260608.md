@@ -1160,3 +1160,8 @@ It defaults to dry-run and refuses to send unless `--send`,
 `A733_SEND_APPROVED=yes`, the expected draft SHA256, and the approved From
 identity all match. Dry-run result:
 `task-packets/kernel/a733-h032-guarded-send-helper-20260610T2033Z.json`.
+
+Current upstream recheck:
+`task-packets/kernel/a733-h032-current-upstream-recheck-20260610T2037Z.json`.
+No public Linux MMC/A733 answer to the IDMAC `DESC_READ` question was found;
+the H030 draft still appears relevant.
