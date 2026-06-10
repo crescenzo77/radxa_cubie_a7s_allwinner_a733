@@ -1869,6 +1869,48 @@ shows an unexpected 8-block `CMD25` write that uses IDMA and stalls in the same
 descriptor-read state. Do not enable write-capable PIO next. H006 should first
 trace the issuer/call path for the unexpected write and preserve media safety.
 
+## Write Trace and SD Cache-Enable Isolation
+
+Commit `44b8af4ff269` blocks A733 writes before DMA, logs the request, and
+dumps the first stack:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-writetrace-44b8af4ff269-20260610T153401Z
+Image sha256: 844bffa34f5acb696acfcca30142612feb3ce82569b91ce7ca2e6615ddebcfe9
+build log sha256: 3ccdbacc152842dd6fabb6c633f2c789b33b6dd80eda42e270e88a3f715cf1c3
+
+tools/hardware-logs/cubie-uart/20260610T153613Z-a733-writetrace-44b8af4ff269-ttyUSB0.uart.log
+sha256: 6ea4c817158193b93ed7f099d3d6db5245cff91086fedf5d2f1c68c32282b60d
+```
+
+Result: H006 identified the first write as SD cache enable, not rootfs write
+activity:
+
+```text
+diag block A733 write opcode=49 arg=0x10020800 flags=0x100 blksz=512 blocks=1 sg_len=1 task=kworker/7:1
+Workqueue: events_freezable mmc_rescan
+sd_write_ext_reg -> mmc_sd_init_card -> mmc_attach_sd -> mmc_rescan
+mmc0: error -30 writing Cache Enable bit
+```
+
+Commit `2acef0aaad0e` keeps the write guard but skips only the SD cache-enable
+write for the A733 diagnostic path:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-skipcache-writetrace-2acef0aaad0e-20260610T154057Z
+Image sha256: d334dd2d7b89c272e19b0a128a672c6362533dbda8eb8cb14a8b1fd62c55ce13
+build log sha256: fee4a1aa5532dcc66e792f91bee0f4425e53c965bf9fa43bf91034febe9f5954
+
+tools/hardware-logs/cubie-uart/20260610T154257Z-a733-skipcache-writetrace-2acef0aaad0e-ttyUSB0.uart.log
+sha256: 2af9185917984ff0b3e036cb896ca3d287a5e8f176e74bd230548e03b85d75e6
+```
+
+Result: H007 passed. The log contains `mmc0: diag skip A733 SD cache enable`,
+then `mmcblk0: p1 p2 p3`, EXT4 read-only mount, and `Run /bin/sh as init
+process`. No `diag block A733 write`, `opcode=25`, or `opcode=49` write
+appears in the captured window. Next work item: H008 should test only CMD49
+PIO write mechanics, keeping all other writes blocked.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible

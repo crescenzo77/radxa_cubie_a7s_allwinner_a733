@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T15:27:58Z",
+  "updated_utc": "2026-06-10T15:47:22Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, and read-only EXT4 root mount to init=/bin/sh when block reads are capped to 8 blocks. The remaining blocker is any IDMA-backed data request: large reads previously stall, and H005 exposed an unexpected 8-block CMD25 write that also stalls in IDMA descriptor-read state.",
+  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, and read-only EXT4 root mount to init=/bin/sh when block reads are capped to 8 blocks. H006 identified the first write as SD core cache-enable via CMD49/sd_write_ext_reg during mmc_sd_init_card. H007 shows that skipping SD cache enable allows the read-only root proof with no write request captured. The unresolved hardware issue remains IDMA-backed transfer handling; the next low-risk test is CMD49-only PIO write, not general writes.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -28,18 +28,18 @@
     "Keep clk_ignore_unused and PIO bypasses as lab diagnostics only."
   ],
   "latest_completed_test": {
-    "id": "A733-SDMMC-H005",
-    "status": "passed_with_residual_write_stall",
-    "title": "PIO-sized block-layer rootfs proof",
-    "kernel_head": "14c5743c80fe3dcff63172367dbd1f06cd6fa141",
-    "artifact": "/srv/projects/kernel-work/outgoing/a733-piolimits-14c5743c80fe-20260610T151929Z",
-    "image_sha256": "b987cd85aa258be6443fd9dd4919a873638d8105155482d3e0a9760ace037c1f",
+    "id": "A733-SDMMC-H007",
+    "status": "passed",
+    "title": "Skip SD cache-enable write and trace subsequent writes",
+    "kernel_head": "2acef0aaad0ecacd62466d95c8c41d70c43be816",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-skipcache-writetrace-2acef0aaad0e-20260610T154057Z",
+    "image_sha256": "d334dd2d7b89c272e19b0a128a672c6362533dbda8eb8cb14a8b1fd62c55ce13",
     "dtb_sha256": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
     "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
-    "build_log_sha256": "cfcf71b148036e63544d88131bc90d7e0ff2a548933acc2465fc978b4c1aeeb7",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T152131Z-a733-piolimits-14c5743c80fe-ttyUSB0.uart.log",
-    "uart_log_sha256": "9b76b773e550e0b75ba61328e256b218d5270901a092e48b421eb8cc16457807",
-    "result": "Passed the read-only rootfs proof. With A733 SDMMC0 limits set to max_blk_count=8, max_blk_size=512, max_segs=1, max_seg_size=4096, and max_req_size=4096, the kernel mounted EXT4 read-only on mmcblk0p3 and reached init=/bin/sh. Reads stayed in the proven small PIO path. After shell start, an unexpected opcode=25 8-block write request appeared; because the diagnostic PIO path only covers reads, that write used IDMA and stalled with RINTR=0x14, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0, and BBCR=0. This proves read-only boot viability with PIO-sized reads and narrows the unresolved issue to IDMA-backed transfers, including writes."
+    "build_log_sha256": "fee4a1aa5532dcc66e792f91bee0f4425e53c965bf9fa43bf91034febe9f5954",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T154257Z-a733-skipcache-writetrace-2acef0aaad0e-ttyUSB0.uart.log",
+    "uart_log_sha256": "2af9185917984ff0b3e036cb896ca3d287a5e8f176e74bd230548e03b85d75e6",
+    "result": "Passed. H006 showed the first write was SD cache enable via CMD49/sd_write_ext_reg in mmc_sd_init_card. H007 skipped only that cache-enable write on A733 while keeping the write guard. The kernel then discovered mmcblk0 p1/p2/p3, mounted EXT4 read-only on mmcblk0p3, and reached init=/bin/sh. No diag block A733 write, opcode=25, or opcode=49 write appeared in the captured window. Skipping SD cache enable is therefore sufficient for the read-only proof, but the proper next diagnostic is a controlled CMD49-only PIO write, not a broad write path."
   },
   "hypotheses": [
     {
@@ -140,7 +140,7 @@
     {
       "id": "A733-SDMMC-H006",
       "priority": 1,
-      "status": "ready",
+      "status": "completed",
       "title": "Trace unexpected CMD25 write issuer before enabling writes",
       "question": "What kernel path issues an 8-block CMD25 write after an init=/bin/sh read-only root proof, and can it be prevented or isolated before any write-capable PIO experiment?",
       "test_cost": "medium; small printk/dump_stack patch and one boot",
@@ -153,7 +153,56 @@
       ],
       "pass_criteria": "UART identifies the issuer/call path for the CMD25 write without completing a potentially unsafe write to the rootfs.",
       "fail_criteria": "No stack or issuer evidence is captured before the write stalls.",
-      "upstream_note": "This remains a lab safety diagnostic. Do not convert it into upstream policy."
+      "upstream_note": "This remains a lab safety diagnostic. Do not convert it into upstream policy.",
+      "result": {
+        "kernel_head": "44b8af4ff2696b9f1665546a2434683d15b19a6f",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-writetrace-44b8af4ff269-20260610T153401Z",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T153613Z-a733-writetrace-44b8af4ff269-ttyUSB0.uart.log",
+        "summary": "Passed as an issuer trace but intentionally blocked card init. The first write is opcode=49, task kworker/7:1, workqueue events_freezable mmc_rescan. Stack: sd_write_ext_reg -> mmc_sd_init_card -> mmc_attach_sd -> mmc_rescan. The core reports error -30 writing Cache Enable bit and card init fails. This identifies SD cache enable as the first write before any rootfs activity."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H007",
+      "priority": 1,
+      "status": "completed",
+      "title": "Skip SD cache-enable write and trace subsequent writes",
+      "question": "If SD cache enable is skipped on A733, does the read-only root proof proceed and does any later write still appear?",
+      "test_cost": "medium; small core diagnostic patch and one boot",
+      "procedure": [
+        "Keep the A733 write guard active.",
+        "Skip only the SD cache-enable write in mmc_sd_init_card for the A733 diagnostic path.",
+        "Boot Cubie3 once with the same PARTUUID ro root proof and capture UART.",
+        "Search the UART log for diag block A733 write, opcode=25, opcode=49, EXT4 mount, and init=/bin/sh.",
+        "Restore Cubie3 to vendor kernel 5.15.147-21-a733, then update this queue and status docs."
+      ],
+      "pass_criteria": "The card initializes, EXT4 mounts read-only, init=/bin/sh starts, and no write request is captured in the proof window.",
+      "fail_criteria": "A later write appears and is blocked/traced, or card init still fails.",
+      "upstream_note": "A cache-enable skip is diagnostic. Do not treat it as final upstream policy without maintainer-facing rationale.",
+      "result": {
+        "kernel_head": "2acef0aaad0ecacd62466d95c8c41d70c43be816",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-skipcache-writetrace-2acef0aaad0e-20260610T154057Z",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T154257Z-a733-skipcache-writetrace-2acef0aaad0e-ttyUSB0.uart.log",
+        "summary": "Passed. Log includes 'mmc0: diag skip A733 SD cache enable', mmcblk0 p1/p2/p3, EXT4 ro mount, and init=/bin/sh. No write trace appears in the captured window."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H008",
+      "priority": 1,
+      "status": "ready",
+      "title": "Controlled CMD49 PIO cache-enable proof",
+      "question": "Can the SD cache-enable CMD49 write complete through a narrowly scoped PIO write path, without enabling arbitrary block writes?",
+      "test_cost": "medium; small host-driver patch and one boot",
+      "procedure": [
+        "Do not enable general writes.",
+        "Add PIO write support only for opcode 49 with one 512-byte block on the A733 diagnostic path.",
+        "Keep the write guard for all other write opcodes.",
+        "Do not skip SD cache enable in the core for this test.",
+        "Boot Cubie3 once, capture whether CMD49 completes, whether the card initializes, and whether any later write is traced.",
+        "Restore Cubie3 to vendor kernel 5.15.147-21-a733, then update this queue and status docs."
+      ],
+      "pass_criteria": "CMD49 completes via PIO, card init proceeds, and either read-only root mounts with no later writes or the next write issuer is captured.",
+      "fail_criteria": "CMD49 PIO fails or causes a media-risky write path outside the scoped command.",
+      "upstream_note": "This tests write protocol mechanics only. It is not a final upstream write-path design."
     },
     {
       "id": "A733-SDMMC-H004",

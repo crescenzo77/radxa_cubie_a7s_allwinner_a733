@@ -1,0 +1,51 @@
+From 44b8af4ff2696b9f1665546a2434683d15b19a6f Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 11:33:53 -0400
+Subject: [PATCH] mmc: trace A733 blocked writes
+
+---
+ drivers/mmc/host/sunxi-mmc.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 26a200bf50a8..98eba7c8b91b 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -307,6 +307,7 @@ struct sunxi_mmc_host {
+ 	void		*sg_cpu;
+ 	size_t		sg_dma_size;
+ 	bool		wait_dma;
++	bool		diag_write_trace_done;
+ 
+ 	struct mmc_request *mrq;
+ 	struct mmc_request *manual_stop_mrq;
+@@ -1375,6 +1376,26 @@ static void sunxi_mmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 			 cmd->opcode, data->flags, data->blksz, data->blocks,
+ 			 data->sg_len, cmd->data->stop ? 1 : 0);
+ 
++	if (data && (data->flags & MMC_DATA_WRITE) &&
++	    of_device_is_compatible(host->dev->of_node,
++				     "allwinner,sun60i-a733-mmc")) {
++		dev_info(mmc_dev(mmc),
++			 "diag block A733 write opcode=%u arg=0x%08x flags=0x%x blksz=%u blocks=%u sg_len=%u task=%s[%d]\n",
++			 cmd->opcode, cmd->arg, data->flags, data->blksz,
++			 data->blocks, data->sg_len, current->comm,
++			 task_pid_nr(current));
++		if (!host->diag_write_trace_done) {
++			host->diag_write_trace_done = true;
++			dump_stack();
++		}
++		cmd->error = -EROFS;
++		data->error = -EROFS;
++		if (mrq->stop)
++			mrq->stop->error = -EROFS;
++		mmc_request_done(mmc, mrq);
++		return;
++	}
++
+ 	/* Check for set_ios errors (should never happen) */
+ 	if (host->ferror) {
+ 		mrq->cmd->error = host->ferror;
+-- 
+2.53.0
+

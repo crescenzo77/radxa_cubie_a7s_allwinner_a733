@@ -1,0 +1,30 @@
+From 2acef0aaad0ecacd62466d95c8c41d70c43be816 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 11:40:47 -0400
+Subject: [PATCH] mmc: skip A733 diagnostic SD cache write
+
+---
+ drivers/mmc/core/sd.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
+index ec41def411a8..be42f299cda0 100644
+--- a/drivers/mmc/core/sd.c
++++ b/drivers/mmc/core/sd.c
+@@ -1576,7 +1576,12 @@ static int mmc_sd_init_card(struct mmc_host *host, u32 ocr,
+ 	}
+ 
+ 	/* Enable internal SD cache if supported. */
+-	if (card->ext_perf.feature_support & SD_EXT_PERF_CACHE) {
++	if ((card->ext_perf.feature_support & SD_EXT_PERF_CACHE) &&
++	    host->parent && host->parent->of_node &&
++	    of_device_is_compatible(host->parent->of_node,
++				     "allwinner,sun60i-a733-mmc")) {
++		pr_info("%s: diag skip A733 SD cache enable\n", mmc_hostname(host));
++	} else if (card->ext_perf.feature_support & SD_EXT_PERF_CACHE) {
+ 		err = sd_enable_cache(card);
+ 		if (err)
+ 			goto free_card;
+-- 
+2.53.0
+
