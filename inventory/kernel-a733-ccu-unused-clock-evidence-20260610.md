@@ -439,6 +439,71 @@ and provider IDs against Junhui Liu's A733 CCU/PRCM and pmdomain RFCs and the
 vendor DTB; if those match, trace the CCU reset/gate writes for `bus-mmc0` and
 `mmc0` during `sunxi_mmc_enable()`.
 
+## SDMMC0 Reset-Cell Comparison And Falsification
+
+Local RFC-stack DTSI:
+
+```text
+mmc0: mmc@4020000
+reg = <0x04020000 0x1000>
+clocks = <&ccu CLK_BUS_MMC0>, <&ccu CLK_MMC0>
+resets = <&ccu RST_BUS_MMC0>
+```
+
+Local A733 CCU definitions:
+
+```text
+CLK_MMC0      = 143 -> mmc0 at CCU offset 0xd00
+CLK_BUS_MMC0  = 147 -> bus-mmc0 at CCU offset 0xd0c bit 0
+RST_BUS_MMC0  = 36  -> reset at CCU offset 0xd0c bit 16
+```
+
+Vendor DTB comparison:
+
+```text
+sdmmc@4020000
+reg = <0x00 0x4020000 0x00 0x1000>
+clocks = <osc24m, pll_periph, pll_periph_2, mmc, ahb, mmc_store, mmc_mbus, mmc_msi_lite>
+resets = <ccu 0x23>
+```
+
+The vendor reset cell for SDMMC0 is `0x23` (35 decimal), while the current
+local binding names `RST_BUS_MMC0` as 36. Vendor SDMMC1/2/3 are `0x24`,
+`0x25`, and `0x26`, which also suggests the MMC reset cells are one lower than
+the local header names.
+
+Strix diagnostic commit `0c658caf3956` tests vendor reset cell `0x23` for
+SDMMC0 in the lab DTS only.
+
+Artifact:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-mmc-resetcell-0c658caf3956-20260610T033130Z
+Image sha256: c1284f474f4fc8ba28497efdd12467e28e4efcecdd4bb62835c5e154e68c7cac
+DTB sha256:   ed3cc474fe72c25c3e0cb96a3fc9fa243c1c01631bf4e651031d3cba8500708b
+```
+
+Valid direct U-Boot capture:
+
+```text
+tools/hardware-logs/cubie-uart/20260610T033330Z-a733-mmc-resetcell-0c658caf3956-ext4load-ttyUSB0.uart.log
+sha256: 9d2063d6bcd0a1b9d0cacd05fa5d61fa84190648c5c02d525e53fdf726792a24
+```
+
+Result:
+
+```text
+baseline reset cell 36 -> all SDMMC0 register readbacks are 0x00000000
+vendor reset cell 35   -> all SDMMC0 register readbacks are 0x20000000
+```
+
+This does not fix SDMMC0: writes still do not read back as programmed, CMD0
+does not complete, and no block device appears. It does prove the reset cell is
+not a harmless detail. The next best target is the A733 CCU/reset provider
+mapping for the NAND/MMC reset block and the missing vendor storage fabric
+clocks (`mmc_store`, `mmc_mbus`, `mmc_msi_lite`), not SD card detect or
+interrupt delivery.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible

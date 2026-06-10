@@ -375,6 +375,14 @@ read back. Runtime PM is active and not suspended before CMD0. Log:
 `tools/hardware-logs/cubie-uart/20260610T032435Z-a733-mmc-initpm-b9e4692d4d5c-ext4load-ttyUSB0.uart.log`
 SHA256:
 `ca55c6f70ef7750e0ac86fcc4637b6dd1f8f31a5534611681453f47f9e6b60ea`.
+Vendor DTB comparison shows SDMMC0 uses reset cell `0x23`, while the current
+local header maps `RST_BUS_MMC0` to 36 (`0x24`). Commit `0c658caf3956` tested
+vendor cell 35 in the lab DTS. It changed SDMMC0 readbacks from all zero to
+all `0x20000000`, but still did not allow writes or CMD0 completion. This
+keeps the blocker in A733 CCU/reset/storage-fabric mapping. Log:
+`tools/hardware-logs/cubie-uart/20260610T033330Z-a733-mmc-resetcell-0c658caf3956-ext4load-ttyUSB0.uart.log`
+SHA256:
+`9d2063d6bcd0a1b9d0cacd05fa5d61fa84190648c5c02d525e53fdf726792a24`.
 
 Focused evidence note:
 `inventory/kernel-a733-ccu-unused-clock-evidence-20260610.md`.
