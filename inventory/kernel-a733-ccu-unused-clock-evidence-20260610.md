@@ -1164,6 +1164,26 @@ Conclusion: naively forcing `max_blk_count = 1` is not a valid CMD17 root-I/O
 proof. A future single-block-read diagnostic needs internally consistent MMC
 queue limits, or a lower-level targeted CMD17 proof outside `mmcblk` probing.
 
+Commit `4cb4d5b5c5d8` makes the single-block queue caps internally consistent
+at 512 bytes (`max_blk_count=1`, `max_blk_size=512`, `max_segs=1`,
+`max_seg_size=512`, `max_req_size=512`). `mmcblk` still rejects the device with
+`-22` before any CMD17 root-I/O proof:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-force-cmd17-512caps-4cb4d5b5c5d8-20260610T074310Z
+Image sha256: dc13a8a05871f706be739c0021c4c7953d33aebe3c42075e1e8391a18d7cb575
+DTB sha256:   ed3cc474fe72c25c3e0cb96a3fc9fa243c1c01631bf4e651031d3cba8500708b
+
+tools/hardware-logs/cubie-uart/20260610T074514Z-a733-force-cmd17-512caps-4cb4d5b5c5d8-ext4load-ttyUSB0.uart.log
+sha256: 84690d6ba1488490983e80eca2c5b14093d47c2cc18c3a7daeca5d1b63ecf495
+
+mmc_blk_alloc_req
+mmcblk mmc0:544c: probe with driver mmcblk failed with error -22
+```
+
+Conclusion: queue capping through the host limits is not producing a valid
+CMD17 root-I/O proof. Use a lower-level targeted CMD17 diagnostic if needed.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
