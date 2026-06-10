@@ -1072,6 +1072,32 @@ diag idma_des_after des0=0x8000002c size=0x00001000 buf=0xfb800000 next=0x000000
 Conclusion: a stronger descriptor write barrier alone is not the missing
 piece; IDMAC still never takes ownership of the descriptor.
 
+Low-descriptor-address attempt: commits `3efc8c1ee7a2` and `acbcd372ab16`
+tried to constrain the coherent descriptor allocation with 28-bit and 30-bit
+coherent DMA masks, respectively, to test whether descriptor fetch requires a
+lower bus address. Both fail before descriptor allocation:
+
+```text
+sunxi-mmc 4020000.mmc: error -EIO: Failed to set low coherent DMA mask
+sunxi-mmc 4020000.mmc: probe with driver sunxi-mmc failed with error -5
+```
+
+Artifacts/logs:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-idma-lowdesc-3efc8c1ee7a2-20260610T070519Z
+tools/hardware-logs/cubie-uart/20260610T070718Z-a733-idma-lowdesc-3efc8c1ee7a2-ext4load-ttyUSB0.uart.log
+sha256: 58b6a76d8430764c4828ebd59219f57c297c139daa6aeaa3720b505281b80ab3
+
+/srv/projects/kernel-work/outgoing/a733-idma-lowdesc30-acbcd372ab16-20260610T071030Z
+tools/hardware-logs/cubie-uart/20260610T071340Z-a733-idma-lowdesc30-acbcd372ab16-ext4load-ttyUSB0.uart.log
+sha256: 33048305b9f05bc404fce9eaf3fd1125f42c36929d24f4813623b88998847244
+```
+
+Conclusion: the generic coherent-mask API path is not a viable way to force a
+lower descriptor address on this platform. It does not prove or disprove a
+descriptor address-window problem; it only closes this particular test method.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
