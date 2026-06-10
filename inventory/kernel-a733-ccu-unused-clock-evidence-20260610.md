@@ -227,6 +227,11 @@ The first large CMD18 still enters with `dmac=0x200`, reports
 `CBDA=0x00000000`, and `IDST=0x4000`. BSP cleanup reset is also not enough; the
 sticky `0x200` readback remains an open clue.
 
+Commit `2c2304b4d08b` adds the BSP init-path `sunxi_mmc_reset_dmactl()` call
+immediately after host reset. It returns `ret=0` but still reads
+`dmac=0x200`, then the first large CMD18 exits DMA setup as `dmac=0x282` and
+stalls in descriptor-read state. BSP init DMAC reset is also not enough.
+
 Full Orange Pi BSP source was cloned on Strix at:
 `/srv/projects/kernel-work/tmp/linux-orangepi-full`, branch
 `orange-pi-6.6-sun60iw2`, commit
@@ -544,6 +549,10 @@ sha256: dbcdadce479ae9ecb43885bbcd7ba50659e13a00e4f85fefafa4cd3dbcb80685
 SDMMC0 IDMA vendor DMAC cleanup-reset diagnostic:
 tools/hardware-logs/cubie-uart/20260610T113953Z-a733-idma-dmacreset-afbfd0b3f209-ext4load-ttyUSB0.uart.log
 sha256: a91aac7c06b6dfde4e948f562e4052865a6f094e58ee37e0665c71a19d4e28c3
+
+SDMMC0 IDMA vendor init DMAC reset diagnostic:
+tools/hardware-logs/cubie-uart/20260610T120837Z-a733-idma-initdmac-2c2304b4d08b-ext4load-ttyUSB0.uart.log
+sha256: 20c12b170172867f72f2a02d75ad04ec5dc3f3870449680292b5babcf808a9bb
 ```
 
 ## Source Findings
