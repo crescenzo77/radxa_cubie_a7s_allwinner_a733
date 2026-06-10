@@ -24,6 +24,13 @@ It does not yet mount root: MMC then reports repeated
 the PARTUUID root device. This confirms `ext-osc32k-gate` was a real blocker in
 the cleanup walk, but not the final runtime issue.
 
+Next diagnostic result: `pd_ignore_unused` does not fix the MMC timeout. Keeping
+the RTC/root oscillator clocks prepared during unused-clock cleanup does fix the
+MMC update-clock timeout: `sunxi-mmc 4020000.mmc` initializes without the fatal
+update-clock error. The board still waits for the PARTUUID root device because
+no `mmcblk0` line appears yet. This narrows the next blocker to MMC card
+enumeration after the clock-update timeout is removed.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -79,6 +86,15 @@ skip all RTC DCXO siblings and remove absent ext-osc32k-gate from RTC CCU
   -> unused-clock cleanup completes
   -> sunxi-mmc probe starts
   -> mmc update-clock timeout, no mmcblk/root yet
+
+add pd_ignore_unused
+  -> genpd reports "Not disabling unused power domains"
+  -> same mmc update-clock timeout
+
+skip root unprepare for iosc/osc19M/osc24M/osc26M
+  -> no mmc update-clock timeout
+  -> sunxi-mmc initializes
+  -> still no mmcblk0/root
 ```
 
 Key proof logs:
@@ -115,6 +131,14 @@ sha256: 4817f4dfb2b323843054dc064dd3a9f5c8c89cde10f32cf9ede10cf02a2fbd1f
 RTC ext-osc32k orphan diagnostic:
 tools/hardware-logs/cubie-uart/20260610T012308Z-a733-rtc-extosc-orphan-98d5978ddd56-extlinux2-ttyUSB0.uart.log
 sha256: 5fc2fb7ad1833fb8d2caf739eadf68638229f1f4432bf5e33f2c08d94ec7774f
+
+pd_ignore_unused falsification:
+tools/hardware-logs/cubie-uart/20260610T022155Z-a733-rtc-extosc-orphan-pdignore-98d5978ddd56-extlinux2-ttyUSB0.uart.log
+sha256: 007f2cabd5c85db2e0096a8deb89707e4f796a8b3b4cf846c45987ba7adb4971
+
+RTC/root oscillator unprepare skip:
+tools/hardware-logs/cubie-uart/20260610T022835Z-a733-osc-keep-5e6b35b07c67-extlinux2-ttyUSB0.uart.log
+sha256: eb3e495db4491922288494ff7f386c5106fa59b4ffc52350ff9a06a3f10cce59
 ```
 
 ## Source Findings
@@ -178,6 +202,18 @@ sunxi-mmc 4020000.mmc: initialized, max. request size: 2048 KB, uses new timings
 Waiting for root device PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e...
 ```
 
+Commit `5e6b35b07c67` adds a lab-only skip for unpreparing `iosc`, `osc19M`,
+`osc24M`, and `osc26M`. That removes the update-clock timeout:
+
+```text
+clk-unused: diag-skip-a733-osc-unprepare name=iosc
+clk-unused: diag-skip-a733-osc-unprepare name=osc26M
+clk-unused: diag-skip-a733-osc-unprepare name=osc24M
+clk-unused: diag-skip-a733-osc-unprepare name=osc19M
+sunxi-mmc 4020000.mmc: initialized, max. request size: 2048 KB, uses new timings mode
+Waiting for root device PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e...
+```
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
@@ -192,6 +228,8 @@ Waiting for root device PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e...
 5. After the RTC CCU stops are bypassed, which MMC0 clock parent or reset path
    is lost during unused-clock cleanup, causing the post-cleanup
    `fatal err update clk timeout`?
+6. Why does keeping RTC/root oscillators prepared remove the MMC update-clock
+   timeout, and why does card/block enumeration still not follow?
 
 ## Guardrails
 

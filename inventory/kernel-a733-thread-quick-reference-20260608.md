@@ -334,6 +334,14 @@ log:
 `tools/hardware-logs/cubie-uart/20260610T012308Z-a733-rtc-extosc-orphan-98d5978ddd56-extlinux2-ttyUSB0.uart.log`
 SHA256:
 `5fc2fb7ad1833fb8d2caf739eadf68638229f1f4432bf5e33f2c08d94ec7774f`.
+`pd_ignore_unused` was tested and did not fix that MMC timeout. Commit
+`5e6b35b07c67` then skipped unused-root unprepare for `iosc`, `osc19M`,
+`osc24M`, and `osc26M`; that removed the MMC update-clock timeout and reached
+clean `sunxi-mmc 4020000.mmc: initialized`, but still did not produce `mmcblk0`
+or root. Log:
+`tools/hardware-logs/cubie-uart/20260610T022835Z-a733-osc-keep-5e6b35b07c67-extlinux2-ttyUSB0.uart.log`
+SHA256:
+`eb3e495db4491922288494ff7f386c5106fa59b4ffc52350ff9a06a3f10cce59`.
 
 Focused evidence note:
 `inventory/kernel-a733-ccu-unused-clock-evidence-20260610.md`.
