@@ -1,0 +1,31 @@
+{
+  "id": "A733-SDMMC-H034",
+  "created_utc": "2026-06-10T22:20:00Z",
+  "status": "completed_no_response_seen",
+  "title": "Initial public list archive monitor after plain-text resend",
+  "question": "Is the manually sent A733 SDMMC0 IDMAC descriptor-fetch question visible in public archives yet, or has any answer appeared?",
+  "inputs": {
+    "searches": [
+      "\"A733 IDMAC stuck\" \"sunxi-mmc\"",
+      "\"A733 IDMAC stuck in descriptor rea\"",
+      "\"SDMMC0 works with PIO reads\" \"A733\"",
+      "site:lore.kernel.org linux-mmc \"A733 IDMAC\"",
+      "site:lore.kernel.org linux-sunxi \"A733 IDMAC\"",
+      "site:lore.kernel.org lkml \"sunxi-mmc: A733\""
+    ],
+    "sent_context": "User manually resent the descriptor-fetch question from Gmail in plain text mode after HTML bounces. The subject accidentally omitted the final 'd' in 'read'."
+  },
+  "findings": [
+    {
+      "topic": "archive visibility",
+      "evidence": "Search did not find the sent A733 IDMAC message on general web results or lore.kernel.org yet.",
+      "interpretation": "No public response or archive URL is available yet. This may be indexing delay or list moderation; it is not evidence of delivery failure by itself."
+    },
+    {
+      "topic": "next patch policy",
+      "evidence": "No maintainer/list response, erratum, register, reset/clock ordering, firmware handoff, master ID, or binding change was found.",
+      "interpretation": "Do not create another behavior patch from the monitoring result."
+    }
+  ],
+  "next": "Check Gmail for bounces/replies and public archives again later. Continue to avoid descriptor, DMA-mask, clock, or broad fabric patches until feedback or source evidence names one concrete runtime proof."
+}

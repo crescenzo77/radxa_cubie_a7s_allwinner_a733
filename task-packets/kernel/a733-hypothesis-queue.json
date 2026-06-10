@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T21:58:00Z",
+  "updated_utc": "2026-06-10T22:20:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H033 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, the maintainer/vendor question packet, public-clean routing draft/tracker, send preflight, approval/send helper prep, and public U-Boot A733 MMC/clock/reset audit. The descriptor-fetch question has now been sent by the user through Gmail plain text mode; await maintainer/list feedback before another behavior patch unless a new source-backed delta appears.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H034 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public U-Boot A733 MMC/clock/reset audit, and an initial public archive monitor. The descriptor-fetch question was sent by the user through Gmail plain text mode; no public archive hit or answer is visible yet. Await maintainer/list feedback before another behavior patch unless a new source-backed delta appears.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,11 +37,11 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H033",
-    "status": "completed_no_behavior_patch",
-    "title": "Public U-Boot A733 MMC clock/reset audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h033-public-uboot-audit-20260610T2158Z.json",
-    "result": "Public U-Boot A733 support uses CPU/PIO transfers, A733-specific MMC clock math, and only normal ahb/mmc clock plus RST_BUS_MMC0 in DT. It exposes useful eventual DTS cleanup deltas, including SDMMC0 IRQ GIC_SPI 40 versus local diagnostic 161, but no source-backed IDMAC descriptor-fetch behavior patch."
+    "id": "A733-SDMMC-H034",
+    "status": "completed_no_response_seen",
+    "title": "Initial public list archive monitor after plain-text resend",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h034-list-monitor-20260610T2220Z.json",
+    "result": "Searched for the A733 IDMAC subject/body and lore hits after the user's plain-text Gmail resend. No public archive URL or answer was visible yet. This may be indexing delay or moderation and does not justify another behavior patch."
   },
   "hypotheses": [
     {
@@ -887,6 +887,26 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h033-public-uboot-audit-20260610T2158Z.json",
         "summary": "Completed with no behavior patch. Public U-Boot transfers data through CPU/PIO and does not exercise normal IDMAC descriptors. Its A733 DT uses only ahb/mmc clocks and RST_BUS_MMC0 for SDMMC0, with no STORE/MBUS/MSI-lite/IOMMU/firewall/NSI property. It does show eventual cleanup deltas, including SDMMC0 IRQ GIC_SPI 40 versus local diagnostic GIC_SPI 161 and different provisional CCU/reset numbering, but these are not credible fixes for CHDA=DLBA/CBDA=0 DESC_READ."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H034",
+      "priority": 1,
+      "status": "completed_no_response_seen",
+      "title": "Initial public list archive monitor after plain-text resend",
+      "question": "Is the manually sent A733 SDMMC0 IDMAC descriptor-fetch question visible in public archives yet, or has any answer appeared?",
+      "test_cost": "low; archive/search monitor only",
+      "procedure": [
+        "Search for the sent subject typo and distinctive body phrases.",
+        "Search lore/kernel archives for A733 IDMAC and sunxi-mmc A733.",
+        "Record whether an answer, archive URL, bounce, or moderation clue exists.",
+        "Do not write a kernel behavior patch unless the monitor finds a concrete technical response."
+      ],
+      "pass_criteria": "Archive/reply status is recorded so future sessions do not infer a response exists.",
+      "fail_criteria": "The next session has to re-check whether the sent question was visible or answered.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h034-list-monitor-20260610T2220Z.json",
+        "summary": "No public archive hit or answer visible yet for the A733 IDMAC descriptor-fetch question. Treat as wait/indexing/moderation state, not a new source-backed patch lead."
       }
     },
     {
