@@ -231,6 +231,36 @@ Waiting for root device PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e...
 6. Why does keeping RTC/root oscillators prepared remove the MMC update-clock
    timeout, and why does card/block enumeration still not follow?
 
+## MMC Trace Attempt
+
+Strix diagnostic commit `b839d38b3a6c` adds lab-only traces around
+`mmc_start_host()`, `mmc_rescan()`, `sunxi_mmc_set_ios()`,
+`sunxi_mmc_set_clk()`, `sunxi_mmc_request()`, and `mmc_add_host()`.
+
+Artifact:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-mmc-trace-b839d38b3a6c-20260610T023652Z
+Image sha256: 933ade6655bc135ffb2c68578bdc2b99b73ec6144595d92a36f43627e6f401b4
+DTB sha256:   6edbb3790de674f7011c8accd0e02d94ea5bcafa11dc127238c8a54da71c622a
+```
+
+Two attempted UART captures are invalid because they booted the vendor kernel
+instead of the trace Image:
+
+```text
+tools/hardware-logs/cubie-uart/20260610T023725Z-a733-mmc-trace-b839d38b3a6c-extlinux2-ttyUSB0.uart.log
+sha256: 01ef6d694540d488fc35b2f5568c3ef22d8312d5e763c5a5900ec80d0412748b
+
+tools/hardware-logs/cubie-uart/20260610T024212Z-a733-mmc-trace-b839d38b3a6c-default-ttyUSB0.uart.log
+sha256: 02963046895722418ce191fe10968ff64aa37874fce51b8f855c70ca7aabb5bb
+```
+
+The board was restored to the vendor-only extlinux file after these invalid
+captures. Next runtime attempt should avoid ambiguous extlinux menu selection,
+preferably by reusing the known-good direct U-Boot load flow only after `mmc`
+partition visibility is confirmed at the prompt.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
