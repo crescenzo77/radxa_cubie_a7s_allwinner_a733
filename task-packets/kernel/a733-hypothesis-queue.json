@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T00:05:00Z",
+  "updated_utc": "2026-06-11T00:35:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H036 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public U-Boot A733 MMC/clock/reset audit, initial public archive monitor, the public-U-Boot IRQ-40 clue, and the descriptor end-of-ring bit. H036 set the ER bit in the descriptor word and still stalled at DESC_READ with descriptor memory unchanged. The descriptor-fetch question was sent by the user through Gmail plain text mode; no public archive hit or answer is visible yet. Continue four-lane model/source triage continuously, but do not build another behavior patch unless it names one concrete source-backed runtime delta or a maintainer/list answer provides direction.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H037 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, initial public archive monitor, the public-U-Boot IRQ-40 clue, the descriptor end-of-ring bit, and basic model-suggested IDMAC reset/clock-offset concerns. H037 found public U-Boot is PIO-only for sunxi MMC data and its A733 MMC0 gate/reset offsets match Linux; it cannot justify another behavior patch. The descriptor-fetch question was sent by the user through Gmail plain text mode; no public archive hit or answer is visible yet. Continue four-lane model/source triage, but require a new named register, reset order, firmware handoff bit, master ID, or maintainer reply before building another kernel variant.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,34 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H036",
-    "status": "completed_same_failure",
-    "title": "Test descriptor end-of-ring bit on the last A733 IDMAC descriptor",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h036-desc-er-result-20260611T0005Z.json",
-    "result": "Setting the descriptor ER bit produced des0=0x8000003c, then the forced CMD18 still stalled with IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, and unchanged descriptor checksum. ER is closed as a standalone descriptor-fetch fix."
+    "id": "A733-SDMMC-H037",
+    "status": "completed_no_patch",
+    "title": "Model-guided public U-Boot/ATF/SCP no-build audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h037-uboot-atf-scp-audit-20260611T0035Z.json",
+    "result": "Public U-Boot's sunxi MMC data path is PIO-only and cannot validate Linux normal-IDMAC descriptor fetch. Its A733 MMC0 CCU gate/reset offsets match the Linux diagnostic CCU driver, and H035 already tested its IRQ 40 clue. Current Linux diagnostics already reset FIFO, DMA interface, and IDMAC controller before enabling IDMAC. No new behavior patch is justified from this audit."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H037",
+      "priority": 36,
+      "status": "completed_no_patch",
+      "title": "Model-guided public U-Boot/ATF/SCP no-build audit",
+      "question": "Do the fresh four-lane model outputs reveal a concrete public U-Boot, TF-A, SCP, clock/reset, or IDMAC reset delta that justifies the next kernel behavior patch?",
+      "test_cost": "low; no-build source and public archive audit",
+      "procedure": [
+        "Read the focused model-squeeze outputs for uboot-atf-scp and negative-evidence angles.",
+        "Inspect public U-Boot A733 sunxi MMC data path, DTS, defconfig, and CCU gate/reset definitions.",
+        "Compare public U-Boot MMC0 clock/reset offsets and IRQ against the Linux diagnostic tree.",
+        "Check whether Linux already performs the basic reset/status-clear sequence suggested by the models.",
+        "Search public archives for A733/sunxi-mmc descriptor-read replies or prior art."
+      ],
+      "pass_criteria": "A source-backed delta names one concrete register, reset order, firmware handoff bit, master ID, or binding difference not already tested.",
+      "fail_criteria": "Public U-Boot is PIO-only for the relevant path, offsets match, and no new public clue appears.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h037-uboot-atf-scp-audit-20260611T0035Z.json",
+        "summary": "Failed to produce a patch candidate. Public U-Boot uses CPU/PIO transfers for sunxi MMC data, so it cannot validate Linux descriptor fetch. Its A733 MMC0 gate/reset offsets match Linux. H035 already falsified IRQ 40. The current Linux diagnostic path already does FIFO, DMA interface, and IDMAC controller resets before enabling IDMAC."
+      }
+    },
     {
       "id": "A733-SDMMC-H036",
       "priority": 35,

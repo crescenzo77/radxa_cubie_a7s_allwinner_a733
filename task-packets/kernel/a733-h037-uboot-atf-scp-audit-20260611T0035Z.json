@@ -1,0 +1,45 @@
+{
+  "id": "A733-SDMMC-H037",
+  "created_utc": "2026-06-11T00:35:00Z",
+  "title": "Model-guided public U-Boot/ATF/SCP no-build audit",
+  "status": "completed_no_patch",
+  "inputs": {
+    "model_batch": "/Users/enzo/projects/homelab/task-packets/kernel/model-squeeze/20260610T235900Z",
+    "public_uboot_repo": "/srv/projects/references/u-boot-a733",
+    "public_uboot_head": "165f07a69706b92ff1200268664dddcbe0d04047",
+    "linux_diag_repo": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "linux_diag_head": "86785e682c32"
+  },
+  "findings": [
+    {
+      "finding": "Public U-Boot sunxi MMC data path is PIO-only.",
+      "evidence": "drivers/mmc/sunxi_mmc.c uses mmc_trans_data_by_cpu() for all data transfers and explicitly sets SUNXI_MMC_GCTRL_ACCESS_BY_AHB.",
+      "decision": "Public U-Boot cannot prove or disprove Linux normal-IDMAC descriptor fetch behavior."
+    },
+    {
+      "finding": "Public U-Boot A733 MMC0 CCU gate/reset offsets match the Linux diagnostic CCU driver.",
+      "evidence": "U-Boot drivers/clk/sunxi/clk_a733.c has CLK_BUS_MMC0 at 0x0d0c bit 0 and RST_BUS_MMC0 at 0x0d0c bit 16. Linux drivers/clk/sunxi-ng/ccu-sun60i-a733.c has bus_mmc0 at 0xd0c bit 0 and reset RST_BUS_MMC0 at 0xd0c bit 16.",
+      "decision": "No new clock/reset offset patch is justified from public U-Boot."
+    },
+    {
+      "finding": "Public U-Boot A733 DTS carries IRQ 40 and two MMC clocks only.",
+      "evidence": "arch/arm/dts/sun60i-a733.dtsi uses clocks ahb/mmc, reset ahb, interrupt GIC_SPI 40, max-frequency 150 MHz. H035 already tested IRQ 40 and it regressed before card init completion.",
+      "decision": "Do not retest IRQ 40 or broaden DTS clocks from this audit."
+    },
+    {
+      "finding": "The current Linux diagnostic driver already includes a pre-transfer FIFO, DMA interface, and IDMAC controller reset sequence.",
+      "evidence": "sunxi_mmc_start_dma() calls sunxi_mmc_diag_reset_fifo(), sunxi_mmc_diag_reset_dmaif(), and sunxi_mmc_diag_reset_dmactl() before enabling SDXC_DMA_ENABLE_BIT and SDXC_IDMAC_IDMA_ON.",
+      "decision": "The model suggestion to add a basic IDMAC reset is already covered. A different reset-order patch would need vendor/source evidence naming exact order or missing status clear."
+    }
+  ],
+  "public_archive_check": {
+    "date_utc": "2026-06-11T00:35:00Z",
+    "queries": [
+      "site:lore.kernel.org linux-mmc \"A733 IDMAC\" \"sunxi-mmc\"",
+      "site:lore.kernel.org linux-mmc \"sunxi-mmc\" \"descriptor read\"",
+      "site:lore.kernel.org \"sun60i-a733\" \"mmc\""
+    ],
+    "result": "No useful public archive hit visible during this check."
+  },
+  "decision": "No behavior patch from H037. Continue source/model triage, but require a new named register, reset order, firmware handoff bit, master ID, or maintainer reply before building another kernel variant."
+}
