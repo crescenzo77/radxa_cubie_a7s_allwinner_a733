@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T14:20:00Z",
+  "updated_utc": "2026-06-10T14:32:25Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 reaches card enumeration and partition table, but normal block I/O stalls on large CMD18. The latest IDMA runs stop at COMMAND_DONE|RX_DATA_REQUEST with IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0.",
   "operator_model": {
@@ -28,22 +28,24 @@
     "Keep clk_ignore_unused and PIO bypasses as lab diagnostics only."
   ],
   "latest_completed_test": {
-    "id": "A733-SDMMC-H000",
+    "id": "A733-SDMMC-H002A",
     "status": "falsified",
-    "title": "Explicitly sync the descriptor ring for DMA after descriptor writes",
-    "kernel_head": "af23f8d6ebfd6068db15ec4504ee3ac536b9b05b",
-    "artifact": "/srv/projects/kernel-work/outgoing/a733-idma-descsync-af23f8d6ebfd-20260610T140912Z",
-    "image_sha256": "007d97e1f2ffa82be8e11c618b39be938468859f01d10ba6adbcd3b53bb0a7ee",
+    "title": "Preserve vendor/bootloader SAMP_DL and skip mainline calibration",
+    "kernel_head": "fdbc8be0126c95933b7425e4f4792b4690ff4ec8",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-idma-preservesamp-fdbc8be0126c-20260610T142506Z",
+    "image_sha256": "67ae016b0ca97b28353c63c4c0f7835e662b7b77f6c6eba83569b5f8e96ed068",
     "dtb_sha256": "251d969288132d5f9ad682e791cd3c59acc904b3a6580b3965f71132c0092c9f",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T141114Z-a733-idma-descsync-af23f8d6ebfd-ext4load-ttyUSB0.uart.log",
-    "uart_log_sha256": "79d795eb0e21f221b2e0d5f2d57d250f45bad8f801061f041902703aa0a5eb74",
-    "result": "The descriptor sync printk appears with size=16384, but the first large CMD18 still stops with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0. This weakens a pure descriptor-cache-visibility explanation."
+    "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
+    "build_log_sha256": "ff76a0d196d66c233140aaef36fff35780311c04b36f677c4e41c5134fd76e35",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T142708Z-a733-idma-preservesamp-fdbc8be0126c-ext4load-ttyUSB0.uart.log",
+    "uart_log_sha256": "f774674ecf9f54d5f1f41618341218172fc44e80540229267152602d2e9732c7",
+    "result": "The boot preserved SAMP_DL=0x00002000 and disabled mainline calibration while keeping DRV_DL=0x00010000. The first large CMD18 still stops with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0. Vendor SAMP_DL/calibration is therefore not the direct fix for the IDMA descriptor-read stall."
   },
   "hypotheses": [
     {
       "id": "A733-SDMMC-H001",
-      "priority": 1,
-      "status": "ready",
+      "priority": 0,
+      "status": "completed",
       "title": "Fixed vendor-vs-mainline data-phase register comparison before another boot variant",
       "question": "Which visible SDMMC0 register differs at the same data-phase moment where vendor advances CHDA/CBDA and mainline remains in descriptor-read state?",
       "test_cost": "low; source/log analysis first, no kernel build required",
@@ -54,17 +56,28 @@
         "If a single non-cosmetic delta remains, create the next minimal patch from that delta only. If no visible delta remains, move to H002."
       ],
       "pass_criteria": "A register delta is identified that plausibly controls data/DMA progress and is absent from prior falsified tests.",
-      "fail_criteria": "No visible register delta remains; next work must inspect hidden wrapper/source behavior instead of cycling another visible-register boot variant."
+      "fail_criteria": "No visible register delta remains; next work must inspect hidden wrapper/source behavior instead of cycling another visible-register boot variant.",
+      "result": {
+        "comparison": "task-packets/kernel/a733-sdmmc-register-comparison-20260610T1425Z.json",
+        "summary": "Most visible setup registers match: CMDR, FTRGL, THLD, DMAC, IDIE, FUNS, DRV_DL, NTSR, SMCV. Vendor advances CHDA/CBDA and data counters, while mainline remains at CHDA=DLBA and CBDA=0. The only setup-looking visible delta is SAMP_DL=0x00002000 on vendor versus 0 on mainline, but the raw SAMP_DL write was already tested and did not stick. Do not create another visible-register boot variant without source evidence."
+      }
     },
     {
       "id": "A733-SDMMC-H002",
-      "priority": 2,
-      "status": "ready_after_H001",
-      "title": "Find hidden v5p3x wrapper or MBUS/storage behavior in vendor source",
-      "question": "Does the vendor A733 v5p3x path program a non-SDMMC register or wrapper bit required before IDMAC can fetch descriptors?",
+      "priority": 1,
+      "status": "ready",
+      "title": "Find hidden v5p3x wrapper, timing-phase, or MBUS/storage behavior in vendor source",
+      "question": "Does the vendor A733 v5p3x path program a non-SDMMC register, wrapper bit, or timing phase path required before IDMAC can fetch descriptors?",
       "test_cost": "low to medium; source search before build",
+      "partial_results": [
+        "Orange Pi A733 v5p3x source has a direct REG_SAMP_DL programming block, but it is commented out.",
+        "The active vendor phase path writes REG_SD_NTSR and saves/restores REG_SAMP_DL; the v5p3x init path does not assign the sunxi_mmc_set_samp_dl hook.",
+        "The preserved-SAMP_DL diagnostic proves SAMP_DL=0x00002000 survives into the failing mainline CMD18, but IDMAC still sticks in descriptor-read state.",
+        "Explicit SDMMC0 consumers for mmc_store, mmc_mbus, and mmc_msi_lite were already tested and did not fix IDMA."
+      ],
       "procedure": [
-        "Search the vendor driver and board code for SDMMC0, v5p3x, IDMAC, MBUS, MSI-lite, storage fabric, and wrapper register writes outside the SDMMC register window.",
+        "Continue the vendor/source search outside the already-falsified direct SAMP_DL, sample-calibration, and explicit mmc_store/mmc_mbus/mmc_msi_lite paths.",
+        "Search for SDMMC0, v5p3x, IDMAC, MBUS, MSI-lite, storage fabric, wrapper register writes outside the SDMMC register window, cache/MBUS attributes, and any A733-specific IDMAC enable sequence.",
         "Record file, function, register address, value, and call path.",
         "Only if a concrete write is found, build a minimal diagnostic that adds that one write with printk evidence.",
         "Boot Cubie3 once, capture UART, restore vendor kernel, and update this queue."
@@ -106,7 +119,8 @@
         "DIC and chain-bit variants still stall.",
         "CEATA omission and DMAC reset variants still stall.",
         "Vendor-like DRV_DL does not fix CMD18.",
-        "Explicit descriptor dma_sync_single_for_device does not fix CMD18."
+        "Explicit descriptor dma_sync_single_for_device does not fix CMD18.",
+        "Preserving vendor/bootloader SAMP_DL=0x00002000 and skipping mainline sample calibration does not fix CMD18."
       ]
     }
   ]

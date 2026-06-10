@@ -1697,6 +1697,45 @@ with configured push targets must be pushed or explicitly reported missing; and
 Cubie3 must be restored to vendor kernel before the session is considered
 closed.
 
+## Preserved Sample Delay Diagnostic
+
+The fixed vendor-vs-mainline register comparison showed only one remaining
+setup-looking visible delta: vendor reads `SAMP_DL=0x00002000`, while the prior
+mainline IDMA trace had cleared sample delay to zero. Source review then showed
+the Orange Pi A733 v5p3x direct `REG_SAMP_DL` programming block is commented
+out; the active phase path writes `REG_SD_NTSR` and only saves/restores
+`REG_SAMP_DL`. The v5p3x init path also does not assign the
+`sunxi_mmc_set_samp_dl` hook, so normal mainline sample calibration was the
+likely source of the zeroing.
+
+Commit `fdbc8be0126c` disables mainline calibration for the A733 diagnostic path
+and keeps the vendor-like drive delay while preserving the bootloader/vendor
+sample delay:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-idma-preservesamp-fdbc8be0126c-20260610T142506Z
+Image sha256: 67ae016b0ca97b28353c63c4c0f7835e662b7b77f6c6eba83569b5f8e96ed068
+DTB sha256:   251d969288132d5f9ad682e791cd3c59acc904b3a6580b3965f71132c0092c9f
+config sha256: dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202
+build log sha256: ff76a0d196d66c233140aaef36fff35780311c04b36f677c4e41c5134fd76e35
+
+tools/hardware-logs/cubie-uart/20260610T142708Z-a733-idma-preservesamp-fdbc8be0126c-ext4load-ttyUSB0.uart.log
+sha256: f774674ecf9f54d5f1f41618341218172fc44e80540229267152602d2e9732c7
+
+diag force A733 drv delay preserve sample
+diag regs dma-entry ... drv_dl=0x00010000 samp_dl=0x00002000
+diag regs idma-post-cmdr ... rint=0x00000024 idst=0x00004000
+dlba=0x3f840000 chda=0x3f840000 cbda=0x00000000
+cbcr=0x00000400 bbcr=0x00000000 samp_dl=0x00002000
+```
+
+Result: preserving `SAMP_DL=0x00002000` and skipping calibration does not fix
+the large CMD18 IDMA stall. The next responsible item remains source-backed
+H002, but narrowed away from direct sample-delay programming, mainline sample
+calibration, and explicit `mmc_store`/`mmc_mbus`/`mmc_msi_lite` consumer
+clocks. Continue looking for an A733-specific hidden wrapper, MBUS/cache
+attribute, or IDMAC enable-sequence difference before another boot variant.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible

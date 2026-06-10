@@ -1,0 +1,278 @@
+{
+  "version": 1,
+  "created_utc": "2026-06-10T14:25:00Z",
+  "hypothesis_id": "A733-SDMMC-H001",
+  "title": "A733 SDMMC0 vendor-vs-mainline data-phase register comparison",
+  "sources": {
+    "vendor_log": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T132339Z-cubie3-vendor-sdmmc0-wide-reg-sample.log",
+      "sha256": "3fe99a97efad4935221d75c6175ff6ebeac6a907969d23db44a23f30ea5223d0",
+      "kernel": "5.15.147-21-a733"
+    },
+    "mainline_log": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T141114Z-a733-idma-descsync-af23f8d6ebfd-ext4load-ttyUSB0.uart.log",
+      "sha256": "79d795eb0e21f221b2e0d5f2d57d250f45bad8f801061f041902703aa0a5eb74",
+      "kernel_head": "af23f8d6ebfd6068db15ec4504ee3ac536b9b05b"
+    },
+    "template": "task-packets/kernel/a733-sdmmc-register-dump-template.json"
+  },
+  "phase_records": {
+    "vendor_cmd18_start": {
+      "source_line": 5,
+      "phase": "vendor-working-read",
+      "values": {
+        "CMDR": "0x00003352",
+        "CARG": "0x000a6000",
+        "RINTR": "0x00000004",
+        "STAS": "0x00009506",
+        "FTRGL": "0x200700f8",
+        "FUNS": "0x00000000",
+        "DMAC": "0x00000282",
+        "DLBA": "0x3fc60800",
+        "IDST": "0x0000a000",
+        "IDIE": "0x00000002",
+        "CHDA": "0x3fc60800",
+        "CBDA": "0x428b0400",
+        "CBCR": "0x00000000",
+        "BBCR": "0x00000000",
+        "THLD": "0x02000001",
+        "DRV_DL": "0x00010000",
+        "SAMP_DL": "0x00002000",
+        "DS_DL": "0x00000000",
+        "SKEW_CTRL": "0x00000003",
+        "SMCV": "0x02050530"
+      }
+    },
+    "vendor_data_progress": {
+      "source_line": 7,
+      "phase": "vendor-working-read",
+      "values": {
+        "CMDR": "0x00003352",
+        "CARG": "0x000a6000",
+        "RINTR": "0x00000024",
+        "STAS": "0x00009506",
+        "FTRGL": "0x200700f8",
+        "FUNS": "0x00000000",
+        "DMAC": "0x00000282",
+        "DLBA": "0x3fc60800",
+        "IDST": "0x0000a000",
+        "IDIE": "0x00000002",
+        "CHDA": "0x3fc6080c",
+        "CBDA": "0x42b73c00",
+        "CBCR": "0x00003000",
+        "BBCR": "0x00003000",
+        "THLD": "0x02000001",
+        "DRV_DL": "0x00010000",
+        "SAMP_DL": "0x00002000",
+        "DS_DL": "0x00000000",
+        "SKEW_CTRL": "0x00000003",
+        "SMCV": "0x02050530"
+      }
+    },
+    "mainline_dma_entry": {
+      "source_line": 4559,
+      "phase": "mainline-dma-entry",
+      "values": {
+        "GCTRL": "0xa0000010",
+        "CLKCR": "0x00010000",
+        "WIDTH": "0x00000001",
+        "CMDR": "0x00003352",
+        "CARG": "0x000a6078",
+        "IMASK": "0x00000000",
+        "MISTA": "0x00000000",
+        "RINTR": "0x00000000",
+        "STAS": "0x00006106",
+        "NTSR": "0x81710000",
+        "FTRGL": "0x200700f8",
+        "THLD": "0x02000005",
+        "DMAC": "0x00000200",
+        "DLBA": "0x3f840000",
+        "IDST": "0x00000000",
+        "IDIE": "0x00000000",
+        "CHDA": "0x00000000",
+        "CBDA": "0x00000000",
+        "BLKSZ": "0x00000200",
+        "BCNTR": "0x00020000",
+        "CBCR": "0x00001000",
+        "BBCR": "0x00001000",
+        "FUNS": "0x00000000",
+        "DBGC": "0x00000001",
+        "CSDC": "0x00000003",
+        "DRV_DL": "0x00010000",
+        "SAMP_DL": "0x00000000",
+        "DS_DL": "0x00000000",
+        "SKEW_CTRL": "0x00000003",
+        "SMCV": "0x02050530"
+      }
+    },
+    "mainline_idma_post_cmdr": {
+      "source_line": 4602,
+      "phase": "mainline-idma-post-cmdr",
+      "values": {
+        "GCTRL": "0xa0000030",
+        "CLKCR": "0x00010000",
+        "WIDTH": "0x00000001",
+        "CMDR": "0x00003352",
+        "CARG": "0x000a8120",
+        "IMASK": "0x0000fbc2",
+        "MISTA": "0x00000000",
+        "RINTR": "0x00000024",
+        "STAS": "0x02009509",
+        "NTSR": "0x81710000",
+        "FTRGL": "0x200700f8",
+        "THLD": "0x02000001",
+        "DMAC": "0x00000282",
+        "DLBA": "0x3f840000",
+        "IDST": "0x00004000",
+        "IDIE": "0x00000002",
+        "CHDA": "0x3f840000",
+        "CBDA": "0x00000000",
+        "BLKSZ": "0x00000200",
+        "BCNTR": "0x00020000",
+        "CBCR": "0x00000400",
+        "BBCR": "0x00000000",
+        "FUNS": "0x00000000",
+        "DBGC": "0x00000001",
+        "CSDC": "0x00000003",
+        "DRV_DL": "0x00010000",
+        "SAMP_DL": "0x00000000",
+        "DS_DL": "0x00000000",
+        "SKEW_CTRL": "0x00000003",
+        "SMCV": "0x02050530"
+      }
+    },
+    "mainline_stall_poll11": {
+      "source_line": 4614,
+      "phase": "mainline-stall-poll",
+      "values": {
+        "CMDR": "0x00003352",
+        "IMASK": "0x0000fbc2",
+        "MISTA": "0x00000000",
+        "RINTR": "0x00000024",
+        "STAS": "0x02009509",
+        "THLD": "0x02000001",
+        "DMAC": "0x00000282",
+        "DLBA": "0x3f840000",
+        "IDST": "0x00004000",
+        "IDIE": "0x00000002",
+        "CHDA": "0x3f840000",
+        "CBDA": "0x00000000",
+        "CBCR": "0x00000400",
+        "BBCR": "0x00000000"
+      }
+    }
+  },
+  "comparison_rows": [
+    {
+      "register": "CMDR",
+      "vendor_value": "0x00003352",
+      "mainline_value": "0x00003352",
+      "delta": "none",
+      "interpretation": "CMD18 command shape matches."
+    },
+    {
+      "register": "FTRGL",
+      "vendor_value": "0x200700f8",
+      "mainline_value": "0x200700f8",
+      "delta": "none",
+      "interpretation": "FIFO threshold register matches."
+    },
+    {
+      "register": "THLD",
+      "vendor_value": "0x02000001",
+      "mainline_value": "0x02000001",
+      "delta": "none",
+      "interpretation": "Read threshold matches at the failing data phase."
+    },
+    {
+      "register": "DMAC",
+      "vendor_value": "0x00000282",
+      "mainline_value": "0x00000282",
+      "delta": "none",
+      "interpretation": "Visible IDMAC enable/fixed-burst state matches."
+    },
+    {
+      "register": "IDIE",
+      "vendor_value": "0x00000002",
+      "mainline_value": "0x00000002",
+      "delta": "none",
+      "interpretation": "Visible IDMAC interrupt enable matches."
+    },
+    {
+      "register": "FUNS",
+      "vendor_value": "0x00000000",
+      "mainline_value": "0x00000000",
+      "delta": "none",
+      "interpretation": "CEATA/function-select omission matches."
+    },
+    {
+      "register": "DRV_DL",
+      "vendor_value": "0x00010000",
+      "mainline_value": "0x00010000",
+      "delta": "none",
+      "interpretation": "Drive delay now matches the vendor sample."
+    },
+    {
+      "register": "SAMP_DL",
+      "vendor_value": "0x00002000",
+      "mainline_value": "0x00000000",
+      "delta": "visible",
+      "interpretation": "Only setup-looking visible delta left. Prior raw SAMP_DL write read back as zero, so this is not a clean direct-register patch target; it must be traced through the vendor timing/phase path before retesting."
+    },
+    {
+      "register": "NTSR",
+      "vendor_value": "0x81710000",
+      "mainline_value": "0x81710000",
+      "delta": "none",
+      "interpretation": "New-timing/status register value matches."
+    },
+    {
+      "register": "SMCV",
+      "vendor_value": "0x02050530",
+      "mainline_value": "0x02050530",
+      "delta": "none",
+      "interpretation": "Visible controller version/config register matches."
+    },
+    {
+      "register": "CHDA",
+      "vendor_value": "0x3fc6080c",
+      "mainline_value": "0x3f840000",
+      "delta": "progress",
+      "interpretation": "Vendor advances beyond DLBA while mainline stays at DLBA."
+    },
+    {
+      "register": "CBDA",
+      "vendor_value": "0x42b73c00",
+      "mainline_value": "0x00000000",
+      "delta": "progress",
+      "interpretation": "Vendor reaches a buffer address while mainline never leaves zero."
+    },
+    {
+      "register": "CBCR/BBCR",
+      "vendor_value": "0x00003000/0x00003000",
+      "mainline_value": "0x00000400/0x00000000",
+      "delta": "progress",
+      "interpretation": "Vendor data counters progress; mainline stalls immediately after descriptor-read begins."
+    },
+    {
+      "register": "STAS",
+      "vendor_value": "0x00009506",
+      "mainline_value": "0x02009509",
+      "delta": "state",
+      "interpretation": "Different live FIFO/card state at failure; likely symptom unless source ties it to a setup bit."
+    }
+  ],
+  "conclusion": {
+    "h001_status": "completed",
+    "result": "The fixed comparison does not expose an untested visible control-register patch that is safe to try blindly. Most visible setup registers match. The only setup-looking delta is SAMP_DL, but direct raw programming was already tested and did not stick. Therefore the next work item is source-backed H002: trace vendor timing/phase programming and any hidden SDMMC wrapper, MBUS, MSI-lite, or storage-fabric behavior before another boot.",
+    "follow_up": {
+      "id": "A733-SDMMC-H002A",
+      "status": "falsified",
+      "kernel_head": "fdbc8be0126c95933b7425e4f4792b4690ff4ec8",
+      "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T142708Z-a733-idma-preservesamp-fdbc8be0126c-ext4load-ttyUSB0.uart.log",
+      "uart_log_sha256": "f774674ecf9f54d5f1f41618341218172fc44e80540229267152602d2e9732c7",
+      "result": "Preserving SAMP_DL=0x00002000 into the failing CMD18 and disabling mainline sample calibration did not move the stall. The controller still reports RINTR=0x24 and IDST=0x4000 with CHDA=DLBA and CBDA=0."
+    },
+    "next_hypothesis": "A733-SDMMC-H002"
+  }
+}
