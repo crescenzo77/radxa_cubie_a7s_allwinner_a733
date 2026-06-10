@@ -1127,3 +1127,14 @@ approval and working mail transport.
 Next queue item: H031. Send the approved public-clean question or record the
 selected route/blocker. Do not resume local behavior patches before an answer
 or source reference names one concrete next proof.
+
+## 2026-06-10 H031 Send Preflight
+
+H031 produced:
+`task-packets/kernel/a733-h031-send-preflight-result-20260610T2025Z.json`.
+
+Result: not sent. Mac `git send-email --dry-run` parsed the H030 draft and
+recipients cleanly, but the default From was `enzo <enzo@enzos-Mac-mini.local>`.
+Strix lacks `git-send-email` and is not ready to send. Next queue item is H032:
+get explicit approval, choose a public From identity, and choose Mac, Strix, or
+another route before sending.

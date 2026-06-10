@@ -164,3 +164,13 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
 - Nothing was sent. The next work order is H031: get explicit approval and
   working mail transport, then send the public-clean draft or record the chosen
   route/blocker.
+
+## 2026-06-10 H031 Addendum
+
+- H031 produced
+  `task-packets/kernel/a733-h031-send-preflight-result-20260610T2025Z.json`.
+- Mac `git send-email --dry-run` passed and parsed the public-clean draft, but
+  the default From identity was `enzo <enzo@enzos-Mac-mini.local>`. Strix does
+  not have `git-send-email` installed.
+- Nothing was sent. The next work order is H032: user approval plus public From
+  identity and send host/route selection.

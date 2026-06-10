@@ -1,0 +1,46 @@
+{
+  "id": "A733-SDMMC-H031",
+  "created_utc": "2026-06-10T20:25:02Z",
+  "status": "completed_not_sent",
+  "title": "Send approved descriptor-fetch question or record selected route",
+  "sent": false,
+  "reason_not_sent": "No explicit user approval to send external email from the user's identity. Mac dry-run also showed the default From would be enzo <enzo@enzos-Mac-mini.local>, which is not a public mailing-list identity.",
+  "draft": {
+    "path": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h030-public-email-draft-20260610T2021Z.txt",
+    "sha256": "3d3aeca3ee6292c08699e817822c9d9c042190656118739ca88cdef6b1f0636a",
+    "subject": "Question: Allwinner A733 SDMMC0 IDMAC remains in DESC_READ under mainline",
+    "to": [
+      "Ulf Hansson <ulfh@kernel.org>"
+    ],
+    "cc": [
+      "Chen-Yu Tsai <wens@kernel.org>",
+      "Jernej Skrabec <jernej.skrabec@gmail.com>",
+      "Samuel Holland <samuel@sholland.org>",
+      "linux-mmc@vger.kernel.org",
+      "linux-arm-kernel@lists.infradead.org",
+      "linux-sunxi@lists.linux.dev",
+      "linux-kernel@vger.kernel.org"
+    ]
+  },
+  "preflight": {
+    "mac": {
+      "git_send_email": "available",
+      "dry_run": "passed",
+      "dry_run_command": "git send-email --dry-run --confirm=never /Users/enzo/projects/homelab/task-packets/kernel/a733-h030-public-email-draft-20260610T2021Z.txt",
+      "dry_run_from": "enzo <enzo@enzos-Mac-mini.local>",
+      "dry_run_sendmail": "/usr/sbin/sendmail -i",
+      "transport_risk": "Default local From identity is not suitable for public kernel lists unless the user explicitly wants it."
+    },
+    "strix": {
+      "git_send_email": "missing",
+      "git_user_email": "enzo@homelab.local",
+      "transport_risk": "Strix is not ready to send without installing/configuring git-send-email or another mail transport."
+    }
+  },
+  "next_required_user_decision": [
+    "Approve sending the public-clean draft, or choose a non-email route such as Radxa issue/discussion.",
+    "Choose the public From identity to use.",
+    "Choose send host: Mac with git-send-email/sendmail, Strix after send-email setup, or manual mail client."
+  ],
+  "next_id": "A733-SDMMC-H032"
+}
