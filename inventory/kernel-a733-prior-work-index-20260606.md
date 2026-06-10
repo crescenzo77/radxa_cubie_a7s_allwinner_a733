@@ -194,3 +194,6 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
 - H032 current upstream recheck produced
   `task-packets/kernel/a733-h032-current-upstream-recheck-20260610T2037Z.json`.
   No public Linux MMC/A733 answer to the IDMAC `DESC_READ` question was found.
+- H032 guarded helper selftest produced
+  `task-packets/kernel/a733-h032-guarded-send-helper-selftest-20260610T2039Z.json`
+  and passed all refusal checks. No email was sent.

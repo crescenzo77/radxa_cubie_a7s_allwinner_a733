@@ -1,0 +1,13 @@
+{
+  "id": "A733-SDMMC-H032",
+  "created_utc": "2026-06-10T20:39:56Z",
+  "status": "selftest_passed_not_sent",
+  "sent": false,
+  "selftest": "/Users/enzo/projects/homelab/scripts/a733-send-descriptor-question-selftest",
+  "results": [
+    "PASS dry-run-default",
+    "PASS send-without-approval-refused",
+    "PASS send-wrong-from-refused"
+  ],
+  "interpretation": "The guarded helper defaults to dry-run and refuses the two tested unsafe send paths. H032 still requires explicit user approval before any external message."
+}

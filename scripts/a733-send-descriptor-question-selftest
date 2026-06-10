@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+helper="${repo_root}/scripts/a733-send-descriptor-question"
+
+pass() {
+  printf 'PASS %s\n' "$1"
+}
+
+"${helper}" --dry-run >/dev/null
+pass "dry-run-default"
+
+if "${helper}" --send >/tmp/a733-send-selftest.out 2>&1; then
+  cat /tmp/a733-send-selftest.out >&2
+  echo "FAIL unauthorized-send-allowed" >&2
+  exit 1
+fi
+grep -q 'refusing to send: set A733_SEND_APPROVED=yes' /tmp/a733-send-selftest.out
+pass "send-without-approval-refused"
+
+if A733_SEND_APPROVED=yes "${helper}" --send --from 'Wrong <wrong@example.com>' >/tmp/a733-send-selftest.out 2>&1; then
+  cat /tmp/a733-send-selftest.out >&2
+  echo "FAIL wrong-from-allowed" >&2
+  exit 1
+fi
+grep -q 'refusing to send: --from must match approved identity' /tmp/a733-send-selftest.out
+pass "send-wrong-from-refused"
