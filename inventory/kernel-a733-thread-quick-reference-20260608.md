@@ -342,6 +342,14 @@ or root. Log:
 `tools/hardware-logs/cubie-uart/20260610T022835Z-a733-osc-keep-5e6b35b07c67-extlinux2-ttyUSB0.uart.log`
 SHA256:
 `eb3e495db4491922288494ff7f386c5106fa59b4ffc52350ff9a06a3f10cce59`.
+Valid direct U-Boot trace with commit `b839d38b3a6c` shows MMC host add and
+rescan run, then the first request is CMD0 at 400 kHz with `ferror=0`. No
+request completion, later command, `mmcblk0`, or root follows. This narrows the
+current blocker to first MMC command completion or interrupt delivery after
+CMD0. Log:
+`tools/hardware-logs/cubie-uart/20260610T024831Z-a733-mmc-trace-b839d38b3a6c-direct-ttyUSB0.uart.log`
+SHA256:
+`132d87856d41b03941e192b2749ff8ef1096871b8631262196bd14873c49432c`.
 
 Focused evidence note:
 `inventory/kernel-a733-ccu-unused-clock-evidence-20260610.md`.

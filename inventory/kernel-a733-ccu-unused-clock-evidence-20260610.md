@@ -261,6 +261,36 @@ captures. Next runtime attempt should avoid ambiguous extlinux menu selection,
 preferably by reusing the known-good direct U-Boot load flow only after `mmc`
 partition visibility is confirmed at the prompt.
 
+Valid direct U-Boot trace:
+
+```text
+tools/hardware-logs/cubie-uart/20260610T024831Z-a733-mmc-trace-b839d38b3a6c-direct-ttyUSB0.uart.log
+sha256: 132d87856d41b03941e192b2749ff8ef1096871b8631262196bd14873c49432c
+```
+
+This boot used direct U-Boot loading after `part list mmc 0` succeeded, so it is
+a valid trace of the staged Image/DTB:
+
+```text
+Linux version 7.1.0-rc5-00193-gb839d38b3a6c
+Machine model: Radxa Cubie A7S
+sunxi-mmc 4020000.mmc: diag add_host done caps=0x180f caps2=0x480000 f_min=400000 f_max=200000000 removable=1 needs_poll=0
+mmc0: diag rescan entry disable=0 entered=0 bus_ops=0000000000000000 caps=0x180f caps2=0x480000 f_min=400000 f_max=200000000
+sunxi-mmc 4020000.mmc: initialized, max. request size: 2048 KB, uses new timings mode
+mmc0: diag rescan try_freq=400000
+sunxi-mmc 4020000.mmc: diag set_ios clock=400000 power=2 bus_width=0 timing=0 signal_voltage=0
+sunxi-mmc 4020000.mmc: diag set_clk clock=400000 power=2 bus_width=0 timing=0
+sunxi-mmc 4020000.mmc: diag request opcode=0 arg=0x00000000 flags=0xc0 data=0 clock=400000 ferror=0
+```
+
+There is no request completion, no later CMD8/ACMD41/CMD1 attempt, and no
+`mmcblk0`. The next blocker is therefore first MMC command completion or IRQ
+delivery after CMD0, not host-add scheduling, not card-detect polling, and not
+the prior update-clock timeout.
+
+Next trace should instrument `sunxi_mmc_irq()` and
+`sunxi_mmc_finalize_request()` for raw interrupt/status registers after CMD0.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible
