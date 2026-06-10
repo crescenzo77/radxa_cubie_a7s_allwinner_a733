@@ -523,6 +523,25 @@ Conclusion: the refetch/access-mode hypothesis is falsified for the current
 diagnostic stack. The blocker remains A733 SDMMC IDMA progress on normal
 multi-block I/O, not card enumeration, rootfs arguments, or board DTS scope.
 
+Commit `4365eadc01bc` tests the next narrow IDMA address variant: keep
+descriptor list base shifting (`DLBA=0x10c00000`) but write the data buffer
+pointer unshifted (`buf=0xfd800000`). The corrected run confirms
+`unshift_buf=1` and still stalls after CMD18 descriptor setup:
+
+```text
+mmcblk0: mmc0:544c USD00 117 GiB
+diag request-data opcode=18 flags=0x200 blksz=512 blocks=8 sg_len=1 stop=1
+diag idma_des ... buf=0xfd800000 ... shift=2 unshift_buf=1
+diag regs dma-exit ... dmac=0x00000282 dlba=0x10c00000 idie=0x00000002
+```
+
+SDMMC0 IDMA unshifted-buffer diagnostic:
+tools/hardware-logs/cubie-uart/20260610T053805Z-a733-idma-unshiftbuf-4365eadc01bc-ext4load-ttyUSB0.uart.log
+sha256: 155463c97aa6dbfb1c2cd1aa2c4f27fec936c37e8f3004e23c34dc1e13fed6d8
+
+Conclusion: the mixed address hypothesis is also falsified. Address shifting
+alone no longer looks like the explanation for A733 IDMA not progressing.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
