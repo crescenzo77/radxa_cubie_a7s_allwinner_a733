@@ -163,6 +163,13 @@ reaches the first 256-block CMD18 IDMA request and stalls at `IDST=0x4000` with
 `CBCR=0x400` and `BBCR=0`, so the missing explicit clock-consumer hypothesis is
 falsified for the current diagnostic stack.
 
+Commit `70cf459b45c7` adds `CHDA` and `CBDA` logging. On the same failing
+256-block CMD18 request, IDMAC reports `DLBA=0x43000000`, `CHDA=0x43000000`,
+and `CBDA=0x00000000` while stuck at `IDST=0x4000`. That means the IDMAC sees
+the descriptor-list base address but does not advance into a current buffer
+address. The next question is descriptor-control/format expectations or an
+A733-specific IDMAC enable sequence, not whether `DLBA` is visible.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -431,6 +438,10 @@ sha256: 910645c3799329d39d6e50025a20fd46773d9d6eba386eb79c551c4dce9390b5
 SDMMC0 explicit fabric-clock consumer diagnostic:
 tools/hardware-logs/cubie-uart/20260610T094917Z-a733-mmc-fabricclks-9bc49dc5978b-ext4load-ttyUSB0.uart.log
 sha256: f3fd82be3af8bb1d1c134d58d133e18c7a68f51bf216bd84eef9a72cbfe4bb93
+
+SDMMC0 IDMAC current descriptor/buffer address diagnostic:
+tools/hardware-logs/cubie-uart/20260610T095832Z-a733-idma-chda-70cf459b45c7-ext4load-ttyUSB0.uart.log
+sha256: 9ca409ebca2fccdfeade080aebaf18da418c731a91d0840458caab33f9e754af
 ```
 
 ## Source Findings
