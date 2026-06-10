@@ -290,6 +290,16 @@ but it still stops immediately at `IDST=0x4000`, `CHDA=DLBA`, `CBDA=0`,
 enough. Note for future direct boots: sync/flush after replacing `/boot/cthu`
 files, because U-Boot ext4 can otherwise read the previous on-disk state.
 
+Commit `315c90c838eb` tests the remaining visible delay-register difference by
+forcing `DRV_DL=0x00010000` and attempting the vendor-observed sample delay.
+Runtime confirms `DRV_DL` stays at the vendor value, while the raw sample-delay
+write reads back as zero; the vendor v5p3x source also leaves direct SAMP delay
+programming commented out and instead uses phase bits. The 256-block CMD18 still
+stalls at `IDST=0x4000`, `CHDA=DLBA`, `CBDA=0`, `CBCR=0x400`, and `BBCR=0`.
+The effective differences left are now more likely DMA visibility/coherency or a
+hidden wrapper path than descriptor format, basic address shifting, command
+launch order, or visible delay registers.
+
 Full Orange Pi BSP source was cloned on Strix at:
 `/srv/projects/kernel-work/tmp/linux-orangepi-full`, branch
 `orange-pi-6.6-sun60iw2`, commit
@@ -647,6 +657,10 @@ sha256: 6cf68369666d6b1e85cde468c5694df0ba27f6b88fb738fef1972820156245cb
 SDMMC0 IDMA v5p3x descriptor-size retest:
 tools/hardware-logs/cubie-uart/20260610T134535Z-a733-idma-v5p3xsize-69314e94b6ac-ext4load-ttyUSB0.uart.log
 sha256: dbd87dd635620d84864ebb63f1c193cd2fbb8d2979857ab33d1713b6ca6f1813
+
+SDMMC0 IDMA vendor-delay diagnostic:
+tools/hardware-logs/cubie-uart/20260610T135908Z-a733-idma-vendordelay-315c90c838eb-ext4load-ttyUSB0.uart.log
+sha256: 69721598154f17918182282e9f969883c44f57ef1d9b770079c9ce3f0bad2424
 ```
 
 ## Source Findings
