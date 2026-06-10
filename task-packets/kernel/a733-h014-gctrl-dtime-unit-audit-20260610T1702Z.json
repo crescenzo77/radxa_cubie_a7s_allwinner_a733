@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "created_utc": "2026-06-10T17:02:36Z",
+  "hypothesis_id": "A733-SDMMC-H014",
+  "title": "A733 SDMMC0 GCTRL bit 0x00000800 source audit",
+  "source_files": {
+    "vendor_bsp_header": {
+      "path": "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.h",
+      "sha256": "498cb703635acfcfe39705b4e8f02fe06a3f9cf5834311c988df51e5c1941e85",
+      "evidence_lines": "145-157",
+      "finding": "GCTRL bit 11 is named SDXC_DTIME_UNIT."
+    },
+    "vendor_bsp_v5p3x": {
+      "path": "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc-v5p3x.c",
+      "sha256": "348a6893ae256b2df712813e998ab2b6a13341dd8c57f6fcfb31656fe735d94c",
+      "evidence_lines": "300-354",
+      "finding": "sunxi_mmc_set_rdtmout_reg_v5p3x() sets SDXC_DTIME_UNIT only when the computed read-data timeout exceeds SDXC_MAX_RDTO, scales the timeout by 256, writes REG_TMOUT, and clears SDXC_DTIME_UNIT when recovering REG_TMOUT."
+    }
+  },
+  "runtime_sources": {
+    "vendor_tmout_sample": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T170139Z-cubie3-vendor-sdmmc0-gctrl-tmout-dtime-4k.log",
+      "sha256": "b86e7d06711cc48fb99ad1ab2c24396aab0893192e0fe5ebe182931ef91f3fc9",
+      "summary": "During vendor working reads, GCTRL=0x20000830 appears with TMOUT=0x01312dff. Idle/recovered samples show GCTRL=0x20000010 with TMOUT=0xffffffff. This matches the BSP timeout-unit path."
+    },
+    "mainline_h013": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T165356Z-a733-h013-cleandma-9090e8b17962-ext4load-corrected-ttyUSB0.uart.log",
+      "sha256": "7534e010dd6e5c7d3df56ccce1892b6e87d67cddd685ca6f4cbb069c50f4ccf4",
+      "summary": "H013 fails with GCTRL=0x20000030, TMOUT=0xffffffff, RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0. The failure is descriptor-read progress, not a data-timeout expiration."
+    }
+  },
+  "conclusion": "Do not build a magic GCTRL bit-11 diagnostic from H014. The source-backed meaning of 0x00000800 is SDXC_DTIME_UNIT, a read-data-timeout scaling bit. It explains the vendor GCTRL/TMOUT pairing but does not plausibly control IDMAC descriptor fetch. Move the next work item away from visible GCTRL/DMAC bits and toward hidden wrapper, DMA coherency, or storage-fabric evidence."
+}

@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T16:57:17Z",
+  "updated_utc": "2026-06-10T17:02:36Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue: vendor also shows DMAC 0x200/0x282 during working reads and mainline has no REG_DMAC bit-9 definition. H013 clears the PIO rail's leftover ACCESS_BY_AHB before IDMA and still stalls, leaving vendor GCTRL bit 0x00000800 as the next visible delta to source-audit before another behavior patch.",
+  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue. H013 clears the PIO rail's leftover ACCESS_BY_AHB before IDMA and still stalls. H014 identifies vendor GCTRL bit 0x00000800 as SDXC_DTIME_UNIT, a read-data-timeout scaling bit, not a plausible descriptor-fetch control. The next responsible step is hidden wrapper, DMA coherency, or storage-fabric evidence rather than another visible GCTRL/DMAC guess.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -36,21 +36,13 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H013",
-    "status": "failed",
-    "title": "Clean PIO-to-IDMA DMA access mode",
-    "kernel_head": "9090e8b17962b128ed31ae12999d67d602e59125",
-    "artifact": "/srv/projects/kernel-work/outgoing/a733-h013-cleandma-9090e8b17962-20260610T164807Z",
-    "image_sha256": "4409cdd51af713dc1f3da11c82c7bf316e3db670a404903db32eab44d2fb06ae",
-    "dtb_sha256": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
-    "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
-    "build_log_sha256": "5c381383be2f67a8efa913693cf4b75734e8215b8bb916be2af64669bf5967ab",
-    "olddefconfig_log_sha256": "f10d838d9dcaca8466c354d15577cd6bc2e963856264ba6de493ba3d5c338e08",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T165356Z-a733-h013-cleandma-9090e8b17962-ext4load-corrected-ttyUSB0.uart.log",
-    "uart_log_sha256": "7534e010dd6e5c7d3df56ccce1892b6e87d67cddd685ca6f4cbb069c50f4ccf4",
-    "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/9090e8b17962-clean-dma-access-mode.patch",
-    "patch_archive_sha256": "f29c126d3244319db6b04370725fc88ab4de425e62c87ba6d722f55d68d3aaa0",
-    "result": "Failed as a fix, useful as a cleanup. H013 clears ACCESS_BY_AHB before IDMA, changing the one-descriptor CMD18 launch from H009/H011 gctrl=0xa0000030 to gctrl=0x20000030. IDMAC still stalls with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0."
+    "id": "A733-SDMMC-H014",
+    "status": "completed_no_build",
+    "title": "Identify vendor GCTRL bit 0x00000800",
+    "audit": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h014-gctrl-dtime-unit-audit-20260610T1702Z.json",
+    "vendor_tmout_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T170139Z-cubie3-vendor-sdmmc0-gctrl-tmout-dtime-4k.log",
+    "vendor_tmout_log_sha256": "b86e7d06711cc48fb99ad1ab2c24396aab0893192e0fe5ebe182931ef91f3fc9",
+    "result": "Completed without a new kernel build. The Orange Pi A733 BSP defines GCTRL bit 11 as SDXC_DTIME_UNIT and sets it only in sunxi_mmc_set_rdtmout_reg_v5p3x() when scaling read-data timeout by 256. Vendor runtime pairs GCTRL=0x20000830 with TMOUT=0x01312dff and recovers to GCTRL=0x20000010/TMOUT=0xffffffff. This explains the visible bit but does not plausibly control IDMAC descriptor fetch."
   },
   "hypotheses": [
     {
@@ -347,7 +339,7 @@
     {
       "id": "A733-SDMMC-H014",
       "priority": 1,
-      "status": "ready",
+      "status": "completed",
       "title": "Identify vendor GCTRL bit 0x00000800",
       "question": "What does the vendor working-read GCTRL bit 0x00000800 mean, and is it a source-backed control delta for A733 IDMAC descriptor progress?",
       "test_cost": "low first; source/manual audit before build",
@@ -360,7 +352,31 @@
       ],
       "pass_criteria": "A source-backed meaning for GCTRL bit 0x00000800 is found and it either justifies one minimal diagnostic patch or is ruled out.",
       "fail_criteria": "No source-backed meaning is found; the next queue item must move away from visible GCTRL/DMAC bits.",
-      "upstream_note": "Do not add undocumented magic GCTRL bits to upstream code. This is private lab triage only unless backed by a public datasheet/BSP explanation."
+      "upstream_note": "Do not add undocumented magic GCTRL bits to upstream code. This is private lab triage only unless backed by a public datasheet/BSP explanation.",
+      "result": {
+        "audit": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h014-gctrl-dtime-unit-audit-20260610T1702Z.json",
+        "vendor_tmout_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T170139Z-cubie3-vendor-sdmmc0-gctrl-tmout-dtime-4k.log",
+        "vendor_tmout_log_sha256": "b86e7d06711cc48fb99ad1ab2c24396aab0893192e0fe5ebe182931ef91f3fc9",
+        "summary": "Completed without build. Vendor source names bit 11 as SDXC_DTIME_UNIT and uses it only to scale read-data timeout in the v5p3x manual RDTO path. Vendor runtime confirms the bit pairs with TMOUT=0x01312dff during reads and clears with TMOUT=0xffffffff afterward. Do not guess-test this bit for descriptor-fetch progress."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H015",
+      "priority": 1,
+      "status": "ready",
+      "title": "Audit hidden DMA coherency and storage-fabric attributes",
+      "question": "What hidden wrapper, DMA coherency, MBUS/storage-fabric, or DMA translation difference remains after descriptor geometry, visible DMAC, and visible GCTRL bits are closed?",
+      "test_cost": "low first; source/log audit before build",
+      "procedure": [
+        "Compare vendor BSP descriptor allocation, dma_map_sg path, DMA mask, coherent_dma_mask, des_addr_shift, descriptor sync, cache maintenance, and any MBUS/storage fabric setup against the current diagnostic branch.",
+        "Use existing failed diagnostics to mark already-falsified variants: 64-bit DMA mask, descriptor dma_sync_single_for_device, vendor descriptor geometry, request page count, MSI-lite clock, and visible GCTRL/DMAC bits.",
+        "If one concrete source-backed coherency/fabric delta remains, create one minimal diagnostic patch for that delta only.",
+        "If no concrete delta remains, collect one new evidence sample that can distinguish whether IDMAC cannot fetch the descriptor or fetches stale descriptor contents.",
+        "After any boot, restore Cubie3 to vendor kernel 5.15.147-21-a733 and update this queue."
+      ],
+      "pass_criteria": "A source-backed hidden coherency/fabric delta is identified and either tested or queued with a precise proof plan.",
+      "fail_criteria": "No source-backed delta remains; the next queue item must gather new hardware evidence rather than cycling source-visible guesses.",
+      "upstream_note": "This is private lab triage. Do not expand the upstream DTS slice or add undocumented fabric magic without source-backed evidence."
     },
     {
       "id": "A733-SDMMC-H004",

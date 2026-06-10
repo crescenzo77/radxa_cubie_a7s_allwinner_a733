@@ -39,6 +39,15 @@
       "sha256": "7534e010dd6e5c7d3df56ccce1892b6e87d67cddd685ca6f4cbb069c50f4ccf4",
       "kernel_head": "9090e8b17962b128ed31ae12999d67d602e59125"
     },
+    "h014_audit": {
+      "path": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h014-gctrl-dtime-unit-audit-20260610T1702Z.json",
+      "finding": "Vendor GCTRL bit 0x00000800 is SDXC_DTIME_UNIT, used for read-data-timeout scaling."
+    },
+    "h014_vendor_tmout_sample": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T170139Z-cubie3-vendor-sdmmc0-gctrl-tmout-dtime-4k.log",
+      "sha256": "b86e7d06711cc48fb99ad1ab2c24396aab0893192e0fe5ebe182931ef91f3fc9",
+      "kernel": "5.15.147-21-a733"
+    },
     "template": "task-packets/kernel/a733-sdmmc-register-dump-template.json"
   },
   "phase_records": {
@@ -308,7 +317,14 @@
       "mainline_value": "GCTRL 0x20000030 after explicitly clearing ACCESS_BY_AHB before IDMA",
       "delta": "remaining visible bit 0x00000800",
       "interpretation": "Clearing ACCESS_BY_AHB removes the H009/H011 contamination but does not fix IDMA. The next visible delta is vendor GCTRL bit 0x00000800; source-audit it before any magic-bit test."
+    },
+    {
+      "field": "h014_gctrl_bit_0x800",
+      "vendor_value": "SDXC_DTIME_UNIT with active TMOUT 0x01312dff during working reads",
+      "mainline_value": "No SDXC_DTIME_UNIT, TMOUT 0xffffffff, still no data-timeout interrupt",
+      "delta": "explained as timeout scaling",
+      "interpretation": "BSP source ties bit 0x800 to read-data-timeout scaling, not descriptor fetch. Do not build a magic-bit test from this evidence."
     }
   ],
-  "conclusion": "H010 closes descriptor geometry for the current blocker. H012 closes DMAC bit 0x200 as a mainline-only clue because the vendor working path also shows DMAC 0x200/0x282, and mainline has no REG_DMAC bit-9 definition. H013 then clears the prior lab PIO rail's ACCESS_BY_AHB contamination and proves clean DMA access mode alone is insufficient: GCTRL=0x20000030 still stalls in descriptor-read state. The next work item is H014: source-audit the remaining vendor-visible GCTRL bit 0x00000800 before any further behavior patch."
+  "conclusion": "H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue. H013 clears the prior lab PIO rail's ACCESS_BY_AHB contamination and proves clean DMA access mode alone is insufficient. H014 identifies the remaining vendor-visible GCTRL bit 0x00000800 as SDXC_DTIME_UNIT, a v5p3x read-data-timeout scaling bit that pairs with TMOUT=0x01312dff during vendor reads and recovers to TMOUT=0xffffffff. Visible descriptor geometry, DMAC, and GCTRL bits are now exhausted for this blocker; next work moves to hidden wrapper, DMA coherency, or storage-fabric evidence."
 }

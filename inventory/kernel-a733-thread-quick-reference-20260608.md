@@ -762,3 +762,22 @@ H009/H011's contaminated `0xa0000030`, but IDMAC still stalls at
 Next queue item: H014. Source-audit vendor `GCTRL` bit `0x00000800`
 (`0x20000830` vendor versus `0x20000030` H013) before any further behavior
 patch. Do not add an undocumented magic bit to upstream code.
+
+## 2026-06-10 H014 No-Build Closeout
+
+H014 audit:
+`task-packets/kernel/a733-h014-gctrl-dtime-unit-audit-20260610T1702Z.json`.
+Vendor timeout sample:
+`tools/hardware-logs/cubie-uart/20260610T170139Z-cubie3-vendor-sdmmc0-gctrl-tmout-dtime-4k.log`,
+sha256 `b86e7d06711cc48fb99ad1ab2c24396aab0893192e0fe5ebe182931ef91f3fc9`.
+
+Result: Orange Pi A733 BSP source names `GCTRL` bit 11 as
+`SDXC_DTIME_UNIT`. The v5p3x function `sunxi_mmc_set_rdtmout_reg_v5p3x()`
+sets it only when read-data timeout exceeds `SDXC_MAX_RDTO`, scales timeout by
+256, writes `REG_TMOUT`, and clears the bit during recovery. Runtime matches:
+vendor active reads show `GCTRL=0x20000830` with `TMOUT=0x01312dff`; recovered
+samples show `GCTRL=0x20000010` with `TMOUT=0xffffffff`.
+
+Do not build a magic `GCTRL=0x800` diagnostic. It is timeout scaling, not a
+source-backed descriptor-fetch control. Next queue item: H015, hidden DMA
+coherency/storage-fabric audit.
