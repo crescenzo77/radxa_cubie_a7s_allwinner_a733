@@ -237,6 +237,13 @@ matching the A733 BSP's commented-out init path. Runtime logs `funcs=0`, but
 the first large CMD18 still exits DMA setup as `dmac=0x282` and stalls in
 descriptor-read state. CEATA function-select omission is also not enough.
 
+Commit `b67579cc62c1` sets the A733 device DMA/coherent mask to 64 bits before
+descriptor allocation, matching the vendor BSP. The descriptor allocation moves
+above 4 GiB (`sg_dma=0x00000001003a5000`, shifted `DLBA=0x400e9400`), the card
+still enumerates through `mmcblk0: p1 p2 p3`, and the first large CMD18 still
+stalls with `IDST=0x4000`, `CHDA=DLBA`, and `CBDA=0`. Vendor 64-bit DMA mask
+setup is also not enough.
+
 Full Orange Pi BSP source was cloned on Strix at:
 `/srv/projects/kernel-work/tmp/linux-orangepi-full`, branch
 `orange-pi-6.6-sun60iw2`, commit
@@ -562,6 +569,10 @@ sha256: 20c12b170172867f72f2a02d75ad04ec5dc3f3870449680292b5babcf808a9bb
 SDMMC0 IDMA no-CEATA init diagnostic:
 tools/hardware-logs/cubie-uart/20260610T122010Z-a733-idma-noceata-90c4ba7546b1-ext4load-ttyUSB0.uart.log
 sha256: 6dea7ee80ab279fe62ea87567ea34a798d149ae432243e69755ca566068435b0
+
+SDMMC0 IDMA vendor 64-bit DMA mask diagnostic:
+tools/hardware-logs/cubie-uart/20260610T123025Z-a733-idma-dmamask-b67579cc62c1-ext4load-ttyUSB0.uart.log
+sha256: 30bd27d2170545938080d99a4ac8411efc11f08b59021878704ac485eabe2f9a
 ```
 
 ## Source Findings
