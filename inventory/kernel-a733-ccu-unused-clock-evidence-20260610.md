@@ -452,6 +452,32 @@ The remaining blocker is now broader than read-DMA only: A733 IDMA also blocks
 the first observed write path. The next lab-only proof should either force PIO
 for writes as well or skip/tame the tuning/switch write path if possible.
 
+Commit `11c21c6b7871` adds PIO write support for single-block 512-byte
+diagnostic transfers. This completes CMD49 and reaches real block-device
+enumeration:
+
+```text
+diag pio write opcode=49 words=128 ...
+mmc0: new high speed SDXC card at address 544c
+mmcblk0: mmc0:544c USD00 117 GiB
+```
+
+The next stop is a normal block-layer multi-block read, CMD18 with 8 blocks
+(`4096` bytes), which still uses IDMA and stalls.
+
+```text
+diag request-data opcode=18 flags=0x200 blksz=512 blocks=8
+diag idma_des ... size=0x00001000 ...
+```
+
+SDMMC0 PIO write diagnostic:
+tools/hardware-logs/cubie-uart/20260610T045812Z-a733-piowrite-11c21c6b7871-ext4load-ttyUSB0.uart.log
+sha256: 12132f01a7f9246b48753ebe0c5fc667ff8662488c8f41bc8eb4ddb15f3dd939
+
+The runtime proof has now separated SD/MMC protocol functionality from IDMA:
+PIO can enumerate the card and create `mmcblk0`; IDMA remains the blocker for
+normal block I/O.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
