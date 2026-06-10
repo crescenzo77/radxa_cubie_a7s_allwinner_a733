@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "id": "A733-SDMMC-H017",
+  "created_utc": "2026-06-10T17:40:19Z",
+  "status": "completed_no_build",
+  "title": "Descriptor-fetch address translation and fabric comparison",
+  "result": "No concrete source-backed address-translation, IOMMU, descriptor geometry, DMA-mask, or SDMMC0 fabric-clock delta remains that justifies another visible-control kernel build. The next responsible test is a lower-level descriptor-placement/access-path proof.",
+  "sources": {
+    "mainline_h016_uart": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T172618Z-a733-h016-descstamp-529f1682dd48-ext4load-rerun-ttyUSB0.uart.log",
+      "sha256": "aaf75f763903fc3db8c6a0cb5b537ed3686126694fa66bc39da07aea3d67636a"
+    },
+    "vendor_descmem_4k": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T162333Z-cubie3-vendor-sdmmc0-descmem-4k-sample.log",
+      "sha256": "99ad8f9b5a3a28d7410cb5442adde8a19edb481be9490f6679bdc7edbd7f0965"
+    },
+    "vendor_gctrl_dmac_descmem_4k": {
+      "path": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T164508Z-cubie3-vendor-sdmmc0-gctrl-dmac-descmem-4k.log",
+      "sha256": "28c79bbe5f104f4fcf516e46d5f1c8c6451ee91d0d146e24d4185066ac190625"
+    },
+    "vendor_dts": "/srv/projects/a733-vendor-dt/vendor-sun60i-a733-cubie-a7s.dts",
+    "vendor_bsp_mmc": "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "vendor_bsp_v5p3x": "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc-v5p3x.c",
+    "mainline_diag_dtsi": "/srv/projects/a733-diag-rtc-extosc-orphan/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi"
+  },
+  "evidence_schema": [
+    {
+      "topic": "IOMMU attachment",
+      "address_or_source": "vendor DTS lines 2594-2608",
+      "vendor_value_at_time_t": "iommu@3900000 masters = USB, CSI, ISP, VE_ENC, VE_DEC0, VE_DEC1, DE0, DI, G2D, EINK, DEBUG_MODE; no SDMMC master",
+      "mainline_value_at_time_t": "No SDMMC0 iommus property in diagnostic DTS",
+      "delta": "No SDMMC0 IOMMU attachment found",
+      "interpretation": "Do not add an iommus property or chase IOMMU translation for SDMMC0 without new evidence."
+    },
+    {
+      "topic": "SDMMC0 vendor clock/reset envelope",
+      "address_or_source": "vendor DTS lines 8290-8309",
+      "vendor_value_at_time_t": "compatible allwinner,sunxi-mmc-v5p3x; clocks osc24m, pll_periph, pll_periph_2, mmc, ahb, mmc_store, mmc_mbus, mmc_msi_lite; reset cell 0x23; req-page-count 2",
+      "mainline_value_at_time_t": "diagnostic DTS has ahb, mmc, mmc_store, mmc_mbus, mmc_msi_lite and reset <&ccu 35>",
+      "delta": "Parent PLL clock exposure differs by binding style; storage fabric consumers and reset line match the tested diagnostic intent",
+      "interpretation": "No DTS expansion is justified for the maintainer-facing slice; prior fabric-clock and MSI-lite tests already failed to move IDMAC."
+    },
+    {
+      "topic": "Descriptor address shift",
+      "address_or_source": "vendor v5p3x lines 914-916; BSP descriptor helpers lines 727, 790-794",
+      "vendor_value_at_time_t": "des_addr_shift = 2; REG_DLBA and descriptor buffer/next pointers are shifted by 2",
+      "mainline_value_at_time_t": "H016 sg_dma 0xfe100000, DLBA 0x3f840000; data DMA 0x101d98000, descriptor buf 0x40766000",
+      "delta": "No shift mismatch",
+      "interpretation": "Unshifted descriptor/base/data variants remain falsified; do not repeat address-shift tests."
+    },
+    {
+      "topic": "Descriptor geometry",
+      "address_or_source": "vendor v5p3x lines 52-55, 901-904",
+      "vendor_value_at_time_t": "SUNXI_DES_SIZE_SDMMC_V5P3X = 12; 4 KiB descriptor segments",
+      "mainline_value_at_time_t": "H016 size_bits=12, size=0x00001000, one 4096-byte descriptor",
+      "delta": "No geometry mismatch",
+      "interpretation": "The v5p3x 4 KiB path is already represented; descriptor geometry is closed for now."
+    },
+    {
+      "topic": "Descriptor words",
+      "address_or_source": "vendor descmem sample lines 2-120; H016 lines 36.685-37.228",
+      "vendor_value_at_time_t": "desc_words commonly 0x8000001c/0x0000001c, 0x00001000, 0x433b9000, 0x3fc60804",
+      "mainline_value_at_time_t": "d0={8000001c,00001000,40766000,3f840004}",
+      "delta": "Control and size words match; exact buffer/next addresses differ by allocation",
+      "interpretation": "The controller is not rejecting an obviously different descriptor format."
+    },
+    {
+      "topic": "Descriptor physical placement",
+      "address_or_source": "vendor descmem sample and H016",
+      "vendor_value_at_time_t": "desc_phys 0xff182000, DLBA 0x3fc60800",
+      "mainline_value_at_time_t": "sg_dma 0xfe100000, DLBA 0x3f840000",
+      "delta": "Both descriptor rings are below 4 GiB and use shifted DLBA, but placement differs",
+      "interpretation": "This is the only remaining cheap distinction worth testing directly: replay H016 stamps without the forced 64-bit DMA-mask path to sample the default/pre-64-bit descriptor window."
+    },
+    {
+      "topic": "Data buffer placement",
+      "address_or_source": "vendor descmem sample and H016",
+      "vendor_value_at_time_t": "descriptor buffer word 0x433b9000, implying data buffer above 4 GiB after undoing shift",
+      "mainline_value_at_time_t": "descriptor buffer word 0x40766000, implying data buffer above 4 GiB after undoing shift",
+      "delta": "No broad 64-bit data-buffer mismatch",
+      "interpretation": "The blocker is before data-buffer movement because CBDA remains zero and descriptor OWN is unchanged."
+    },
+    {
+      "topic": "DMA mask and coherent allocation",
+      "address_or_source": "vendor BSP lines 4336-4340",
+      "vendor_value_at_time_t": "pdev dma_mask and coherent_dma_mask set to DMA_BIT_MASK(64); descriptor ring allocated by dma_alloc_coherent",
+      "mainline_value_at_time_t": "H016 uses the 64-bit DMA-mask diagnostic path and coherent descriptor ring allocation",
+      "delta": "No source mismatch in the 64-bit-mask intent",
+      "interpretation": "The 64-bit mask itself is falsified as a complete fix, but descriptor-placement replay remains useful because H016 stamp proof only covered the 0xfe100000 allocation."
+    },
+    {
+      "topic": "DMA start sequence",
+      "address_or_source": "vendor BSP lines 924-958",
+      "vendor_value_at_time_t": "init descriptors; reset FIFO, DMA interface, and DMAC; set GCTRL DMA enable; set IDIE for reads; write DMAC fixed-burst plus IDMA-on",
+      "mainline_value_at_time_t": "H016 includes vendor-like reset sequence and launches DMAC=0x282",
+      "delta": "No remaining visible start-sequence delta",
+      "interpretation": "Refetch, fixed-burst, DMAC reset, stale IDST, and ACCESS_BY_AHB variants are already falsified."
+    }
+  ],
+  "closed_without_build": [
+    "No SDMMC0 IOMMU master or iommus property exists in the vendor DT evidence.",
+    "The active descriptor format, descriptor address shift, descriptor segment size, and req-page-count match the vendor v5p3x path or have already been falsified.",
+    "The vendor 64-bit DMA-mask setup has already been represented in the diagnostic path and did not fix IDMAC progress.",
+    "The storage-fabric clock consumers are present in the diagnostic DTS and prior enable-order/MSI-lite tests did not move the failure.",
+    "Visible GCTRL/DMAC/control deltas have been closed by H011-H016."
+  ],
+  "next_hypothesis": {
+    "id": "A733-SDMMC-H018",
+    "title": "Descriptor-stamp replay without forced 64-bit DMA mask",
+    "procedure": [
+      "Branch from the H016 diagnostic commit.",
+      "Remove only the A733 64-bit dma_set_mask_and_coherent diagnostic change before descriptor allocation; keep H016 descriptor stamps, CMD49 PIO safety rail, read-only root proof, and forced one-descriptor 8-block CMD18.",
+      "Build and boot Cubie3 once from Strix using prompt-controlled UART automation.",
+      "Record the new descriptor sg_dma, DLBA, descriptor words, checksum/stamps, CHDA, CBDA, IDST, CBCR, and BBCR before and after the stall.",
+      "Restore Cubie3 to vendor 5.15.147-21-a733 and update the queue/docs."
+    ],
+    "interpretation": "If the descriptor ring remains unchanged and CHDA=DLBA/CBDA=0 at the default lower placement too, the descriptor-fetch blocker is independent of the H016 0xfe100000 descriptor window. If IDMAC advances, the forced 64-bit allocation/high-low descriptor placement becomes the primary suspect."
+  }
+}

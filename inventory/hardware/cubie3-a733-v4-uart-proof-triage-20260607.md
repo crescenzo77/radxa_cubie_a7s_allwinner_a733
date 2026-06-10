@@ -64,3 +64,16 @@ Repeat the U-Boot-env boot with a kernel-native root argument such as a concrete
 block device or `PARTUUID`, instead of relying on filesystem `UUID=` without an
 initramfs. Keep `drm_debug=1` as a temporary bootloader test constraint, not as
 an upstream DTS or kernel patch claim.
+
+## 2026-06-10 Follow-Up Status
+
+This root-argument blocker is superseded. Later Cubie3 runs using Strix proved
+SD card init, partition discovery, read-only EXT4 root mount to `init=/bin/sh`
+when IDMA is bypassed, and several PIO enumeration rails. The active blocker is
+now SDMMC0 IDMAC descriptor-fetch progress on normal block I/O.
+
+Current work is tracked in
+`task-packets/kernel/a733-hypothesis-queue.json`. As of H017, the next
+responsible test is H018: replay the H016 descriptor-stamp proof without the
+forced A733 64-bit DMA-mask diagnostic path. Keep `drm_debug=1` as a RAM-only
+vendor U-Boot workaround and keep it out of upstream DTS.

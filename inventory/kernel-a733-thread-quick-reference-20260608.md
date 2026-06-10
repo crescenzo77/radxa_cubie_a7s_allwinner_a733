@@ -827,3 +827,21 @@ was `0x149a82eb` with `d0={8000001c,00001000,40766000,3f840004}` and stamp
 Next queue item: H017. Do a no-build descriptor-fetch address-translation and
 fabric comparison first. Only build a kernel if that comparison finds one
 source-backed delta. Cubie3 was restored to vendor `5.15.147-21-a733`.
+
+## 2026-06-10 H017/H018 Queue Update
+
+H017 audit:
+`task-packets/kernel/a733-h017-desc-fetch-address-fabric-audit-20260610T1740Z.json`.
+
+Result: completed without a build. No remaining source-backed IOMMU,
+descriptor geometry, descriptor address shift, 64-bit DMA-mask, req-page-count,
+or SDMMC0 fabric-clock delta was found. Vendor working reads and H016 both use
+shifted descriptor/data addresses, 4 KiB descriptor segments, coherent
+descriptor rings below 4 GiB, and above-4G data buffers. H016 still shows
+descriptor word 0 is not consumed.
+
+Next queue item: H018. On Strix, replay H016 descriptor stamps while removing
+only the forced A733 64-bit `dma_set_mask_and_coherent()` diagnostic path. Keep
+the CMD49 PIO rail, read-only proof, and one-descriptor 8-block CMD18. The goal
+is to decide whether descriptor placement/allocation is causal before moving
+below visible SDMMC registers into master/fabric reachability.
