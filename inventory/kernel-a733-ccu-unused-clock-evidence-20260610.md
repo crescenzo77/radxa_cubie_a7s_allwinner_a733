@@ -598,6 +598,24 @@ sha256: be91743caccc0e4c6e29171320533e69627525681d3c6fe5a51bff61c6655d37
 Conclusion: stale IDST state is not the cause; IDMAC actively enters and sticks
 in descriptor-read state after CMD18 starts.
 
+Commit `b97d2ada1e58` writes the descriptor list base unshifted
+(`DLBA=0x43000000`) while keeping the unshifted buffer pointer and no-chain
+single descriptor. CMD18 still enters descriptor-read state and does not
+progress:
+
+```text
+diag regs dma-exit ... dlba=0x43000000 idst=0x00000000
+diag regs idma-post-cmdr ... rint=0x00000024 ... dlba=0x43000000 idst=0x00004000
+diag post-data poll11 ... idst=0x00004000 ... dmac=0x00000282
+```
+
+SDMMC0 IDMA unshifted-DLBA diagnostic:
+tools/hardware-logs/cubie-uart/20260610T061551Z-a733-idma-unshiftdlba-b97d2ada1e58-ext4load-ttyUSB0.uart.log
+sha256: 54faa0a45331a4f9f3ecbf4cc8883448536c4baf0b738c009b03d6390f45441b
+
+Conclusion: descriptor-base shifting is not the immediate explanation for the
+DESC_READ hang.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
