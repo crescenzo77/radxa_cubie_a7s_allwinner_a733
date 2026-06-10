@@ -1,0 +1,61 @@
+## codex: power_cmd=/home/enzo/.local/bin/cubie2-power cycle 5
+ù......
+
+
+[70]HELLO! BOOT0 is starting!
+[73]BOOT0 commit : {9f6fab4f-dirty}
+[87]dram_para_total:0xf
+[89]vaild para:6  select dram para0
+[93][mmc]: mmc driver ver 2024-03-20 10:36
+[102][mmc]: Wrong media type 0x0
+[106][mmc]: ***Try SD card 0***
+[109][mmc]: mmc 0 cmd 8 timeout, err 40
+[113][mmc]: mmc 0 cmd 8 err 40
+[116][mmc]: mmc 0 send if cond failed
+[126][mmc]: mmc 0 cmd 55 timeout, err 40
+[130][mmc]: mmc 0 cmd 55 err 40
+[133][mmc]: mmc 0 send app cmd failed
+[137][mmc]: ***Try MMC card 0***
+[145][mmc]: mmc 0 cmd 1 timeout, err 100
+[149][mmc]: mmc 0 cmd 1 err 100
+[152][mmc]: mmc 0 send op cond failed
+[155][mmc]: mmc 0 Card did not respond to voltage select!
+[161][mmc]: ***SD/MMC 0 init error!!!***
+[165][mmc]: mmc 0 register failed
+[168][mmc]: mmc 0: block number 0x5fb1 exceeds max(0x0)
+[174][mmc]: mmc 0: block number 0x5fb2 exceeds max(0x0)
+[179][mmc]: mmc 0: block number 0x5fb3 exceeds max(0x0)
+[185][mmc]: mmc 0: block number 0x5fb4 exceeds max(0x0)
+[190]boot param - magic error 
+[193]DRAM BOOT DRIVE INFO: V0.601
+[198]DRAM_VCC set to 560 mv
+[201]DRAM CLK =2400 MHZ
+[203]DRAM Type =9 (8:LPDDR4,9:LPDDR5)
+[355]Training result is = 7
+[358]DRAM Pstate 1 training, frequency is 1200 Mhz
+[540]Training result is = 7
+[543]DRAM Pstate 2 training, frequency is 800 Mhz
+[890]Training result is = 7
+[893]DRAM Pstate 3 training, frequency is 400 Mhz
+[4635]Training result is = 7
+[4638]DRAM Pstate 0 training, frequency is 2400 Mhz
+[4646]Actual DRAM SIZE =4096 M
+[4649]DRAM SIZE =4096 MBytes, para1 = a0fa, para2 = 10001001, dram_tpr13 = 65
+[4664]DRAM simple test OK.
+[4668][mmc]: mmc driver ver 2024-03-20 10:36
+[4678][mmc]: Wrong media type 0x0
+[4681][mmc]: ***Try SD card 0***
+[4684][mmc]: mmc 0 cmd 55 timeout, err 40
+[4688][mmc]: mmc 0 cmd 55 err 40
+[4691][mmc]: mmc 0 send app cmd failed
+[4695][mmc]: ***Try MMC card 0***
+[4702][mmc]: mmc 0 cmd 1 timeout, err 100
+[4706][mmc]: mmc 0 cmd 1 err 100
+[4710][mmc]: mmc 0 send op cond failed
+[4713][mmc]: mmc 0 Card did not respond to voltage select!
+[4719][mmc]: ***SD/MMC 0 init error!!!***
+[4723][mmc]: mmc 0 register failed
+[4726]Loading boot-pkg fail(error=2)
+[4730]Failed preparing the second boot
+
+## codex: failed to reach U-Boot prompt

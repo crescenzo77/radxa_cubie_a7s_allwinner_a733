@@ -1,0 +1,40 @@
+{
+  "id": "A733-SDMMC-H036",
+  "created_utc": "2026-06-11T00:05:00Z",
+  "title": "Descriptor end-of-ring bit diagnostic",
+  "status": "completed_same_failure",
+  "kernel_branch": "codex/a733-h036-desc-er",
+  "kernel_head": "86785e682c32",
+  "artifact": "/srv/projects/kernel-work/outgoing/a733-h036-desc-er-86785e682c32-20260610T233800Z",
+  "change": "Set SDXC_IDMAC_DES0_ER on the last A733 IDMAC descriptor in addition to SDXC_IDMAC_DES0_LD.",
+  "cubie3": {
+    "host": "codex@192.168.50.95",
+    "uart_device": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1:1.0-port0",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T233925Z-cubie3-a733-h036-desc-er-86785e682c32-ttyUSB0.uart.log",
+    "uart_log_sha256": "7bcfdd0692bafbf66ab0e891cbda0c20cda21446ed8fc065a16f95175c23e146",
+    "kernel_version": "7.1.0-rc5-00283-g86785e682c32",
+    "evidence": {
+      "descriptor_word_0": "0x8000003c",
+      "descriptor_checksum_after_cpu_sync": "0x858ad2cb",
+      "idst": "0x00004000",
+      "chda": "0x3f840000",
+      "cbda": "0x00000000",
+      "cbcr": "0x00000400",
+      "bbcr": "0x00000000"
+    },
+    "interpretation": "The descriptor ER-bit variant was active, but the controller still did not fetch descriptor word 0. OWN remained set, CHDA stayed at DLBA, CBDA stayed zero, and descriptor memory was unchanged after CPU sync."
+  },
+  "cubie2_parallel_attempt": {
+    "host": "codex@192.168.50.85",
+    "uart_device": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-h027-idmac-vendor64-9c631195b663-20260610T195427Z",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T233925Z-cubie2-a733-h027-baseline-9c631195b663-ttyUSB1.uart.log",
+    "uart_log_sha256": "399c2be6fb7b4984cde2748b5a50a4a2dfe9acba36361116cc59556e8e54d272",
+    "result": "The capture failed before U-Boot with boot0 SD/MMC0 init errors, so it did not produce a Linux baseline result. A later restore check reached vendor 5.15.147-21-a733."
+  },
+  "restore": {
+    "cubie2": "5.15.147-21-a733",
+    "cubie3": "5.15.147-21-a733"
+  },
+  "decision": "Close H036. Do not retest descriptor ER unless new source or maintainer feedback names a related descriptor-format requirement."
+}

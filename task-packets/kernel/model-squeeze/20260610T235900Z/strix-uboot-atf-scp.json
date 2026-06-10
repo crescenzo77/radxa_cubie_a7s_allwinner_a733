@@ -1,0 +1,38 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "This is a classic \"works in U-Boot, fails in Linux\" SDMMC issue on Allwinner platforms. Since PIO works, the physical link and basic controller logic are functional. The stall at the *first* IDMAC descriptor fetch in Linux implies that the DMA engine is either not seeing the descriptor, is seeing garbage, or is blocked by a fabric/security gate that U-Boot bypassed or configured differently.\n\nGiven the constraint to avoid vendor-DTS pollution and focus on `uboot-atf-scp` handoff, we must look at **state retention** and **fabric arbitration**.\n\n### Hypothesis 1: U-Boot leaves SDMMC0 in a \"DMA-Active\" or \"Descriptor-Pointer-Valid\" state that Linux\u2019s `dw_mmc` driver does not fully reset before enabling IDMAC.\n\n**Evidence to Inspect:**\n1.  **U-Boot `mmc.c` / `sunxi_mmc.c`**: Check if U-Boot disables the IDMAC engine (`IDMAC_EN` bit in `IDMAC_CTRL`) and clears the `IDMAC_STATUS` before exiting. Many U-Boot drivers just disable the clock and assume hardware reset.\n2.  **Linux `dw_mmc.c`**: Check `dw_mci_setup_idmac()`. Does it write to `IDMAC_AR` (Address Register) *before* setting `IDMAC_EN`? If the hardware is still \"thinking\" about the previous U-Boot descriptor (if any), it might stall.\n3.  **Register Dump**: Compare `SDMMC0_BASE + 0x100` (IDMAC_CTRL) and `0x104` (IDMAC_STATUS) and `0x108` (IDMAC_AR) immediately after Linux driver probe but before first request.\n\n**Minimal Test:**\nAdd a `udelay(100)` and explicit IDMAC disable/enable sequence in `dw_mci_setup_idmac()` *before* writing the first descriptor address.\n```c\n// In dw_mci_setup_idmac()\ndw_mci_writel(host, IDMAC_CTRL, 0); // Disable IDMAC\nudelay(10);\ndw_mci_writel(host, IDMAC_STATUS, 0x3F); // Clear all status bits\nudelay(10);\n// Then proceed with normal setup\n```\n\n**Falsifier:**\nIf adding explicit disable/clear/enable in Linux fixes the stall, the issue is state retention. If it doesn\u2019t, the hardware is not seeing the descriptor at all (pointing to Hypothesis 2 or 3).\n\n---\n\n### Hypothesis 2: TF-A/SCP holds a \"Secure\" or \"Low-Power\" lock on the SDMMC0 fabric path, blocking DMA but allowing PIO.\n\n**Evidence to Inspect:**\n1.  **TF-A `plat-sunxi`**: Check `plat_pm.c` or `plat_scp.c`. Is SDMMC0 listed in a power domain that is *not* fully released to the non-secure world? Look for `pmu_set_power_state` or `scp_msg` calls related to SDMMC.\n2.  **SCP Firmware**: If using Allwinner\u2019s SCP, check if SDMMC0 is claimed as a \"secure\" peripheral. PIO might be allowed via a secure proxy, but DMA requires direct fabric access.\n3.  **Register `0x07000000 + 0x000` (CCU)**: Check if the SDMMC0 clock is gated in a way that allows PIO (maybe via a different clock tree) but not DMA.\n\n**Minimal Test:**\nIn TF-A, add a debug print or register dump of the SDMMC0 power domain state *after* U-Boot exits and *before* Linux starts. Specifically, check if the `SDMMC0` clock is enabled and the `SDMMC0` reset is deasserted in the non-secure context.\n\n**Falsifier:**\nIf TF-A shows SDMMC0 is fully powered and clocked, but Linux still stalls, then TF-A is not the blocker. If TF-A shows SDMMC0 is in a low-power state, forcing it to \"on\" in TF-A should fix Linux.\n\n---\n\n### Hypothesis 3: U-Boot configures the AHB/APB fabric arbitration or QoS for SDMMC0 in a way that Linux\u2019s default settings conflict with, causing DMA starvation.\n\n**Evidence to Inspect:**\n1.  **U-Boot `clk.c`**: Check if U-Boot sets specific QoS or arbitration priorities for SDMMC0. Allwinner SoCs often have a `CCU` register for `SDMMC0` QoS.\n2.  **Linux `clk-sunxi.c`**: Check if Linux resets these QoS registers to default. If U-Boot set a high priority and Linux resets it to low, DMA might stall if the fabric is busy.\n3.  **Register `0x07000000 + 0x0XX` (CCU QoS)**: Look for `SDMMC0` QoS registers. Compare values in U-Boot vs. Linux.\n\n**Minimal Test:**\nIn Linux, after clock enable, manually set the SDMMC0 QoS register to the same value U-Boot uses. You can find U-Boot\u2019s value by dumping the register in U-Boot\u2019s `mmc` command.\n\n**Falsifier:**\nIf matching U-Boot\u2019s QoS settings fixes the stall, the issue is fabric arbitration. If not, it\u2019s not QoS.\n\n---\n\n### Hypothesis 4: The descriptor memory is not \"coherent\" in the way the hardware expects, despite being marked as such in Linux.\n\n**Evidence to Inspect:**\n1.  **U-Boot**: U-Boot often uses `malloc()` which is in a coherent region (or disables cache for that region). Linux uses `dma_alloc_coherent()`.\n2.  **Linux `dw_mmc.c`**: Check if `dma_map_sg()` is used correctly. For IDMAC, the descriptor table must be contiguous and coherent.\n3.  **Register `0x07000000 + 0x000` (CCU)**: Check if the SDMMC0 DMA address space is mapped correctly.\n\n**Minimal Test:**\nForce Linux to use a known coherent memory region (e.g., CMA) for the descriptor table. Ensure `dma_sync_single_for_device()` is called before enabling IDMAC.\n\n**Falsifier:**\nIf using CMA and explicit sync fixes it, the issue is cache coherency. If not, it\u2019s not coherency.\n\n---\n\n### Recommended Action Plan\n\n1.  **Immediate**: Add register dumps in Linux `dw_mmc.c` at probe and at first request failure. Compare with U-Boot register dumps.\n2.  **TF-A Audit**: Check if SDMMC0 is in a power domain that is not fully released.\n3.  **U-Boot Audit**: Check if U-Boot disables IDMAC properly.\n4.  **Linux Patch**: Try explicit IDMAC disable/clear/enable in `dw_mci_setup_idmac()`.\n\nThis approach isolates the issue to state retention, power management, or fabric arbitration, all of which are common in Allwinner bring-up.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1781135283,
+  "id": "chatcmpl-3M998wICrMQ4jt1p4fGiNsVAFEXxj4dD",
+  "model": "qwen3.6-27b-rocmfp4-mtp-headq6-noreason",
+  "object": "chat.completion",
+  "system_fingerprint": "b9220-c5bfb0d8d",
+  "timings": {
+    "cache_n": 0,
+    "draft_n": 1803,
+    "draft_n_accepted": 974,
+    "predicted_ms": 71713.266,
+    "predicted_n": 1574,
+    "predicted_per_second": 21.948519260020873,
+    "predicted_per_token_ms": 45.56116010165184,
+    "prompt_ms": 1009.335,
+    "prompt_n": 222,
+    "prompt_per_second": 219.946796653242,
+    "prompt_per_token_ms": 4.546554054054054
+  },
+  "usage": {
+    "completion_tokens": 1574,
+    "prompt_tokens": 222,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1796
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "Below is a **structured, evidence\u2011driven checklist** that you can run on the Radxa\u202fCubie\u202fA7S (Allwinner\u202fA733) to isolate the SDMMC0 IDMAC stall.  \nAll tests are **source\u2011backed** (i.e. you can add them to the kernel or U\u2011Boot tree) or **cheap runtime** (no extra hardware).  \nNo Ethernet, VPU, display, USB, PCIe, Wi\u2011Fi, or vendor\u2011DTS pollution is used.\n\n---\n\n## 1. Verify the IDMAC descriptor chain is *physically* reachable\n\n| Test | What to look for | How to run | Falsifier |\n|------|------------------|------------|-----------|\n| **DMA\u2011capable memory test** | All descriptors must be in a region that the DMA engine can read (i.e. non\u2011cached, non\u2011write\u2011combined, 4\u2011byte aligned, below 4\u202fGB if the engine is 32\u2011bit). | In U\u2011Boot, allocate a buffer with `malloc`/`malloc_coherent` and fill it with a known pattern. Then run a minimal DMA transfer (e.g. `mmc read` with `--dma` flag). | If the transfer succeeds, the memory is DMA\u2011friendly. If it stalls, the problem is the memory region. |\n| **Descriptor alignment check** | The first descriptor must be 4\u2011byte aligned. | Add a probe in the driver that prints the address of the first descriptor (`printk(\"IDMAC first desc @ %p\\n\", desc);`). | If the address is not 4\u2011byte aligned, the DMA engine will fault on the first fetch. |\n| **Below\u20114\u202fGB check** | If the IDMAC is 32\u2011bit, any descriptor above 0xFFFFFFFF will be truncated. | In the driver, add a runtime check: `if ((uintptr_t)desc > 0xFFFFFFFFULL) printk(\"IDMAC desc > 4G\\n\");`. | If the message appears, move the descriptor buffer to a lower address. |\n\n---\n\n## 2. Confirm the IDMAC control registers are correctly programmed\n\n| Test | What to look for | How to run | Falsifier |\n|------|------------------|------------|-----------|\n| **IDMAC enable bit** | The `IDMAC_EN` bit must be set before starting a transfer. | Add a `printk` after setting the bit: `printk(\"IDMAC_EN=%d\\n\", readl(IDMAC_EN_REG));`. | If the bit is 0, the engine will never start. |\n| **Descriptor ring end\u2011of\u2011ring (EOR) flag** | The last descriptor must have the EOR bit set. | In the descriptor\u2011setup code, assert `desc->eor == 1`. | If EOR is 0, the engine will wrap to the first descriptor and stall. |\n| **DMA burst size** | The burst size field must be a supported value (e.g. 4, 8, 16). | Print the burst size from the control register. | If the value is unsupported, the engine may stall. |\n| **IDMAC reset** | The engine must be reset before use. | Add a reset sequence (`writel(0x1, IDMAC_RST_REG); udelay(10);`). | If the reset is omitted, stale state can cause a stall. |\n\n---\n\n## 3. Validate the SDMMC controller\u2019s clock and reset path\n\n| Test | What to look for | How to run | Falsifier |\n|------|------------------|------------|-----------|\n| **Clock source** | The SDMMC0 clock must be enabled and at the correct frequency (e.g. 48\u202fMHz). | In U\u2011Boot, read the clock register (`readl(CLK_REG)`), or use `clk_get_rate()` in the driver. | If the clock is 0 or wrong, the DMA engine will not see valid data. |\n| **Reset de\u2011assertion** | The controller reset must be de\u2011asserted before starting a transfer. | Add a `printk` after resetting: `printk(\"SDMMC0 reset=%d\\n\", readl(SDMMC0_RST_REG));`. | If the reset bit remains set, the controller is frozen. |\n| **Clock gating** | The clock must not be gated off during DMA. | Toggle the clock gate in a test transfer and observe if the DMA stalls. | If gating causes a stall, the clock gating logic is wrong. |\n\n---\n\n## 4. Check the SCP/ATF hand\u2011off for SDMMC0\n\n| Test | What to look for | How to run | Falsifier |\n|------|------------------|------------|-----------|\n| **SCP firmware version** | The SCP must be running the expected firmware that configures the SDMMC0 clock/reset. | In U\u2011Boot, read the SCP firmware version register (`readl(SCP_VER_REG)`). | If the version is older, the clock may be mis\u2011configured. |\n| **ATF mailbox** | The ATF must have sent the correct mailbox message to enable SDMMC0. | Add a probe in the ATF code that logs the mailbox message (`printf`). | If the message is missing or wrong, the controller will not be powered. |\n| **Fabric reset** | The SDMMC0 fabric reset line must be de\u2011asserted by the SCP. | In the driver, read the fabric reset status register. | If the reset is still asserted, the controller will not respond. |\n\n---\n\n## 5. Runtime sanity checks for the DMA engine\n\n| Test | What to look for | How to run | Falsifier |\n|------|------------------|------------|-----------|\n| **Descriptor fetch counter** | The DMA engine should fetch descriptors in order. | Add a counter that increments each time a descriptor is fetched (`IDMAC_INT_STATUS`). | If the counter stops at 1, the engine stalls after the first fetch. |\n| **Interrupt status** | The DMA interrupt should indicate a descriptor fetch error (`IDMAC_ERR`). | Poll the interrupt status register after a transfer. | If `IDMAC_ERR` is set, the engine encountered an error. |\n| **DMA buffer integrity** | The data read from SDMMC0 must match the expected pattern. | After a transfer, compare the buffer to a known pattern. | If the data is corrupted, the DMA engine is not correctly fetching. |\n\n---\n\n## 6. Minimal kernel patch to enable the tests\n\n```c\n/* drivers/mmc/host/sunxi_sdhci.c (excerpt) */\nstatic void sdhci_print_dma_info(struct sdhci_host *host)\n{\n    struct sunxi_sdhci_host *sunxi = to_sunxi(host);\n    struct sunxi_sdhci_desc *desc = sunxi->idmac_desc;\n    u32 idmac_en = readl(host->ioaddr + SDHCI_IDMAC_EN);\n    u32 clk = readl(host->ioaddr + SDHCI_CLK);\n    u32 rst = readl(host->ioaddr + SDHCI_RST);\n\n    printk(KERN_INFO \"SDHCI IDMAC: en=%u, desc=%p, eor=%u\\n\",\n           idmac_en, desc, desc->eor);\n    printk(KERN_INFO \"SDHCI clock=%u, reset=%u\\n\", clk, rst);\n}\n```\n\nCall `sdhci_print_dma_info()` after the host is initialized and before the first transfer.\n\n---\n\n## 7. Falsification strategy\n\n1. **If the DMA buffer is reachable and the descriptor chain is correct**  \n   \u2192 The stall is *not* due to memory or descriptor mis\u2011configuration.\n\n2. **If the clock is running and the reset is de\u2011asserted**  \n   \u2192 The stall is *not* due to clock/reset issues.\n\n3. **If the SCP/ATF hand\u2011off logs show the correct mailbox message**  \n   \u2192 The stall is *not* due to firmware hand\u2011off.\n\n4. **If the DMA engine reports an error interrupt**  \n   \u2192 The stall is *due* to an internal engine fault (e.g. unsupported burst size, mis\u2011aligned descriptor).\n\n5. **If the DMA engine fetch counter stops at 1**  \n   \u2192 The engine stalls after the first descriptor fetch \u2013 likely a hardware bug or a missing EOR bit.\n\n---\n\n## 8. Quick sanity test (no code change)\n\n```bash\n# In U\u2011Boot\nmmc dev 0\nmmc read 0x82000000 0x1000 1   # read 1 block via DMA\nhexdump -C 0x82000000 | head\n```\n\nIf the read fails or the data is garbage, the DMA path is broken.  \nIf the read succeeds, the problem is likely in the kernel driver or the hand\u2011off.\n\n---\n\n### Bottom line\n\n- **Memory & descriptor checks** rule out DMA\u2011access problems.  \n- **Clock/reset & SCP/ATF checks** rule out firmware hand\u2011off issues.  \n- **Runtime DMA status** pinpoints whether the engine stalls internally.  \n\nRun the above tests in sequence; the first falsifier will tell you where the blocker lies. Once identified, you can focus on the specific subsystem (e.g. adjust descriptor alignment, correct SCP mailbox, or patch the IDMAC reset logic).",
+        "reasoning": "Need to propose tests.",
+        "reasoning_details": [
+          {
+            "format": "unknown",
+            "index": 0,
+            "text": "Need to propose tests.",
+            "type": "reasoning.text"
+          }
+        ],
+        "refusal": null,
+        "role": "assistant"
+      },
+      "native_finish_reason": "stop"
+    }
+  ],
+  "created": 1781135486,
+  "id": "gen-1781135486-4ltFnrtslpWfCjqWKh0Y",
+  "model": "openai/gpt-oss-20b:free",
+  "object": "chat.completion",
+  "provider": "OpenInference",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 1989,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 6
+    },
+    "cost": 0,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0,
+      "upstream_inference_cost": 0,
+      "upstream_inference_prompt_cost": 0
+    },
+    "is_byok": false,
+    "prompt_tokens": 269,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 64,
+      "video_tokens": 0
+    },
+    "total_tokens": 2258
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "angles": {
+    "negative-evidence": "Summarize which hypotheses are closed and what evidence prevents retesting them.",
+    "uboot-atf-scp": "Audit public U-Boot, TF-A, SCP, firmware handoff, clock/reset, and fabric setup clues."
+  },
+  "base_url": "http://192.168.50.225:4011/v1",
+  "context": "Current blocker: A733 SDMMC0 normal IDMAC stalls at first descriptor fetch. PIO reads, small PIO CMD18, partition discovery, CMD49 PIO cache-enable, and read-only root mount work. Closed: descriptor geometry/address shifts/below4G/coherent vs streaming/64-bit mask, safe MSI/IOMMU/NSI bits, public U-Boot IRQ40, and descriptor end-of-ring bit H036. Need source-backed or cheap runtime tests only.",
+  "created_utc": "20260610T234544Z",
+  "models": {
+    "amd3090": "3090 Qwen3.6 27B Dense Q4_K_M GGUF llama.cpp CUDA ctx64k chat",
+    "amd7900": "7900XT Qwen3.6 27B Dense Q4_K_M GGUF llama.cpp Vulkan ctx8k research",
+    "openrouter": "openrouter-free / Auto Free Router random available free model",
+    "strix": "Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding"
+  },
+  "outputs": [
+    {
+      "angle": "negative-evidence",
+      "file": "strix-negative-evidence.json",
+      "model": "strix",
+      "status": "ok"
+    },
+    {
+      "angle": "uboot-atf-scp",
+      "file": "strix-uboot-atf-scp.json",
+      "model": "strix",
+      "status": "ok"
+    },
+    {
+      "angle": "negative-evidence",
+      "file": "amd3090-negative-evidence.json",
+      "model": "amd3090",
+      "status": "ok"
+    },
+    {
+      "angle": "uboot-atf-scp",
+      "file": "amd3090-uboot-atf-scp.json",
+      "model": "amd3090",
+      "status": "ok"
+    },
+    {
+      "angle": "negative-evidence",
+      "file": "amd7900-negative-evidence.json",
+      "model": "amd7900",
+      "status": "ok"
+    },
+    {
+      "angle": "uboot-atf-scp",
+      "file": "amd7900-uboot-atf-scp.json",
+      "model": "amd7900",
+      "status": "ok"
+    },
+    {
+      "angle": "negative-evidence",
+      "file": "openrouter-negative-evidence.json",
+      "model": "openrouter",
+      "status": "ok"
+    },
+    {
+      "angle": "uboot-atf-scp",
+      "file": "openrouter-uboot-atf-scp.json",
+      "model": "openrouter",
+      "status": "ok"
+    }
+  ]
+}

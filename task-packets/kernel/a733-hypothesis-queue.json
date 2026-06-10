@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T23:35:00Z",
+  "updated_utc": "2026-06-11T00:05:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H035 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public U-Boot A733 MMC/clock/reset audit, initial public archive monitor, and the public-U-Boot IRQ-40 clue. IRQ 40 regressed before card init completion and did not reach the known descriptor-fetch stall. The descriptor-fetch question was sent by the user through Gmail plain text mode; no public archive hit or answer is visible yet. Await maintainer/list feedback before another behavior patch unless a new source-backed delta appears.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H036 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public U-Boot A733 MMC/clock/reset audit, initial public archive monitor, the public-U-Boot IRQ-40 clue, and the descriptor end-of-ring bit. H036 set the ER bit in the descriptor word and still stalled at DESC_READ with descriptor memory unchanged. The descriptor-fetch question was sent by the user through Gmail plain text mode; no public archive hit or answer is visible yet. Continue four-lane model/source triage continuously, but do not build another behavior patch unless it names one concrete source-backed runtime delta or a maintainer/list answer provides direction.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -19,9 +19,9 @@
     "knowledge_base_update_committed": "Update and commit /Users/enzo/Documents/Homelab/kernel-a733-400b-model-prompt-20260609.md.",
     "status_doc_update_committed": "Update and commit /Users/enzo/projects/Home Lab/cubie-a7s-armbian/docs/status.md.",
     "hypothesis_queue_update_committed": "Update and commit this file. Sync it to /srv/projects/homelab/task-packets/kernel/a733-hypothesis-queue.json on Strix.",
-    "workflow_automation_recorded": "If the upstream preparation process changed, update the public b4, validation-floor, topic-branch, PR-template, and review-export docs before ending the session.",
+    "workflow_automation_recorded": "If the upstream preparation process changed, update the public b4, validation-floor, topic-branch, PR-template, and review-export docs before ending the session. For speculative work, run scripts/a733-model-squeeze and save the raw outputs plus the deduped decision record.",
     "remote_push_checked": "Push repos with configured remotes and record any repo that has no remote.",
-    "target_restored": "Verify Cubie3 boots vendor kernel 5.15.147-21-a733."
+    "target_restored": "Verify Cubie2 and Cubie3 boot vendor kernel 5.15.147-21-a733 after tests."
   },
   "guardrails": [
     "Do not add vendor U-Boot compatibility strings, aliases, paths, or policy nodes to upstream DTS.",
@@ -37,13 +37,37 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H035",
-    "status": "completed_regressed_earlier",
-    "title": "Test public U-Boot SDMMC0 IRQ 40 against current diagnostic kernel",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h035-mmc0-irq40-result-20260610T2335Z.json",
-    "result": "Changing only SDMMC0 from GIC_SPI 161 to GIC_SPI 40 booted Linux but regressed before normal card init completion. CMD0 posted rint=0x4/mista=0x4 with imask=0x0000bbc6, then no later card-init, mmcblk, or descriptor-fetch CMD18 evidence appeared. IRQ 40 is closed as a runtime fix candidate for the current diagnostic path."
+    "id": "A733-SDMMC-H036",
+    "status": "completed_same_failure",
+    "title": "Test descriptor end-of-ring bit on the last A733 IDMAC descriptor",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h036-desc-er-result-20260611T0005Z.json",
+    "result": "Setting the descriptor ER bit produced des0=0x8000003c, then the forced CMD18 still stalled with IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, and unchanged descriptor checksum. ER is closed as a standalone descriptor-fetch fix."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H036",
+      "priority": 35,
+      "status": "completed_same_failure",
+      "title": "Test descriptor end-of-ring bit on the last A733 IDMAC descriptor",
+      "question": "Does setting the IDMAC end-of-ring bit on the last descriptor allow A733 SDMMC0 normal IDMAC to fetch descriptor word 0?",
+      "test_cost": "medium; one driver patch, one Image/DTB build, one Cubie3 UART boot",
+      "procedure": [
+        "Change only the last descriptor setup to include SDXC_IDMAC_DES0_ER with SDXC_IDMAC_DES0_LD.",
+        "Build Image and allwinner/sun60i-a733-cubie-a7s.dtb from Strix.",
+        "Install the verified artifact to Cubie3 /boot/cthu and boot once with scripts/cubie-direct-uboot-load-session.",
+        "Capture descriptor word 0, checksum, CHDA, CBDA, IDST, CBCR, and BBCR at the forced CMD18 stall.",
+        "Run a Cubie2 comparative baseline only if its boot media reaches U-Boot, then restore both boards to vendor 5.15.147-21-a733."
+      ],
+      "pass_criteria": "The descriptor OWN bit clears, CHDA/CBDA advance, or the forced CMD18 progresses beyond DESC_READ.",
+      "fail_criteria": "IDST remains DESC_READ with CHDA=DLBA, CBDA=0, and descriptor memory unchanged.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h036-desc-er-result-20260611T0005Z.json",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-h036-desc-er-86785e682c32-20260610T233800Z",
+        "cubie3_uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T233925Z-cubie3-a733-h036-desc-er-86785e682c32-ttyUSB0.uart.log",
+        "cubie2_uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T233925Z-cubie2-a733-h027-baseline-9c631195b663-ttyUSB1.uart.log",
+        "summary": "Cubie3 reached the known forced CMD18 descriptor stage. Descriptor word 0 was 0x8000003c, proving the ER-bit variant was active, but the controller still reported IDST=0x00004000 with CHDA=0x3f840000, CBDA=0, CBCR=0x400, BBCR=0, and checksum 0x858ad2cb unchanged after CPU sync. Cubie2 was used for a parallel baseline attempt but its boot0 SD init failed in that capture before U-Boot; a later restore boot verified Cubie2 back on vendor 5.15.147-21-a733."
+      }
+    },
     {
       "id": "A733-SDMMC-H035",
       "priority": 34,

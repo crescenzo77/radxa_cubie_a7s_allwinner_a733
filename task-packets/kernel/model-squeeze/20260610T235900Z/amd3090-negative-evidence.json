@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the constraints provided, here is the summary of closed hypotheses. Each entry includes the **Evidence** (why it is closed), a **Minimal Test** (to confirm closure if needed), and a **Falsifier** (what would prove this hypothesis wrong, thereby reopening it).\n\n### 1. Descriptor Addressing & Geometry\n**Hypothesis:** The stall is caused by incorrect descriptor alignment, address width (32 vs 64-bit), or cache coherency attributes (streaming vs. coherent) in the IDMAC descriptor ring.\n\n*   **Evidence:** The user explicitly states these are \"Closed: descriptor geometry/address shifts/below4G/coherent vs streaming/64-bit mask.\" Furthermore, PIO reads work, proving the SD card and basic bus connectivity are functional. If the hardware could not address the descriptor memory at all, even PIO initialization might fail or hang differently. The fact that CMD18 (multi-block read) works in PIO mode suggests the controller can handle multi-block transactions, isolating the issue to the DMA engine's fetch mechanism specifically.\n*   **Minimal Test:** Re-run the kernel with `sdhci.debug_quirks2=0x20000000` (force PIO for all transfers) and verify that large file reads succeed. If they do, the DMA descriptor setup is the sole suspect. Since this is already known to work, the hypothesis is closed.\n*   **Falsifier:** If forcing PIO for *all* transfers (including small ones) causes a hang or data corruption, then the issue is not DMA-specific but related to the SDHCI core or card timing, reopening the geometry/coherency hypotheses.\n\n### 2. MSI/IOMMU/NSI Configuration\n**Hypothesis:** The stall is caused by incorrect MSI interrupt routing, IOMMU translation faults, or Non-Secure Interrupt (NSI) configuration preventing the DMA engine from signaling completion or fetching descriptors.\n\n*   **Evidence:** The user states these are \"Closed: safe MSI/IOMMU/NSI bits.\" Additionally, the system boots to a read-only root mount using PIO. If MSI/IOMMU were fundamentally broken for the SDMMC controller, the kernel would likely panic during early probe or fail to allocate DMA buffers. The fact that the system is stable enough to mount a rootfs via PIO implies the interrupt controller and memory management unit are functioning correctly for the SDHCI core.\n*   **Minimal Test:** Check `dmesg` for any IOMMU mapping errors or MSI allocation failures during SDMMC probe. If none are present, and the system is stable, this hypothesis is closed.\n*   **Falsifier:** If enabling DMA causes an immediate IOMMU fault or MSI error in `dmesg` or `cat /proc/interrupts`, then the interrupt/memory translation setup is incorrect, reopening this hypothesis.\n\n### 3. U-Boot IRQ40 Configuration\n**Hypothesis:** The stall is caused by U-Boot leaving the SDMMC0 interrupt line (IRQ40) in an incorrect state (e.g., masked, wrong trigger type) that persists into Linux.\n\n*   **Evidence:** The user states this is \"Closed: public U-Boot IRQ40.\" This implies that the IRQ line is correctly configured in U-Boot and passed to Linux. Furthermore, PIO operations work, which rely on the same interrupt line for command completion. If the IRQ line were broken, even PIO command completions would fail or timeout.\n*   **Minimal Test:** Verify that `cat /proc/interrupts | grep sdhci` shows the correct IRQ number and that it increments during PIO operations. If it increments, the IRQ line is functional.\n*   **Falsifier:** If the IRQ counter does not increment during PIO operations, or if the IRQ number in Linux does not match the expected value from U-Boot, then the IRQ configuration is incorrect, reopening this hypothesis.\n\n### 4. Descriptor End-of-Ring Bit (H036)\n**Hypothesis:** The stall is caused by an incorrect interpretation of the \"End of Ring\" bit in the descriptor, causing the DMA engine to stop prematurely or loop incorrectly.\n\n*   **Evidence:** The user states this is \"Closed: descriptor end-of-ring bit H036.\" This suggests that the specific bit pattern for the end-of-ring descriptor has been verified against the A733 TRM (Technical Reference Manual) and is correctly set. Since the stall happens at the *first* descriptor fetch, the end-of-ring bit is unlikely to be the cause unless the ring is malformed from the start. However, the closure implies this has been checked.\n*   **Minimal Test:** Inspect the first descriptor in memory via `crash` or `gdb` to ensure the \"End of Ring\" bit is *not* set for the first descriptor. If it is not set, this hypothesis is closed.\n*   **Falsifier:** If the first descriptor has the \"End of Ring\" bit set, the DMA engine may interpret the ring as empty or complete, causing a stall. This would reopen the hypothesis.\n\n### Summary of Remaining Open Hypotheses (Not Closed)\nSince the above are closed, the remaining suspects for \"IDMAC stalls at first descriptor fetch\" are:\n\n1.  **IDMAC Control Register Configuration:** Incorrect setup of the IDMAC control register (e.g., burst size, interrupt thresholds, or enable bits) specific to the A733.\n2.  **Clock/Reset Sequence:** The IDMAC engine may not be properly clocked or reset before the first descriptor fetch.\n3.  **Descriptor Memory Attributes:** While \"coherent vs streaming\" is closed, the *physical* memory attributes (e.g., device vs. normal memory) in the IOMMU page tables might be incorrect for the descriptor ring.\n4.  **Hardware Bug/Errata:** A known errata in the A733 SDMMC controller where the IDMAC engine stalls under specific conditions (e.g., first fetch after reset).\n\n### Next Steps (Speculative but Disciplined)\n*   **Inspect:** Check the IDMAC control register values in the kernel driver (`sdhci-esdhc.c` or similar) against the A733 TRM.\n*   **Test:** Add debug prints to dump the IDMAC control register and the first descriptor before starting the DMA transfer.\n*   **Falsifier:** If the IDMAC control register values match the TRM exactly and the first descriptor is correctly formatted, then the issue is likely a hardware errata or a subtle clock/reset sequence issue.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1781135317,
+  "id": "chatcmpl-lmtU2B2gpAWyUuMO9rRzFvREwp66ULPp",
+  "model": "qwen3.6-27b-q4km-amd-rtx3090-vulkan",
+  "object": "chat.completion",
+  "system_fingerprint": "b9544-98d5e8ba8",
+  "timings": {
+    "cache_n": 0,
+    "predicted_ms": 33645.461,
+    "predicted_n": 1388,
+    "predicted_per_second": 41.25370729799184,
+    "predicted_per_token_ms": 24.240245677233432,
+    "prompt_ms": 306.129,
+    "prompt_n": 211,
+    "prompt_per_second": 689.2519166756498,
+    "prompt_per_token_ms": 1.4508483412322275
+  },
+  "usage": {
+    "completion_tokens": 1388,
+    "prompt_tokens": 211,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1599
+  }
+}

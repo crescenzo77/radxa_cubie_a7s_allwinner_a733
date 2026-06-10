@@ -1,0 +1,42 @@
+{
+  "id": "A733-MODEL-SQUEEZE-20260611T0005Z",
+  "created_utc": "2026-06-11T00:05:00Z",
+  "purpose": "Continuously mine four model avenues for speculative but falsifiable A733 SDMMC0 IDMAC work without letting duplicate or hallucinated ideas become kernel patches.",
+  "models": [
+    "Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6",
+    "AMD 3090 Qwen3.6 27B Dense Q4_K_M",
+    "AMD 7900XT Qwen3.6 27B Dense Q4_K_M",
+    "OpenRouter Auto Free Router"
+  ],
+  "raw_batch": "/tmp/a733-model-squeeze-20260610T233847Z",
+  "rerunnable_script": "/Users/enzo/projects/homelab/scripts/a733-model-squeeze",
+  "angles": [
+    "source-registry",
+    "driver-diff",
+    "runtime-probes",
+    "mailinglist-research",
+    "negative-evidence",
+    "two-board-matrix",
+    "uboot-atf-scp",
+    "upstreamable-slice"
+  ],
+  "triage": {
+    "accepted_for_test": [
+      {
+        "item": "Descriptor end-of-ring bit variant",
+        "status": "tested_closed",
+        "result": "H036 set the ER bit and still stalled at DESC_READ with descriptor memory unchanged."
+      }
+    ],
+    "accepted_for_audit": [
+      "Continue public U-Boot/TF-A/SCP/firmware handoff source audit for one named clock/reset/fabric/security delta.",
+      "Keep checking public archive/Gmail for maintainer feedback on A733 IDMAC descriptor-fetch reachability."
+    ],
+    "rejected_or_duplicate": [
+      "Descriptor alignment, size, address shift, below-4G placement, coherent-vs-streaming allocation, and 64-bit DMA mask were already closed.",
+      "Broad MBUS/NSI/IOMMU/fabric bit spraying is already closed or too risky without source evidence.",
+      "PIO-only support remains a lab diagnostic/runtime proof, not an upstreamable substitute for correct SDMMC0 IDMAC support."
+    ]
+  },
+  "decision": "Run model squeeze batches repeatedly, but only promote ideas into the hypothesis queue when they include a concrete source path, register, one-variable test, and falsifier not already covered by H009-H036."
+}

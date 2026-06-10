@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+import argparse
+import datetime as dt
+import json
+import os
+import pathlib
+import urllib.error
+import urllib.request
+
+
+MODELS = {
+    "strix": "Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding",
+    "amd3090": "3090 Qwen3.6 27B Dense Q4_K_M GGUF llama.cpp CUDA ctx64k chat",
+    "amd7900": "7900XT Qwen3.6 27B Dense Q4_K_M GGUF llama.cpp Vulkan ctx8k research",
+    "openrouter": "openrouter-free / Auto Free Router random available free model",
+}
+
+ANGLES = {
+    "source-registry": "Name concrete source files, registers, and call paths to audit. Reject anything already closed by H009-H036.",
+    "driver-diff": "Compare likely vendor-vs-mainline sunxi-mmc driver differences. Return only one-variable tests with falsifiers.",
+    "runtime-probes": "Propose printk/devmem/UART probes that answer a yes/no question before a full kernel behavior change.",
+    "mailinglist-research": "List public archive search strings and maintainer-facing prior art to check.",
+    "negative-evidence": "Summarize which hypotheses are closed and what evidence prevents retesting them.",
+    "two-board-matrix": "Design Cubie2 vs Cubie3 split tests that preserve Cubie1 and restore both boards.",
+    "uboot-atf-scp": "Audit public U-Boot, TF-A, SCP, firmware handoff, clock/reset, and fabric setup clues.",
+    "upstreamable-slice": "Separate lab-only diagnostics from patches that could plausibly survive upstream review.",
+}
+
+
+def post_chat(base_url, token, model, prompt, timeout):
+    body = {
+        "model": model,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are a Linux kernel bring-up reviewer for Allwinner A733/Radxa Cubie A7S. "
+                    "Be speculative but disciplined: every idea must include evidence to inspect, "
+                    "a minimal test, and a falsifier. Do not suggest Ethernet, VPU, display, USB, "
+                    "PCIe, Wi-Fi, or vendor-DTS pollution."
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.2,
+        "max_tokens": 1800,
+    }
+    req = urllib.request.Request(
+        base_url.rstrip("/") + "/chat/completions",
+        data=json.dumps(body).encode("utf-8"),
+        headers={
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Run A733 four-lane model squeeze batch.")
+    parser.add_argument("--base-url", default=os.environ.get("A733_MODEL_BASE_URL", "http://192.168.50.225:4011/v1"))
+    parser.add_argument("--token", default=os.environ.get("A733_MODEL_TOKEN", "local-open-webui-gateway"))
+    parser.add_argument("--out-dir", default=None)
+    parser.add_argument("--timeout", type=int, default=300)
+    parser.add_argument("--angle", action="append", choices=sorted(ANGLES), help="Limit to one or more angles.")
+    parser.add_argument("--model", action="append", choices=sorted(MODELS), help="Limit to one or more model lanes.")
+    args = parser.parse_args()
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    out_dir = pathlib.Path(args.out_dir) if args.out_dir else repo_root / "task-packets/kernel/model-squeeze" / stamp
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    context = (
+        "Current blocker: A733 SDMMC0 normal IDMAC stalls at first descriptor fetch. "
+        "PIO reads, small PIO CMD18, partition discovery, CMD49 PIO cache-enable, and read-only root mount work. "
+        "Closed: descriptor geometry/address shifts/below4G/coherent vs streaming/64-bit mask, safe MSI/IOMMU/NSI bits, "
+        "public U-Boot IRQ40, and descriptor end-of-ring bit H036. "
+        "Need source-backed or cheap runtime tests only."
+    )
+    selected_models = args.model or list(MODELS)
+    selected_angles = args.angle or list(ANGLES)
+    manifest = {
+        "created_utc": stamp,
+        "base_url": args.base_url,
+        "models": {k: MODELS[k] for k in selected_models},
+        "angles": {k: ANGLES[k] for k in selected_angles},
+        "context": context,
+        "outputs": [],
+    }
+
+    for model_key in selected_models:
+        for angle_key in selected_angles:
+            prompt = context + "\n\nAngle: " + angle_key + "\n" + ANGLES[angle_key]
+            stem = f"{model_key}-{angle_key}"
+            try:
+                data = post_chat(args.base_url, args.token, MODELS[model_key], prompt, args.timeout)
+                path = out_dir / f"{stem}.json"
+                path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+                manifest["outputs"].append({"model": model_key, "angle": angle_key, "status": "ok", "file": path.name})
+            except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+                path = out_dir / f"{stem}.err"
+                path.write_text(str(exc) + "\n", encoding="utf-8")
+                manifest["outputs"].append({"model": model_key, "angle": angle_key, "status": "error", "file": path.name})
+
+    (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(out_dir)
+
+
+if __name__ == "__main__":
+    main()
