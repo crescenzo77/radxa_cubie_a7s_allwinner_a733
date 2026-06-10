@@ -1,0 +1,15 @@
+{
+  "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h025-nsi-breadcrumbs-result-20260610T1935Z.json",
+  "kernel_head": "f0114b15f40a",
+  "artifact": "/srv/projects/kernel-work/outgoing/a733-h025-nsi-breadcrumbs-f0114b15f40a-20260610T191727Z",
+  "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T193043Z-a733-h025-nsi-breadcrumbs-f0114b15f40a-slowload-synced-ttyUSB0.uart.log",
+  "uart_log_sha256": "9d4f714e5161508fb1289daa4354ac5014441e187a3f62fc8842f340373543d9",
+  "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/f0114b15f40a-h025-nsi-breadcrumbs.patch",
+  "patch_sha256": "614ad808f4682e55fc83a89180728853bbbe8f3ad6bbee544ff3b5470e0b7b00",
+  "false_start_logs": [
+    "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T191927Z-a733-h025-nsi-breadcrumbs-f0114b15f40a-ext4load-ttyUSB0.uart.log",
+    "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T192241Z-a733-h025-nsi-breadcrumbs-f0114b15f40a-retry-ext4load-ttyUSB0.uart.log",
+    "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T192615Z-a733-h025-nsi-breadcrumbs-f0114b15f40a-slowload-ttyUSB0.uart.log"
+  ],
+  "summary": "Completed and failed as expected. The first three boot attempts were U-Boot-only false starts caused by zero-byte /boot/cthu DTB/config/manifest files after an unsynced manual install; after reinstalling and syncing, U-Boot loaded 4761 bytes of DTB and fdt addr succeeded. The real H025 boot reached Linux 7.1.0-rc5-00281-gf0114b15f40a and mmcblk0. H025 removed NSI IAG reads from the behavior path, then proved both minimum NSI writes landed: CCU 0x580 0x43000005->0xc3000005 and CCU 0x584 0x00010000->0x00010001. The run reached dma-entry, descriptor setup, command launch, idma-post-cmdr, and after-cpu-sync. The descriptor stayed unchanged with checksum 0x433b7131, OWN set, CHDA=DLBA=0x3e800000, CBDA=0, IDST=0x4000, CBCR=0x400, and BBCR=0. This closes the minimum NSI bits as a standalone fix."
+}

@@ -82,6 +82,13 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
   after the port 15 pre-dump and before any NSI-minimum write result or
   descriptor evidence. The next work order is H025: remove IAG reads from the
   behavior proof and split/breadcrumb the CCU 0x580 and 0x584 writes.
+- 2026-06-10 H025 update: H025 removed IAG reads from the behavior path and
+  proved the CCU NSI minimum writes land (`0x580: 0x43000005 -> 0xc3000005`,
+  `0x584: 0x00010000 -> 0x00010001`). The forced CMD18 still stalls with the
+  descriptor unchanged, `OWN` set, `CHDA=DLBA`, `CBDA=0`, and `IDST=0x4000`.
+  The next work order is a no-build H026 source/log/sysfs audit for
+  lower-level descriptor-fetch reachability state before any new behavior
+  patch.
 
 ## Guardrails
 

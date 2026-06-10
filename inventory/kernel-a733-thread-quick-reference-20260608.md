@@ -1000,3 +1000,35 @@ Next queue item: H025. Remove IAG port dumps from the behavior proof, keep only
 CCU 0x580/0x584 reads, and split/breadcrumb the NSI minimum writes with hard
 pre/post messages and short delays around 0x580, 0x584, and IDMA setup. Do not
 broaden into out-of-scope fabric or peripherals.
+
+## 2026-06-10 H025 Queue Update
+
+H025 head: `f0114b15f40a` (`mmc: localize A733 NSI minimum transition`).
+Artifact:
+`/srv/projects/kernel-work/outgoing/a733-h025-nsi-breadcrumbs-f0114b15f40a-20260610T191727Z`.
+UART:
+`tools/hardware-logs/cubie-uart/20260610T193043Z-a733-h025-nsi-breadcrumbs-f0114b15f40a-slowload-synced-ttyUSB0.uart.log`,
+sha256 `9d4f714e5161508fb1289daa4354ac5014441e187a3f62fc8842f340373543d9`.
+Patch:
+`tools/kernel-patches/a733-diagnostics/f0114b15f40a-h025-nsi-breadcrumbs.patch`,
+sha256 `614ad808f4682e55fc83a89180728853bbbe8f3ad6bbee544ff3b5470e0b7b00`.
+
+Result: H025 removed NSI IAG reads from the behavior path and proved the
+minimum NSI writes land: CCU `0x580` changed `0x43000005 -> 0xc3000005`, and
+CCU `0x584` changed `0x00010000 -> 0x00010001`. The boot reached dma-entry,
+descriptor setup, command launch, idma-post-cmdr, and after-cpu-sync. The
+descriptor remained unchanged with checksum `0x433b7131`, `OWN` set,
+`CHDA=DLBA=0x3e800000`, `CBDA=0`, `IDST=0x4000`, `CBCR=0x400`, and `BBCR=0`.
+
+Workflow note: the first H025 boot attempts were U-Boot-only false starts
+because a manual `/boot/cthu` install left zero-byte DTB/config/manifest files
+before power cut. Direct artifact installs must verify nonzero sizes and
+SHA256, then run `sync`, before power cycling. The direct U-Boot loader now
+requires bytes-read output for both Image and DTB and validates `fdt addr`
+before `booti`.
+
+Next queue item: H026. Do a source/log/sysfs audit for the lower-level
+descriptor-fetch reachability state: security/firewall, interconnect,
+SMHC/SDMMC master permissions, NSI/MBUS master tables, or boot firmware
+handoff. Do not build another behavior patch until a single source-backed
+delta exists.
