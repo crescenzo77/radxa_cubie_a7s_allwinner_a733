@@ -207,6 +207,15 @@ large CMD18 still remains in descriptor-read state with `CHDA=DLBA`,
 `CBDA=0x00000000`, and `IDST=0x4000`. Vendor `REG_A12A=0` init is also not
 enough.
 
+Full Orange Pi BSP source was cloned on Strix at:
+`/srv/projects/kernel-work/tmp/linux-orangepi-full`, branch
+`orange-pi-6.6-sun60iw2`, commit
+`8a9be72c9006a87f786736b3aa4e2dfd971c1429`. It shows
+`sunxi_mmc_reg_ex_res_inter()` only stores the host pointer in a global
+`sunxi_hosts[phy_id]` array for external rescans; it does not program hidden
+IDMA, SFC, clock, reset, or wrapper registers. Do not spend a boot diagnostic
+on that helper unless new evidence appears.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
