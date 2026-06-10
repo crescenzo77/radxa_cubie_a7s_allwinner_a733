@@ -1835,6 +1835,40 @@ PIO-sized block-layer limits (`max_blk_count=8`, `max_segs=1`,
 request shape now proven to work. A pass is only a narrowing/runtime proof, not
 an upstream fix.
 
+## PIO-Sized Rootfs Proof and Residual CMD25 Stall
+
+Commit `14c5743c80fe` caps the A733 diagnostic host limits to keep normal
+block-layer reads inside the small PIO request shape proven by H003:
+`max_blk_count=8`, `max_blk_size=512`, `max_segs=1`, `max_seg_size=4096`, and
+`max_req_size=4096`.
+
+```text
+/srv/projects/kernel-work/outgoing/a733-piolimits-14c5743c80fe-20260610T151929Z
+Image sha256: b987cd85aa258be6443fd9dd4919a873638d8105155482d3e0a9760ace037c1f
+DTB sha256:   8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf
+config sha256: dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202
+build log sha256: cfcf71b148036e63544d88131bc90d7e0ff2a548933acc2465fc978b4c1aeeb7
+
+tools/hardware-logs/cubie-uart/20260610T152131Z-a733-piolimits-14c5743c80fe-ttyUSB0.uart.log
+sha256: 9b76b773e550e0b75ba61328e256b218d5270901a092e48b421eb8cc16457807
+```
+
+Key runtime lines:
+
+```text
+EXT4-fs (mmcblk0p3): mounted filesystem ... ro without journal.
+Run /bin/sh as init process
+sunxi-mmc 4020000.mmc: diag request-data opcode=25 flags=0x100 blksz=512 blocks=8 sg_len=1 stop=1
+sunxi-mmc 4020000.mmc: diag regs idma-post-cmdr ... rint=0x00000014 idst=0x00004000 chda=0x3f840000 cbda=0x00000000 cbcr=0x00000000 bbcr=0x00000000
+```
+
+Result: H005 passes the read-only rootfs proof. With large reads avoided,
+Cubie3 mounts `mmcblk0p3` read-only and starts `/bin/sh`. The remaining issue
+is not rootfs readability; it is IDMA-backed data transfer. The same run later
+shows an unexpected 8-block `CMD25` write that uses IDMA and stalls in the same
+descriptor-read state. Do not enable write-capable PIO next. H006 should first
+trace the issuer/call path for the unexpected write and preserve media safety.
+
 ## Guardrails
 
 - Do not add vendor-only U-Boot properties, paths, aliases, or compatible

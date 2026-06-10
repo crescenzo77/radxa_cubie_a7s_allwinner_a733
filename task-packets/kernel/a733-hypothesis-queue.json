@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T15:15:26Z",
+  "updated_utc": "2026-06-10T15:27:58Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, and partition discovery. The remaining blocker is the first large IDMA-backed CMD18: it stops at COMMAND_DONE|RX_DATA_REQUEST with IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0.",
+  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, and read-only EXT4 root mount to init=/bin/sh when block reads are capped to 8 blocks. The remaining blocker is any IDMA-backed data request: large reads previously stall, and H005 exposed an unexpected 8-block CMD25 write that also stalls in IDMA descriptor-read state.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -28,18 +28,18 @@
     "Keep clk_ignore_unused and PIO bypasses as lab diagnostics only."
   ],
   "latest_completed_test": {
-    "id": "A733-SDMMC-H003",
-    "status": "passed",
-    "title": "Lower-level CMD17 proof outside mmcblk queue setup",
-    "kernel_head": "2bbd04c46cc12363f246837a0c30393cbc7b12f7",
-    "artifact": "/srv/projects/kernel-work/outgoing/a733-cmd17-2bbd04c46cc1-20260610T150902Z",
-    "image_sha256": "da2df287ec1e5820f9198287af1a9f524cca5674ee8fdadb68ecf3d496dc1c0e",
+    "id": "A733-SDMMC-H005",
+    "status": "passed_with_residual_write_stall",
+    "title": "PIO-sized block-layer rootfs proof",
+    "kernel_head": "14c5743c80fe3dcff63172367dbd1f06cd6fa141",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-piolimits-14c5743c80fe-20260610T151929Z",
+    "image_sha256": "b987cd85aa258be6443fd9dd4919a873638d8105155482d3e0a9760ace037c1f",
     "dtb_sha256": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
     "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
-    "build_log_sha256": "fbb35eae506d62713f2d10388dc2b7cc6e61cd8965342650852d8672b950b83e",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T151104Z-a733-cmd17-2bbd04c46cc1-ttyUSB0.uart.log",
-    "uart_log_sha256": "8d3c1af937b37b4d702b209ee138e7b03cc58155a2ec8b169de3759d552c4480",
-    "result": "Passed. A guarded pre-add-card diagnostic issued CMD17 before mmcblk was registered. It completed with ret=0, copied 512 bytes from FIFO, and read an MBR-looking sector ending in 0xaa55. The same run then discovered mmcblk0 p1/p2/p3. Small PIO CMD18 reads of 8 blocks also completed and finalized repeatedly. The later first large IDMA-backed CMD18 of 256 blocks still stalls with RINTR=0x24, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0. The blocker is now narrowed away from card init, basic read protocol, and small PIO multi-block reads, toward IDMA or large block-layer request handling."
+    "build_log_sha256": "cfcf71b148036e63544d88131bc90d7e0ff2a548933acc2465fc978b4c1aeeb7",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T152131Z-a733-piolimits-14c5743c80fe-ttyUSB0.uart.log",
+    "uart_log_sha256": "9b76b773e550e0b75ba61328e256b218d5270901a092e48b421eb8cc16457807",
+    "result": "Passed the read-only rootfs proof. With A733 SDMMC0 limits set to max_blk_count=8, max_blk_size=512, max_segs=1, max_seg_size=4096, and max_req_size=4096, the kernel mounted EXT4 read-only on mmcblk0p3 and reached init=/bin/sh. Reads stayed in the proven small PIO path. After shell start, an unexpected opcode=25 8-block write request appeared; because the diagnostic PIO path only covers reads, that write used IDMA and stalled with RINTR=0x14, IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0, and BBCR=0. This proves read-only boot viability with PIO-sized reads and narrows the unresolved issue to IDMA-backed transfers, including writes."
   },
   "hypotheses": [
     {
@@ -115,7 +115,7 @@
     {
       "id": "A733-SDMMC-H005",
       "priority": 1,
-      "status": "ready",
+      "status": "completed",
       "title": "PIO-sized block-layer rootfs proof",
       "question": "Can Cubie3 mount the SD rootfs if block-layer reads are constrained to the small PIO-sized request shape that H003 proved works?",
       "test_cost": "medium; small kernel patch and one boot",
@@ -129,7 +129,31 @@
       ],
       "pass_criteria": "EXT4 mounts read-only and init=/bin/sh starts, proving the card/rootfs/data path works when avoiding the large IDMA request shape.",
       "fail_criteria": "A small PIO-sized block request stalls, or the block layer still emits a large IDMA request despite the advertised limits.",
-      "upstream_note": "A pass would be a runtime proof and narrowing tool, not an acceptable final upstream design."
+      "upstream_note": "A pass is a runtime proof and narrowing tool, not an acceptable final upstream design.",
+      "result": {
+        "kernel_head": "14c5743c80fe3dcff63172367dbd1f06cd6fa141",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-piolimits-14c5743c80fe-20260610T151929Z",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T152131Z-a733-piolimits-14c5743c80fe-ttyUSB0.uart.log",
+        "summary": "Passed read-only root proof: EXT4 mounted ro on mmcblk0p3 and init=/bin/sh started. The run later exposed an unexpected 8-block CMD25 write that used IDMA and stalled, so the next diagnostic should identify the write issuer before enabling any write path."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H006",
+      "priority": 1,
+      "status": "ready",
+      "title": "Trace unexpected CMD25 write issuer before enabling writes",
+      "question": "What kernel path issues an 8-block CMD25 write after an init=/bin/sh read-only root proof, and can it be prevented or isolated before any write-capable PIO experiment?",
+      "test_cost": "medium; small printk/dump_stack patch and one boot",
+      "procedure": [
+        "Do not enable multi-block PIO writes yet.",
+        "Add an A733-only diagnostic that logs and dump_stacks the first write data request, including opcode, arg, flags, blksz, blocks, sg_len, current task, and mounted root command line.",
+        "Prefer returning a controlled error for writes after logging if that preserves media safety; otherwise allow the existing stall only long enough to capture the issuer.",
+        "Boot Cubie3 once with the same PARTUUID ro root proof and capture UART.",
+        "Restore Cubie3 to vendor kernel 5.15.147-21-a733, then update this queue and status docs."
+      ],
+      "pass_criteria": "UART identifies the issuer/call path for the CMD25 write without completing a potentially unsafe write to the rootfs.",
+      "fail_criteria": "No stack or issuer evidence is captured before the write stalls.",
+      "upstream_note": "This remains a lab safety diagnostic. Do not convert it into upstream policy."
     },
     {
       "id": "A733-SDMMC-H004",

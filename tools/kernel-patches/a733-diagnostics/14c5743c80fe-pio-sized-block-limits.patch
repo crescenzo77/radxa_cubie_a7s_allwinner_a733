@@ -1,0 +1,35 @@
+From 14c5743c80fe3dcff63172367dbd1f06cd6fa141 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 11:19:21 -0400
+Subject: [PATCH] mmc: test A733 pio-sized block limits
+
+---
+ drivers/mmc/host/sunxi-mmc.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 5e9e9e6b69bd..26a200bf50a8 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -1988,6 +1988,18 @@ static int sunxi_mmc_probe(struct platform_device *pdev)
+ 		goto error_free_dma;
+ 	mmc->f_max = min_t(unsigned int, mmc->f_max, 25000000);
+ 	dev_info(&pdev->dev, "diag post-parse f_max cap=%u\n", mmc->f_max);
++	if (of_device_is_compatible(pdev->dev.of_node,
++				    "allwinner,sun60i-a733-mmc")) {
++		mmc->max_blk_count = 8;
++		mmc->max_blk_size = 512;
++		mmc->max_segs = 1;
++		mmc->max_seg_size = 4096;
++		mmc->max_req_size = 4096;
++		dev_info(&pdev->dev,
++			 "diag A733 pio-sized limits blk_count=%u blk_size=%u segs=%u seg_size=%u req_size=%u\n",
++			 mmc->max_blk_count, mmc->max_blk_size, mmc->max_segs,
++			 mmc->max_seg_size, mmc->max_req_size);
++	}
+ 
+ 	/*
+ 	 * If we don't support delay chains in the SoC, we can't use any
+-- 
+2.53.0
+
