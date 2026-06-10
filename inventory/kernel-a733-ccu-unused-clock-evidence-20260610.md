@@ -139,6 +139,14 @@ CMD18 still stops at `RINTR=0x24` and `IDST=0x4000`. Completion-interrupt
 suppression is not the cause; the IDMAC still appears stuck before descriptor
 consumption or data movement.
 
+The IDMA descriptor size-width diagnostic did not improve progress. Commit
+`21f9e4851dfb` changes the A733/D1 descriptor-size width diagnostic to 16 bits,
+but the live 256-block CMD18 trace still prints the first descriptor as
+`des0=0x80000018 size=0x00000000 buf=0xfb000000 next=0x43000010`, reaches
+`RINTR=0x24`, and sticks at `IDST=0x4000`. The immediate next question is why
+the size field remains zero and whether A733's IDMA descriptor layout or size
+bit packing differs from the mainline sunxi-mmc assumption.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -395,6 +403,10 @@ sha256: 586749de94c321895084cd62360c2e36566341abbdd14db001fc018bb74e0cc0
 SDMMC0 IDMA no-DIC descriptor diagnostic:
 tools/hardware-logs/cubie-uart/20260610T092214Z-a733-idma-nodic-023276e38a76-ext4load-ttyUSB0.uart.log
 sha256: bea0a91c1a0a9d1154402ec27ca0efb86ac51b4533ff5fe5928a7bf2e9e7a4ea
+
+SDMMC0 IDMA descriptor size-width diagnostic:
+tools/hardware-logs/cubie-uart/20260610T093021Z-a733-idma-size16-21f9e4851dfb-ext4load-ttyUSB0.uart.log
+sha256: ad1b16623988b6836bdbb9589ce74a50f3286bab24856c9fe09e8eb3e76de1b8
 ```
 
 ## Source Findings
