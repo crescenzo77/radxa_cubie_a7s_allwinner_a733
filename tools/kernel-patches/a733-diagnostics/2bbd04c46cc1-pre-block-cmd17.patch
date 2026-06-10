@@ -1,0 +1,80 @@
+From 2bbd04c46cc12363f246837a0c30393cbc7b12f7 Mon Sep 17 00:00:00 2001
+From: Enzo <enzo@homelab.local>
+Date: Wed, 10 Jun 2026 11:08:52 -0400
+Subject: [PATCH] mmc: test A733 pre-block CMD17
+
+---
+ drivers/mmc/core/sd.c        | 13 +++++++++++++
+ drivers/mmc/host/sunxi-mmc.c | 11 ++++++++++-
+ 2 files changed, 23 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
+index 948948ca9b4a..ec41def411a8 100644
+--- a/drivers/mmc/core/sd.c
++++ b/drivers/mmc/core/sd.c
+@@ -12,6 +12,7 @@
+ #include <linux/slab.h>
+ #include <linux/stat.h>
+ #include <linux/string.h>
++#include <linux/of.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/random.h>
+ #include <linux/scatterlist.h>
+@@ -1900,6 +1901,18 @@ int mmc_attach_sd(struct mmc_host *host)
+ 	if (err)
+ 		goto err;
+ 
++	if (host->parent && host->parent->of_node &&
++	    of_device_is_compatible(host->parent->of_node,
++				     "allwinner,sun60i-a733-mmc")) {
++		pr_info("%s: diag pre-add-card CMD17 begin\n",
++			mmc_hostname(host));
++		err = mmc_read_tuning(host, 512, 1);
++		pr_info("%s: diag pre-add-card CMD17 ret=%d\n",
++			mmc_hostname(host), err);
++		if (err)
++			goto err;
++	}
++
+ 	mmc_release_host(host);
+ 	err = mmc_add_card(host->card);
+ 	if (err)
+diff --git a/drivers/mmc/host/sunxi-mmc.c b/drivers/mmc/host/sunxi-mmc.c
+index 9c4b28a5e5a3..5e9e9e6b69bd 100644
+--- a/drivers/mmc/host/sunxi-mmc.c
++++ b/drivers/mmc/host/sunxi-mmc.c
+@@ -731,6 +731,7 @@ static void sunxi_mmc_diag_copy_fifo_chunk(struct sunxi_mmc_host *host,
+         }
+         sg_miter_stop(&miter);
+         *copied += done;
++        data->bytes_xfered = *copied;
+ 
+         if (done != todo)
+                 data->error = -EIO;
+@@ -754,6 +755,13 @@ static void sunxi_mmc_diag_copy_read_pio(struct sunxi_mmc_host *host,
+ 	unsigned int len = data->blksz * data->blocks;
+ 	unsigned int count = DIV_ROUND_UP(len, 4);
+ 
++	if (data->bytes_xfered >= len) {
++		dev_info(mmc_dev(host->mmc),
++			 "diag pio copy skip opcode=%u bytes_xfered=%u len=%u\n",
++			 opcode, data->bytes_xfered, len);
++		return;
++	}
++
+ 	words = kmalloc_array(count, sizeof(*words), GFP_ATOMIC);
+ 	if (!words) {
+ 		data->error = -ENOMEM;
+@@ -1523,7 +1531,8 @@ static void sunxi_mmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 
+ 		for (i = 0; i < polls; i++) {
+ 			udelay(diag_pio ? 200 : 500);
+-			if (diag_pio && cmd->opcode == MMC_READ_MULTIPLE_BLOCK &&
++			if (diag_pio &&
++			    !(data->flags & MMC_DATA_WRITE) &&
+ 			    (mmc_readl(host, REG_RINTR) & SDXC_RX_DATA_REQUEST))
+ 				sunxi_mmc_diag_copy_fifo_chunk(host, data, cmd->opcode,
+ 							       &diag_pio_copied);
+-- 
+2.53.0
+
