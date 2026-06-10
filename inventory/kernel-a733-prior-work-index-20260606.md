@@ -102,3 +102,12 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
 - Before final DTS submission, re-check the current CCU/PRCM and pinctrl
   prerequisite status and regenerate a DTS-only branch on top of accepted or
   current prerequisite work.
+
+## 2026-06-10 H026 Addendum
+
+- H026 stayed no-build. It decoded the H025 stall as IDMAC `DESC_READ`, found
+  vendor NSI sysfs exposes `DRIVER=NSI_PMU` but no `sdmmc`/`smhc`/storage
+  `nsi_master`, and found no local source-backed firewall/security/interconnect
+  write to test. The next work order is H027: a narrow vendor-style normal
+  IDMAC DMA mask/address translation diagnostic, preserving H025 breadcrumbs
+  and avoiding DTS or fabric expansion.

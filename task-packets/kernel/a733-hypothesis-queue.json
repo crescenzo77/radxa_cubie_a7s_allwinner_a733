@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T19:35:00Z",
+  "updated_utc": "2026-06-10T19:44:32Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H025 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, and the minimum NSI CCU 0x580/0x584 bits as standalone fixes. H025 proves the NSI writes land and persist through IDMA launch, but the forced 8-block CMD18 still stalls in IDMAC descriptor-read state with descriptor memory unchanged, OWN set, CHDA=DLBA, CBDA=0, IDST=0x4000, CBCR=0x400, and BBCR=0. The current blocker is SDMMC0 IDMAC descriptor-fetch reachability below the tested CCU/NSI gates: likely an undocumented security/firewall/master-permission, interconnect, or boot firmware state, not board DTS scope.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H026 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, and a no-build source/sysfs audit as standalone fixes. H026 found no source-backed security/firewall/interconnect write suitable for a behavior patch; vendor NSI sysfs does not expose SDMMC/SMHC as an nsi_master. The current blocker remains SDMMC0 IDMAC descriptor-fetch reachability: H027 should narrowly test vendor-style normal IDMAC DMA mask/address translation with the existing H025 breadcrumbs before any broader fabric work.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,16 +37,16 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H025",
-    "status": "completed_failed_as_expected",
-    "title": "Split NSI minimum write with hard breadcrumbs",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h025-nsi-breadcrumbs-result-20260610T1935Z.json",
+    "id": "A733-SDMMC-H026",
+    "status": "completed_audit_no_behavior_patch",
+    "title": "IDMAC descriptor-fetch reachability below tested CCU/NSI gates",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h026-desc-fetch-reachability-audit-20260610T1944Z.json",
     "kernel_head": "f0114b15f40a",
     "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T193043Z-a733-h025-nsi-breadcrumbs-f0114b15f40a-slowload-synced-ttyUSB0.uart.log",
     "uart_log_sha256": "9d4f714e5161508fb1289daa4354ac5014441e187a3f62fc8842f340373543d9",
     "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/f0114b15f40a-h025-nsi-breadcrumbs.patch",
     "patch_sha256": "614ad808f4682e55fc83a89180728853bbbe8f3ad6bbee544ff3b5470e0b7b00",
-    "result": "H025 removed NSI IAG reads from the behavior path and breadcrumbed the minimum NSI writes. The boot loaded a verified DTB, reached Linux 7.1.0-rc5-00281-gf0114b15f40a, reached mmcblk0, applied H021 MSI/IOMMU subset, changed CCU 0x580 from 0x43000005 to 0xc3000005 and CCU 0x584 from 0x00010000 to 0x00010001, reached dma-entry and descriptor setup, then repeated the same descriptor-read stall with descriptor checksum unchanged. Queue H026 to identify the lower-level master/security/firewall reachability state before another behavior patch."
+    "result": "H026 did not build another behavior patch. It decoded the H025 stall as IDMAC DESC_READ rather than fatal bus error, found vendor NSI sysfs exposes DRIVER=NSI_PMU but no SDMMC/SMHC/storage nsi_master, and found no local source-backed firewall/interconnect register delta. Vendor BSP evidence points the next cheap test at normal IDMAC DMA mask/address translation: v5p3x uses descriptor size bits 12, des_addr_shift=2, and a 64-bit DMA mask for normal IDMAC descriptors while limiting only CQE to 32-bit."
   },
   "hypotheses": [
     {
@@ -705,7 +705,7 @@
     {
       "id": "A733-SDMMC-H026",
       "priority": 1,
-      "status": "ready",
+      "status": "completed_audit_no_behavior_patch",
       "title": "IDMAC descriptor-fetch reachability below tested CCU/NSI gates",
       "question": "Which lower-level security, firewall, interconnect, or master-permission state lets vendor SDMMC0 IDMAC fetch descriptor word 0 while mainline remains stuck in IDST=0x4000 descriptor-read state?",
       "test_cost": "low first; source/log/sysfs audit before any behavior patch",
@@ -719,7 +719,31 @@
       ],
       "pass_criteria": "One concrete non-SDMMC descriptor-fetch reachability delta is found and can be tested in one narrow H027 diagnostic.",
       "fail_criteria": "No source-backed local delta exists after vendor source/sysfs/log audit; further progress requires external documentation or maintainer coordination.",
-      "upstream_note": "Evidence gathering only. Do not add undocumented firewall/NSI/MBUS magic, broad fabric gates, or out-of-scope peripherals to the upstream DTS slice."
+      "upstream_note": "Evidence gathering only. Do not add undocumented firewall/NSI/MBUS magic, broad fabric gates, or out-of-scope peripherals to the upstream DTS slice.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h026-desc-fetch-reachability-audit-20260610T1944Z.json",
+        "summary": "Completed as a no-build audit. H026 found no source-backed firewall/security/interconnect write suitable for a behavior patch. Vendor Cubie3 sysfs exposes the A733 NSI controller as DRIVER=NSI_PMU / compatible allwinner,sunxi-nsi-v2, but the nsi_master list contains csi, de, di, eink, g2d, isp, npu, usb_pcie, ve0, ve1, and ve2 only; no sdmmc, smhc, mmc, storage, msi_lite, or iommu master entry was exposed. Local source search found vendor DTB nodes but no matching NSI driver source. Vendor v5p3x MMC code does provide a concrete next delta to test cheaply: descriptor size bits 12, des_addr_shift=2 for SMCV >= v5p3, and a 64-bit DMA mask for normal IDMAC descriptor allocation, with 32-bit limiting only for CQE. Future sysfs reads must be explicit because broad vendor sysfs file reads can hang."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H027",
+      "priority": 1,
+      "status": "ready",
+      "title": "Vendor-style normal IDMAC DMA mask/address translation proof",
+      "question": "Does the H025 descriptor-read stall change if A733 normal IDMAC descriptor allocation and address programming exactly match the vendor v5p3x path: descriptor size bits 12, des_addr_shift=2, DLBA/address shift through the same helper, and a 64-bit DMA mask for normal IDMAC descriptors?",
+      "test_cost": "medium; one narrowly scoped host-driver diagnostic and one Cubie3 boot",
+      "procedure": [
+        "Start from the H025/H026 kernel branch on Strix at /srv/projects/a733-diag-rtc-extosc-orphan.",
+        "Do not add DTS changes, vendor U-Boot compatibility strings, NSI nodes, or out-of-scope fabric/peripheral gates.",
+        "Patch only the A733 diagnostic path in drivers/mmc/host/sunxi-mmc.c. Preserve H025 breadcrumbs.",
+        "Set the normal IDMAC DMA mask/coherent mask to 64 bits for A733 before descriptor allocation, matching the vendor BSP normal-IDMAC path. Do not apply the CQE 32-bit mask because this SDMMC0 proof is not using CQE.",
+        "Keep idma_des_size_bits=12 and idma_des_shift=2. Log sg_dma, DLBA, CHDA, CBDA, IDST, descriptor word 0, and whether the address written to DLBA is shifted or unshifted.",
+        "Boot Cubie3 once from Strix using the verified direct U-Boot ext4load/booti flow, capture UART through the existing Cubie3 UART path, and restore vendor kernel 5.15.147-21-a733.",
+        "If CHDA advances, CBDA becomes nonzero, OWN clears, or IDST leaves DESC_READ, record the exact delta for the next source-backed patch. If behavior is unchanged, close the vendor normal-IDMAC mask/address hypothesis."
+      ],
+      "pass_criteria": "The forced CMD18 IDMA progresses past descriptor-read state or produces a new error state that proves descriptor fetch reached a different point.",
+      "fail_criteria": "Descriptor checksum remains unchanged, OWN remains set, CHDA=DLBA, CBDA=0, and IDST remains 0x4000.",
+      "upstream_note": "Lab-only diagnostic. Any useful result must be converted into a maintainer-readable explanation using standard DMA API semantics, not vendor magic properties."
     },
     {
       "id": "A733-SDMMC-H004",

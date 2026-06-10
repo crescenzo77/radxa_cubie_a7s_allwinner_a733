@@ -1,0 +1,43 @@
+{
+  "id": "A733-SDMMC-H026",
+  "status": "completed_audit_no_behavior_patch",
+  "timestamp_utc": "2026-06-10T19:44:32Z",
+  "title": "IDMAC descriptor-fetch reachability audit below tested CCU/NSI gates",
+  "inputs": {
+    "mainline_kernel_repo": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "mainline_head": "f0114b15f40a",
+    "vendor_mmc_source": "/srv/projects/kernel-work/tmp/orangepi-a733-mmc",
+    "vendor_tree_search_root": "/srv/projects/kernel-work/tmp/linux-orangepi-full",
+    "target": "cubie3",
+    "target_vendor_kernel": "5.15.147-21-a733"
+  },
+  "findings": [
+    {
+      "topic": "IDST decode",
+      "evidence": "Both vendor and mainline driver definitions decode IDST bit pattern 0x4000 as SDXC_IDMAC_DESC_READ. The fatal bus error bit is BIT(2), not set in the H025 stall.",
+      "interpretation": "The controller is stuck trying to fetch/consume descriptor word 0 rather than reporting an explicit IDMAC fatal bus error."
+    },
+    {
+      "topic": "Vendor NSI sysfs shape",
+      "evidence": "Vendor Cubie3 exposes /sys/devices/platform/soc@3000000/2020000.nsi-controller with DRIVER=NSI_PMU and compatible allwinner,sunxi-nsi-v2. Its nsi_master directory listed csi, de, di, eink, g2d, isp, npu, usb_pcie, ve0, ve1, and ve2, with no sdmmc, smhc, mmc, storage, msi_lite, or iommu master entry.",
+      "interpretation": "The exposed vendor NSI master QoS table does not present SDMMC0 as a directly programmable NSI master. This weakens another NSI master-QoS patch as the next step."
+    },
+    {
+      "topic": "Vendor NSI source availability",
+      "evidence": "A source search under /srv/projects for NSI_PMU, allwinner,sunxi-nsi-v2, nsi_master, available_pmu, port_abs_bwl, and port_select found vendor DTB nodes but no matching NSI driver source in the local trees.",
+      "interpretation": "The local evidence is enough to avoid an NSI-QoS guess, but not enough to name a source-backed NSI register delta."
+    },
+    {
+      "topic": "Vendor v5p3x MMC descriptor path",
+      "evidence": "Vendor BSP v5p3x sets SUNXI_DES_SIZE_SDMMC_V5P3X to 12, writes DLBA through sunxi_mmc_host_des_addr(host, host->sg_dma), sets des_addr_shift=2 when SMCV >= v5p3, uses DMA_BIT_MASK(64) for normal IDMAC descriptors, and limits only CQE to DMA_BIT_MASK(32).",
+      "interpretation": "The next cheap local diagnostic should verify address-shift/mask behavior with current H025 breadcrumbs rather than broaden into more fabric gates."
+    },
+    {
+      "topic": "Sysfs hazard",
+      "evidence": "Broad vendor sysfs reads can hang; a previous sweep stopped at sunxi_host_perf, and H026 single-file NSI sysfs reads also became sticky enough to require killing the SSH wrapper.",
+      "interpretation": "Future vendor sysfs probes must be explicit and optional. Prefer source/log evidence and safe directory listings over broad file reads."
+    }
+  ],
+  "conclusion": "H026 found no source-backed security/firewall/interconnect register write suitable for a behavior patch. The strongest concrete, low-cost next step is H027: a narrow A733 diagnostic to compare vendor-style normal IDMAC DMA mask/address translation against the current H025 descriptor-read stall, with no DTS changes and no expansion into out-of-scope peripherals.",
+  "next_id": "A733-SDMMC-H027"
+}

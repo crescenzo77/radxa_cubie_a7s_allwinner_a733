@@ -1032,3 +1032,23 @@ descriptor-fetch reachability state: security/firewall, interconnect,
 SMHC/SDMMC master permissions, NSI/MBUS master tables, or boot firmware
 handoff. Do not build another behavior patch until a single source-backed
 delta exists.
+
+## 2026-06-10 H026 Descriptor-Fetch Audit
+
+H026 stayed no-build and produced:
+`task-packets/kernel/a733-h026-desc-fetch-reachability-audit-20260610T1944Z.json`.
+
+Result: `IDST=0x4000` is `SDXC_IDMAC_DESC_READ`, not the fatal bus error bit.
+Vendor Cubie3 exposes the NSI controller as `DRIVER=NSI_PMU` /
+`allwinner,sunxi-nsi-v2`, but the safe `nsi_master` directory listing includes
+only `csi`, `de`, `di`, `eink`, `g2d`, `isp`, `npu`, `usb_pcie`, `ve0`, `ve1`,
+and `ve2`; it does not expose `sdmmc`, `smhc`, `mmc`, storage, `msi_lite`, or
+`iommu` as an NSI master. Local source search found vendor DTB nodes but no
+matching NSI driver source.
+
+The concrete source-backed delta for the next local test is in the vendor
+v5p3x MMC path: descriptor size bits `12`, `des_addr_shift=2` for SMCV >=
+v5p3, and a 64-bit DMA mask for normal IDMAC descriptors, with the 32-bit limit
+used only for CQE. H027 should test only that normal-IDMAC DMA mask/address
+translation shape, preserving H025 breadcrumbs. Do not add DTS changes,
+vendor U-Boot compatibility, NSI nodes, or broader fabric/peripheral gates.
