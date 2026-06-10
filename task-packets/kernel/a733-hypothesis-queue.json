@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T20:07:07Z",
+  "updated_utc": "2026-06-10T20:14:08Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H027 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, and vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation as standalone fixes. The current blocker remains SDMMC0 IDMAC descriptor-fetch reachability below the standard SDMMC visible registers, tested DMA API/addressing paths, tested CCU/NSI/fabric gates, and known vendor normal-IDMAC geometry. H028 should inventory firmware handoff and storage-master permission evidence before any new behavior patch.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H028 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, a no-build source/sysfs audit, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, and local firmware/security/storage-master inventory as standalone local fixes or source-backed deltas. The current blocker remains SDMMC0 IDMAC descriptor-fetch reachability below the standard SDMMC visible registers, tested DMA API/addressing paths, tested CCU/NSI/fabric gates, known vendor normal-IDMAC geometry, and locally visible boot firmware evidence. H029 should prepare a maintainer/vendor question packet instead of guessing another behavior patch.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,16 +37,11 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H027",
-    "status": "completed_no_improvement",
-    "title": "Vendor-style normal IDMAC DMA mask/address translation proof",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h027-idmac-vendor64-result-20260610T2007Z.json",
-    "kernel_head": "9c631195b6633e6ad7c82b807ec9aee9c9bed27a",
-    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T200205Z-a733-h027-idmac-vendor64-9c631195b663-ttyUSB0.uart.log",
-    "uart_log_sha256": "98ae5bd58d7073cc99c81af963054e7a75a68aa671355597752324b1c3af02c9",
-    "patch_archive": "/Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/9c631195b663-h027-idmac-vendor64.patch",
-    "patch_sha256": "675d28f4adb0b5bbf5f65e564861f79f4180fe168427b324f0b282a66a5690d0",
-    "result": "H027 booted Linux 7.1.0-rc5-00282-g9c631195b663, set the A733 normal IDMAC DMA/coherent mask to 64 bits, used coherent two-page descriptors, kept descriptor size bits 12 and des_addr_shift=2, and logged shifted DLBA=0x3f840000. The forced CMD18 still stalled in DESC_READ: descriptor checksum stayed 0x001bc28b, OWN remained set, CHDA=DLBA=0x3f840000, CBDA=0, IDST=0x4000, CBCR=0x400, and BBCR=0. This closes vendor-style normal IDMAC mask/address translation as a standalone fix."
+    "id": "A733-SDMMC-H028",
+    "status": "completed_no_behavior_patch",
+    "title": "Firmware handoff and storage-master permission inventory",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h028-firmware-handoff-inventory-20260610T2014Z.json",
+    "result": "H028 found no concrete local firmware, secure-monitor, NSI/MBUS, IOMMU, or storage-master permission delta suitable for another responsible behavior patch. Boot logs show boot0, BL31, SCP/ARISC, and secure-enable state but no named SDMMC/SMHC permission setup; Radxa package metadata exposes u-boot-aw2501 and linux image packages but no boot0/BL31 source; vendor DT/source show SDMMC0 clocks and v5p3x shape but no SDMMC IOMMU, interconnect, firewall, or NSI master property. Next step is H029: a maintainer/vendor question packet using H009-H028 evidence."
   },
   "hypotheses": [
     {
@@ -758,7 +753,7 @@
     {
       "id": "A733-SDMMC-H028",
       "priority": 1,
-      "status": "ready",
+      "status": "completed_no_behavior_patch",
       "title": "Firmware handoff and storage-master permission inventory",
       "question": "Does boot0, BL31/ATF, SCP/RISC-V firmware, vendor U-Boot, or a vendor security/firewall handoff configure an SDMMC/SMHC master permission or interconnect state that mainline lacks before SDMMC0 IDMAC can fetch descriptors?",
       "test_cost": "low first; no kernel build until one concrete source-backed delta exists",
@@ -771,7 +766,30 @@
       ],
       "pass_criteria": "One concrete firmware/security/master-permission delta is identified with enough source evidence to justify a narrow H029 diagnostic or an external question.",
       "fail_criteria": "No local source-backed firmware/security/permission delta is found; the next step becomes maintainer/vendor/RFC coordination, not another local behavior patch.",
-      "upstream_note": "Evidence gathering only. Do not add undocumented firewall, NSI, MBUS, firmware handoff, or vendor U-Boot policy to upstream DTS or drivers."
+      "upstream_note": "Evidence gathering only. Do not add undocumented firewall, NSI, MBUS, firmware handoff, or vendor U-Boot policy to upstream DTS or drivers.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h028-firmware-handoff-inventory-20260610T2014Z.json",
+        "summary": "Completed without a kernel build or target reboot. H028 found no local source-backed boot0, BL31/ATF, SCP/ARISC, vendor U-Boot, security/firewall, IOMMU, NSI/MBUS, or storage-master permission delta suitable for another behavior patch. The visible boot logs show boot0, BL31, SCP/ARISC startup, and secure-enable state but no named SDMMC/SMHC permission handoff. Vendor DT/source evidence still describes the already-tested SDMMC0 clock/v5p3x path and does not expose SDMMC0 through IOMMU, interconnect, firewall, or NSI master properties. Next step: prepare maintainer/vendor questions with the H009-H028 evidence trail."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H029",
+      "priority": 1,
+      "status": "ready",
+      "title": "Maintainer/vendor descriptor-fetch question packet",
+      "question": "What A733/SUN60IW2 SDMMC0 descriptor-fetch precondition is missing when mainline reaches IDST=0x4000 DESC_READ with CHDA=DLBA and CBDA=0 while vendor Linux can advance IDMAC?",
+      "test_cost": "low; no kernel build and no board reboot",
+      "procedure": [
+        "Do not write or rewrite kernel patches for H029.",
+        "Compile H009-H028 into a short question packet with: problem statement, hardware and exact kernel/DTB identity, proven working paths, the exact failing IDMAC signature, what has been ruled out, and the smallest source-backed questions.",
+        "Use the fixed evidence schema for any comparison table: address or path, vendor value at time T, mainline value at time T, delta, source reference, and interpretation.",
+        "Ask specifically whether A733/SUN60IW2 SDMMC0 descriptor fetch depends on MSI-lite1 or MSI-lite2, STORE/MBUS, a hidden NSI master, firmware handoff, reset/clock ordering, or a security/firewall permission not represented in the available vendor DT/source.",
+        "Keep anti-goals explicit: no vendor U-Boot DTS pollution, no Ethernet/VPU/display/USB/PCIe/Wi-Fi expansion, no competing CCU/pinctrl submissions while RFCs are in flight.",
+        "Produce an editable draft artifact in task-packets/kernel/ and link it from the queue before ending the session."
+      ],
+      "pass_criteria": "A ready-to-send maintainer/vendor question draft exists, with evidence tight enough that the next local behavior patch depends on an answer rather than another guess.",
+      "fail_criteria": "The draft still requires the next session to reconstruct H009-H028 evidence from scratch.",
+      "upstream_note": "Coordination artifact only. This is the responsible next step before another local behavior patch."
     },
     {
       "id": "A733-SDMMC-H004",

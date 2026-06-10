@@ -1,0 +1,78 @@
+{
+  "id": "A733-SDMMC-H028",
+  "created_utc": "2026-06-10T20:14:08Z",
+  "status": "completed_no_behavior_patch",
+  "title": "Firmware handoff and storage-master permission inventory",
+  "question": "Does boot0, BL31/ATF, SCP/RISC-V firmware, vendor U-Boot, or a vendor security/firewall handoff configure an SDMMC/SMHC master permission or interconnect state that mainline lacks before SDMMC0 IDMAC can fetch descriptors?",
+  "inputs": {
+    "control_host": "Mac Codex Desktop",
+    "runtime_host": "strix",
+    "homelab_repo": "/srv/projects/homelab",
+    "kernel_repo": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "vendor_dts": "/srv/projects/a733-vendor-dt/vendor-sun60i-a733-cubie-a7s.dts",
+    "vendor_source_tree": "/srv/projects/kernel-work/tmp/linux-orangepi-full",
+    "vendor_mmc_subset": "/srv/projects/kernel-work/tmp/orangepi-a733-mmc",
+    "public_status_repo": "/srv/projects/cubie-a7s-armbian",
+    "target": "cubie3",
+    "target_vendor_kernel": "5.15.147-21-a733"
+  },
+  "boot_log_evidence": [
+    {
+      "topic": "boot0 and firmware handoff",
+      "evidence": "H027 and earlier v4 UART logs show BOOT0 commit {9f6fab4f-dirty}, 'error: dtb not found for scp', 'Jump to ATF: monitor_base = 0x48000000, uboot_base = 0x4a000000, optee_base = 0x0', BL31 v2.5(debug):5fc237a6a, 'BL31: No DTB found.', and 'secure enable bit: 0'.",
+      "interpretation": "The visible boot chain does not show a named SDMMC/SMHC firewall or master-permission handoff. Secure boot is reported disabled, and BL31 reports no DTB."
+    },
+    {
+      "topic": "SCP/ARISC startup",
+      "evidence": "The H027 UART contains '[SCP] :wait arisc ready....', 'arisc version: [d463b9da43dc50320f21ba51c6c51afe2db20d83]', 'arisc startup ready', and 'sunxi-arisc driver is starting'.",
+      "interpretation": "SCP/ARISC is active, but no SDMMC/SMHC/storage permission or descriptor-fetch setup string was found in the captured logs."
+    },
+    {
+      "topic": "U-Boot storage context",
+      "evidence": "The vendor boot logs continue to print 'SUNXI SDMMC Controller Version:0x50530', secure-storage item magic failures, and the usual clock summary with MBus=600MHz.",
+      "interpretation": "U-Boot proves basic SDMMC access, but the visible log does not identify a reusable Linux-facing storage-master permission register."
+    }
+  ],
+  "package_metadata": [
+    {
+      "topic": "Radxa package source availability",
+      "evidence": "Radxa a733-bullseye and bullseye Release files list binary and Contents indexes only; guessed main/source/Sources.gz paths returned 404.",
+      "interpretation": "The package repository identifies shipped binaries but does not provide boot0/BL31/U-Boot/source provenance through Debian source indexes."
+    },
+    {
+      "topic": "A733 boot packages",
+      "evidence": "Packages.gz names linux-image-5.15.147-21-a733 from source linux-upstream, linux-image-radxa-a733 from source linux-a733, u-boot-aw2501 version 2018.07-17, and u-boot-radxa-a733 from source u-boot-aw2501. Existing package metadata review found no boot0, bl31, or trusted-firmware package.",
+      "interpretation": "The available metadata gives exact package identities and hashes but does not expose the firmware source needed to prove an SDMMC permission handoff."
+    }
+  ],
+  "source_evidence": [
+    {
+      "topic": "Vendor SDMMC0 DTS",
+      "evidence": "The vendor sun60iw2p1 SDMMC0 node uses compatible allwinner,sunxi-mmc-v5p3x; clocks include osc24m, pll_periph, pll_periph_2, mmc, ahb, mmc_store, mmc_mbus, and mmc_msi_lite; properties include req-page-count=<2> and ctl-spec-caps=<0x428>.",
+      "interpretation": "The DT describes the already-tested v5p3x SDMMC clock/descriptor shape. It does not contain iommus, dma-ranges, interconnects, firewall/security, or storage-master permission properties for SDMMC0."
+    },
+    {
+      "topic": "Vendor IOMMU DTS",
+      "evidence": "The vendor IOMMU v20 masters list USB, CSI, ISP, VE, DE, DI, G2D, EINK, and DEBUG_MODE style entries; SDMMC/SMHC is not present and SDMMC0 has no iommus property.",
+      "interpretation": "The local vendor DT does not support an SDMMC0 IOMMU-attachment hypothesis."
+    },
+    {
+      "topic": "Vendor NSI DTS and driver enum",
+      "evidence": "The vendor NSI node has child entries for CPU0, CPU1, NPU, usb_pcie, gpu, iommu0, iommu1, DE/EINK and related display/media masters. The SUN60IW2 NSI enum lists gmac, msi_lite0, de, eink, di, g2d, gpu, ve0, ve1, ve2, gic, msi_lite1, msi_lite2, usb_pcie, iommu0, iommu1, isp, csi, npu, cpu0, cpu1, and total. Adjacent SUN55IW3 code has explicit SMHC masters, but SUN60IW2 does not.",
+      "interpretation": "Local vendor NSI evidence does not name A733 SDMMC/SMHC as a directly exposed PMU/QoS master."
+    },
+    {
+      "topic": "Vendor MMC source",
+      "evidence": "The vendor MMC source comments that mbus gate for MMC is enabled by default but v821 disabled it in boot0, and that A733 completion applies together with mbus matching. The active A733 path uses clk_mbus, clk_store, clk_mmc, and clk_msi_lite; no SDMMC-specific call to IOMMU, NSI master registration, security/firewall, or firmware handoff API was found.",
+      "interpretation": "The source reinforces the clock/fabric area already tested by H020-H027, but does not provide a new concrete behavior patch."
+    }
+  ],
+  "negative_findings": [
+    "No standalone boot0, BL31/ATF, SCP, or secure-monitor source tree was found under the local Strix project paths.",
+    "No source-backed TZASC, SMPU, firewall, security-domain, SMHC permission, or SDMMC storage-master write was found in the local vendor trees.",
+    "No vendor DT property tied SDMMC0 to an IOMMU, interconnect, dma-ranges quirk, or named security/firewall domain.",
+    "No new local source-backed register exists that should be tested before asking maintainers or the vendor for documentation."
+  ],
+  "conclusion": "H028 found no concrete local firmware, secure-monitor, NSI/MBUS, IOMMU, or storage-master permission delta suitable for another responsible behavior patch. The next step should be H029: prepare a maintainer/vendor question packet from the H009-H028 evidence trail rather than guessing another descriptor, DMA-mask, clock, or fabric variant.",
+  "next_id": "A733-SDMMC-H029"
+}

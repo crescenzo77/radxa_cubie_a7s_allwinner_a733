@@ -125,3 +125,18 @@ artifact and must not be copied wholesale into the public kernel-facing repo.
   fix. The next work order is H028: firmware handoff and storage-master
   permission inventory across boot0/BL31/ATF/SCP/vendor U-Boot, security or
   firewall setup, and NSI/MBUS permission tables before any new behavior patch.
+
+## 2026-06-10 H028 Addendum
+
+- H028 stayed no-build and produced
+  `task-packets/kernel/a733-h028-firmware-handoff-inventory-20260610T2014Z.json`.
+- It found no local source-backed boot0, BL31/ATF, SCP/ARISC, vendor U-Boot,
+  security/firewall, IOMMU, NSI/MBUS, or SDMMC/SMHC storage-master permission
+  delta suitable for another behavior patch. Boot logs show firmware handoff
+  and `secure enable bit: 0`, but no named storage permission setup. Vendor DT
+  and source still describe the already-tested SDMMC0 v5p3x clock/descriptor
+  shape, with no SDMMC IOMMU/interconnect/firewall/NSI-master binding.
+- The next work order is H029: prepare a maintainer/vendor descriptor-fetch
+  question packet using H009-H028 evidence. Do not build another descriptor,
+  DMA-mask, clock, or fabric patch unless that packet or new source evidence
+  identifies a single concrete delta.

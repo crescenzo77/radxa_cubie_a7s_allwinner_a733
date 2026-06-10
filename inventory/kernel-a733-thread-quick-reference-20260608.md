@@ -260,11 +260,22 @@ patch: /Users/enzo/projects/homelab/tools/kernel-patches/a733-diagnostics/9c6311
 patch sha256: 675d28f4adb0b5bbf5f65e564861f79f4180fe168427b324f0b282a66a5690d0
 ```
 
+H028 completed as a no-build firmware/storage-master inventory:
+
+```text
+result JSON: /Users/enzo/projects/homelab/task-packets/kernel/a733-h028-firmware-handoff-inventory-20260610T2014Z.json
+```
+
+Result: local boot logs, Radxa package metadata, vendor DT, vendor NSI/IOMMU
+shape, and vendor MMC source did not expose a concrete boot0/BL31/ATF/SCP,
+security/firewall, IOMMU, NSI/MBUS, or SDMMC/SMHC storage-master permission
+delta suitable for another behavior patch.
+
 Current blocker: SDMMC0 IDMAC descriptor-fetch reachability remains below the
 visible SDMMC registers, descriptor geometry, DMA mask/addressing, tested
-fabric clocks, and minimum NSI CCU bits. Next queue item is H028: inventory
-firmware handoff and storage-master permission evidence before any new
-behavior patch.
+fabric clocks, minimum NSI CCU bits, and locally visible firmware evidence.
+Next queue item is H029: prepare a maintainer/vendor descriptor-fetch question
+packet from H009-H028 instead of guessing another patch.
 
 Enhanced trace follow-up:
 
