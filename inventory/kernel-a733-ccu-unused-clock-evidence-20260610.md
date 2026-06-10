@@ -181,6 +181,14 @@ Commit `3dd37fcdde22` restores normal `CH` on the last descriptor and clears
 but the transfer still remains at `CHDA=0x43000000`, `CBDA=0x00000000`,
 `IDST=0x4000`. First-descriptor `FD` encoding is also not the cause.
 
+Commit `9ba363b78098` tests Orange Pi A733 BSP-backed v5p3x geometry. The
+source reference is `linux-orangepi` branch `orange-pi-6.6-sun60iw2` at
+`8a9be72c9006`; `bsp/drivers/mmc/sunxi-mmc-v5p3x.c` sets descriptor size bits
+to 12 and FIFO threshold `0x200700f8`. The Cubie3 proof reaches `mmcblk0: p1 p2
+p3`, then the first 256-block CMD18 uses 32 4 KiB descriptors and still sticks
+at `DLBA=0x10b00000`, `CHDA=0x10b00000`, `CBDA=0x00000000`, `IDST=0x4000`.
+Vendor v5p3x descriptor geometry and FIFO threshold are therefore not enough.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -461,6 +469,10 @@ sha256: ed744ff7d92a7e58f426737dcd2be56026b98bdd95df2680c673a7588018d0fd
 SDMMC0 IDMA first-descriptor no-FD diagnostic:
 tools/hardware-logs/cubie-uart/20260610T101406Z-a733-idma-nofd-3dd37fcdde22-ext4load-ttyUSB0.uart.log
 sha256: 43b12a6b90bab5870e8aeafe85621aa179df07e11d5a0830275bc2105192fedd
+
+SDMMC0 IDMA vendor v5p3x geometry diagnostic:
+tools/hardware-logs/cubie-uart/20260610T103218Z-a733-idma-v5p3xgeom-9ba363b78098-ext4load-ttyUSB0.uart.log
+sha256: 8ea0190c6bee70247758b54141a760f6a81a67091fc4ad4cc5b0518a355ce7cc
 ```
 
 ## Source Findings
