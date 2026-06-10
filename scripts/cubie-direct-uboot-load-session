@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: scripts/cubie-direct-uboot-load-session LABEL
+
+Power-cycle Cubie3, interrupt U-Boot, wait for a real "=>" prompt, load
+/boot/cthu/Image and /boot/cthu/a733.dtb from mmc 0:3, and capture UART.
+
+Run this on Strix. It requires pyserial and the confirmed Cubie3 UART/power
+mapping.
+USAGE
+}
+
+case "${1:-}" in
+  -h|--help|help|"")
+    usage
+    exit 0
+    ;;
+esac
+
+label="$(printf '%s' "$1" | tr -cs 'A-Za-z0-9_.-' '-')"
+device="${CUBIE_UART_DEVICE:-/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1:1.0-port0}"
+log_root="${CUBIE_UART_LOG_ROOT:-/srv/projects/cubie-uart/logs}"
+baud="${CUBIE_UART_BAUD:-115200}"
+power_cmd="${CUBIE_POWER_CMD:-$HOME/.local/bin/cubie3-power cycle 5}"
+mmc_part="${CUBIE_MMC_PART:-0:3}"
+image_path="${CUBIE_IMAGE_PATH:-/boot/cthu/Image}"
+dtb_path="${CUBIE_DTB_PATH:-/boot/cthu/a733.dtb}"
+image_addr="${CUBIE_IMAGE_ADDR:-0x40080000}"
+dtb_addr="${CUBIE_DTB_ADDR:-0x4fa00000}"
+capture_seconds="${CUBIE_BOOT_CAPTURE_SECONDS:-150}"
+bootargs="${CUBIE_BOOTARGS:-console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel drm_debug=1 root=PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e rootfstype=ext4 rootwait ro rootflags=noload init=/bin/sh}"
+
+python3 - "$label" "$device" "$log_root" "$baud" "$power_cmd" "$mmc_part" \
+  "$image_path" "$dtb_path" "$image_addr" "$dtb_addr" "$capture_seconds" \
+  "$bootargs" <<'PY'
+import hashlib
+import json
+import re
+import shlex
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+try:
+    import serial
+except ImportError as exc:
+    raise SystemExit(f"pyserial is required: {exc}")
+
+(
+    label, device, log_root, baud, power_cmd, mmc_part, image_path, dtb_path,
+    image_addr, dtb_addr, capture_seconds, bootargs,
+) = sys.argv[1:]
+
+baud = int(baud)
+capture_seconds = int(capture_seconds)
+log_dir = Path(log_root)
+log_dir.mkdir(parents=True, exist_ok=True)
+ts = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+dev_name = Path(device).resolve().name
+log_path = log_dir / f"{ts}-{label}-{dev_name}.uart.log"
+meta_path = Path(str(log_path) + ".json")
+
+commands = [
+    "setenv drm_debug 1",
+    f"ext4load mmc {mmc_part} {image_addr} {image_path}",
+    f"ext4load mmc {mmc_part} {dtb_addr} {dtb_path}",
+    f"setenv bootargs {bootargs}",
+    f"booti {image_addr} - {dtb_addr}",
+]
+
+prompt_re = re.compile(rb"(?m)^(?:=>|sunxi#) ")
+
+def emit(log, data):
+    log.write(data)
+    log.flush()
+    sys.stdout.buffer.write(data)
+    sys.stdout.buffer.flush()
+
+def has_prompt(buf):
+    return bool(prompt_re.search(buf))
+
+def read_until_prompt(ser, log, timeout):
+    buf = b""
+    deadline = time.time() + timeout
+    last_interrupt = 0.0
+    while time.time() < deadline:
+        data = ser.read(4096)
+        if data:
+            emit(log, data)
+            buf = (buf + data)[-32768:]
+            if b"Hit any key" in buf or b"Autoboot" in buf:
+                ser.write(b" ")
+            if b"Enter choice:" in buf and time.time() - last_interrupt > 0.8:
+                emit(log, b"\n## codex-send: Ctrl-C out of extlinux menu\n")
+                ser.write(b"\x03")
+                last_interrupt = time.time()
+            if has_prompt(buf):
+                return True, buf
+        else:
+            time.sleep(0.05)
+    return False, buf
+
+def send_cmd(ser, log, cmd, timeout):
+    line = (cmd + "\n").encode()
+    emit(log, b"\n## codex-send: " + line)
+    ser.write(line)
+    if cmd.startswith("booti "):
+        end = time.time() + timeout
+        while time.time() < end:
+            data = ser.read(4096)
+            if data:
+                emit(log, data)
+            else:
+                time.sleep(0.05)
+        return True
+    ok, _ = read_until_prompt(ser, log, timeout)
+    return ok
+
+with serial.Serial(device, baud, timeout=0.05) as ser, open(log_path, "wb") as log:
+    ser.reset_input_buffer()
+    emit(log, f"## codex: power_cmd={power_cmd}\n".encode())
+    subprocess.run(shlex.split(power_cmd), check=False)
+    ok, _ = read_until_prompt(ser, log, 70)
+    if not ok:
+        emit(log, b"\n## codex: failed to reach U-Boot prompt\n")
+        rc = 2
+    else:
+        rc = 0
+        for cmd in commands:
+            timeout = capture_seconds if cmd.startswith("booti ") else 20
+            if not send_cmd(ser, log, cmd, timeout):
+                emit(log, b"\n## codex: command did not return to prompt\n")
+                rc = 3
+                break
+        emit(log, b"\n## codex: capture complete\n")
+
+sha = hashlib.sha256(log_path.read_bytes()).hexdigest()
+meta = {
+    "label": label,
+    "device": device,
+    "resolved_device": str(Path(device).resolve()),
+    "baud": baud,
+    "log_path": str(log_path),
+    "log_sha256": sha,
+    "captured_at_utc": ts,
+    "capture_seconds": capture_seconds,
+    "exit_code": rc,
+    "commands": commands,
+}
+meta_path.write_text(json.dumps(meta, indent=2, sort_keys=True) + "\n")
+print(f"\nLOG {log_path}")
+print(f"SHA256 {sha}")
+raise SystemExit(rc)
+PY
