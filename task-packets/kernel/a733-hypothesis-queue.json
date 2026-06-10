@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-10T17:22:26Z",
+  "updated_utc": "2026-06-10T17:30:29Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue. H013 clears the PIO rail's leftover ACCESS_BY_AHB before IDMA and still stalls. H014 identifies vendor GCTRL bit 0x00000800 as SDXC_DTIME_UNIT, a read-data-timeout scaling bit, not a plausible descriptor-fetch control. H015 closes the cheap hidden DMA/fabric source audit: 64-bit DMA mask, coherent descriptor sync, descriptor page count, MSI-lite mapping, and explicit storage-fabric consumers are already covered or falsified. The next responsible step is one hardware evidence sample for IDMAC descriptor-fetch reachability, not another visible-register guess.",
+  "active_blocker": "A733 SDMMC0 now proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via a scoped PIO write, and read-only EXT4 root mount to init=/bin/sh when IDMA is bypassed. H009 proves that even a single 8-block, 4096-byte CMD18 IDMA read stalls before partition parsing. H010 closes descriptor geometry. H012 closes DMAC bit 0x200 as a mainline-only clue. H013 clears the PIO rail's leftover ACCESS_BY_AHB before IDMA and still stalls. H014 identifies vendor GCTRL bit 0x00000800 as SDXC_DTIME_UNIT, a read-data-timeout scaling bit. H015 closes the cheap hidden DMA/fabric source audit. H016 proves the coherent descriptor ring is unchanged after the stall: OWN remains set, checksum and stamp words remain unchanged, CHDA remains DLBA, and CBDA remains zero. The current blocker is descriptor-fetch reachability or address translation/fabric visibility for SDMMC0 IDMAC, not rootfs, card protocol, descriptor geometry, visible GCTRL/DMAC bits, or board DTS scope.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -36,13 +36,14 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H015",
-    "status": "completed_no_build",
-    "title": "Audit hidden DMA coherency and storage-fabric attributes",
-    "audit": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h015-hidden-dma-fabric-audit-20260610T1708Z.json",
-    "h013_uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T165356Z-a733-h013-cleandma-9090e8b17962-ext4load-corrected-ttyUSB0.uart.log",
-    "h013_uart_sha256": "7534e010dd6e5c7d3df56ccce1892b6e87d67cddd685ca6f4cbb069c50f4ccf4",
-    "result": "Completed without a new kernel build. The source/log audit finds no remaining cheap source-backed hidden coherency or storage-fabric delta: H013 already has 64-bit DMA mask, coherent descriptor allocation, descriptor sync, two descriptor pages, explicit storage fabric clocks, and sg_len=dma_len=1. Post-stall descriptor memory remains unchanged with OWN still set while CHDA=DLBA and CBDA=0, favoring IDMAC not consuming/fetching the descriptor over stale CPU-visible descriptor contents."
+    "id": "A733-SDMMC-H016",
+    "status": "completed_failed_as_expected",
+    "title": "Descriptor-fetch reachability stamp proof",
+    "kernel_head": "529f1682dd48",
+    "artifact": "/srv/projects/kernel-work/outgoing/a733-h016-descstamp-529f1682dd48-20260610T171700Z",
+    "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T172618Z-a733-h016-descstamp-529f1682dd48-ext4load-rerun-ttyUSB0.uart.log",
+    "uart_log_sha256": "aaf75f763903fc3db8c6a0cb5b537ed3686126694fa66bc39da07aea3d67636a",
+    "result": "The prompt-controlled rerun booted the intended H016 kernel and DTB, detected the SDXC card, then reached the forced one-descriptor CMD18 IDMA read. Before launch, descriptor checksum was 0x149a82eb with d0={8000001c,00001000,40766000,3f840004} and stamp d1={00000000,a733016e,dead0001,beef0002}. After post-data poll11 and dma_sync_single_for_cpu, checksum and descriptor/stamp words were unchanged, OWN remained set, IDST=0x4000, CHDA=DLBA=0x3f840000, CBDA=0, CBCR=0x400, and BBCR=0. This favors IDMAC never consuming/fetching descriptor word 0."
   },
   "hypotheses": [
     {
@@ -385,7 +386,7 @@
     {
       "id": "A733-SDMMC-H016",
       "priority": 1,
-      "status": "ready",
+      "status": "completed_failed_as_expected",
       "title": "Descriptor-fetch reachability stamp proof",
       "question": "Can A733 IDMAC fetch any coherent descriptor contents from the programmed DLBA, or is the descriptor read path blocked before it consumes descriptor word 0?",
       "test_cost": "medium; one instrumentation-only kernel patch and one Cubie3 boot",
@@ -410,8 +411,44 @@
           "uart_log": "/srv/projects/cubie-uart/logs/20260610T171758Z-a733-h016-descstamp-529f1682dd48-ext4load-ttyUSB0.uart.log",
           "uart_log_sha256": "3ee0a44fc2ef47139b426332539c6338d3515365052881377e595ed06d06df07",
           "summary": "UART automation missed the real U-Boot prompt and sent direct U-Boot commands into the extlinux menu. No H016 kernel boot occurred. Cubie3 was power-cycled and restored to vendor 5.15.147-21-a733. Rerun H016 with prompt-controlled automation that reaches => or escapes extlinux with Ctrl-C before ext4load/booti."
+        },
+        {
+          "attempted_utc": "2026-06-10T17:26:18Z",
+          "status": "completed_failed_as_expected",
+          "kernel_head": "529f1682dd48",
+          "artifact": "/srv/projects/kernel-work/outgoing/a733-h016-descstamp-529f1682dd48-20260610T171700Z",
+          "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T172618Z-a733-h016-descstamp-529f1682dd48-ext4load-rerun-ttyUSB0.uart.log",
+          "uart_log_sha256": "aaf75f763903fc3db8c6a0cb5b537ed3686126694fa66bc39da07aea3d67636a",
+          "summary": "Prompt-controlled automation reached the real U-Boot prompt, loaded the H016 Image/DTB by ext4load, and booted Linux 7.1.0-rc5-00274-g529f1682dd48. The log proves SDXC detection and mmcblk0 creation before the forced CMD18 IDMA read. Descriptor checksum/stamps were unchanged after dma_sync_single_for_cpu, OWN stayed set, CHDA stayed at DLBA, CBDA stayed zero, and IDST stayed 0x4000. Cubie3 was restored to vendor 5.15.147-21-a733."
         }
-      ]
+      ],
+      "result": {
+        "kernel_head": "529f1682dd48",
+        "artifact": "/srv/projects/kernel-work/outgoing/a733-h016-descstamp-529f1682dd48-20260610T171700Z",
+        "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T172618Z-a733-h016-descstamp-529f1682dd48-ext4load-rerun-ttyUSB0.uart.log",
+        "uart_log_sha256": "aaf75f763903fc3db8c6a0cb5b537ed3686126694fa66bc39da07aea3d67636a",
+        "summary": "Failed as a boot proof but succeeded as a narrowing proof. The controller reaches CMD18 with RINTR=0x24 and IDST=0x4000, but the coherent descriptor ring remains byte-for-byte unchanged after the stall. Treat the next blocker as descriptor-fetch reachability, DMA address translation, or hidden fabric visibility before descriptor word 0 is consumed."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H017",
+      "priority": 1,
+      "status": "ready",
+      "title": "Descriptor-fetch address translation and fabric comparison",
+      "question": "Which source-backed address-translation or fabric-visibility difference could prevent A733 SDMMC0 IDMAC from fetching the coherent descriptor at DLBA?",
+      "test_cost": "low first; source and log audit before any build",
+      "procedure": [
+        "Do not build a new kernel until this no-build comparison identifies one concrete control delta.",
+        "Compare H016 DLBA, descriptor CPU-visible words, descriptor DMA address, sg DMA address, dma mask, coherent allocation path, and SDMMC0 fabric clocks against the vendor 4 KiB working-read samples.",
+        "Audit vendor A733 SDMMC, CCU/PRCM, MBUS, IOMMU, MSI-lite, DMA mask, and any storage-fabric init paths for descriptor-list address translation or master-access enable behavior that is not already covered by H015.",
+        "Fill the fixed register/evidence schema with address, vendor value at time T, mainline value at time T, delta, interpretation, and source reference.",
+        "If exactly one concrete source-backed delta remains, build a minimal diagnostic patch for that one delta only and boot Cubie3 once from Strix.",
+        "If no concrete source-backed delta remains, queue a lower-level proof that changes the descriptor allocation/access path rather than guessing more visible SDMMC registers.",
+        "After any boot, restore Cubie3 to vendor kernel 5.15.147-21-a733, update this queue, update the private KB, update docs/status.md, commit, sync to Strix, and push or record blocked remotes."
+      ],
+      "pass_criteria": "A concrete source-backed descriptor-fetch/address/fabric delta is found and either tested or queued with a single-change proof plan.",
+      "fail_criteria": "No source-backed delta remains; the next runtime test must change the descriptor memory placement/access path rather than visible SDMMC control bits.",
+      "upstream_note": "Private lab triage only. Do not expand the maintainer-facing DTS slice, add vendor U-Boot properties, or duplicate the in-flight A733 CCU/pinctrl RFCs."
     },
     {
       "id": "A733-SDMMC-H004",

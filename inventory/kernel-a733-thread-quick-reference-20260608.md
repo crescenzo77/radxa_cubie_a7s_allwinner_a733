@@ -802,7 +802,25 @@ Key runtime clue: H013 leaves the post-stall descriptor unchanged
 `CBCR=0x400`, and `BBCR=0`. That favors IDMAC not consuming/fetching the
 descriptor over stale CPU-visible descriptor contents.
 
-Next queue item: H016. Build one instrumentation-only descriptor-fetch
-reachability stamp proof from Strix, keep H013 safety rails, capture before and
-after descriptor ring stamps/checksums, then restore Cubie3 to vendor
-`5.15.147-21-a733`.
+## 2026-06-10 H016 Descriptor-Fetch Stamp Closeout
+
+H016 diagnostic head: `529f1682dd48` (`mmc: trace A733 descriptor fetch
+stamps`). Artifact:
+`/srv/projects/kernel-work/outgoing/a733-h016-descstamp-529f1682dd48-20260610T171700Z`.
+UART:
+`tools/hardware-logs/cubie-uart/20260610T172618Z-a733-h016-descstamp-529f1682dd48-ext4load-rerun-ttyUSB0.uart.log`,
+sha256 `aaf75f763903fc3db8c6a0cb5b537ed3686126694fa66bc39da07aea3d67636a`.
+
+Result: prompt-controlled UART automation reached the real U-Boot `=>` prompt,
+loaded the H016 Image/DTB with `ext4load`, and booted Linux
+`7.1.0-rc5-00274-g529f1682dd48`. The SDXC card was detected and `mmcblk0` was
+created before the forced CMD18 IDMA read. Before launch, descriptor checksum
+was `0x149a82eb` with `d0={8000001c,00001000,40766000,3f840004}` and stamp
+`d1={00000000,a733016e,dead0001,beef0002}`. After post-data poll11 and
+`dma_sync_single_for_cpu`, checksum and descriptor/stamp words were unchanged,
+`OWN` remained set, `IDST=0x4000`, `CHDA=DLBA=0x3f840000`, `CBDA=0`,
+`CBCR=0x400`, and `BBCR=0`.
+
+Next queue item: H017. Do a no-build descriptor-fetch address-translation and
+fabric comparison first. Only build a kernel if that comparison finds one
+source-backed delta. Cubie3 was restored to vendor `5.15.147-21-a733`.
