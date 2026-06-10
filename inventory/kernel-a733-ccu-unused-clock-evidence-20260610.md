@@ -478,6 +478,27 @@ The runtime proof has now separated SD/MMC protocol functionality from IDMA:
 PIO can enumerate the card and create `mmcblk0`; IDMA remains the blocker for
 normal block I/O.
 
+Commit `b42a6fff9d87` tries to extend the diagnostic PIO path to the first
+multi-block read, CMD18 (`8 x 512` bytes). It does not complete. The log shows
+PIO mode is active and raw status reaches `0x24` (`COMMAND_DONE` plus
+`RX_DATA_REQUEST`), but no finalizing interrupt arrives. This is expected to
+need more than the single-block PIO path because CMD18 uses stop/auto-stop
+completion semantics.
+
+```text
+diag request-data opcode=18 flags=0x200 blksz=512 blocks=8 stop=1
+diag pio mode gctrl=0xa0000010
+diag post-data poll5 rint=0x00000024 mista=0x00000000 ... cmdr=0x00003352 imask=0x0000fbc2
+```
+
+SDMMC0 multi-block PIO read diagnostic:
+tools/hardware-logs/cubie-uart/20260610T050629Z-a733-pio-multiread-b42a6fff9d87-ext4load-ttyUSB0.uart.log
+sha256: 569ebe5f61f34fe1a3b9ec696a8380a55155bade2c50746a1ce18f9cefaf29b8
+
+Next best diagnostic: do not keep broadening PIO blindly. Either add a narrow
+manual-stop/finalize path for CMD18 PIO, or pivot to the real issue: why IDMA
+never progresses for A733 despite PIO proving register/card/data-path function.
+
 ## Questions For CCU/RFC Review
 
 1. Should the A733 RTC CCU mirror the generic RTC CCU orphan handling for
