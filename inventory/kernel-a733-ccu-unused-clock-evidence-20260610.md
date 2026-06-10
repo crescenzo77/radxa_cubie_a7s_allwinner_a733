@@ -125,6 +125,14 @@ slow diagnostic PIO fallback and relies on the lab-only CCU/reset/storage
 scaffolding, but it proves SDMMC command/data/rootfs operation once IDMA is
 bypassed. The remaining storage blocker for a real solution is A733 SDMMC IDMA.
 
+The IDMA unshifted-chain-pointer hypothesis is falsified. The first run
+accidentally left the 256-block PIO fallback enabled and therefore reproduced
+the rootfs proof rather than testing IDMA. The isolated rerun restored the PIO
+limit to 8 blocks while keeping unshifted descriptor-chain pointers. The
+256-block CMD18 then used IDMA with `next=0x43000010`, but still reached
+`RINTR=0x24` and stuck at `IDST=0x4000`. Descriptor chain-pointer shifting is
+therefore not the immediate cause.
+
 ## External Context Rechecked
 
 - A733 CCU/PRCM active reference remains Junhui Liu's RFC series:
@@ -259,6 +267,11 @@ CMD18 PIO up to 256 blocks
   -> 256-block / multi-sg reads complete with copied=131072/131072
   -> EXT4-fs (mmcblk0p3) mounts read-only
   -> VFS pivots into rootfs and runs /bin/sh
+
+IDMA unshifted chain pointers
+  -> next pointer changes to 0x43000010
+  -> 256-block CMD18 still sticks at IDST=0x4000
+  -> chain-pointer shift hypothesis falsified
 ```
 
 Key proof logs:
@@ -359,6 +372,14 @@ sha256: 66ff54f622908395637bddfb8829285b6660883b9a4f0a4e4263dce88f255813
 SDMMC0 CMD18 256-block PIO rootfs proof:
 tools/hardware-logs/cubie-uart/20260610T090142Z-a733-cmd18-pio-256-2e475c696c8b-ext4load-ttyUSB0.uart.log
 sha256: b2352908a06c57ca550d34e07b87f0d7a130f075666ae93e061b4c5faecf4f3a
+
+SDMMC0 accidental PIO rerun with unshifted IDMA chain pointers:
+tools/hardware-logs/cubie-uart/20260610T090828Z-a733-idma-unshiftnext-7162e94694ea-ext4load-ttyUSB0.uart.log
+sha256: 368ebf3b18f0caceb5fee5d1a93f36202f54e22bde5722ed35247d73299fab5b
+
+SDMMC0 isolated IDMA unshifted-chain-pointer diagnostic:
+tools/hardware-logs/cubie-uart/20260610T091348Z-a733-idma-unshiftnext-isolated-30dcc4c07ecf-ext4load-ttyUSB0.uart.log
+sha256: 586749de94c321895084cd62360c2e36566341abbdd14db001fc018bb74e0cc0
 ```
 
 ## Source Findings
