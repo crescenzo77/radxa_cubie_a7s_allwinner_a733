@@ -281,6 +281,15 @@ visible control state for `FUNS=0`, `DBGC=0x1`, `CSDC=0x3`,
 v5p3x visible registers a weaker suspect and points back at descriptor
 fetch/addressing or hidden wrapper/coherency behavior.
 
+Commit `69314e94b6ac` retests A733 with v5p3x 4 KiB descriptor segmentation
+(`idma_des_size_bits = 12`) on top of the current wide-register/four-page
+descriptor stack. A valid synced boot loads `7.1.0-rc5-00260-g69314e94b6ac`;
+the first 256-block CMD18 is now `sg_len=32` with `size=0x1000` descriptors,
+but it still stops immediately at `IDST=0x4000`, `CHDA=DLBA`, `CBDA=0`,
+`CBCR=0x400`, and `BBCR=0`. The segment-size hypothesis is therefore also not
+enough. Note for future direct boots: sync/flush after replacing `/boot/cthu`
+files, because U-Boot ext4 can otherwise read the previous on-disk state.
+
 Full Orange Pi BSP source was cloned on Strix at:
 `/srv/projects/kernel-work/tmp/linux-orangepi-full`, branch
 `orange-pi-6.6-sun60iw2`, commit
@@ -634,6 +643,10 @@ sha256: 3fe99a97efad4935221d75c6175ff6ebeac6a907969d23db44a23f30ea5223d0
 SDMMC0 IDMA wide-register diagnostic:
 tools/hardware-logs/cubie-uart/20260610T132823Z-a733-idma-wideregs-fd66f504bb80-ext4load-ttyUSB0.uart.log
 sha256: 6cf68369666d6b1e85cde468c5694df0ba27f6b88fb738fef1972820156245cb
+
+SDMMC0 IDMA v5p3x descriptor-size retest:
+tools/hardware-logs/cubie-uart/20260610T134535Z-a733-idma-v5p3xsize-69314e94b6ac-ext4load-ttyUSB0.uart.log
+sha256: dbd87dd635620d84864ebb63f1c193cd2fbb8d2979857ab33d1713b6ca6f1813
 ```
 
 ## Source Findings
