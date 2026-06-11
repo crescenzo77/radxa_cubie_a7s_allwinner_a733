@@ -1,0 +1,29 @@
+{
+  "id": "A733-SDMMC-H053",
+  "timestamp_utc": "2026-06-11T07:35:00Z",
+  "title": "BSP v5p3x save/restore register audit",
+  "scope": [
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc-v5p3x.c",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "/srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "trigger": "Check whether BSP v5p3x suspend/resume save/restore names a special register missing from the live SDMMC0 IDMAC setup.",
+  "findings": [
+    "BSP common save/restore covers GCTRL, CLKCR, TMOUT, WIDTH, FTRGL, FUNS, DBGC, DMAC, DLBA, and IMASK.",
+    "BSP v5p3x-specific save/restore covers DRV_DL, SAMP_DL, DS_DL, and SD_NTSR.",
+    "BSP restore also calls the ACMDA hook, which writes A12A=0.",
+    "The local diagnostic tree already dumps or writes the live setup registers relevant to the IDMAC path, including FTRGL, THLD, FUNS, DBGC, CSDC, DRV_DL, SAMP_DL, DS_DL, A12A, DMAC, DLBA, GCTRL, IDIE, CHDA, CBDA, CBCR, and BBCR.",
+    "Save/restore is suspend/resume bookkeeping. It does not introduce a probe-time or per-transfer descriptor-fetch precondition."
+  ],
+  "public_search": {
+    "exact_email_archive_hit": false,
+    "answer_visible": false,
+    "notes": "Search still did not reveal a public archive hit or answer for the manually sent A733 SDMMC0 descriptor-fetch question."
+  },
+  "decision": "No behavior patch.",
+  "reason": "The v5p3x-specific registers are delay/status bookkeeping already visible in diagnostic dumps or unrelated to descriptor memory reachability. The remaining failure is before descriptor word 0 is consumed in a fresh live transfer, not after suspend/resume.",
+  "next": [
+    "Do not test suspend/resume save/restore register writes as a standalone descriptor-fetch fix.",
+    "Keep waiting for a maintainer/list reply or a source-backed SDMMC0 firewall/security/master-permission bit."
+  ]
+}

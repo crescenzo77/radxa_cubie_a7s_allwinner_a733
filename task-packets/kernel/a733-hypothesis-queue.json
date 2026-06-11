@@ -1273,6 +1273,25 @@
       }
     },
     {
+      "id": "A733-SDMMC-H053",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "BSP v5p3x save/restore register audit",
+      "question": "Does BSP v5p3x suspend/resume save/restore reveal a missing live SDMMC0 IDMAC descriptor-fetch setup register?",
+      "test_cost": "low; source audit only, no kernel build and no board reboot",
+      "procedure": [
+        "Inspect common and v5p3x-specific BSP save/restore register sets.",
+        "Compare those registers to local live diagnostic dumps and setup writes.",
+        "Only patch if save/restore names a register that must be initialized before normal-IDMAC descriptor fetch and is missing locally."
+      ],
+      "pass_criteria": "A concrete register is promoted to a narrow proof or save/restore is closed as suspend/resume bookkeeping.",
+      "fail_criteria": "The next session retests suspend/resume restore writes as a standalone IDMAC fix without new evidence.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h053-v5p3x-save-restore-audit-20260611T0735Z.json",
+        "summary": "Completed with no behavior patch. BSP v5p3x save/restore covers DRV_DL, SAMP_DL, DS_DL, and SD_NTSR in addition to common registers. The local diagnostic already observes or writes the live IDMAC setup registers, and save/restore is suspend/resume bookkeeping rather than a probe-time descriptor-fetch precondition."
+      }
+    },
+    {
       "id": "A733-SDMMC-H004",
       "priority": 4,
       "status": "do_not_repeat_without_new_evidence",
