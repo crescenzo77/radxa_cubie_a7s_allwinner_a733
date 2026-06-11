@@ -1,0 +1,34 @@
+{
+  "id": "A733-SDMMC-H144",
+  "status": "completed_no_patch",
+  "completed_utc": "2026-06-11T07:10:00Z",
+  "title": "Audit hidden SDMMC0 descriptor-fetch handoff outside visible register dump",
+  "host": "strix",
+  "scope": [
+    "/srv/projects/kernel-work/tmp/linux-orangepi-full",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc",
+    "/srv/projects/references/u-boot-a733",
+    "/srv/projects/homelab/task-packets/kernel",
+    "/srv/projects/cubie-uart/logs"
+  ],
+  "raw_search_artifacts_strix": [
+    "/srv/projects/homelab/task-packets/kernel/results/a733-h144-search-raw-20260611T0705Z.txt",
+    "/srv/projects/homelab/task-packets/kernel/results/a733-h144-targeted-20260611T0708Z.txt"
+  ],
+  "search_terms": [
+    "SMHC0/SDMMC0/SDC0/MMC0",
+    "IDMAC/descriptor/DESC_READ",
+    "master ID/firewall/permission/secure switch/CCMU_SEC",
+    "SPC/TZMA/TZASC/SMC/non-secure/secure_status",
+    "NSI/MBUS/sdc_mbus/mmc_mbus/mmc_store/mmc_msi_lite"
+  ],
+  "findings": [
+    "No source names an A733 SDMMC0/SMHC0 master permission, firewall, TZMA/SPC/TZASC bit, or firmware handoff that Linux can apply before IDMAC descriptor fetch.",
+    "Vendor BSP normal MMC path still exposes the already-tested clocks: ahb, mmc, mmc_store, mmc_mbus, and mmc_msi_lite.",
+    "Vendor panic/pstore paths contain sunxi_mmc_mbusrst_host() helpers that gate/reset MMC-related CCMU offsets, but these are panic raw-I/O helpers, not normal IDMAC setup; their reset/clock components overlap already-tested H011/H021/H027/H113 classes.",
+    "Prior H028/H085/H095/H096/H117 conclusions remain valid: local vendor DT, U-Boot, firmware strings, NSI metadata, and BSP source do not identify SDMMC0 as a Linux-programmable protected master or hidden NSI/IOMMU/firewall participant.",
+    "H143 remains the best current runtime fact: descriptor word 0 is not consumed despite visible SDMMC0/fabric setup and safe MSI/IOMMU subset testing."
+  ],
+  "decision": "No kernel behavior patch. Do not test generic secure/fabric writes or panic-only MBUS reset helpers without a source naming them as A733 SDMMC0 normal-IDMAC descriptor-fetch preconditions.",
+  "next_action": "Keep the runtime blocker open. Continue with human reflect review for the DTS series or wait for maintainer/vendor feedback naming a concrete register, reset/clock order, firmware handoff, master ID, binding, or erratum."
+}

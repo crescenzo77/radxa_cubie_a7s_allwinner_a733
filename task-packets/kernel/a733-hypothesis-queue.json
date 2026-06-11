@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T06:55:00Z",
+  "updated_utc": "2026-06-11T07:10:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H143 freshly reproduced the stall on Cubie3 from a clean H020-derived measurement branch: IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, descriptor checksum unchanged, OWN still set after CPU sync. PIO remains diagnostic/lab infrastructure only.",
   "operator_model": {
@@ -47,11 +47,11 @@
     "summary": "Added task-packets/kernel/a733-h142-reflect-only-handoff-20260611T1020Z.md with the exact Strix b4 send --reflect command and review checklist. Machine gates 01-07 are closed; gate 08 remains open for human reflect review only."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H143",
-    "status": "completed_measurement_no_patch",
-    "title": "Fresh fixed-schema IDMAC stall capture",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h143-fixed-schema-runtime-result-20260611T0652Z.json",
-    "result": "Fresh Cubie3 direct-boot capture preserved at tools/hardware-logs/cubie-uart/20260611T065204Z-a733-h143-fixed-schema-3b4060f731b1-ttyUSB0.uart.log. The normal-IDMAC descriptor-read stall is reproduced; no new behavior patch is justified because the visible fabric deltas match already-tested H020/H021 evidence."
+    "id": "A733-SDMMC-H144",
+    "status": "completed_no_patch",
+    "title": "Hidden handoff source/artifact audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h144-hidden-handoff-audit-20260611T0710Z.json",
+    "result": "Searched local BSP, U-Boot, firmware/manual artifacts, task packets, and UART logs for a named hidden SDMMC0/SMHC0 descriptor-fetch handoff. No source-backed new register, firewall, master ID, reset/clock order, binding, or erratum was found. No behavior patch is justified."
   },
   "hypotheses": [
     {
@@ -2654,7 +2654,7 @@
     {
       "id": "A733-SDMMC-H144",
       "priority": 1,
-      "status": "queued_source_audit",
+      "status": "completed_no_patch",
       "title": "Audit hidden SDMMC0 descriptor-fetch handoff outside visible register dump",
       "question": "Can local source, firmware strings, manuals, or captured logs name a concrete A733 SDMMC0/SMHC0 IDMAC descriptor-fetch precondition not visible in the H143 SDMMC0/fabric register dump?",
       "test_cost": "low to medium; source/artifact audit only, no board reboot",
@@ -2672,7 +2672,10 @@
         "No local CCU/pinctrl submission changes.",
         "No vendor U-Boot workaround in DTS."
       ],
-      "result": null
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h144-hidden-handoff-audit-20260611T0710Z.json",
+        "summary": "No new source-backed hidden handoff found. Panic/pstore MBUS reset helpers are not normal IDMAC setup and overlap already-tested clock/reset classes. No patch."
+      }
     }
   ],
   "model_routes": [
