@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "updated_utc": "2026-06-11T08:20:00Z",
+  "project": "radxa-cubie-a7s-allwinner-a733",
+  "status": "not_send_ready",
+  "purpose": "Executable checklist for turning the A733/Cubie A7S review snapshot into a human-approved b4 reflect candidate.",
+  "hard_guardrails": [
+    "Do not send from patches/ directly.",
+    "Do not send local A733 CCU or pinctrl scaffolding while the external RFCs are in flight.",
+    "Do not encode vendor U-Boot workarounds in upstream DTS.",
+    "Do not expand the initial series into Ethernet, VPU, display, USB-C, PCIe, or wireless.",
+    "Do not run b4 send --reflect until scripts/kernel-b4-final-gate passes on the final regenerated branch."
+  ],
+  "inputs": {
+    "review_snapshot": "/Users/enzo/projects/Home Lab/cubie-a7s-armbian/patches",
+    "linux_repo_mac": "/Users/enzo/projects/linux-a733",
+    "linux_repo_strix": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "b4_venv_strix": "/srv/projects/kernel-work/b4-venv",
+    "validation_floor": "/Users/enzo/projects/homelab/scripts/kernel-validation-floor",
+    "b4_final_gate": "/Users/enzo/projects/homelab/scripts/kernel-b4-final-gate"
+  },
+  "required_gates": [
+    {
+      "id": "gate-01-final-branch",
+      "status": "open",
+      "command": "Create a fresh named final review branch from the intended prerequisite base, then apply/regenerate the four A733 patches from source commits.",
+      "pass": "Branch is named, non-detached, contains exactly the final four A733 commits, and has no unrelated dirty files."
+    },
+    {
+      "id": "gate-02-rfc-dependencies",
+      "status": "open",
+      "command": "Recheck public RTC, CCU/PRCM, and pinctrl dependency state.",
+      "pass": "Cover letter and b4 dependency metadata reflect current accepted/RFC state."
+    },
+    {
+      "id": "gate-03-b4-cover",
+      "status": "open",
+      "command": "Run b4 prep and edit cover metadata non-destructively.",
+      "pass": "b4 prep --show-info no longer reports needs-editing."
+    },
+    {
+      "id": "gate-04-b4-deps",
+      "status": "open",
+      "command": "Run b4 prep --edit-deps and encode prerequisite series.",
+      "pass": "b4 prep --show-info no longer reports has-prerequisites: False, and b4 prep --check-deps passes or any limitation is documented."
+    },
+    {
+      "id": "gate-05-recipients",
+      "status": "open",
+      "command": "Run b4 prep --auto-to-cc and compare against scripts/get_maintainer.pl output.",
+      "pass": "b4 prep --show-info no longer reports needs-recipients or needs-auto-to-cc."
+    },
+    {
+      "id": "gate-06-validation-floor",
+      "status": "open",
+      "command": "Run scripts/kernel-validation-floor against the final branch/export.",
+      "pass": "Validation floor passes from the final intended base."
+    },
+    {
+      "id": "gate-07-b4-final-gate",
+      "status": "open",
+      "command": "Run scripts/kernel-b4-final-gate --repo FINAL_BRANCH_WORKTREE.",
+      "pass": "Gate passes with no open b4 metadata/preflight blockers."
+    },
+    {
+      "id": "gate-08-reflect-only",
+      "status": "open",
+      "command": "Human runs b4 send --reflect only after gates 01-07 pass.",
+      "pass": "Reflect copy is received and reviewed by the human; no real list send before this."
+    }
+  ],
+  "current_known_blockers": [
+    "b4 metadata still needs cover editing.",
+    "b4 metadata still needs recipients/auto-to-cc.",
+    "b4 metadata still needs prerequisite/dependency encoding.",
+    "b4 preflight still reports expected MAINTAINERS/RFC-compatible warnings.",
+    "Strix checkpatch subprocess cannot import Python ply for spdxcheck.py via /usr/bin/python3."
+  ]
+}
