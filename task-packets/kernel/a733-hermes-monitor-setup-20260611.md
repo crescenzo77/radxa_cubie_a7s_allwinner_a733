@@ -83,6 +83,9 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
   It summarizes current queue head, blockers, model failures, report freshness,
   next safe actions, scheduler safety state, and links while preserving the
   same read-only/no-approval boundary.
+- The dashboard now emits `dashboard_status`, per-report freshness, and
+  `report_findings`. Reports older than 75 minutes, missing reports, JSON load
+  errors, or a non-`ok` safety audit turn the dashboard status to `attention`.
 - The safety audit validates the Hermes cron surface against the current
   monitor-only allowlist. Its first clean run saw all approved jobs and no
   unexpected live hardware/runtime jobs.
@@ -135,6 +138,7 @@ Live smoke checks:
 /home/enzo/.hermes/scripts/a733-public-source-monitor.sh
 /home/enzo/.hermes/scripts/a733-model-health-monitor.sh
 /home/enzo/.hermes/scripts/a733-radxa-provenance-audit.sh
+/home/enzo/.hermes/scripts/a733-dashboard-index.sh
 ```
 
 ## Next Safe Increment
