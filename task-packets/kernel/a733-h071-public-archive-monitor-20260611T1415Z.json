@@ -1,0 +1,27 @@
+{
+  "id": "A733-SDMMC-H071",
+  "created_utc": "2026-06-11T14:15:00Z",
+  "title": "Public archive monitor for A733 SDMMC0 maintainer question",
+  "question": "Has the plain-text resend appeared in public archives or produced a public reply that changes the blocker?",
+  "searches": [
+    {
+      "query": "\"sunxi-mmc: A733 IDMAC stuck in descriptor rea\"",
+      "result": "No matching public archive copy found."
+    },
+    {
+      "query": "\"The failing transfer is a single 8-block CMD18\"",
+      "result": "No matching public archive copy found."
+    },
+    {
+      "query": "site:lore.kernel.org \"A733/SUN60IW2\" \"IDMAC\"",
+      "result": "No matching lore thread found."
+    },
+    {
+      "query": "site:spinics.net/lists/linux-mmc \"A733\" \"IDMAC\"",
+      "result": "No matching spinics linux-mmc archive copy found."
+    }
+  ],
+  "result": "completed_no_behavior_patch",
+  "decision": "No patch and no resend. Public archives do not yet expose a reply or clue. Continue monitoring without changing the kernel tree.",
+  "next_responsible_step": "Wait for list/maintainer/vendor response or newly found source evidence before building another IDMAC behavior patch."
+}
