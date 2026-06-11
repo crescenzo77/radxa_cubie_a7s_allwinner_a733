@@ -1,0 +1,19 @@
+{
+  "id": "A733-SDMMC-H058",
+  "status": "completed_no_patch",
+  "title": "BSP v5p3x CSDC and threshold audit",
+  "timestamp_utc": "2026-06-11T09:30:00Z",
+  "scope": [
+    "Strix BSP source: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc-v5p3x.c",
+    "Strix diagnostic source: /srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "observations": [
+    "BSP v5p3x writes REG_CSDC to select CRC detect parameters for HS400 vs other timings.",
+    "REG_CSDC is timing/CRC policy, not an IDMAC descriptor memory access control.",
+    "BSP read threshold is enabled only for selected high-speed read timings.",
+    "The local diagnostic branch already enables read threshold for the failing read path, so it is not missing the BSP threshold write."
+  ],
+  "decision": "no_behavior_patch",
+  "reason": "CSDC and threshold policy do not explain IDMAC entering descriptor-read state with DLBA set while descriptor word 0 remains unconsumed.",
+  "next": "Do not retest CSDC or read-threshold policy as descriptor-fetch fixes without new evidence."
+}
