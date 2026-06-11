@@ -6,16 +6,20 @@ outdir="$repo/task-packets/kernel/hermes-hourly"
 json="$outdir/a733-dashboard-index-latest.json"
 md="$outdir/a733-dashboard-index-latest.md"
 html="$outdir/a733-dashboard-index-latest.html"
+state="$outdir/a733-dashboard-index-state.json"
+telegram_env=${A733_TELEGRAM_ENV:-/etc/telegram-tasks-bot/bot.env}
+report_url=${A733_DASHBOARD_REPORT_URL:-http://192.168.50.225:9181/hermes-hourly/a733-dashboard-index-latest.html}
 mkdir -p "$outdir"
 
-python3 - "$outdir" "$json" "$md" "$html" <<'PY'
+python3 - "$outdir" "$json" "$md" "$html" "$state" "$telegram_env" "$report_url" <<'PY'
 import datetime as dt
 import html
 import json
 import pathlib
 import sys
+import urllib.request
 
-outdir, json_path, md_path, html_path = sys.argv[1:]
+outdir, json_path, md_path, html_path, state_path, telegram_env, report_url = sys.argv[1:]
 outdir = pathlib.Path(outdir)
 base_url = "http://192.168.50.225:9181/hermes-hourly"
 stale_after_seconds = 75 * 60
@@ -43,6 +47,33 @@ def load_json(stem):
         return json.loads(path.read_text(encoding="utf-8")), "ok"
     except Exception as exc:
         return {"load_error": str(exc)}, "error"
+
+def read_env(path):
+    env = {}
+    p = pathlib.Path(path)
+    if not p.exists():
+        return env
+    for line in p.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        env[key.strip()] = value.strip().strip('"').strip("'")
+    return env
+
+def telegram(text):
+    cfg = read_env(telegram_env)
+    token = cfg.get("TELEGRAM_BOT_TOKEN")
+    chat = cfg.get("TASK_NOTIFY_USER_ID") or cfg.get("CLEAN_TASK_USER_ID")
+    if not token or not chat:
+        return "telegram env missing"
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=json.dumps({"chat_id": chat, "text": text, "disable_web_page_preview": False}).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    urllib.request.urlopen(req, timeout=15).read()
+    return "sent"
 
 def age_seconds(path):
     if not path.exists():
@@ -177,5 +208,32 @@ pathlib.Path(html_path).write_text(
     f"<pre>{escaped}</pre>\n",
     encoding="utf-8",
 )
+
+new_state = {
+    "dashboard_status": dashboard_status,
+    "report_findings": report_findings,
+    "safety_status": safety_status,
+}
+state_file = pathlib.Path(state_path)
+old_state = {}
+if state_file.exists():
+    try:
+        old_state = json.loads(state_file.read_text(encoding="utf-8"))
+    except Exception:
+        old_state = {}
+state_file.write_text(json.dumps({**new_state, "updated_at": now}, indent=2) + "\n", encoding="utf-8")
+if old_state and (
+    old_state.get("dashboard_status") != dashboard_status
+    or old_state.get("report_findings") != report_findings
+    or old_state.get("safety_status") != safety_status
+):
+    finding_text = "; ".join(report_findings) if report_findings else "none"
+    telegram(
+        "A733 Hermes dashboard status changed\n"
+        f"Dashboard: {dashboard_status}\n"
+        f"Safety: {safety_status}\n"
+        f"Findings: {finding_text}\n"
+        f"Report: {report_url}"
+    )
 print(f"wrote {md_path}")
 PY

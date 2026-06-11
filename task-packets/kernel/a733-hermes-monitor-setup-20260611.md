@@ -86,6 +86,9 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
 - The dashboard now emits `dashboard_status`, per-report freshness, and
   `report_findings`. Reports older than 75 minutes, missing reports, JSON load
   errors, or a non-`ok` safety audit turn the dashboard status to `attention`.
+- The dashboard keeps a local state file and sends a Telegram notification only
+  when `dashboard_status`, `report_findings`, or scheduler safety status
+  changes after a prior state exists. Clean repeat runs do not spam Telegram.
 - The safety audit validates the Hermes cron surface against the current
   monitor-only allowlist. Its first clean run saw all approved jobs and no
   unexpected live hardware/runtime jobs.
