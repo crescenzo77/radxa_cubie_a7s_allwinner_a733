@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T07:05:00Z",
+  "updated_utc": "2026-06-11T07:20:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -34,8 +34,14 @@
     "series_manager": "Use b4 from a clean generated review branch for final mailing-list preparation.",
     "branch_hierarchy": "Use topic branches, candidate branches, and generated review branches; update dependent refs together with git rebase --update-refs when rebasing a stack.",
     "validation_floor": "Run scripts/kernel-validation-floor locally; the public repo CI mirrors this floor for candidate/**, topic/**, review/**, codex/**, pull requests, and manual dispatch.",
-    "review_export": "Treat patches/ as a review snapshot only. Regenerate it from the final branch instead of editing flat patch files by hand.",
+    "review_export": "Treat patches/ as a review snapshot only. H124 fixed the temporary folded export cover letter and revalidated patch application, but the maintained patches/ snapshot is not promoted yet.",
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
+  },
+  "latest_upstream_prep": {
+    "id": "A733-UPSTREAM-H124",
+    "status": "completed_temp_export_only",
+    "title": "Folded review export cover-letter repair and apply check",
+    "summary": "Edited only /tmp/a733-folded-export/0000-cover-letter.patch to replace placeholder subject/blurb with maintainer-shape A733/Cubie A7S text. Re-applied patches 0001-0004 to a fresh worktree from b327168a182e^; git am, git diff --check, and no-allwinner,pinmux checks passed. Maintained patches/ snapshot was not replaced."
   },
   "latest_completed_test": {
     "id": "A733-SDMMC-H089",
