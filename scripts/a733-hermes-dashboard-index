@@ -20,6 +20,7 @@ outdir = pathlib.Path(outdir)
 base_url = "http://192.168.50.225:9181/hermes-hourly"
 
 reports = [
+    ("safety_audit", "Hermes safety audit", "a733-hermes-safety-audit-latest"),
     ("blocker_brief", "Patch blocker brief", "a733-patch-blocker-brief-latest"),
     ("workflow_status", "Workflow status", "a733-workflow-status-latest"),
     ("public_patch_readiness", "Public patch readiness", "a733-public-patch-readiness-latest"),

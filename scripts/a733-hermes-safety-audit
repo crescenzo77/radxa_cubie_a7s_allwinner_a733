@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo=${A733_HERMES_REPO:-/srv/projects/homelab}
+outdir="$repo/task-packets/kernel/hermes-hourly"
+json="$outdir/a733-hermes-safety-audit-latest.json"
+md="$outdir/a733-hermes-safety-audit-latest.md"
+html="$outdir/a733-hermes-safety-audit-latest.html"
+mkdir -p "$outdir"
+
+cron_output=$(/home/enzo/.local/bin/hermes cron list 2>&1 || true)
+
+python3 - "$json" "$md" "$html" "$cron_output" <<'PY'
+import datetime as dt
+import html
+import json
+import pathlib
+import re
+import sys
+
+json_path, md_path, html_path, cron_output = sys.argv[1:]
+
+allowed = {
+    "A733 source-diff heartbeat": "a733-source-diff-heartbeat.sh",
+    "A733 workflow status monitor": "a733-workflow-status-monitor.sh",
+    "A733 public-source monitor": "a733-public-source-monitor.sh",
+    "A733 model endpoint health": "a733-model-health-monitor.sh",
+    "A733 public patch readiness": "a733-public-patch-readiness-monitor.sh",
+    "A733 patch blocker brief": "a733-patch-blocker-brief.sh",
+    "A733 repo drift monitor": "a733-repo-drift-monitor.sh",
+    "A733 repo sync approval brief": "a733-repo-sync-approval-brief.sh",
+    "A733 dashboard index": "a733-dashboard-index.sh",
+    "A733 Hermes safety audit": "a733-hermes-safety-audit.sh",
+}
+
+danger_patterns = [
+    "bruteforce",
+    "direct-uboot",
+    "interactive-boot",
+    "power",
+    "reboot",
+    "cubie2",
+    "cubie3",
+    "discovery-keeper",
+    "lead-supervisor",
+    "breakthrough-watch",
+    "heartbeat-cubie",
+]
+
+blocks = re.split(r"\n(?=\s+[0-9a-f]{12} \[active\])", cron_output)
+jobs = []
+for block in blocks:
+    if "[active]" not in block:
+        continue
+    job_id = re.search(r"^\s*([0-9a-f]{12}) \[active\]", block, re.M)
+    name = re.search(r"Name:\s+(.+)", block)
+    schedule = re.search(r"Schedule:\s+(.+)", block)
+    script = re.search(r"Script:\s+(.+)", block)
+    mode = re.search(r"Mode:\s+(.+)", block)
+    workdir = re.search(r"Workdir:\s+(.+)", block)
+    jobs.append({
+        "id": job_id.group(1) if job_id else "unknown",
+        "name": name.group(1).strip() if name else "unknown",
+        "schedule": schedule.group(1).strip() if schedule else "unknown",
+        "script": script.group(1).strip() if script else "unknown",
+        "mode": mode.group(1).strip() if mode else "unknown",
+        "workdir": workdir.group(1).strip() if workdir else "unknown",
+    })
+
+findings = []
+for job in jobs:
+    expected_script = allowed.get(job["name"])
+    if expected_script is None:
+        findings.append(f"unapproved active job name: {job['name']} ({job['id']})")
+    elif job["script"] != expected_script:
+        findings.append(f"approved job has unexpected script: {job['name']} uses {job['script']} expected {expected_script}")
+    if "no-agent" not in job["mode"]:
+        findings.append(f"job is not no-agent: {job['name']} mode={job['mode']}")
+    if job["workdir"] != "/srv/projects/homelab":
+        findings.append(f"job has unexpected workdir: {job['name']} workdir={job['workdir']}")
+    haystack = f"{job['name']} {job['script']}".lower()
+    for pattern in danger_patterns:
+        if pattern in haystack and job["name"] not in allowed:
+            findings.append(f"potential hardware/runtime job active: {job['name']} ({job['script']}) matched {pattern}")
+
+missing = []
+for name, script in allowed.items():
+    if name == "A733 Hermes safety audit":
+        continue
+    if not any(job["name"] == name and job["script"] == script for job in jobs):
+        missing.append(f"{name} ({script})")
+
+now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+doc = {
+    "generated_at": now,
+    "status": "ok" if not findings and not missing else "attention",
+    "active_job_count": len(jobs),
+    "findings": findings,
+    "missing_expected_jobs": missing,
+    "jobs": jobs,
+    "not_authorized": [
+        "H149 or any live hardware/runtime sweep",
+        "Cubie reboot or power-cycle",
+        "repo sync/pull/push/reset",
+        "patch regeneration",
+        "mail sending",
+    ],
+}
+pathlib.Path(json_path).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+
+lines = [
+    "# A733 Hermes Safety Audit",
+    "",
+    f"Generated: `{now}`",
+    "",
+    f"Status: `{doc['status']}`",
+    f"Active job count: `{len(jobs)}`",
+    "",
+    "## Findings",
+    "",
+]
+lines += [f"- {f}" for f in findings] or ["- none"]
+lines += ["", "## Missing Expected Jobs", ""]
+lines += [f"- {m}" for m in missing] or ["- none"]
+lines += ["", "## Active Jobs", "", "| Name | ID | Schedule | Script | Mode | Workdir |", "|---|---:|---:|---|---|---|"]
+for job in jobs:
+    lines.append(f"| {job['name']} | `{job['id']}` | `{job['schedule']}` | `{job['script']}` | `{job['mode']}` | `{job['workdir']}` |")
+lines += ["", "## Not Authorized", ""]
+lines += [f"- {x}" for x in doc["not_authorized"]]
+lines += ["", "This audit is read-only. It reports unsafe or unexpected Hermes scheduling state; it does not stop, start, or modify jobs.", ""]
+pathlib.Path(md_path).write_text("\n".join(lines), encoding="utf-8")
+
+escaped = html.escape(pathlib.Path(md_path).read_text(encoding="utf-8"))
+pathlib.Path(html_path).write_text(
+    "<!doctype html><meta charset='utf-8'><title>A733 Hermes Safety Audit</title>"
+    "<style>body{font-family:system-ui,sans-serif;max-width:1150px;margin:2rem auto;line-height:1.45}"
+    "pre{white-space:pre-wrap;background:#f6f8fa;padding:1rem;border:1px solid #ddd}</style>"
+    f"<pre>{escaped}</pre>\n",
+    encoding="utf-8",
+)
+print(f"wrote {md_path}")
+PY
