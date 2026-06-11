@@ -29,6 +29,14 @@ Expected source locations:
 /srv/projects/homelab
 ```
 
+Radxa source provenance must be checked before using non-Radxa vendor sources:
+
+```text
+https://github.com/radxa-build/radxa-a733
+https://github.com/RadxaOS-SDK/rsdk
+installed Radxa packages on Cubie2/Cubie3
+```
+
 Known working vendor runtime:
 
 ```text
@@ -51,9 +59,19 @@ Treat this as a clue, not a fix.
 
 ## Work Plan For Hermes Agent
 
-### 1. Identify exact trees
+### 1. Identify exact Radxa provenance first
 
-Record for each tree:
+Do not treat the Orange Pi 6.6 tree as the primary vendor source unless the Radxa path fails to identify a kernel source.
+
+First inspect the Radxa A733 image workflow and installed packages:
+
+- `radxa-build/radxa-a733` is an image workflow repository, not itself a kernel source tree.
+- Its workflow delegates builds to `RadxaOS-SDK/rsdk`.
+- Follow the RSDK product metadata for `radxa-a733`.
+- On Cubie2/Cubie3, inspect installed package metadata for `linux-image-5.15.147-21-a733`, `linux-headers-5.15.147-21-a733`, `linux-image-radxa-cubie-a7s`, and related `radxa` kernel packages.
+- Check package source fields, changelogs, apt source lists, `.buildinfo`, `.changes`, and any `debian` metadata that identifies the kernel git/source.
+
+Record for each discovered tree or source candidate:
 
 - path
 - branch
@@ -61,8 +79,9 @@ Record for each tree:
 - remotes
 - dirty status
 - whether history can identify an upstream base
+- why it is or is not the Radxa source for the working `5.15.147-21-a733` runtime
 
-If vendor history is not connected to upstream, use `git diff --no-index` on targeted subtrees.
+Only after the Radxa source path is exhausted should Hermes use Orange Pi `orange-pi-6.6-sun60iw2` as a secondary Allwinner/SUN60IW2 reference. If Orange Pi is used, label it explicitly as `secondary BSP reference`, not `Radxa vendor source`.
 
 ### 1a. Get the matching upstream base
 
@@ -75,7 +94,13 @@ vendor runtime: Linux 5.15.147-21-a733
 matching upstream target: v5.15.147
 ```
 
-If the Orange Pi 6.6 vendor tree is the source being compared, determine the exact closest upstream `v6.6.y` base from git history, tags, or vendor metadata before diffing.
+If a Radxa kernel source for `5.15.147-21-a733` is found, diff that against upstream `v5.15.147`.
+
+If no Radxa kernel source can be found, make that a headline finding and continue with:
+
+1. Radxa package/workflow provenance report.
+2. Orange Pi 6.6 tree as a secondary BSP reference only.
+3. Matching upstream `v6.6.y` base for the Orange Pi tree, determined from git history, tags, or vendor metadata.
 
 Required behavior:
 
@@ -85,7 +110,13 @@ Required behavior:
 - Produce one broad plain diff summary first:
 
 ```text
-vendor patched tree vs matching upstream release
+Radxa patched kernel source vs matching upstream release
+```
+
+or, if Radxa source is unavailable:
+
+```text
+Orange Pi SUN60IW2 secondary BSP reference vs matching upstream release
 ```
 
 Then produce the narrower A733 SDMMC0/CCU/reset/fabric candidate list from that diff.

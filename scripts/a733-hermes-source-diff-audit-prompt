@@ -23,11 +23,13 @@ Hard constraints:
 
 Primary task:
 
-Create a source-backed diff audit comparing the working A733 vendor kernel/source evidence with the closest upstream/mainline kernel source. Focus on the A733 SDMMC0 IDMAC descriptor-read stall and the known clue that CCU register 0x02002580 bit 27 changes behavior.
+Create a source-backed diff audit comparing the working Radxa A733 vendor kernel/source evidence with the closest upstream/mainline kernel source. Focus on the A733 SDMMC0 IDMAC descriptor-read stall and the known clue that CCU register 0x02002580 bit 27 changes behavior.
 
 Mandatory first move:
 
-Find or fetch the same upstream kernel version as the patched vendor tree and do a plain vendor-vs-upstream diff before narrowing the analysis. For the working Cubie vendor runtime, compare against upstream `v5.15.147`. If analyzing the Orange Pi 6.6 tree, identify the exact closest `v6.6.y` upstream base from history or metadata and record how you identified it.
+Find the Radxa kernel source/provenance for the working `5.15.147-21-a733` runtime before using any Orange Pi source. Inspect `radxa-build/radxa-a733`, the delegated `RadxaOS-SDK/rsdk` metadata, and installed package metadata on Cubie2/Cubie3 if needed. If a Radxa kernel source tree is found, fetch upstream `v5.15.147` and do a plain Radxa-vs-upstream diff before narrowing the analysis.
+
+Use the Orange Pi `orange-pi-6.6-sun60iw2` tree only as a secondary BSP reference if the Radxa source path does not identify the actual kernel source. If Orange Pi is used, label it as secondary and identify the closest `v6.6.y` upstream base from history or metadata.
 
 Expected output directory:
 
