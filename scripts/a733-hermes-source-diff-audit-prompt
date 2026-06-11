@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cat <<'PROMPT'
+You are carrying out the A733 vendor-vs-upstream diff audit.
+
+Read this plan first:
+
+/srv/projects/homelab/task-packets/kernel/hermes-source-diff/a733-vendor-mainline-diff-plan-20260611.md
+
+Hard constraints:
+
+- Do not reboot Cubie2 or Cubie3.
+- Do not start a brute-force loop.
+- Do not run `a733-idmac-bruteforce-lab`.
+- Do not patch kernel source.
+- Do not use OpenRouter or RTX 3090.
+- Use the Strix local model lane for reasoning if a model is needed.
+- Produce markdown, JSON, and HTML reports.
+- Send a Telegram completion notification with the HTML report link.
+
+Primary task:
+
+Create a source-backed diff audit comparing the working A733 vendor kernel/source evidence with the closest upstream/mainline kernel source. Focus on the A733 SDMMC0 IDMAC descriptor-read stall and the known clue that CCU register 0x02002580 bit 27 changes behavior.
+
+Expected output directory:
+
+/srv/projects/homelab/task-packets/kernel/hermes-source-diff/
+
+Required outputs:
+
+- a733-vendor-mainline-diff-summary.md
+- a733-vendor-mainline-diff-candidates.json
+- a733-vendor-mainline-diff-report.html
+
+The final answer should be concise and should name the top next technical action.
+PROMPT
