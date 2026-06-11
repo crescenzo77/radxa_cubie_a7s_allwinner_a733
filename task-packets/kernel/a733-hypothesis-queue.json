@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T11:50:00Z",
+  "updated_utc": "2026-06-11T12:10:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H065 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, model-suggested IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, and BSP IRQ wait-dma finalize logic. The remaining blocker still requires a maintainer/list reply or source-backed SDMMC0 master/firewall/security bit.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H066 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, model-suggested IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, and BSP IRQ wait-dma finalize logic. The remaining blocker still requires a maintainer/list reply or source-backed SDMMC0 master/firewall/security bit.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,32 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H065",
+    "id": "A733-SDMMC-H066",
     "status": "completed_no_patch",
-    "title": "BSP IDMAC descriptor field audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h065-descriptor-field-audit-20260611T1150Z.json",
-    "result": "No untested descriptor field/address delta remains for the failing single-SG CMD18. No patch."
+    "title": "Vendor IOMMU and NSI master metadata audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h066-iommu-nsi-master-audit-20260611T1210Z.json",
+    "result": "Vendor metadata does not identify SDMMC0 as an IOMMU/NSI-configured master. No patch."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H066",
+      "priority": 65,
+      "status": "completed_no_patch",
+      "title": "Vendor IOMMU and NSI master metadata audit",
+      "question": "Does vendor IOMMU/NSI metadata identify SDMMC0 as a configurable master with a missing Linux-side access property?",
+      "test_cost": "low; vendor DTS audit only",
+      "procedure": [
+        "Inspect vendor IOMMU master list and NSI controller metadata.",
+        "Check whether SDMMC0 has an iommus/iommu-master/nsi property or a named NSI master entry.",
+        "Promote a patch only if vendor metadata names an SDMMC0 master property or gate not already covered."
+      ],
+      "pass_criteria": "A concrete SDMMC0 IOMMU/NSI master property is found.",
+      "fail_criteria": "Vendor metadata lists other masters but not SDMMC0, and SDMMC0 only shares already-tested store/MBUS/MSI-lite clocks.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h066-iommu-nsi-master-audit-20260611T1210Z.json",
+        "summary": "Vendor IOMMU masters are USB/CSI/ISP/VE/DE/DI/G2D/EINK/debug, not SDMMC. NSI metadata has master_clks but SDMMC0 has no nsi/iommus property. No patch."
+      }
+    },
     {
       "id": "A733-SDMMC-H065",
       "priority": 64,

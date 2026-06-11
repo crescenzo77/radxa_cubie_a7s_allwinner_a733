@@ -1,0 +1,19 @@
+{
+  "id": "A733-SDMMC-H066",
+  "status": "completed_no_patch",
+  "title": "Vendor IOMMU and NSI master metadata audit",
+  "timestamp_utc": "2026-06-11T12:10:00Z",
+  "scope": [
+    "Strix BSP DTS: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/sun60iw2p1.dtsi",
+    "Strix vendor DTS: /srv/projects/a733-vendor-dt/vendor-sun60i-a733-cubie-a7s.dts"
+  ],
+  "observations": [
+    "Vendor IOMMU masters are USB, CSI, ISP, VE, DE, DI, G2D, EINK, and debug, not SDMMC.",
+    "The NSI controller node has master_clks metadata, but SDMMC0 has no nsi property.",
+    "SDMMC0 has no iommus or iommu-master property in the vendor DTS.",
+    "SDMMC0 only shares the already-tested store/MBUS/MSI-lite clock group."
+  ],
+  "decision": "no_behavior_patch",
+  "reason": "Vendor metadata does not expose a concrete SDMMC0 IOMMU/NSI master property or gate to patch.",
+  "next": "Continue to require maintainer/list/vendor evidence for any SDMMC0 master/firewall/security bit."
+}
