@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T19:50:00Z",
+  "updated_utc": "2026-06-11T20:10:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H085 found no local source-backed SMHC0 firewall/fabric/security/firmware handoff bit. The responsible independent path is now operational: create a lab-only PIO root/runtime proof path for deeper inspection while keeping the upstream DTS/series clean and waiting for maintainer/vendor or new source evidence for the real IDMAC fix.",
   "operator_model": {
@@ -38,11 +38,11 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H085",
-    "status": "completed_no_patch",
-    "title": "Source-backed SMHC0 firewall/fabric/firmware handoff audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h085-smhc0-firewall-fabric-handoff-audit-20260611T1945Z.json",
-    "result": "Fresh source/artifact sweep found no new SMHC0-named SPC/TZMA/MBUS/NSI/CCU security bit and no boot blob/source package exposing a Linux-applicable handoff. No behavior patch."
+    "id": "A733-SDMMC-H086",
+    "status": "candidate_selected_not_retested",
+    "title": "Lab-only PIO root/runtime proof path candidate",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h086-pio-runtime-candidate-20260611T2010Z.json",
+    "result": "Selected commit 2e475c696c8b as the H086 lab-only PIO runtime candidate. It previously mounted read-only rootfs and ran /bin/sh, but no preserved outgoing artifact was found, so next step is rebuild/restage before retest."
   },
   "hypotheses": [
     {
@@ -1933,7 +1933,7 @@
     {
       "id": "A733-SDMMC-H086",
       "priority": 1,
-      "status": "queued",
+      "status": "candidate_selected_not_retested",
       "title": "Lab-only PIO root/runtime proof path",
       "question": "Can we turn the proven A733 SDMMC0 PIO read path into a controlled lab-only boot/runtime path for userspace inspection without presenting it as an upstream fix?",
       "test_cost": "medium; local diagnostic branch and Cubie2/Cubie3 UART boot only",
@@ -1946,7 +1946,10 @@
       ],
       "pass_criteria": "Cubie3 reaches a read-only userspace/root shell through PIO-only SDMMC0, with UART proof and no public export changes.",
       "fail_criteria": "The branch changes upstream DTS policy, hides IDMAC failure, writes rootfs unexpectedly, or expands into unrelated peripherals.",
-      "result": null
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h086-pio-runtime-candidate-20260611T2010Z.json",
+        "summary": "Selected 2e475c696c8b as the lab-only PIO runtime candidate. Prior UART proof reached read-only EXT4 root mount and /bin/sh. No preserved outgoing artifact was found; rebuild/restage this exact candidate before boot retest."
+      }
     }
   ],
   "model_routes": [

@@ -1,0 +1,45 @@
+{
+  "id": "A733-SDMMC-H086",
+  "title": "Lab-only PIO root/runtime proof path candidate",
+  "timestamp_utc": "2026-06-11T20:10:00Z",
+  "status": "candidate_selected_not_retested",
+  "candidate_commit": {
+    "repo": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "commit": "2e475c696c8bd71104db32b22ebd9dfeb2968684",
+    "subject": "mmc: test A733 CMD18 PIO up to 256 blocks for diag",
+    "branch_reference": "codex/a733-diag-rtc-extosc-orphan~38"
+  },
+  "why_this_candidate": [
+    "It is the smallest known PIO diagnostic that reached the rootfs stage.",
+    "It changes the A733 diagnostic PIO read limit from 8 blocks to 256 blocks.",
+    "It avoids inventing a new workaround while the real IDMAC failure remains unresolved."
+  ],
+  "proof_log": {
+    "strix_uart_log": "/srv/projects/cubie-uart/logs/20260610T090142Z-a733-cmd18-pio-256-2e475c696c8b-ext4load-ttyUSB0.uart.log",
+    "key_lines": [
+      "mmcblk0: mmc0:544c USD00 117 GiB",
+      "mmcblk0: p1 p2 p3",
+      "EXT4-fs (mmcblk0p3): mounted filesystem ro without journal",
+      "VFS: Mounted root (ext4 filesystem) readonly on device 179:3",
+      "Run /bin/sh as init process"
+    ]
+  },
+  "artifact_status": {
+    "preserved_outgoing_artifact_found": false,
+    "note": "No /srv/projects/kernel-work/outgoing manifest was found for commit 2e475c696c8b. H086 should rebuild or restage this exact candidate before the next boot."
+  },
+  "next_procedure": [
+    "On Strix, create or checkout a dedicated lab-only branch for H086 from commit 2e475c696c8b.",
+    "Build Image and sun60i-a733-cubie-a7s.dtb, preserving manifest, config, and build log.",
+    "Stage as a non-default extlinux/direct-boot artifact with bootargs: root=PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e rootfstype=ext4 rootwait ro rootflags=noload init=/bin/sh.",
+    "Boot Cubie3 first over UART and pass only if it reaches the read-only /bin/sh prompt.",
+    "Optionally repeat on Cubie2 after Cubie3 passes.",
+    "Restore Cubie2/Cubie3 to vendor kernel 5.15.147-21-a733 before ending."
+  ],
+  "guardrails": [
+    "This is lab-only diagnostic infrastructure, not an upstream fix.",
+    "Do not modify public patch export from this result.",
+    "Do not hide or reclassify the normal IDMAC descriptor-fetch failure.",
+    "Do not expand into Ethernet, VPU, display, USB-C, PCIe, wireless, or Cubie1."
+  ]
+}
