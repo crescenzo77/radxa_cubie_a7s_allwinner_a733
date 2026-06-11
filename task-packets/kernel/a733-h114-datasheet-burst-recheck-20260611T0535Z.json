@@ -1,0 +1,21 @@
+{
+  "id": "A733-SDMMC-H114",
+  "title": "A733 datasheet and IDMAC burst recheck",
+  "status": "completed_no_patch",
+  "tested_at_utc": "2026-06-11T05:35:00Z",
+  "host": "strix",
+  "inputs": [
+    "/srv/projects/homelab/task-packets/kernel/A733_Datasheet_V0.93.txt",
+    "/srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c",
+    "/srv/projects/homelab/task-packets/kernel/a733-h070-model-squeeze-access-control-audit-20260611T1345Z.json",
+    "/srv/projects/homelab/task-packets/kernel/a733-h095-post-pio-idmac-source-audit-20260611T0415Z.json"
+  ],
+  "question": "Does the local A733 datasheet text or remaining model-suggested burst-mode lead reveal a new source-backed SDMMC0 IDMAC descriptor-fetch patch?",
+  "findings": [
+    "The A733 datasheet text is a high-level product/pin/electrical document, not a register manual. It confirms SMHC0 is SD3.0 and that SMC/SPC/TZMA are secure-only blocks, but does not provide SMHC0 IDMAC, bus-matrix, firewall, or master-permission register fields.",
+    "The local driver exposes SDXC_REG_DMAC and SDXC_IDMAC_FIX_BURST/IDMA_ON, but no separate A733 HBURST or IDMAC burst control field was found in the source.",
+    "The speculative single/no-fixed-burst lead was already closed: H017/H070 record no-fixed-burst evidence, and H095 records that the BSP uses FIX_BURST|IDMA_ON with no new SMHC0 burst-control register."
+  ],
+  "decision": "No build and no patch. Do not repeat burst-mode or high-level datasheet searches without a real A733 register manual or a source tree naming a new SMHC0 IDMAC/bus-matrix field.",
+  "next_action": "Continue waiting for maintainer/vendor feedback or mine firmware/source artifacts for a named SDMMC0 master/firewall/security handoff bit."
+}

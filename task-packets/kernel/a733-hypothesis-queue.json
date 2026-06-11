@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T05:25:00Z",
+  "updated_utc": "2026-06-11T05:35:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -2422,6 +2422,25 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h113-smhc0-ahb-gate-result-20260611T0525Z.json",
         "summary": "Cubie3 booted lab commit 5b4c0fac0ec7. The attempted 0x5dc bit5 write did not stick: before=0x00000000 after=0x00000000, and fabric dumps kept ahb_smhc=0x00000000. Normal IDMAC still stalled in DESC_READ with IDST=0x00004000, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, and descriptor OWN unchanged after CPU sync. Cubie3 was restored to vendor 5.15.147-21-a733. Do not repeat on Cubie2 without new evidence."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H114",
+      "priority": 1,
+      "status": "completed_no_patch",
+      "title": "A733 datasheet and IDMAC burst recheck",
+      "question": "Does the local A733 datasheet text or remaining model-suggested burst-mode lead reveal a new source-backed SDMMC0 IDMAC descriptor-fetch patch?",
+      "test_cost": "low; no-build source and evidence audit",
+      "procedure": [
+        "Search the local A733 datasheet text for SMHC, SDMMC, IDMAC, descriptor, MBUS, NSI, firewall, secure, TZ, and DMA terms.",
+        "Search the diagnostic driver for HBURST, burst, DMAC, and IDMAC controls.",
+        "Compare hits against H017/H070/H095 to avoid repeating closed burst-mode tests."
+      ],
+      "pass_criteria": "A real A733 register/manual/source field names a new SDMMC0 IDMAC burst, bus-matrix, or access-control precondition.",
+      "fail_criteria": "The datasheet is high-level only and burst-mode leads are already closed.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h114-datasheet-burst-recheck-20260611T0535Z.json",
+        "summary": "No patch. The datasheet confirms high-level SMHC0 SD3.0 and secure-only SMC/SPC/TZMA blocks but gives no SMHC0 IDMAC, bus-matrix, firewall, or master-permission registers. The diagnostic driver has DMAC FIX_BURST/IDMA_ON but no separate A733 HBURST/IDMAC burst field. H017/H070/H095 already closed no-fixed-burst and burst-control speculation."
       }
     }
   ],
