@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T10:10:00Z",
+  "updated_utc": "2026-06-11T10:20:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -37,13 +37,14 @@
     "review_export": "Treat patches/ as a review snapshot only. H125 promoted the folded export into the maintained snapshot and validation-floor apply-check passes from b327168a182e^. H126 completed recipient/checkpatch hygiene. H136 closed final-send gate 02 with the same visible public RTC v1, CCU/PRCM RFC, and pinctrl RFC state. H141 closed the no-send b4 final gate; only the human-only reflect gate remains.",
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step.",
     "final_send_checklist": "/Users/enzo/projects/homelab/task-packets/kernel/a733-final-send-checklist.json",
-    "final_send_status_command": "/Users/enzo/projects/homelab/scripts/kernel-final-send-status"
+    "final_send_status_command": "/Users/enzo/projects/homelab/scripts/kernel-final-send-status",
+    "reflect_handoff": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h142-reflect-only-handoff-20260611T1020Z.md"
   },
   "latest_upstream_prep": {
-    "id": "A733-UPSTREAM-H141",
-    "status": "completed_gate_07_b4_final_gate",
-    "title": "b4 final gate closed",
-    "summary": "Ran scripts/kernel-b4-final-gate --repo /srv/projects/kernel-work/final/a733-dts-v1 on final branch codex/final/a733-dts-v1 at head 1d2642221795d611d607b153c119218e496856a8. Gate passed with no open b4 metadata or preflight blockers. Gate 07 is closed; only the human-only b4 send --reflect gate remains."
+    "id": "A733-UPSTREAM-H142",
+    "status": "reflect_handoff_ready_human_gate_open",
+    "title": "Reflect-only handoff prepared",
+    "summary": "Added task-packets/kernel/a733-h142-reflect-only-handoff-20260611T1020Z.md with the exact Strix b4 send --reflect command and review checklist. Machine gates 01-07 are closed; gate 08 remains open for human reflect review only."
   },
   "latest_completed_test": {
     "id": "A733-SDMMC-H089",
