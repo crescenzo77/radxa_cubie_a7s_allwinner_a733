@@ -26,6 +26,7 @@ GATEWAY = os.environ.get("A733_HERMES_GATEWAY", "http://192.168.50.225:4011/v1")
 TOKEN = os.environ.get("A733_HERMES_GATEWAY_TOKEN", "local-open-webui-gateway")
 TIMEOUT = int(os.environ.get("A733_HERMES_TIMEOUT", "180"))
 MAX_LEADS_PER_RUN = int(os.environ.get("A733_CUBIE2_MAX_LEADS_PER_RUN", "2"))
+TEST_MODE = os.environ.get("A733_CUBIE2_TEST_MODE", "propose-only")
 
 STRIX_MODEL = "Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding"
 
@@ -127,10 +128,13 @@ def latest_local_reports():
 
 def propose_lead(state, context):
     prompt = textwrap.dedent(f"""
-    Read the latest A733 SDMMC0 reports and choose the single next Cubie2 lead to test.
+    Read the latest A733 SDMMC0 reports and choose the single next lead.
 
-    You are not choosing from a prewritten queue. Infer the best next test from the evidence.
-    The runner can execute exactly one boot-time diagnostic write and then restores Cubie2.
+    You are not choosing from a prewritten queue. Infer the best next lead from the evidence.
+    Prefer source-backed work: TRM/register-map lookup, vendor CCU/U-Boot comparison, or
+    verification of whether the issue is AHB/APB/MBUS/NSI rather than another blind bit guess.
+    If test mode is enabled, the runner can execute exactly one boot-time diagnostic write and
+    then restores Cubie2. In default propose-only mode, it only documents the lead.
 
     Allowed safety envelope:
     - kind must be "ccu" with addr 0x02002000..0x02002fff, or "smhc" with addr 0x04020000..0x04020fff.
@@ -141,7 +145,9 @@ def propose_lead(state, context):
 
     Avoid repeating completed lead ids unless the last run was infrastructure failure.
 
-    Return only JSON with this shape:
+    Return only JSON with this shape. If the next responsible step is research instead of
+    hardware testing, still include the best bounded hardware candidate, but explain the
+    research prerequisite in "why".
     {{
       "id": "cubie2-short-kebab-id",
       "title": "short human title",
@@ -301,7 +307,7 @@ exit 0
 def model_reviews(lead, run_result, state, context):
     prompt = (
         "A Hermes-controlled Cubie2 lead test just ran. Explain what it means in concise Markdown. "
-        "Also identify the next best lead from the evidence, while respecting the safety envelope. "
+        "Also identify the next best source-backed lead from the evidence, while respecting the safety envelope. "
         "Do not propose unsafe arbitrary pokes.\n\n"
         + json.dumps({
             "lead": lead,
@@ -352,6 +358,8 @@ def write_reports(stamp, lead, run_result, state, context, reviews):
             md_lines.append("Cubie2 reproduced a DMA-progress clue for this lead. That makes the lead stronger because it is not limited to one board.")
         elif run_result.get("result") == "no_progress":
             md_lines.append("Cubie2 did not show DMA progress for this lead. That makes this candidate weaker or more conditional.")
+        elif run_result.get("result") == "proposed_only":
+            md_lines.append("Hermes selected this as the next lead but did not boot Cubie2 or write registers. This keeps the workflow moving toward source-backed evidence without more blind pokes.")
         else:
             md_lines.append("The test did not produce a clean yes/no result, so the next run should treat it as an infrastructure issue.")
     else:
@@ -398,7 +406,7 @@ def write_reports(stamp, lead, run_result, state, context, reviews):
   <p>{html.escape(stamp)}</p>
   <section class="panel">
     <h2>Plain-English Summary</h2>
-    <p>Hermes read the latest reports, proposed the next Cubie2 lead itself, ran one controlled UART boot through Strix, restored Cubie2 afterward, and asked only the local Strix LLM lane to explain the evidence. It does not use OpenRouter or the RTX 3090 lane for this job.</p>
+    <p>Hermes read the latest reports and proposed the next Cubie2 lead itself. In default propose-only mode it does not boot Cubie2 or write registers; if explicitly switched to execute mode, it runs one controlled UART boot through Strix and restores Cubie2 afterward. It asks only the local Strix LLM lane to explain the evidence, with no OpenRouter or RTX 3090 use.</p>
   </section>
   <section class="grid">
     <div class="metric"><strong>Lead</strong><br><code>{html.escape(lead['id'] if lead else 'none')}</code></div>
@@ -491,7 +499,15 @@ def main():
             stamp = f"{stamp}-r{run_index + 1}"
         context = collect_context()
         lead = next_lead(state, context)
-        run_result = run_lead(lead)
+        if TEST_MODE == "execute":
+            run_result = run_lead(lead)
+        else:
+            run_result = {
+                "return_code": 0,
+                "result": "proposed_only",
+                "uart_log": "",
+                "output": "propose-only mode: Hermes documented this lead but did not boot Cubie2 or write registers.",
+            }
         state.setdefault("completed", {})[lead["id"]] = {
             "stamp": stamp,
             "result": run_result["result"],

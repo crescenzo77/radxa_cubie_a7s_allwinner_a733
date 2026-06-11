@@ -20,7 +20,7 @@ STRIX = os.environ.get("A733_HERMES_STRIX", "strix")
 GATEWAY = os.environ.get("A733_HERMES_GATEWAY", "http://192.168.50.225:4011/v1")
 TOKEN = os.environ.get("A733_HERMES_GATEWAY_TOKEN", "local-open-webui-gateway")
 TIMEOUT = int(os.environ.get("A733_HERMES_TIMEOUT", "180"))
-BRUTE_MODE = os.environ.get("A733_HERMES_BRUTE_MODE", "until-pass")
+BRUTE_MODE = os.environ.get("A733_HERMES_BRUTE_MODE", "report-only")
 
 MODELS = [
     (
@@ -64,10 +64,41 @@ cd /srv/projects/homelab
 echo '--- processes ---'
 ps -eo pid,ppid,stat,cmd | awk '/a733-idmac-bruteforce-lab|cubie-direct-uboot-load-session/ && !/awk/'
 echo '--- latest_result_path ---'
-ls -t task-packets/kernel/results/a733-idmac-bruteforce-*.json 2>/dev/null | head -1 || true
+python3 - <<'PY' || true
+import glob, json, os
+paths = sorted(glob.glob("task-packets/kernel/results/a733-idmac-bruteforce-*.json"), key=os.path.getmtime, reverse=True)
+chosen = None
+for path in paths:
+    try:
+        doc = json.load(open(path))
+    except Exception:
+        continue
+    if doc.get("status") == "pass" and doc.get("winning_candidate"):
+        chosen = path
+        break
+if chosen is None and paths:
+    chosen = paths[0]
+if chosen:
+    print(chosen)
+PY
 echo '--- latest_result_json ---'
-latest=$(ls -t task-packets/kernel/results/a733-idmac-bruteforce-*.json 2>/dev/null | head -1 || true)
-[ -n "$latest" ] && cat "$latest" || true
+python3 - <<'PY' || true
+import glob, json, os
+paths = sorted(glob.glob("task-packets/kernel/results/a733-idmac-bruteforce-*.json"), key=os.path.getmtime, reverse=True)
+chosen = None
+for path in paths:
+    try:
+        doc = json.load(open(path))
+    except Exception:
+        continue
+    if doc.get("status") == "pass" and doc.get("winning_candidate"):
+        chosen = path
+        break
+if chosen is None and paths:
+    chosen = paths[0]
+if chosen:
+    print(open(chosen).read())
+PY
 echo '--- latest_log_path ---'
 ls -t logs/a733-idmac-bruteforce-*.log 2>/dev/null | head -1 || true
 echo '--- latest_log_tail ---'
@@ -112,6 +143,8 @@ ssh -o BatchMode=yes -o ConnectTimeout=5 codex@192.168.50.95 'hostname; uname -r
 def supervise_bruteforce(state):
     if state["running"]:
         return "brute-force loop already running on Strix; left it alone"
+    if BRUTE_MODE == "report-only":
+        return "report-only mode: inspected evidence but did not launch brute-force"
     if state["pass_found"] and BRUTE_MODE != "always":
         return "brute-force campaign already has a passing candidate; did not relaunch"
 
