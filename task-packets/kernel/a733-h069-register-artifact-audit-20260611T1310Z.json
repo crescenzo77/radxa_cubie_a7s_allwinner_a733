@@ -1,0 +1,29 @@
+{
+  "id": "A733-SDMMC-H069",
+  "status": "completed_no_patch",
+  "title": "Existing register artifact and UART evidence audit",
+  "updated_utc": "2026-06-11T13:10:00Z",
+  "question": "Do preserved UART/register comparison artifacts contain an unclosed source-backed SDMMC0 register or fabric delta suitable for the next patch?",
+  "sources": [
+    {
+      "path": "/srv/projects/homelab/task-packets/kernel/a733-sdmmc-register-comparison-20260610T1425Z.json",
+      "kind": "vendor/mainline register comparison"
+    },
+    {
+      "path": "/srv/projects/homelab/task-packets/kernel/a733-h009..h068 result files",
+      "kind": "closed hypothesis evidence"
+    },
+    {
+      "path": "/srv/projects/cubie-uart/logs",
+      "kind": "UART diagnostic logs"
+    }
+  ],
+  "findings": [
+    "The fixed register schema already captured the decisive delta: vendor IDMAC advances CHDA/CBDA during 4 KiB reads, while mainline reaches IDST=0x4000 with CHDA=DLBA and CBDA=0.",
+    "Existing artifacts already record that preserving vendor SAMP_DL, descriptor size/shift/DLBA, ER/no-ER, 64-bit DMA mask, streaming descriptors, store/MBUS/MSI-lite, NSI 0x580/0x584, threshold/CSDC, GCTRL access mode, and completion cleanup did not consume descriptor word 0.",
+    "Searches over UART logs and H-result files did not reveal an unclosed named SDMMC0 firewall/security/master-permission register or source-backed bit.",
+    "The remaining actionable evidence class is still external: maintainer/list/vendor reply or a newly found BOOT0/BL31/security/firewall source."
+  ],
+  "decision": "No kernel patch. Existing register artifacts are consistent and already folded into the blocker; no unclosed local register delta justifies another behavior test.",
+  "next_responsible_step": "Keep monitoring for public/list/vendor response or new source-backed SDMMC0 master/firewall/security evidence; avoid repeating timing/descriptor/fabric variants."
+}

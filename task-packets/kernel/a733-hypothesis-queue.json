@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T12:50:00Z",
+  "updated_utc": "2026-06-11T13:10:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H068 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, model-suggested IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, BSP IRQ wait-dma finalize logic, public A733 U-Boot/SPL handoff source audit, and BOOT0/BL31 provenance/package audit. The remaining blocker still requires a maintainer/list reply or source-backed SDMMC0 master/firewall/security bit.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H069 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, model-suggested IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, BSP IRQ wait-dma finalize logic, public A733 U-Boot/SPL handoff source audit, BOOT0/BL31 provenance/package audit, and existing register/UART artifact audit. The remaining blocker still requires a maintainer/list reply or source-backed SDMMC0 master/firewall/security bit.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,32 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H068",
+    "id": "A733-SDMMC-H069",
     "status": "completed_no_patch",
-    "title": "BOOT0 and BL31 provenance/package audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h068-boot0-bl31-provenance-audit-20260611T1250Z.json",
-    "result": "Preserved baseline and local Strix sources expose no A733 BOOT0/BL31 source or package evidence with an SDMMC0 handoff bit. No patch."
+    "title": "Existing register artifact and UART evidence audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h069-register-artifact-audit-20260611T1310Z.json",
+    "result": "Existing register/UART artifacts contain no unclosed source-backed SDMMC0 register/fabric delta. No patch."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H069",
+      "priority": 68,
+      "status": "completed_no_patch",
+      "title": "Existing register artifact and UART evidence audit",
+      "question": "Do preserved UART/register comparison artifacts contain an unclosed source-backed SDMMC0 register or fabric delta suitable for the next patch?",
+      "test_cost": "low; artifact search only",
+      "procedure": [
+        "Search preserved UART logs and H-result files for register/fabric deltas around IDST, CHDA, CBDA, DLBA, CCU, MBUS, NSI, firewall, and security.",
+        "Compare hits against closed hypotheses and the fixed register dump template.",
+        "Promote a patch only if an unclosed source-backed SDMMC0 bit or ordering delta appears."
+      ],
+      "pass_criteria": "A concrete unclosed source-backed register/fabric delta is found.",
+      "fail_criteria": "All discovered deltas are already closed or speculative.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h069-register-artifact-audit-20260611T1310Z.json",
+        "summary": "Existing register/UART artifacts contain no unclosed source-backed SDMMC0 register/fabric delta. No patch."
+      }
+    },
     {
       "id": "A733-SDMMC-H068",
       "priority": 67,
