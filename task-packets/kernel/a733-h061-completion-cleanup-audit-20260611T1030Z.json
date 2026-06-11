@@ -1,0 +1,19 @@
+{
+  "id": "A733-SDMMC-H061",
+  "status": "completed_no_patch",
+  "title": "BSP IDMAC completion cleanup audit",
+  "timestamp_utc": "2026-06-11T10:30:00Z",
+  "scope": [
+    "Strix BSP source: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "Strix diagnostic source: /srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "observations": [
+    "BSP completion cleanup clears IDST, disables IDIE, soft-resets DMAC, resets DMAIF, clears GCTRL DMA enable, resets FIFO, waits for DMA ownership release, and unmaps DMA.",
+    "The local diagnostic branch performs the same relevant IDMAC/DMAIF/GCTRL/FIFO cleanup sequence and logs before and after cleanup.",
+    "These operations happen after completion or error handling, while the current failure is before descriptor word 0 is consumed.",
+    "No missing pre-transfer reset or descriptor ownership step was found."
+  ],
+  "decision": "no_behavior_patch",
+  "reason": "Completion cleanup cannot explain the first-descriptor-fetch stall, and the relevant BSP cleanup sequence is already represented locally.",
+  "next": "Do not retest completion cleanup as a descriptor-fetch fix without new evidence for a pre-transfer reset requirement."
+}

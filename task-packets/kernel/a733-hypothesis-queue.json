@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T10:10:00Z",
+  "updated_utc": "2026-06-11T10:30:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H060 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, model-suggested IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, and BSP EMCE hook scaffolding. The remaining blocker still requires a maintainer/list reply or source-backed SDMMC0 master/firewall/security bit.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H061 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, model-suggested IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, and BSP IDMAC completion cleanup. The remaining blocker still requires a maintainer/list reply or source-backed SDMMC0 master/firewall/security bit.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,32 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H060",
+    "id": "A733-SDMMC-H061",
     "status": "completed_no_patch",
-    "title": "BSP EMCE encryption hook audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h060-emce-hook-audit-20260611T1010Z.json",
-    "result": "BSP EMCE hook is unassigned/inactive for ordinary SDMMC0 reads. No patch."
+    "title": "BSP IDMAC completion cleanup audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h061-completion-cleanup-audit-20260611T1030Z.json",
+    "result": "BSP/local completion cleanup matches the relevant IDMAC reset path and happens after the observed stall. No patch."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H061",
+      "priority": 60,
+      "status": "completed_no_patch",
+      "title": "BSP IDMAC completion cleanup audit",
+      "question": "Does BSP completion/error cleanup reveal a missing reset or descriptor ownership step relevant to the A733 SDMMC0 descriptor-fetch stall?",
+      "test_cost": "low; source audit only",
+      "procedure": [
+        "Compare BSP finalize_request IDST/IDIE/DMAC/GCTRL cleanup against the local diagnostic branch.",
+        "Check whether differences occur before the failing first descriptor fetch or only after completion/error.",
+        "Promote a patch only if a missing pre-transfer reset/ownership step is found."
+      ],
+      "pass_criteria": "A pre-transfer reset/ownership difference is found.",
+      "fail_criteria": "Differences are post-failure cleanup and local cleanup/reset sequence already matches relevant BSP writes.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h061-completion-cleanup-audit-20260611T1030Z.json",
+        "summary": "BSP and local cleanup both clear IDST, reset DMAC, reset DMAIF, clear DMA enable, reset FIFO, and unmap DMA. This is post-failure cleanup, not the first-descriptor-fetch precondition. No patch."
+      }
+    },
     {
       "id": "A733-SDMMC-H060",
       "priority": 59,
