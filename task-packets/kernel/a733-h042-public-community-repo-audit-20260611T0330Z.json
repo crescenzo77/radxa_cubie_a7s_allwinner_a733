@@ -1,0 +1,37 @@
+{
+  "id": "A733-SDMMC-H042",
+  "timestamp_utc": "2026-06-11T03:30:00Z",
+  "status": "completed_no_patch",
+  "title": "Public community A733 Armbian repo audit",
+  "inputs": {
+    "repo": "https://github.com/jonas5/orangepi-4pro-armbian",
+    "local_clone": "/tmp/orangepi-4pro-armbian-audit",
+    "search_terms": [
+      "sdmmc",
+      "sunxi-mmc",
+      "4020000",
+      "IDMAC",
+      "mmc_store",
+      "req-page-count",
+      "ctl-spec-caps"
+    ]
+  },
+  "findings": [
+    {
+      "area": "public archive/list search",
+      "finding": "No useful public archive hit or maintainer reply was found for the A733/SUN60IW2 IDMAC descriptor-read question.",
+      "decision": "Continue monitoring; do not resend yet."
+    },
+    {
+      "area": "community repo contents",
+      "finding": "The public Orange Pi 4 Pro Armbian repository is primarily build scaffolding plus broad Armbian patch archives. Its A733 SDMMC0 material appears in a vendor BSP support-file patch with the same v5p3x node properties already audited: mmc_store, mmc_mbus, mmc_msi_lite, req-page-count=<2>, and ctl-spec-caps=<0x428>.",
+      "decision": "No new SDMMC0 IDMAC runtime delta was found."
+    },
+    {
+      "area": "guardrails",
+      "finding": "The repo includes vendor-style aliases and BSP support blobs that are not appropriate upstream DTS material.",
+      "decision": "Do not import vendor aliases or support-file scaffolding into the upstream series."
+    }
+  ],
+  "conclusion": "No kernel patch was made. The community repo did not add evidence beyond already-tested vendor-visible SDMMC0 properties."
+}
