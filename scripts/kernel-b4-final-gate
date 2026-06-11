@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: scripts/kernel-b4-final-gate --repo PATH
+
+No-send b4 readiness gate for a prep-managed kernel series branch. It refuses
+to send mail and only checks whether b4 metadata is ready for a later human
+`b4 send --reflect`.
+
+Checks:
+  - branch is not detached
+  - b4 prep --show-info is readable
+  - b4 dependency check runs
+  - b4 check runs
+  - show-info does not report obvious unresolved metadata gates
+USAGE
+}
+
+repo=
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --repo) repo="${2:?}"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "unknown argument: $1" >&2; usage >&2; exit 2 ;;
+  esac
+done
+
+[ -n "$repo" ] || { echo "--repo is required" >&2; exit 2; }
+git -C "$repo" rev-parse --git-dir >/dev/null 2>&1 || {
+  echo "not a git repo: $repo" >&2
+  exit 2
+}
+
+if [ -x /srv/projects/kernel-work/b4-venv/bin/b4 ]; then
+  b4_bin=/srv/projects/kernel-work/b4-venv/bin/b4
+elif command -v b4 >/dev/null 2>&1; then
+  b4_bin="$(command -v b4)"
+else
+  echo "b4 not found" >&2
+  exit 127
+fi
+
+branch="$(git -C "$repo" branch --show-current)"
+[ -n "$branch" ] || { echo "FAIL: detached HEAD; b4 prep needs a branch" >&2; exit 1; }
+
+tmp="$(mktemp -d /tmp/kernel-b4-final-gate.XXXXXX)"
+trap 'rm -rf "$tmp"' EXIT
+
+cd "$repo"
+
+"$b4_bin" prep --show-info >"$tmp/show-info.txt"
+cat "$tmp/show-info.txt"
+
+fail=0
+for gate in \
+  "needs-editing: True" \
+  "needs-recipients: True" \
+  "has-prerequisites: False" \
+  "needs-auto-to-cc: True" \
+  "needs-checking: True" \
+  "needs-checking-deps: True" \
+  "preflight-checks-failing: True"
+do
+  if grep -Fqx "$gate" "$tmp/show-info.txt"; then
+    echo "FAIL: b4 metadata gate open: $gate" >&2
+    fail=1
+  fi
+done
+
+if ! "$b4_bin" prep --check-deps >"$tmp/check-deps.txt" 2>&1; then
+  cat "$tmp/check-deps.txt"
+  echo "FAIL: b4 dependency check failed" >&2
+  fail=1
+fi
+
+if ! "$b4_bin" prep --check >"$tmp/check.txt" 2>&1; then
+  cat "$tmp/check.txt"
+  echo "FAIL: b4 series check failed" >&2
+  fail=1
+fi
+
+if [ "$fail" -ne 0 ]; then
+  exit 1
+fi
+
+echo "kernel-b4-final-gate: PASS"
