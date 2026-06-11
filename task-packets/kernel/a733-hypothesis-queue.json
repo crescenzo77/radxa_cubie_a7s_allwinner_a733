@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T06:45:00Z",
+  "updated_utc": "2026-06-11T06:55:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -2574,6 +2574,25 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h121-review-marker-branch-20260611T0645Z.json",
         "summary": "Created review/a733-platform-clean-v6-pinmux-clean at b1f20d455a600d33999cf893fdf0df8fb2ace538. Basic kernel-validation-floor passed. This is a marker only; H119 still requires clean-base regeneration before any send."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H122",
+      "priority": 1,
+      "status": "completed_regeneration_proof",
+      "title": "Folded A733 review regeneration proof",
+      "question": "Can a clean folded four-patch A733 review series be regenerated so the H119 apply failure disappears?",
+      "test_cost": "low; throwaway worktree and export only",
+      "procedure": [
+        "Create a throwaway worktree from the local clean base.",
+        "Copy final file states into four clean commits with the pinmux fix folded.",
+        "Export patches and apply-check them in a fresh worktree."
+      ],
+      "pass_criteria": "The regenerated four-patch export applies cleanly and has no allwinner,pinmux.",
+      "fail_criteria": "The regenerated series still fails git am or carries stale pinmux properties.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h122-folded-review-regeneration-20260611T0655Z.json",
+        "summary": "Throwaway regeneration succeeded. Four clean commits were exported to /tmp/a733-folded-export; git diff --check passed; no allwinner,pinmux remained; a fresh worktree from b327168a182e^ applied patches 0001-0004 successfully. Repo snapshot was not replaced pending final base/cover-letter decisions."
       }
     }
   ],

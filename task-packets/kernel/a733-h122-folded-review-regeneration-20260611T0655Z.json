@@ -1,0 +1,25 @@
+{
+  "id": "A733-SDMMC-H122",
+  "title": "Folded A733 review regeneration proof",
+  "status": "completed_regeneration_proof",
+  "tested_at_utc": "2026-06-11T06:55:00Z",
+  "host": "mac",
+  "kernel_tree": "/Users/enzo/projects/linux-a733",
+  "throwaway_worktree": "/tmp/a733-folded-review.xcjS9Q",
+  "export_dir": "/tmp/a733-folded-export",
+  "base": "b327168a182e^",
+  "commits": [
+    "a96264abeadd dt-bindings: arm: sunxi: add Radxa Cubie A7S",
+    "e18a21556186 dt-bindings: mmc: add Allwinner A733 compatible",
+    "5411e4f0f81f arm64: dts: allwinner: add Allwinner A733 SoC",
+    "bd0cd34060a8 arm64: dts: allwinner: add Radxa Cubie A7S"
+  ],
+  "verification": [
+    "git diff --check HEAD~4..HEAD passed in the throwaway worktree.",
+    "rg found no allwinner,pinmux in the regenerated A733 DTS files.",
+    "git format-patch exported a 4-patch series plus cover letter.",
+    "A fresh worktree from b327168a182e^ applied exported patches 0001-0004 with git am successfully."
+  ],
+  "decision": "The H119 apply failure is fixable by regenerating from a clean folded branch. The repo snapshot was not replaced in this step; generated files remain in /tmp pending final cover-letter/base/validation decisions.",
+  "next_action": "Promote the throwaway regeneration into a real review branch/export only after deciding the intended upstream base and refreshing the cover letter/Depends-on state."
+}
