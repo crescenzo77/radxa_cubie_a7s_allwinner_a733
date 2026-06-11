@@ -1,0 +1,19 @@
+{
+  "id": "A733-SDMMC-H117",
+  "title": "Orange Pi BSP secure-access symbol audit",
+  "status": "completed_no_patch",
+  "tested_at_utc": "2026-06-11T06:05:00Z",
+  "host": "strix",
+  "inputs": [
+    "/srv/projects/kernel-work/tmp/linux-orangepi-full",
+    "/srv/projects/references/u-boot-a733"
+  ],
+  "question": "Do local BSP or public U-Boot sources name an SPC/TZMA/firewall/security register tied to SMHC0/SDMMC0 IDMAC memory access?",
+  "findings": [
+    "Narrowed searches found A733 R-CCU TZMA clock entries and generic secure-only SMC/SPC/TZMA references, but no SDMMC0/SMHC0 access-control register or Linux-callable firewall setup.",
+    "The Orange Pi BSP SDMMC-relevant hits remain the already-tested mmc_store, mmc_mbus, and mmc_msi_lite clocks.",
+    "The public U-Boot A733 reference does not add an SDMMC0 secure/firewall handoff path; prior audits already showed it uses PIO for MMC data movement."
+  ],
+  "decision": "No build and no patch. Do not test generic TZMA/SPC clocks as an SDMMC0 IDMAC fix without a source naming SMHC0 as a protected peripheral/master.",
+  "next_action": "Keep the blocker unchanged: wait for maintainer/vendor feedback or a source-backed SDMMC0 access-control bit."
+}
