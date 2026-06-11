@@ -71,6 +71,10 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
   ThinkCentre sync. It recommends monitor-only by default because the Mac public
   repo is ahead of its public remote by 214 commits and no sync approval has
   been given.
+- The patch blocker brief now consumes the repo drift report directly. If the
+  ThinkCentre public clone differs from the Mac-recorded expected public head,
+  that drift appears as a first-class blocker with a link to the sync approval
+  brief.
 - The workflow status monitor now treats missing optional helper scripts on
   ThinkCentre as host capability gaps instead of reporting shell errors as if
   they were maintainer blockers.
@@ -104,6 +108,7 @@ python3 -m py_compile scripts/a733-source-diff-heartbeat
 bash -n scripts/a733-hermes-model-health-monitor
 bash -n scripts/a733-hermes-radxa-provenance-audit
 bash -n scripts/a733-hermes-workflow-status-monitor
+bash -n scripts/a733-hermes-patch-blocker-brief
 git diff --check -- <new/changed monitor scripts>
 ```
 

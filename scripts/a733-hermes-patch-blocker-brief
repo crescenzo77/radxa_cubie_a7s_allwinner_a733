@@ -5,20 +5,21 @@ repo=${A733_HERMES_REPO:-/srv/projects/homelab}
 outdir="$repo/task-packets/kernel/hermes-hourly"
 readiness="$outdir/a733-public-patch-readiness-latest.json"
 model_health="$outdir/a733-model-health-latest.json"
+repo_drift="$outdir/a733-repo-drift-latest.json"
 queue="$repo/task-packets/kernel/a733-hypothesis-queue.json"
 json="$outdir/a733-patch-blocker-brief-latest.json"
 md="$outdir/a733-patch-blocker-brief-latest.md"
 html="$outdir/a733-patch-blocker-brief-latest.html"
 mkdir -p "$outdir"
 
-python3 - "$readiness" "$model_health" "$queue" "$json" "$md" "$html" <<'PY'
+python3 - "$readiness" "$model_health" "$repo_drift" "$queue" "$json" "$md" "$html" <<'PY'
 import datetime as dt
 import html
 import json
 import pathlib
 import sys
 
-readiness_path, model_path, queue_path, json_path, md_path, html_path = sys.argv[1:]
+readiness_path, model_path, repo_drift_path, queue_path, json_path, md_path, html_path = sys.argv[1:]
 
 def load(path, default):
     p = pathlib.Path(path)
@@ -32,13 +33,19 @@ def load(path, default):
 now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 readiness = load(readiness_path, {})
 model = load(model_path, {})
+repo_drift = load(repo_drift_path, {})
 queue = load(queue_path, {})
 items = queue.get("items") or queue.get("hypotheses") or []
 items = sorted(items, key=lambda x: x.get("priority", 0), reverse=True)
 queue_head = items[0] if items else {}
 
-blockers = readiness.get("known_blockers") or []
+blockers = list(readiness.get("known_blockers") or [])
+drift_blockers = repo_drift.get("blockers") or []
+for blocker in drift_blockers:
+    if blocker not in blockers:
+        blockers.append(blocker)
 status = readiness.get("status") or {}
+drift_status = repo_drift.get("status") or {}
 checks = readiness.get("checks") or []
 public_repo = readiness.get("public_repo", "unknown")
 
@@ -61,6 +68,8 @@ if status.get("placeholder_or_pinmux_hits"):
     recommendations.append("Human should inspect/regenerate the public review export from the intended clean branch before any send path.")
 if not status.get("final_send_status_ok"):
     recommendations.append("Keep final-send gate closed until the checklist reports send_ready.")
+if drift_status.get("drift"):
+    recommendations.append("Use the repo sync approval brief before treating ThinkCentre patch-readiness output as authoritative.")
 if model_failures:
     recommendations.append("Route advisory model work away from failed endpoints until health recovers.")
 
@@ -68,10 +77,13 @@ doc = {
     "generated_at": now,
     "readiness_report": readiness_path,
     "model_health_report": model_path,
+    "repo_drift_report": repo_drift_path,
     "queue_head": queue_head,
     "public_repo": public_repo,
     "readiness_status": status,
+    "repo_drift_status": drift_status,
     "blockers": blockers,
+    "drift_blockers": drift_blockers,
     "patch_hit_output": patch_hit_output,
     "model_failures": model_failures,
     "recommendations": recommendations,
@@ -101,6 +113,15 @@ lines = [
     "",
 ]
 lines += [f"- {b}" for b in blockers] or ["- none reported by readiness monitor"]
+lines += [
+    "",
+    "## Repo Drift",
+    "",
+    f"- Drift: `{drift_status.get('drift', 'unknown')}`",
+    f"- Mac expected head: `{drift_status.get('expected_head', 'unknown')}`",
+    f"- ThinkCentre public head: `{drift_status.get('thinkcentre_public_head', 'unknown')}`",
+    "- Sync approval brief: `http://192.168.50.225:9181/hermes-hourly/a733-repo-sync-approval-brief-latest.html`",
+]
 lines += ["", "## Patch Hits", "", "```text", patch_hit_output or "none", "```", ""]
 lines += ["## Model Endpoint Failures", ""]
 lines += [f"- `{m}`" for m in model_failures] or ["- none"]
