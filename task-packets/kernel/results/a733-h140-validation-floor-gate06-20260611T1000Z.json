@@ -1,0 +1,14 @@
+{
+  "id": "A733-UPSTREAM-H140",
+  "status": "completed_gate_06_validation_floor",
+  "checked_utc": "2026-06-11T10:00:00Z",
+  "gate_closed": "gate-06-validation-floor",
+  "branch": "codex/final/a733-dts-v1",
+  "worktree": "/srv/projects/kernel-work/final/a733-dts-v1",
+  "head": "1d2642221795d611d607b153c119218e496856a8",
+  "validation_floor": "PASS",
+  "git_status_short": "",
+  "b4_show_info_summary": "needs-editing false; needs-recipients false; has-prerequisites true; needs-auto-to-cc false; needs-checking false; needs-checking-deps false; preflight-checks-failing false",
+  "send_status": "not_send_ready",
+  "next_action": "Proceed to gate-07 kernel-b4-final-gate."
+}

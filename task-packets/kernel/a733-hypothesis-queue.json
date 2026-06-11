@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T09:50:00Z",
+  "updated_utc": "2026-06-11T10:00:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -40,10 +40,10 @@
     "final_send_status_command": "/Users/enzo/projects/homelab/scripts/kernel-final-send-status"
   },
   "latest_upstream_prep": {
-    "id": "A733-UPSTREAM-H139",
-    "status": "completed_gate_05_recipients",
-    "title": "b4 recipient gate closed",
-    "summary": "Ran b4 prep --auto-to-cc on final branch codex/final/a733-dts-v1. b4 prep --show-info now reports needs-recipients: False, needs-auto-to-cc: False, and preflight-checks-failing: False. Gate 05 is closed; series remains not_send_ready."
+    "id": "A733-UPSTREAM-H140",
+    "status": "completed_gate_06_validation_floor",
+    "title": "Validation floor gate closed",
+    "summary": "Ran scripts/kernel-validation-floor --repo /srv/projects/kernel-work/final/a733-dts-v1 on final branch codex/final/a733-dts-v1 at head 1d2642221795d611d607b153c119218e496856a8. Validation passed and git status is clean. Gate 06 is closed; series remains not_send_ready."
   },
   "latest_completed_test": {
     "id": "A733-SDMMC-H089",
