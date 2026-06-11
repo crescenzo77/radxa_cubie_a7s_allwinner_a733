@@ -2107,6 +2107,26 @@
         "result_file": null,
         "summary": "Candidate branch /Users/enzo/projects/linux-a733 at commit 500b93f2e573 drops legacy allwinner,pinmux from the Cubie A7S UART pins and A733 MMC0 pins. This is upstream-readiness cleanup only; no boot/runtime claim. Hermes task t_ec1741d0 was reassigned from missing profile agent to default and dispatched on ThinkCentre; it needed source-path guidance because its initial workspace did not include the kernel tree. The attempted run was reclaimed after the worker PID disappeared, so the task is ready rather than completed."
       }
+    },
+    {
+      "id": "A733-SDMMC-H098",
+      "priority": 1,
+      "status": "completed_correction_validated",
+      "title": "Restore A733 pinmux selectors after schema/runtime audit",
+      "question": "Was H097's removal of allwinner,pinmux valid for the current A733 pinctrl implementation?",
+      "test_cost": "low; source audit plus DTB/schema validation",
+      "procedure": [
+        "Build the pushed candidate branch in a separate Strix worktree.",
+        "Run targeted dtbs_check against sunxi, MMC, A733 pinctrl, and A733 CCU bindings.",
+        "Audit the A733 pinctrl driver and binding to decide whether allwinner,pinmux is still required.",
+        "Restore only the properties required by the current binding/driver, then rerun DTB/schema validation."
+      ],
+      "pass_criteria": "The candidate DTB builds and targeted schema check passes while preserving current A733 pinctrl runtime requirements.",
+      "fail_criteria": "The DTS is made schema-clean by weakening the binding or by ignoring the dynamic pinctrl driver's mux-value requirement.",
+      "result": {
+        "result_file": null,
+        "summary": "H097 was corrected. The current A733 pinctrl driver uses sunxi_pinctrl_dt_table_init(), and pinctrl-sunxi-dt.c reads allwinner,pinmux to learn mux values for DT-derived functions. The A733 binding also requires allwinner,pinmux. Candidate commit 7b390f1d81cc restores the UART0 and MMC0 selectors. On Strix, /srv/projects/a733-platform-clean-v3-validate at 7b390f1d81cc builds allwinner/sun60i-a733-cubie-a7s.dtb and passes targeted CHECK_DTBS=y for sunxi, MMC, A733 pinctrl, and A733 CCU schemas using /srv/projects/kernel-work/dtschema-venv."
+      }
     }
   ],
   "model_routes": [
