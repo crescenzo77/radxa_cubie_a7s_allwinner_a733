@@ -2069,6 +2069,25 @@
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h095-post-pio-idmac-source-audit-20260611T0415Z.json",
         "summary": "Completed with no behavior patch. Rechecked GCTRL AHB/DMA mode, FIX_BURST/IDMA_ON, B2C/CQE ECC, EMCE, generic SPC/TZMA text, and burst/HBURST references. All were either already closed (H013/H045/H048/H055/H060/H073/H085) or lacked a source-backed A733 SDMMC0 normal-IDMAC descriptor-fetch register. Hermes task t_ec1741d0 was queued for an independent bounded audit."
       }
+    },
+    {
+      "id": "A733-SDMMC-H096",
+      "priority": 1,
+      "status": "completed_no_patch",
+      "title": "Storage-master security/interconnect naming sweep",
+      "question": "Do full BSP/U-Boot/datasheet sources expose an A733 SMHC0 master permission, storage firewall, MBUS/NSI, or secure handoff symbol not already closed?",
+      "test_cost": "low; source grep only",
+      "procedure": [
+        "Search full BSP, public U-Boot, and A733 datasheet text for storage-master, SMHC/SDC master, permission, secure, NSI, MBUS, firewall, SPC, and TZMA naming.",
+        "Ignore generic Linux or unrelated peripheral hits.",
+        "Queue a runtime patch only for an A733-specific SDMMC0 descriptor-fetch access bit."
+      ],
+      "pass_criteria": "A new A733-specific storage-master access control appears, or no-patch is recorded.",
+      "fail_criteria": "Generic secure/peripheral text is promoted to a magic write.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h096-storage-master-security-sweep-20260611T0420Z.json",
+        "summary": "Completed with no behavior patch. Broad source grep found no A733-specific SMHC0/storage-master permission, firewall, MBUS/NSI, or secure handoff symbol beyond already closed generic SPC/TZMA text and prior MBUS/NSI audits. Hermes task t_ec1741d0 still has no result."
+      }
     }
   ],
   "model_routes": [

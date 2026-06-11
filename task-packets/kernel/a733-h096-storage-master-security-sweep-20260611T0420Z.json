@@ -1,0 +1,28 @@
+{
+  "id": "A733-SDMMC-H096",
+  "status": "completed_no_patch",
+  "date_utc": "2026-06-11T04:20:00Z",
+  "scope": [
+    "/srv/projects/kernel-work/tmp/linux-orangepi-full",
+    "/srv/projects/references/u-boot-a733",
+    "/srv/projects/homelab/task-packets/kernel/A733_Datasheet_V0.93.txt"
+  ],
+  "search_terms": [
+    "master id/port/secure/permission/access",
+    "smhc/sdmmc/sdc master axi ahb mbus nsi",
+    "storage master secure access",
+    "device permission",
+    "bus permission",
+    "nsi/mbus permission master secure",
+    "spc/tzma/tzasc/firewall/security"
+  ],
+  "finding": "No A733-specific SMHC0 or storage-master access-control symbol was found. Hits were generic Linux text, unrelated SoC/vendor drivers, unrelated peripherals, or already closed A733 generic SPC/TZMA references.",
+  "decision": "no_behavior_patch",
+  "reason": "Nothing found names a Linux-visible precondition for SDMMC0 normal IDMAC to fetch descriptor word 0.",
+  "hermes_agent": {
+    "task_id": "t_ec1741d0",
+    "status": "triage",
+    "result": null
+  },
+  "next": "Do not add speculative secure/fabric writes. Re-check Hermes or maintainer/vendor replies before any new runtime patch."
+}
