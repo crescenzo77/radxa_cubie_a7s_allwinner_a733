@@ -1178,6 +1178,25 @@
       }
     },
     {
+      "id": "A733-SDMMC-H048",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "BSP B2C/CQE ECC capability audit",
+      "question": "Does the BSP B2C/CQE ECC support reveal a missing A733 SDMMC0 normal-IDMAC descriptor-fetch precondition?",
+      "test_cost": "low; source audit only, no kernel build and no board reboot",
+      "procedure": [
+        "Inspect BSP ECC capability bits, DT booleans, IRQ setup, and CQE gating.",
+        "Compare vendor A733 SDMMC0 DTS against those booleans.",
+        "Only patch if SDMMC0 vendor DTS enables ECC/CQE in a way relevant to normal IDMAC descriptor fetch."
+      ],
+      "pass_criteria": "ECC/CQE is either promoted to a concrete normal-IDMAC proof or closed as unrelated/gated off.",
+      "fail_criteria": "The next session enables B2C/CQE ECC as a guess without matching vendor SDMMC0 DT evidence.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h048-bsp-ecc-cqe-audit-20260611T0555Z.json",
+        "summary": "Completed with no behavior patch. BSP B2C ECC requires b2c-ecc-on, and CQE ECC requires cqe-on plus cqe-ecc-on. Vendor A733 SDMMC0 DTS has ctl-spec-caps=<0x428> but no b2c-ecc-on/cqe-on/cqe-ecc-on for sdc0. CQE paths also do not apply to the current normal-IDMAC CMD18 descriptor-fetch proof."
+      }
+    },
+    {
       "id": "A733-SDMMC-H004",
       "priority": 4,
       "status": "do_not_repeat_without_new_evidence",

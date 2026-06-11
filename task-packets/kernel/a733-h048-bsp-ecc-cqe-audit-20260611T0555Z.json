@@ -1,0 +1,30 @@
+{
+  "id": "A733-SDMMC-H048",
+  "timestamp_utc": "2026-06-11T05:55:00Z",
+  "title": "BSP B2C/CQE ECC capability audit",
+  "scope": [
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.h",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/sun60iw2p1.dtsi",
+    "/srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "trigger": "BSP source includes A733-era B2C/CQE ECC registers and capability bits near the v5p3x path.",
+  "findings": [
+    "BSP B2C ECC is enabled only when DT property b2c-ecc-on is present.",
+    "BSP CQE ECC is enabled only when cqe-on and cqe-ecc-on are present.",
+    "Vendor A733 SDMMC0 DTS shows ctl-spec-caps=<0x428> but does not show b2c-ecc-on, cqe-on, or cqe-ecc-on for sdc0.",
+    "ECC IRQ setup is conditional on those ECC capability bits.",
+    "CQE-specific paths and the CQE 32-bit DMA mask do not apply to the current normal-IDMAC SDMMC0 CMD18 proof."
+  ],
+  "public_search": {
+    "exact_email_archive_hit": false,
+    "answer_visible": false,
+    "notes": "Search still did not reveal a public archive hit or answer for the manually sent A733 SDMMC0 descriptor-fetch question."
+  },
+  "decision": "No behavior patch.",
+  "reason": "The BSP ECC/CQE code is either gated off by missing SDMMC0 DT booleans or belongs to CQE, while the lab failure is normal IDMAC before descriptor word 0 is consumed.",
+  "next": [
+    "Do not enable B2C/CQE ECC as a descriptor-fetch guess.",
+    "Keep waiting for a maintainer/list reply or a source-backed SDMMC0 firewall/security/master-permission bit."
+  ]
+}
