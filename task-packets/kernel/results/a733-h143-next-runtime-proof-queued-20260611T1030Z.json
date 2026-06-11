@@ -1,0 +1,14 @@
+{
+  "id": "A733-SDMMC-H143",
+  "created_utc": "2026-06-11T10:30:00Z",
+  "status": "queued_next_runtime_proof",
+  "title": "Fresh fixed-schema IDMAC stall capture on clean diagnostic branch",
+  "reason": "The queue had no open technical runtime item after the b4 handoff work. Prior source audits closed speculative register writes; the next responsible step is a clean measurement artifact before another behavior patch.",
+  "next_action": "Create a fresh Strix diagnostic worktree, add only instrumentation needed for fixed-schema SDMMC0/fabric capture, boot Cubie3 once over UART, extract rows into a733-sdmmc-register-dump-template.json format, then restore Cubie3 to vendor kernel.",
+  "do_not_do": [
+    "Do not stack on stale H113 without resetting to a clean diagnostic base.",
+    "Do not add another fabric/security write without a named delta from the capture.",
+    "Do not use Cubie1.",
+    "Do not send or rewrite upstream patches."
+  ]
+}

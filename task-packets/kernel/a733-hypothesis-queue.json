@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T10:20:00Z",
+  "updated_utc": "2026-06-11T10:30:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -47,11 +47,10 @@
     "summary": "Added task-packets/kernel/a733-h142-reflect-only-handoff-20260611T1020Z.md with the exact Strix b4 send --reflect command and review checklist. Machine gates 01-07 are closed; gate 08 remains open for human reflect review only."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H089",
-    "status": "completed_lab_only_pass",
-    "title": "Lab-only CMD25 PIO writes up to 32 blocks",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h089-pio-write32-runtime-result-20260611T0320Z.json",
-    "result": "Artifact commit 31e0a9d5df71 expanded only the lab-only CMD25 PIO guard to 32 blocks. Cubie3 rw UART proof showed the former failing 24-block CMD25 used wait_dma=0 pio=1, copied 12288/12288 bytes, and finalized with IDST=0. Many later CMD25 writes also finalized through PIO until capture timeout. Cubie2 and Cubie3 were restored to vendor 5.15.147-21-a733."
+    "id": "A733-SDMMC-H143",
+    "status": "queued_next_runtime_proof",
+    "title": "Fresh fixed-schema IDMAC stall capture queued",
+    "summary": "No open runtime hypothesis existed after H142. Added H143 as the next executable work order: fresh clean diagnostic IDMAC stall capture using the fixed register schema before any new behavior patch."
   },
   "hypotheses": [
     {
@@ -2622,6 +2621,31 @@
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h123-folded-export-promotion-gate-20260611T0705Z.json",
         "summary": "Do not promote yet. Patch bodies are good and apply cleanly, but the generated cover letter still has *** SUBJECT HERE *** and *** BLURB HERE *** placeholders, and the folded order differs from the maintained snapshot. Refresh cover/base/order intentionally before replacing patches/."
       }
+    },
+    {
+      "id": "A733-SDMMC-H143",
+      "priority": 1,
+      "status": "queued_next_runtime_proof",
+      "title": "Fresh fixed-schema IDMAC stall capture on clean diagnostic branch",
+      "question": "Can a fresh clean diagnostic boot capture enough fixed-schema SDMMC0 and fabric state at the descriptor-read stall to expose a remaining vendor-vs-mainline delta, without adding another speculative behavior change?",
+      "test_cost": "medium; one clean rebuild/deploy plus one Cubie3 UART boot, no real upstream patch",
+      "procedure": [
+        "Create a fresh Strix diagnostic worktree from the current known-good baseline, not from stale H113.",
+        "Apply instrumentation-only changes if needed to emit the fixed a733-sdmmc-register-dump-template.json fields at dma-entry, post-DMAC enable, and stall-poll.",
+        "Build and stage as a non-default Cubie3 boot artifact; do not touch Cubie1.",
+        "Boot Cubie3 over UART using the existing cable and capture the complete log.",
+        "Extract register rows into the fixed vendor-vs-mainline schema, including GCTRL, CLKCR, FTRGL, THLD, DMAC, DLBA, IDST, IDIE, CHDA, CBDA, CBCR, BBCR, CSDC, delays, and the already-instrumented fabric registers.",
+        "Restore Cubie3 to vendor 5.15.147-21-a733 after capture."
+      ],
+      "pass_criteria": "A new result artifact contains the boot log path, commit/artifact hash, fixed-schema register rows, and either a concrete new delta promoted to the next behavior test or an explicit no-new-delta conclusion.",
+      "fail_criteria": "The capture is incomplete, Cubie3 is not restored, or the test mutates behavior before proving the measurement gap.",
+      "guardrails": [
+        "No vendor U-Boot DTS workaround.",
+        "No Ethernet/VPU/display/USB-C/PCIe/wireless scope expansion.",
+        "No local CCU/pinctrl submission change.",
+        "No speculative secure/fabric writes unless this capture names a concrete register delta."
+      ],
+      "result": null
     }
   ],
   "model_routes": [
