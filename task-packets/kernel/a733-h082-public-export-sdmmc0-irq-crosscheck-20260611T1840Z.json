@@ -1,0 +1,23 @@
+{
+  "id": "A733-SDMMC-H082",
+  "created_utc": "2026-06-11T18:40:00Z",
+  "title": "Public export SDMMC0 IRQ cross-check",
+  "status": "completed_no_patch_rewrite",
+  "scope": "audit only; do not rewrite or submit patches yet",
+  "sources": {
+    "public_export": "/srv/projects/cubie-a7s-armbian-public/patches/0003-arm64-dts-allwinner-add-Allwinner-A733-SoC.patch",
+    "public_uboot": "/srv/projects/references/u-boot-a733/arch/arm/dts/sun60i-a733.dtsi",
+    "prior_runtime_test": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h035-mmc0-irq40-test-20260610T2326Z.json"
+  },
+  "finding": {
+    "issue": "public U-Boot and the current Linux export disagree on SDMMC0 IRQ number",
+    "evidence": [
+      "Current public export uses interrupts = <GIC_SPI 161 IRQ_TYPE_LEVEL_HIGH> for mmc@4020000.",
+      "Public U-Boot DTS uses interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH> for mmc@4020000.",
+      "H035 tested IRQ 40 and it regressed before card init completion."
+    ],
+    "decision": "Do not change the export to IRQ 40 based only on public U-Boot. Require new source evidence explaining the interrupt mapping before any IRQ change."
+  },
+  "kernel_action": "none",
+  "next_action": "Keep IRQ 161 in the next clean export unless a maintainer/vendor/source reply supplies a corrected mapping."
+}
