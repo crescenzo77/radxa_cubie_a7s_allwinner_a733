@@ -23,7 +23,8 @@ def run(cmd, timeout=60):
 
 def ssh_strix(script, timeout=60):
     quoted = script.replace("'", "'\"'\"'")
-    return run(f"ssh -o BatchMode=yes -o ConnectTimeout=10 {STRIX} '{quoted}'", timeout=timeout)
+    proc = run(f"ssh -o BatchMode=yes -o ConnectTimeout=10 {STRIX} '{quoted}'", timeout=timeout)
+    return proc.returncode, proc.stdout
 
 
 def main():
