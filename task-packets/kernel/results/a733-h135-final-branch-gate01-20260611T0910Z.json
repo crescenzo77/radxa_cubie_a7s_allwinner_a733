@@ -1,0 +1,15 @@
+{
+  "id": "A733-UPSTREAM-H135",
+  "status": "completed_gate_01_final_branch",
+  "checked_utc": "2026-06-11T09:10:00Z",
+  "gate_closed": "gate-01-final-branch",
+  "branch": "codex/final/a733-dts-v1",
+  "worktree": "/srv/projects/kernel-work/final/a733-dts-v1",
+  "repo": "/srv/projects/a733-diag-rtc-extosc-orphan",
+  "base": "1626ce5bc85bd3faaa92877d1b65c924d86a9546",
+  "head": "fabbd15e0c3ec425c1be05d843f8ac08f9b2f96b",
+  "commits_above_base": 4,
+  "validation_floor": "passed on final worktree",
+  "send_status": "not_send_ready",
+  "next_action": "Proceed to gate-02 dependency recheck against this final branch context, then b4 metadata gates."
+}

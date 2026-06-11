@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T08:20:00Z",
+  "updated_utc": "2026-06-11T09:10:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "status": "not_send_ready",
   "purpose": "Executable checklist for turning the A733/Cubie A7S review snapshot into a human-approved b4 reflect candidate.",
@@ -22,9 +22,17 @@
   "required_gates": [
     {
       "id": "gate-01-final-branch",
-      "status": "open",
+      "status": "closed",
       "command": "Create a fresh named final review branch from the intended prerequisite base, then apply/regenerate the four A733 patches from source commits.",
-      "pass": "Branch is named, non-detached, contains exactly the final four A733 commits, and has no unrelated dirty files."
+      "pass": "Branch is named, non-detached, contains exactly the final four A733 commits, and has no unrelated dirty files.",
+      "evidence": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h135-final-branch-gate01-20260611T0910Z.json",
+        "branch": "codex/final/a733-dts-v1",
+        "worktree": "/srv/projects/kernel-work/final/a733-dts-v1",
+        "base": "1626ce5bc85bd3faaa92877d1b65c924d86a9546",
+        "head": "fabbd15e0c3ec425c1be05d843f8ac08f9b2f96b",
+        "commits_above_base": 4
+      }
     },
     {
       "id": "gate-02-rfc-dependencies",
