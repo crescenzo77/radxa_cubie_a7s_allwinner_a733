@@ -1139,6 +1139,26 @@
       }
     },
     {
+      "id": "A733-SDMMC-H046",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "Public archive and local model triage after H045",
+      "question": "Did public search, local Qwen3.6 Q6, AMD research, or model-dispatch reveal one new source-backed runtime proof for A733 SDMMC0 IDMAC descriptor-fetch reachability?",
+      "test_cost": "low; public search, model triage, and source search only",
+      "procedure": [
+        "Search for the sent descriptor-fetch question and A733 IDMAC/sunxi-mmc archive hits.",
+        "Run bounded prompts through Strix Qwen3.6 Q6, AMD research Qwen3.6, and model-dispatch where available.",
+        "Filter model leads against H009-H045 and local source evidence.",
+        "Only queue a runtime patch if a lead names a concrete source-backed SDMMC0 master/firewall/security/interconnect bit, reset order, or firmware handoff."
+      ],
+      "pass_criteria": "A source-backed delta is promoted to a narrow runtime proof or the absence of one is recorded.",
+      "fail_criteria": "The next session repeats speculative cache/QoS/phase/threshold ideas without new source evidence.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h046-public-model-triage-20260611T0515Z.json",
+        "summary": "Completed with no behavior patch. Public search found no visible archive hit or answer for the sent descriptor-fetch question. Strix Qwen3.6 Q6 suggested firewall/TZ/MBUS/cache/phase leads, but cache, visible fabric, and timing variants are already closed or speculative; AMD returned an empty message; dispatch disconnected. Local source search did not name a new A733 SDMMC0 firewall/security/master-permission bit."
+      }
+    },
+    {
       "id": "A733-SDMMC-H004",
       "priority": 4,
       "status": "do_not_repeat_without_new_evidence",

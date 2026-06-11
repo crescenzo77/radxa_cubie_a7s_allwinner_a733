@@ -1,0 +1,36 @@
+{
+  "id": "A733-SDMMC-H046",
+  "timestamp_utc": "2026-06-11T05:15:00Z",
+  "title": "Public archive and local model triage after H045",
+  "scope": [
+    "public web/lore search for the sent descriptor-fetch question",
+    "/srv/projects/homelab/task-packets/kernel/model-squeeze/20260611T0505Z",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc",
+    "/srv/projects/a733-diag-rtc-extosc-orphan"
+  ],
+  "public_search": {
+    "exact_subject_hit": false,
+    "answer_visible": false,
+    "notes": [
+      "Search found public U-Boot A733 support and older sunxi material, but no visible archive hit or reply for the manually sent A733 SDMMC0 IDMAC descriptor-fetch question.",
+      "The visible U-Boot A733 series remains a PIO/FEL boot-enablement source, not a Linux normal-IDMAC proof."
+    ]
+  },
+  "model_squeeze": {
+    "strix_qwen36_q6": "/srv/projects/homelab/task-packets/kernel/model-squeeze/20260611T0505Z/strix-qwen36-q6.json",
+    "amd_research_qwen36": "/srv/projects/homelab/task-packets/kernel/model-squeeze/20260611T0505Z/amd-research-qwen36.json",
+    "dispatch_auto_reasoning": "/srv/projects/homelab/task-packets/kernel/model-squeeze/20260611T0505Z/dispatch-auto-reasoning.json",
+    "summary": "Strix Qwen3.6 Q6 produced speculative leads: hardware firewall, MBUS QoS, TrustZone handoff, cache timing, and clock phase. Cache timing, visible MBUS/NSI gates, and clock/register variants are already covered or too speculative. AMD returned an empty message. The dispatch route disconnected."
+  },
+  "source_check": [
+    "Local source searches found no named A733 SDMMC0/SMHC hardware firewall register, security handoff bit, or new MBUS master-permission register suitable for a behavior patch.",
+    "Vendor DTS/source still exposes only the known SDMMC0 clocks/properties: mmc_store, mmc_mbus, mmc_msi_lite, req-page-count, ctl-spec-caps, and v5p3x descriptor/threshold hooks.",
+    "The diagnostic Linux tree already has optional A733 mmc_mbus and mmc_msi_lite consumers plus prior fabric/NSI instrumentation."
+  ],
+  "decision": "No behavior patch.",
+  "reason": "The only remaining plausible class is a hidden SDMMC0 firewall/security/master-permission handoff, but no source names a register or bit to test. Retesting cache, phase, QoS, or threshold variants would be guesswork against a pre-descriptor-fetch stall.",
+  "next": [
+    "Continue monitoring for maintainer/list responses or public archive visibility.",
+    "Only promote a new runtime proof if a source or reply names a specific SDMMC0 master/firewall/security/interconnect bit, reset order, or firmware handoff."
+  ]
+}
