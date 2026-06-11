@@ -2127,6 +2127,27 @@
         "result_file": null,
         "summary": "H097 was corrected. The current A733 pinctrl driver uses sunxi_pinctrl_dt_table_init(), and pinctrl-sunxi-dt.c reads allwinner,pinmux to learn mux values for DT-derived functions. The A733 binding also requires allwinner,pinmux. Candidate commit 7b390f1d81cc restores the UART0 and MMC0 selectors. On Strix, /srv/projects/a733-platform-clean-v3-validate at 7b390f1d81cc builds allwinner/sun60i-a733-cubie-a7s.dtb and passes targeted CHECK_DTBS=y for sunxi, MMC, A733 pinctrl, and A733 CCU schemas using /srv/projects/kernel-work/dtschema-venv."
       }
+    },
+    {
+      "id": "A733-SDMMC-H099",
+      "priority": 1,
+      "status": "completed_review_branch",
+      "title": "Create churn-free v6 candidate branch",
+      "question": "Can the public candidate branch be made cleaner without changing the final A733 tree?",
+      "test_cost": "low; git-only cleanup plus validation",
+      "procedure": [
+        "Create a new branch instead of force-rewriting older public v4/v5 branches.",
+        "Drop the no-op H097/H098 pinmux remove/restore churn.",
+        "Move the MAINTAINERS sun60i pattern before the new files.",
+        "Add bodies and Signed-off-by trailers to the two cleanup commits.",
+        "Run checkpatch and targeted DTB/schema validation on Strix."
+      ],
+      "pass_criteria": "The new branch has the same final candidate tree without the pinmux churn commits, and DTB/schema validation passes.",
+      "fail_criteria": "The clean branch changes runtime behavior, loses the required allwinner,pinmux selectors, or rewrites an existing public branch unexpectedly.",
+      "result": {
+        "result_file": null,
+        "summary": "Created and pushed candidate/a733-platform-clean-v6 at 703bdfd76da3. Compared with v5, the final tree is unchanged, but the H097/H098 remove/restore churn is gone and the two cleanup commits now have bodies and signoffs. Strix validation worktree /srv/projects/a733-platform-clean-v3-validate builds allwinner/sun60i-a733-cubie-a7s.dtb and passes targeted CHECK_DTBS=y. Checkpatch on HEAD~11..HEAD reports only MAINTAINERS heuristic warnings for added files; the branch already has broad Allwinner F: patterns and an N: sun60i entry before the new files."
+      }
     }
   ],
   "model_routes": [
