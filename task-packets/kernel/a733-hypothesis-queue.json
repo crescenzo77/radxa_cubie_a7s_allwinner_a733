@@ -2263,6 +2263,25 @@
         "result_file": null,
         "summary": "Completed with no behavior patch. sun60i-a733.dtsi has the same simple-bus ranges shape as newer Allwinner SoCs such as H616, while older A64-style dma-ranges appear on an MBUS node used by display/media interconnect clients, not by the sunxi MMC host. Prior H004/H018/H027/H036/H073-style tests already covered shifted descriptors, descriptor memory below 4G, and vendor 64-bit DMA-mask behavior, all still reaching the same DESC_READ stall. Missing DTS dma-ranges is not a justified next boot test without new evidence."
       }
+    },
+    {
+      "id": "A733-SDMMC-H106",
+      "priority": 1,
+      "status": "completed_artifact_gap_identified",
+      "title": "Audit preserved boot firmware evidence for SMHC0 handoff clues",
+      "question": "Do preserved vendor artifacts include boot-stage blobs or strings that expose an SMHC0 IDMAC permission handoff?",
+      "test_cost": "low; preserved-artifact search only",
+      "procedure": [
+        "Search preserved baseline metadata, vendor DTB dumps, and bootloader package records for BOOT0, BL31, SMHC, SDMMC, secure, SPC, TZMA, and ARISC clues.",
+        "Verify whether actual boot-stage binaries are present, not just package names or DTB nodes.",
+        "Only promote a test if a concrete boot-stage register or handoff string is found."
+      ],
+      "pass_criteria": "A concrete boot firmware clue is promoted, or the missing-artifact gap is explicit.",
+      "fail_criteria": "Future sessions claim boot firmware strings were searched when only package metadata and DTB text were available.",
+      "result": {
+        "result_file": null,
+        "summary": "Completed with no behavior patch. Preserved baseline metadata names u-boot-aw2501/u-boot-radxa-a733 and radxa-firmware, and vendor DTB dumps include BL31, ARISC config, boot_devices, secure_status, and SDMMC nodes. However, the preserved baseline explicitly says no BOOT0, BL31, U-Boot, DTB, kernel, initrd, firmware, or other binary payloads were copied, and package queries found no boot0/bl31/trusted packages. This closes metadata-only searches; the next useful firmware step requires extracting actual boot media sectors or package payloads, not another grep of the current artifacts."
+      }
     }
   ],
   "model_routes": [
