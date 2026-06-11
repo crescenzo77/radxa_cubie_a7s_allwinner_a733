@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T19:00:00Z",
+  "updated_utc": "2026-06-11T19:20:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H077 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, BSP IRQ wait-dma finalize logic, public A733 U-Boot/SPL handoff source audit, BOOT0/BL31 provenance/package audit, existing register/UART artifact audit, four-route model speculation/access-control source cross-check, public archive monitoring, public datasheet SPC/TZMA audit, A733 user manual SMHC/MBUS register audit, vendor runtime CCU/SMHC0 register reads, current-binding MMC0 reset-cell test, BSP Andes DMA adapter applicability, and A733 user manual SPC/TZMA deep audit. The remaining blocker still requires a maintainer/list/vendor reply or source-backed secure-world/SPC handoff detail that explains why SMHC0 IDMAC cannot fetch descriptors.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. Normal IDMAC still stalls before descriptor word 0 is consumed. Descriptor geometry, cache, address placement, DMA mask, visible MMC register setup, and obvious clock/reset hypotheses are exhausted. The best independent path is now source-backed security/firewall/interconnect/firmware-handoff evidence, with lab-only PIO boot/runtime support as the operational workaround while maintainer/vendor replies are pending.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -38,11 +38,11 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H073",
-    "status": "completed_no_behavior_patch",
-    "title": "A733 user manual SMHC/MBUS register audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h073-a733-user-manual-smhc-mbus-audit-20260611T1530Z.json",
-    "result": "A733 user manual confirms the tested IDMAC sequence and exposes no SMHC MBUS/AHB gate. No patch."
+    "id": "A733-SDMMC-H084",
+    "status": "completed_path_adjusted",
+    "title": "Independent roadblock model squeeze and path adjustment",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h084-independent-roadblock-model-squeeze-20260611T1915Z.json",
+    "result": "Strix, 7900XT, OpenRouter-free, and Hermes routes converged on security/firewall/interconnect/firmware handoff as the highest-value independent path. No behavior patch from model output alone."
   },
   "hypotheses": [
     {
@@ -1891,6 +1891,47 @@
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h083-public-export-dco-trailer-audit-20260611T1900Z.json",
         "summary": "Completed without rewriting patches. The current export contains Enzo Adriano Signed-off-by trailers, while the workflow states Signed-off-by is added only by the human submitter. Before any mailing, the human submitter must explicitly confirm DCO/trailer correctness; do not auto-send or auto-modify these trailers."
       }
+    },
+    {
+      "id": "A733-SDMMC-H084",
+      "priority": 1,
+      "status": "completed_path_adjusted",
+      "title": "Independent roadblock model squeeze and path adjustment",
+      "question": "What is the best path to overcome the SDMMC0 IDMAC roadblock without waiting for maintainer replies?",
+      "test_cost": "low; model dispatch and source-triage only",
+      "procedure": [
+        "Dispatch non-3090 model lanes on Strix, 7900XT, OpenRouter-free, and Hermes/ThinkCentre.",
+        "Preserve raw outputs and rate-limit artifacts.",
+        "Deduplicate into a concrete next path instead of queuing more descriptor-geometry tests."
+      ],
+      "pass_criteria": "The queue now starts from an executable independent path.",
+      "fail_criteria": "Future sessions repeat exhausted descriptor/cache/address tests.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h084-independent-roadblock-model-squeeze-20260611T1915Z.json",
+        "summary": "Completed. The strongest independent path is source-backed security/firewall/interconnect/firmware-handoff audit first; lab-only PIO runtime boot support second; U-Boot IDMAC only if a cheap public-source hook appears."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H085",
+      "priority": 1,
+      "status": "queued",
+      "title": "Source-backed SMHC0 firewall/fabric/firmware handoff audit",
+      "question": "Can local public/vendor sources or preserved artifacts identify a concrete SMHC0 master permission, SPC/TZMA, MBUS/NSI, CCU security switch, or firmware handoff bit that explains IDMAC descriptor fetch starvation?",
+      "test_cost": "low to medium; source/artifact audit before any boot test",
+      "procedure": [
+        "Search Strix references and preserved boot artifacts for SMHC0, SDMMC0, IDMAC, SPC, TZMA, MBUS, NSI, firewall, secure, nonsecure, and CCU security writes.",
+        "Compare any candidate register against prior closed H009-H084 results and preserved vendor/mainline register dumps.",
+        "Only promote a runtime patch if a source-backed register/write/order difference names SMHC0 or its memory master.",
+        "If no named bit is found, queue a lab-only PIO root/runtime path to gather userspace evidence without claiming an upstream fix."
+      ],
+      "pass_criteria": "A concrete source-backed register/write/order difference is found, or the lack of one is recorded and the PIO runtime workaround becomes the next operational path.",
+      "fail_criteria": "A speculative register write is tested without source support.",
+      "result": null
     }
+  ],
+  "model_routes": [
+    "ThinkCentre Hermes Agent: http://192.168.50.225:9120, task t_f3666e9c created for A733 SDMMC0 roadblock triage.",
+    "Framework Hermes Desktop: http://192.168.50.248:9120 is available for future speculative work if reachable; do not depend on it without API verification.",
+    "RTX 3090 route remains disabled until the user explicitly re-enables it."
   ]
 }

@@ -1,0 +1,5 @@
+Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding
+7900XT Qwen3.6 27B Dense Q4_K_M GGUF llama.cpp Vulkan ctx8k research
+openrouter-free / qwen/qwen3-coder:free
+openrouter-free / nvidia/nemotron-3-ultra-550b-a55b:free
+openrouter-free / nousresearch/hermes-3-llama-3.1-405b:free

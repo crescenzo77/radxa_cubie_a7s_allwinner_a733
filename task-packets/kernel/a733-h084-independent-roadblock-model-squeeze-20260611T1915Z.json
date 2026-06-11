@@ -1,0 +1,98 @@
+{
+  "id": "A733-SDMMC-H084",
+  "title": "Independent roadblock model squeeze and path adjustment",
+  "timestamp_utc": "2026-06-11T19:15:00Z",
+  "status": "completed_path_adjusted",
+  "inputs": {
+    "blocker": "A733 SDMMC0 normal IDMAC stalls in descriptor-read state before descriptor word 0 is consumed.",
+    "known_good": [
+      "card init",
+      "pre-mmcblk CMD17",
+      "small PIO CMD18 reads",
+      "partition discovery",
+      "CMD49 cache-enable via scoped PIO write",
+      "read-only EXT4 root mount when IDMA is bypassed"
+    ],
+    "known_bad": [
+      "normal IDMAC reaches IDST=0x00004000",
+      "CHDA remains DLBA",
+      "CBDA remains 0",
+      "CBCR remains 0x400",
+      "descriptor OWN remains set"
+    ]
+  },
+  "model_routes": [
+    {
+      "route": "Strix Qwen3.6 27B ROCmFP4/Q6",
+      "artifact": "/Users/enzo/projects/homelab/task-packets/kernel/model-squeeze/20260611T1905Z-independent-roadblock/strix-qwen36-roadblock.json",
+      "result": "Converged on TZMA/SPC, MBUS/QoS, IDMAC status/error masking, descriptor alignment, and CCU/IDMAC clock as the highest-value classes."
+    },
+    {
+      "route": "7900XT Qwen3.6 27B Q4_K_M",
+      "artifact": "/Users/enzo/projects/homelab/task-packets/kernel/model-squeeze/20260611T1905Z-independent-roadblock/7900xt-qwen36-runtime-experiments.json",
+      "result": "Converged on two proof routes: controlled descriptor-memory/security test and U-Boot IDMAC cross-validation."
+    },
+    {
+      "route": "OpenRouter free Nemotron Ultra",
+      "artifact": "/Users/enzo/projects/homelab/task-packets/kernel/model-squeeze/20260611T1905Z-independent-roadblock/openrouter-nemotron-ultra-plan.json",
+      "result": "Ranked source archaeology and firmware evidence above new runtime patching."
+    },
+    {
+      "route": "OpenRouter free Qwen3 Coder",
+      "artifact": "/Users/enzo/projects/homelab/task-packets/kernel/model-squeeze/20260611T1905Z-independent-roadblock/openrouter-qwen3-coder-source-audit.json",
+      "result": "Rate-limited; empty artifact preserved."
+    },
+    {
+      "route": "OpenRouter free Hermes 3",
+      "artifact": "/Users/enzo/projects/homelab/task-packets/kernel/model-squeeze/20260611T1905Z-independent-roadblock/openrouter-hermes3-workqueue.json",
+      "result": "Rate-limited; empty artifact preserved."
+    },
+    {
+      "route": "Hermes Agent on ThinkCentre",
+      "artifact": "Hermes task t_f3666e9c",
+      "result": "Task created through http://192.168.50.225:9120/api/plugins/kanban/tasks for independent roadblock triage."
+    },
+    {
+      "route": "Hermes Desktop on Framework",
+      "artifact": "http://192.168.50.248:9120/",
+      "result": "Route recorded, but port 9120 was not reachable from the Mac during this session. Do not depend on it until API access is verified."
+    }
+  ],
+  "decision": {
+    "primary_path": "Stop repeating descriptor geometry tests. First pursue source-backed security/firewall/interconnect/firmware-handoff evidence, especially any SPC/TZMA/MBUS/NSI/CCU register that names SMHC0 or its memory master.",
+    "secondary_path": "Create a lab-only PIO boot/runtime path if needed to keep Cubie userspace inspection moving. Treat it as diagnostic infrastructure, not an upstream fix.",
+    "tertiary_path": "Only attempt U-Boot IDMAC if a cheap public-source hook appears. Public U-Boot currently proves PIO/AHB access, not IDMAC descriptor fetch."
+  },
+  "first_source_sweep": {
+    "strix_sources_checked": [
+      "/srv/projects/references/u-boot-a733",
+      "/srv/projects/a733-diag-rtc-extosc-orphan",
+      "/srv/projects/a733-prereq-stack-v2-20260609T183944Z",
+      "/srv/projects/a733-diag-mbusstore"
+    ],
+    "terms": [
+      "SMHC",
+      "SDMMC",
+      "MMC0",
+      "IDMAC",
+      "DLBA",
+      "SPC",
+      "TZMA",
+      "MBUS",
+      "NSI",
+      "firewall",
+      "secure",
+      "nonsecure",
+      "TZASC",
+      "CCU security",
+      "DMA_SEC"
+    ],
+    "result": "No source-backed SMHC0 firewall/fabric/security handoff bit was found in the cheap sweep. Public U-Boot still points to PIO/AHB transfer, not IDMAC descriptor fetch. H085 remains queued for deeper targeted artifact/manual search."
+  },
+  "guardrails": [
+    "Do not use the RTX 3090 route while the user ban is active.",
+    "Do not add vendor U-Boot DTS pollution.",
+    "Do not expand into Ethernet, VPU, display, USB-C, PCIe, or wireless.",
+    "Do not submit or rewrite public patches from this result alone."
+  ]
+}
