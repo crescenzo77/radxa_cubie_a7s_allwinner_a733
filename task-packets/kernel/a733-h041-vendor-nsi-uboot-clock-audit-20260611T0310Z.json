@@ -1,0 +1,34 @@
+{
+  "id": "A733-SDMMC-H041",
+  "timestamp_utc": "2026-06-11T03:10:00Z",
+  "status": "completed_no_patch",
+  "title": "Vendor NSI and public U-Boot A733 clock audit",
+  "inputs": {
+    "vendor_dts": "/srv/projects/a733-vendor-dt/vendor-sun60i-a733-cubie-a7s.dts",
+    "uboot_tree": "/srv/projects/references/u-boot-a733",
+    "linux_diag_tree": "/srv/projects/a733-diag-rtc-extosc-orphan"
+  },
+  "findings": [
+    {
+      "area": "vendor SDMMC0 DT",
+      "finding": "Vendor SDMMC0 still exposes the known v5p3x node: clocks osc24m, pll_periph, pll_periph_2, mmc, ahb, mmc_store, mmc_mbus, mmc_msi_lite; reset rst; req-page-count=<2>; ctl-spec-caps=<0x428>.",
+      "decision": "No new SDMMC0 property was found beyond already-tested clocks, reset, descriptor page count, and ctl-spec-caps."
+    },
+    {
+      "area": "vendor NSI node",
+      "finding": "Vendor NSI has private topology/master_clks metadata and bus_nsi resets, but the decompiled values do not name an SDMMC0-specific master gate or ID. Earlier H025-H027 tests already exercised the safe NSI/CCU subset and did not fix descriptor fetch.",
+      "decision": "Do not create a blind NSI patch from opaque vendor-private metadata."
+    },
+    {
+      "area": "public U-Boot A733 MMC clock code",
+      "finding": "Public U-Boot A733 support adjusts MMC parent clock math for A733 (pll_hz /= 3) and uses A733 module clock offsets at 0xd00 with 0x10 stride. It still uses CPU/PIO transfers, not Linux normal-IDMAC descriptor fetch.",
+      "decision": "No IDMAC behavior patch is justified from U-Boot clock code."
+    },
+    {
+      "area": "current diagnostic tree",
+      "finding": "The Linux diagnostic path already limits A733 f_max to 25 MHz and has tested the vendor-visible SDMMC0 clock/reset/descriptor paths.",
+      "decision": "Do not retest plain clock-rate or known clock-consumer variants without new evidence."
+    }
+  ],
+  "conclusion": "No kernel patch was made. The next behavior patch still needs a named SDMMC0 master/firewall/security bit, maintainer reply, or a source-backed vendor runtime write outside the SDMMC register window."
+}
