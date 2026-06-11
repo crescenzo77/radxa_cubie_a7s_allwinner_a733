@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T09:30:00Z",
+  "updated_utc": "2026-06-11T09:40:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -40,10 +40,10 @@
     "final_send_status_command": "/Users/enzo/projects/homelab/scripts/kernel-final-send-status"
   },
   "latest_upstream_prep": {
-    "id": "A733-UPSTREAM-H137",
-    "status": "completed_gate_03_b4_cover",
-    "title": "b4 cover gate closed",
-    "summary": "Edited the b4 cover commit on final branch codex/final/a733-dts-v1 using b4 prep --edit-cover with a scripted editor. b4 prep --show-info now reports needs-editing: False and cover subject arm64: dts: allwinner: add A733/Cubie A7S DTS support. Gate 03 is closed; the series remains not_send_ready."
+    "id": "A733-UPSTREAM-H138",
+    "status": "completed_gate_04_b4_deps",
+    "title": "b4 dependency metadata gate closed",
+    "summary": "Encoded b4 dependencies for RTC, CCU/PRCM, and pinctrl message-ids plus base commit. b4 prep --show-info now reports has-prerequisites: True and needs-checking-deps: False. b4 check-deps fetched all dependency threads but cannot cleanly apply the full prerequisite stack plus this series to the local base; this limitation is documented. Gate 04 is closed; series remains not_send_ready."
   },
   "latest_completed_test": {
     "id": "A733-SDMMC-H089",

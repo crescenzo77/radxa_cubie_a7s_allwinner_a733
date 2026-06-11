@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T09:30:00Z",
+  "updated_utc": "2026-06-11T09:40:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "status": "not_send_ready",
   "purpose": "Executable checklist for turning the A733/Cubie A7S review snapshot into a human-approved b4 reflect candidate.",
@@ -30,7 +30,7 @@
         "branch": "codex/final/a733-dts-v1",
         "worktree": "/srv/projects/kernel-work/final/a733-dts-v1",
         "base": "1626ce5bc85bd3faaa92877d1b65c924d86a9546",
-        "head": "81f43e3d55a480ae68302f1139c76826ce0f097b",
+        "head": "5f5b4ce8bfe3c77c9bc835ae9d84ce1a3cebc280",
         "commits_above_base_including_b4_cover": 5,
         "patch_commits": 4
       }
@@ -58,9 +58,15 @@
     },
     {
       "id": "gate-04-b4-deps",
-      "status": "open",
+      "status": "closed",
       "command": "Run b4 prep --edit-deps and encode prerequisite series.",
-      "pass": "b4 prep --show-info no longer reports has-prerequisites: False, and b4 prep --check-deps passes or any limitation is documented."
+      "pass": "b4 prep --show-info no longer reports has-prerequisites: False, and b4 prep --check-deps passes or any limitation is documented.",
+      "evidence": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h138-b4-deps-gate04-20260611T0940Z.json",
+        "has_prerequisites": true,
+        "needs_checking_deps": false,
+        "documented_limitation": "b4 check-deps can fetch all prerequisite message-id threads but cannot cleanly apply the full prerequisite stack plus this series to the recorded local base."
+      }
     },
     {
       "id": "gate-05-recipients",
@@ -89,7 +95,6 @@
   ],
   "current_known_blockers": [
     "b4 metadata still needs recipients/auto-to-cc.",
-    "b4 metadata still needs prerequisite/dependency encoding.",
     "b4 preflight still reports expected MAINTAINERS/RFC-compatible warnings.",
     "Strix checkpatch subprocess cannot import Python ply for spdxcheck.py via /usr/bin/python3."
   ]
