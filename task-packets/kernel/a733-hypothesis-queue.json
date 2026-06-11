@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T15:30:00Z",
+  "updated_utc": "2026-06-11T16:10:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H073 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, BSP IRQ wait-dma finalize logic, public A733 U-Boot/SPL handoff source audit, BOOT0/BL31 provenance/package audit, existing register/UART artifact audit, four-route model speculation/access-control source cross-check, public archive monitoring, public datasheet SPC/TZMA audit, and A733 user manual SMHC/MBUS register audit. The remaining blocker still requires a maintainer/list/vendor reply or source-backed secure-world/CCMU/SPC handoff detail that explains why SMHC0 IDMAC cannot fetch descriptors.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H074 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, BSP IRQ wait-dma finalize logic, public A733 U-Boot/SPL handoff source audit, BOOT0/BL31 provenance/package audit, existing register/UART artifact audit, four-route model speculation/access-control source cross-check, public archive monitoring, public datasheet SPC/TZMA audit, A733 user manual SMHC/MBUS register audit, and vendor runtime CCU/SMHC0 register reads. The remaining blocker still requires a maintainer/list/vendor reply or source-backed secure-world/CCMU/SPC handoff detail that explains why SMHC0 IDMAC cannot fetch descriptors.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -27,7 +27,8 @@
     "Do not add vendor U-Boot compatibility strings, aliases, paths, or policy nodes to upstream DTS.",
     "Do not expand into Ethernet, VPU, display, USB-C, PCIe, or wireless.",
     "Do not submit local A733 CCU or pinctrl scaffolding while Junhui Liu's CCU/PRCM RFC and Andre Przywara's pinctrl RFC are in flight.",
-    "Keep clk_ignore_unused and PIO bypasses as lab diagnostics only."
+    "Keep clk_ignore_unused and PIO bypasses as lab diagnostics only.",
+    "Temporarily do not route speculative/model work to the RTX 3090."
   ],
   "submission_workflow": {
     "series_manager": "Use b4 from a clean generated review branch for final mailing-list preparation.",
@@ -1694,6 +1695,25 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h073-a733-user-manual-smhc-mbus-audit-20260611T1530Z.json",
         "summary": "Completed with no behavior patch. The user manual confirms 16-byte descriptors, DLBA word address, IDMAC=0x82 sequence, and no SMHC MBUS/AHB master gate. It documents CCMU security switching, but that is secure-world handoff evidence rather than a safe Linux driver patch."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H074",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "Vendor runtime CCU/SMHC0 register read audit",
+      "question": "Do vendor Linux runtime CCU, NSI, MBUS, or SMHC0 clock/reset registers expose an obvious disabled gate or secure switch difference?",
+      "test_cost": "low; read-only /dev/mem register reads on Cubie2 and Cubie3 vendor Linux, no reboot and no kernel build",
+      "procedure": [
+        "Use vendor DTS to identify the live CCU base.",
+        "Read CCU, NSI, MBUS, SMHC0 clock/reset, CCMU security switch, and live SMHC0 controller registers on Cubie2 and Cubie3.",
+        "Only patch if a concrete disabled gate or programming delta appears."
+      ],
+      "pass_criteria": "A concrete register-level clue is promoted or the runtime read is closed with no behavior patch.",
+      "fail_criteria": "A future session uses the manual 0x02001000 CCU base for vendor runtime comparisons or patches from disabled-gate speculation.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h074-vendor-runtime-ccmu-read-audit-20260611T1610Z.json",
+        "summary": "Completed with no behavior patch. Vendor DTS shows CCU at 0x02002000. Runtime reads on Cubie2 and Cubie3 show live nonzero CCU/NSI/MBUS/SMHC0 registers, enabled SMHC0 clock/BGR values, CCMU_SEC_SWITCH_REG=0, and no obvious disabled fabric gate."
       }
     }
   ]

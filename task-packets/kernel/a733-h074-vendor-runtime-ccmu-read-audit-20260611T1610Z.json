@@ -1,0 +1,56 @@
+{
+  "id": "A733-SDMMC-H074",
+  "timestamp_utc": "2026-06-11T16:10:00Z",
+  "title": "Vendor runtime CCU/SMHC0 register read audit",
+  "question": "Do vendor Linux runtime CCU, NSI, MBUS, or SMHC0 clock/reset registers expose an obvious disabled gate or secure switch difference that explains mainline SMHC0 IDMAC descriptor-read stalls?",
+  "test_cost": "low; read-only /dev/mem register reads on Cubie2 and Cubie3 vendor Linux, no reboot and no kernel build",
+  "inputs": {
+    "cubie3": "codex@192.168.50.95",
+    "cubie2": "codex@192.168.50.85",
+    "vendor_kernel": "5.15.147-21-a733",
+    "vendor_dts_reference": "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/sun60iw2p1.dtsi",
+    "vendor_dts_ccu_node": "ccu@2002000 reg = <0x0 0x02002000 0x0 0x2000>",
+    "note": "An initial read using the manual-style 0x02001000 base returned zeros. Vendor DTS proves the live vendor CCU base is 0x02002000."
+  },
+  "observations": {
+    "cubie3": {
+      "vendor_CCU_BASE_0x02002000": "0xf8675f00",
+      "vendor_NSI_CLK_REG_0x02002580": "0xc3000000",
+      "vendor_NSI_BGR_REG_0x02002584": "0x00010001",
+      "vendor_MBUS_CLK_REG_0x02002588": "0x81000000",
+      "vendor_AHB_MAT_CLK_GATING_REG_0x020025c0": "0xb10103f8",
+      "vendor_MBUS_MAT_CLK_GATING_REG_0x020025e0": "0xf0050803",
+      "vendor_MBUS_GATE_EN_REG_0x020025e4": "0x00000805",
+      "vendor_SMHC0_CLK_REG_0x02002d00": "0x83000000",
+      "vendor_SMHC0_BGR_REG_0x02002d0c": "0x00010001",
+      "vendor_CCMU_SEC_SWITCH_REG_0x02003f00": "0x00000000",
+      "SMHC_GCTRL_0x04020000": "0x20000010",
+      "SMHC_CLKCR_0x04020004": "0x00030000",
+      "SMHC_DMAC_0x04020080": "0x00000000",
+      "SMHC_DLBA_0x04020084": "0x3fc60800",
+      "SMHC_IDST_0x04020088": "0x00000000"
+    },
+    "cubie2": {
+      "vendor_CCU_BASE_0x02002000": "0xf8675f00",
+      "vendor_NSI_CLK_REG_0x02002580": "0xc3000000",
+      "vendor_NSI_BGR_REG_0x02002584": "0x00010001",
+      "vendor_MBUS_CLK_REG_0x02002588": "0x81000000",
+      "vendor_AHB_MAT_CLK_GATING_REG_0x020025c0": "0xb10103f8",
+      "vendor_MBUS_MAT_CLK_GATING_REG_0x020025e0": "0xf0050803",
+      "vendor_MBUS_GATE_EN_REG_0x020025e4": "0x00000805",
+      "vendor_SMHC0_CLK_REG_0x02002d00": "0x83000000",
+      "vendor_SMHC0_BGR_REG_0x02002d0c": "0x00010001",
+      "vendor_CCMU_SEC_SWITCH_REG_0x02003f00": "0x00000000",
+      "SMHC_GCTRL_0x04020000": "0x20000010",
+      "SMHC_CLKCR_0x04020004": "0x00030000",
+      "SMHC_DMAC_0x04020080": "0x00000200",
+      "SMHC_DLBA_0x04020084": "0x3fd80800",
+      "SMHC_IDST_0x04020088": "0x00000000"
+    }
+  },
+  "decision": {
+    "status": "completed_no_behavior_patch",
+    "summary": "Vendor Linux shows live nonzero CCU/NSI/MBUS/SMHC0 clock and reset registers at the vendor DTS base. SMHC0 clock and BGR are enabled on both Cubie2 and Cubie3, CCMU_SEC_SWITCH_REG reads zero, and no obvious disabled fabric gate appears. The earlier zero reads were caused by using the wrong CCU base, not by inaccessible registers.",
+    "next_step": "Do not patch from H074. Continue waiting for maintainer/list/vendor clues or a source-backed handoff/security detail. If runtime comparison continues, use 0x02002000 as the vendor CCU base."
+  }
+}
