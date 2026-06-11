@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T03:30:00Z",
+  "updated_utc": "2026-06-11T03:50:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H042 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, the public-U-Boot IRQ-40 clue, the descriptor end-of-ring bit, basic model-suggested IDMAC reset/clock-offset concerns, the current public Linux dependency status, the plain IDMAC enable write-readback idea, a vendor NSI/public-U-Boot clock audit, and a public community Armbian repo audit. H042 found no new SDMMC0 IDMAC delta beyond already-tested vendor-visible properties.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H043 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, the public-U-Boot IRQ-40 clue, the descriptor end-of-ring bit, basic model-suggested IDMAC reset/clock-offset concerns, the current public Linux dependency status, the plain IDMAC enable write-readback idea, a vendor NSI/public-U-Boot clock audit, a public community Armbian repo audit, and the A733 MMC clock-rate math clue. H043 found the U-Boot hidden-divider clue already represented in Linux's CCU parent/postdiv model.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,33 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H042",
+    "id": "A733-SDMMC-H043",
     "status": "completed_no_patch",
-    "title": "Public community A733 Armbian repo audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h042-public-community-repo-audit-20260611T0330Z.json",
-    "result": "Audited jonas5/orangepi-4pro-armbian. Its A733 SDMMC0 material is vendor BSP support-file content with the same already-tested v5p3x properties. No behavior patch."
+    "title": "A733 MMC clock math audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h043-mmc-clock-math-audit-20260611T0350Z.json",
+    "result": "Public U-Boot's A733 pll_hz/=3 clue is already represented in the Linux CCU parent/postdiv model for MMC0/MMC1. No clock-rate behavior patch."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H043",
+      "priority": 42,
+      "status": "completed_no_patch",
+      "title": "A733 MMC clock math audit",
+      "question": "Does public U-Boot's A733 MMC clock divider clue reveal a Linux CCU rate bug worth testing?",
+      "test_cost": "low; source audit only",
+      "procedure": [
+        "Inspect public U-Boot A733 MMC clock calculation.",
+        "Inspect Linux A733 CCU MMC parent/postdiv model.",
+        "Compare MMC register offsets and parent rates.",
+        "Promote a patch only if Linux lacks U-Boot's hidden-divider behavior."
+      ],
+      "pass_criteria": "Linux lacks the hidden-divider/postdiv behavior and a one-variable clock patch is justified.",
+      "fail_criteria": "Linux already represents the divider through fixed parents or postdiv.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h043-mmc-clock-math-audit-20260611T0350Z.json",
+        "summary": "Linux already models the relevant parent/postdiv path. No patch."
+      }
+    },
     {
       "id": "A733-SDMMC-H042",
       "priority": 41,

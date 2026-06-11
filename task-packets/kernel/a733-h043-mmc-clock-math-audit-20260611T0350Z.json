@@ -1,0 +1,28 @@
+{
+  "id": "A733-SDMMC-H043",
+  "timestamp_utc": "2026-06-11T03:50:00Z",
+  "status": "completed_no_patch",
+  "title": "A733 MMC clock math audit",
+  "inputs": {
+    "linux_tree": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "uboot_tree": "/srv/projects/references/u-boot-a733"
+  },
+  "findings": [
+    {
+      "area": "public U-Boot",
+      "finding": "Public U-Boot divides the reported PERIPH0 rate by 3 for A733 MMC clock calculation and uses MMC module offsets starting at 0xd00 with 0x10 stride.",
+      "decision": "This is a clock-rate calculation clue, not an IDMAC data-path clue."
+    },
+    {
+      "area": "Linux CCU RFC tree",
+      "finding": "The Linux A733 CCU models fixed PERIPH0/PERIPH1 400M and 300M parents and uses SUNXI_CCU_MP_MUX_GATE_POSTDIV_DUALDIV for MMC0/MMC1 at 0xd00/0xd10 with postdiv 2. MMC2/MMC3 use 800M/600M parents at 0xd20/0xd30.",
+      "decision": "The U-Boot hidden-divider clue is already represented by the Linux CCU parent/postdiv model."
+    },
+    {
+      "area": "current diagnostic driver",
+      "finding": "The A733 diagnostic config keeps max frequency capped at 25 MHz, and PIO reads already work. The remaining failure is descriptor fetch, not card clock negotiation.",
+      "decision": "Do not create another clock-rate behavior patch."
+    }
+  ],
+  "conclusion": "No kernel patch was made. A733 MMC clock math remains tracked as dependent on the in-flight CCU RFC, not as the next SDMMC0 IDMAC fix candidate."
+}
