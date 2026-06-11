@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: scripts/kernel-validation-floor --repo PATH [--patch-dir PATH] [--base REF]
+
+Runs the local low-risk validation floor:
+  - JSON-free shell checks only; no network, no mail
+  - git diff --check on the repo
+  - optional git am apply-check for a patch directory in a temp worktree
+  - A733 review hygiene check for stale allwinner,pinmux in sun60i-a733 files
+
+If --patch-dir is provided, --base is required.
+USAGE
+}
+
+repo=
+patch_dir=
+base=
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --repo) repo="${2:?}"; shift 2 ;;
+    --patch-dir) patch_dir="${2:?}"; shift 2 ;;
+    --base) base="${2:?}"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "unknown argument: $1" >&2; usage >&2; exit 2 ;;
+  esac
+done
+
+[ -n "$repo" ] || { echo "--repo is required" >&2; exit 2; }
+[ -d "$repo/.git" ] || { echo "not a git repo: $repo" >&2; exit 2; }
+
+git -C "$repo" diff --check
+
+if git -C "$repo" grep -n "allwinner,pinmux" -- \
+  arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi \
+  arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts \
+  >/tmp/kernel-validation-floor-pinmux.$$ 2>/dev/null; then
+  cat /tmp/kernel-validation-floor-pinmux.$$
+  rm -f /tmp/kernel-validation-floor-pinmux.$$
+  echo "FAIL: stale allwinner,pinmux found in A733 DTS" >&2
+  exit 1
+fi
+rm -f /tmp/kernel-validation-floor-pinmux.$$
+
+if [ -n "$patch_dir" ]; then
+  [ -n "$base" ] || { echo "--base is required with --patch-dir" >&2; exit 2; }
+  [ -d "$patch_dir" ] || { echo "patch dir not found: $patch_dir" >&2; exit 2; }
+  tmp="$(mktemp -d /tmp/kernel-validation-floor.XXXXXX)"
+  cleanup() {
+    git -C "$repo" worktree remove -f "$tmp" >/dev/null 2>&1 || true
+  }
+  trap cleanup EXIT
+  git -C "$repo" worktree add -q "$tmp" "$base"
+  patches=()
+  while IFS= read -r patch; do
+    patches+=("$patch")
+  done < <(find "$patch_dir" -maxdepth 1 -type f -name '000[1-9]-*.patch' | sort)
+  [ "${#patches[@]}" -gt 0 ] || { echo "no numbered patches found in $patch_dir" >&2; exit 2; }
+  git -C "$tmp" am "${patches[@]}"
+fi
+
+echo "kernel-validation-floor: PASS"

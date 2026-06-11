@@ -1,0 +1,20 @@
+{
+  "id": "A733-SDMMC-H120",
+  "title": "Kernel workflow script gap closure",
+  "status": "completed_workflow_automation",
+  "tested_at_utc": "2026-06-11T06:35:00Z",
+  "host": "mac",
+  "question": "Do the documented kernel review workflow commands exist and fail closed?",
+  "change": [
+    "Added scripts/kernel-validation-floor.",
+    "Added scripts/kernel-review-branch.",
+    "Added scripts/kernel-b4-prep."
+  ],
+  "verification": [
+    "bash -n passed for all three scripts.",
+    "kernel-validation-floor --repo /Users/enzo/projects/linux-a733 passed the basic diff/pinmux floor.",
+    "kernel-validation-floor with the current patch snapshot failed closed at the known H119 patch 0002 apply issue."
+  ],
+  "decision": "Workflow automation now has concrete local entry points. The patch snapshot remains not send-ready until regenerated from a clean base.",
+  "next_action": "Use scripts/kernel-review-branch to create the next clean review marker, then regenerate/fold the series and rerun scripts/kernel-validation-floor."
+}

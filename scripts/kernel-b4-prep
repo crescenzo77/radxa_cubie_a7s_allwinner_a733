@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: scripts/kernel-b4-prep --repo PATH -- COMMAND...
+
+Runs b4 from the repo with the configured Strix venv if present. This wrapper
+never sends mail by itself; pass only b4 prep/export/check commands here.
+USAGE
+}
+
+repo=
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --repo) repo="${2:?}"; shift 2 ;;
+    --) shift; break ;;
+    -h|--help) usage; exit 0 ;;
+    *) break ;;
+  esac
+done
+
+[ -n "$repo" ] || { echo "--repo is required" >&2; exit 2; }
+[ "$#" -gt 0 ] || { echo "b4 command is required" >&2; exit 2; }
+
+if [ -x /srv/projects/kernel-work/b4-venv/bin/b4 ]; then
+  b4_bin=/srv/projects/kernel-work/b4-venv/bin/b4
+elif command -v b4 >/dev/null 2>&1; then
+  b4_bin="$(command -v b4)"
+else
+  echo "b4 not found" >&2
+  exit 127
+fi
+
+case "$*" in
+  *" send "*|send\ *|*"--send"*)
+    echo "refusing to run b4 send via wrapper; use explicit human command" >&2
+    exit 2
+    ;;
+esac
+
+git -C "$repo" status --short
+cd "$repo"
+exec "$b4_bin" "$@"
