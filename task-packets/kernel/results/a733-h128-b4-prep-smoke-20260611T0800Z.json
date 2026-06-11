@@ -1,0 +1,18 @@
+{
+  "id": "A733-UPSTREAM-H128",
+  "status": "completed_b4_prep_smoke_not_send_ready",
+  "checked_utc": "2026-06-11T08:00:00Z",
+  "host": "strix",
+  "worktree": "/tmp/a733-h128-b4-smoke",
+  "branch": "codex/a733-h128-b4-smoke",
+  "base": "b327168a182e^",
+  "b4_version": "0.15.2",
+  "result": {
+    "git_am": "passed for promoted patches 0001-0004",
+    "b4_prep": "passed; tracked 4 commits",
+    "b4_show_info": "needs-editing=true, needs-recipients=true, has-prerequisites=false, needs-auto-to-cc=true, needs-checking=true, preflight-checks-failing=true",
+    "b4_check": "ran but preflight remains failing because checkpatch reports expected MAINTAINERS/RFC-compatible warnings and b4/checkpatch subprocess cannot import ply for spdxcheck.py even though ply exists in the b4 venv"
+  },
+  "send_status": "not_send_ready",
+  "next_action": "Populate b4 cover metadata and prerequisite/dependency tracking on a final generated branch before any b4 send --reflect. Consider fixing the Strix b4/checkpatch Python environment separately so spdxcheck.py can import ply without sudo/system mutation."
+}
