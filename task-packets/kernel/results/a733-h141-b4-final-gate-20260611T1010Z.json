@@ -1,0 +1,23 @@
+{
+  "id": "A733-SDMMC-H141",
+  "created_utc": "2026-06-11T10:10:00Z",
+  "title": "Final gate 07 b4 final gate",
+  "status": "passed",
+  "repo": "/srv/projects/homelab",
+  "worktree": "/srv/projects/kernel-work/final/a733-dts-v1",
+  "branch": "codex/final/a733-dts-v1",
+  "head": "1d2642221795d611d607b153c119218e496856a8",
+  "command": "scripts/kernel-b4-final-gate --repo /srv/projects/kernel-work/final/a733-dts-v1",
+  "observed": {
+    "cover_subject": "arm64: dts: allwinner: add A733/Cubie A7S DTS support",
+    "needs_editing": false,
+    "needs_recipients": false,
+    "has_prerequisites": true,
+    "needs_auto_to_cc": false,
+    "needs_checking": false,
+    "needs_checking_deps": false,
+    "preflight_checks_failing": false,
+    "kernel_b4_final_gate": "PASS"
+  },
+  "conclusion": "Gate 07 is closed. The only remaining final-send checklist gate is the human-only b4 send --reflect review gate. No real list send has been run."
+}

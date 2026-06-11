@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T10:00:00Z",
+  "updated_utc": "2026-06-11T10:10:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -34,16 +34,16 @@
     "series_manager": "Use b4 from a clean generated review branch for final mailing-list preparation.",
     "branch_hierarchy": "Use topic branches, candidate branches, and generated review branches; update dependent refs together with git rebase --update-refs when rebasing a stack. H135 created final branch codex/final/a733-dts-v1 in /srv/projects/kernel-work/final/a733-dts-v1.",
     "validation_floor": "Run scripts/kernel-validation-floor locally; H132 fixed it to accept both normal git repos and linked worktrees. The public repo CI mirrors this floor for candidate/**, topic/**, review/**, codex/**, pull requests, and manual dispatch.",
-    "review_export": "Treat patches/ as a review snapshot only. H125 promoted the folded export into the maintained snapshot and validation-floor apply-check passes from b327168a182e^. H126 completed recipient/checkpatch hygiene. H136 closed final-send gate 02 with the same visible public RTC v1, CCU/PRCM RFC, and pinctrl RFC state. H128 proved b4 prep can track the series but metadata/preflight are not reflect-ready. H129 added a no-send b4 final gate that fails closed on those open gates.",
+    "review_export": "Treat patches/ as a review snapshot only. H125 promoted the folded export into the maintained snapshot and validation-floor apply-check passes from b327168a182e^. H126 completed recipient/checkpatch hygiene. H136 closed final-send gate 02 with the same visible public RTC v1, CCU/PRCM RFC, and pinctrl RFC state. H141 closed the no-send b4 final gate; only the human-only reflect gate remains.",
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step.",
     "final_send_checklist": "/Users/enzo/projects/homelab/task-packets/kernel/a733-final-send-checklist.json",
     "final_send_status_command": "/Users/enzo/projects/homelab/scripts/kernel-final-send-status"
   },
   "latest_upstream_prep": {
-    "id": "A733-UPSTREAM-H140",
-    "status": "completed_gate_06_validation_floor",
-    "title": "Validation floor gate closed",
-    "summary": "Ran scripts/kernel-validation-floor --repo /srv/projects/kernel-work/final/a733-dts-v1 on final branch codex/final/a733-dts-v1 at head 1d2642221795d611d607b153c119218e496856a8. Validation passed and git status is clean. Gate 06 is closed; series remains not_send_ready."
+    "id": "A733-UPSTREAM-H141",
+    "status": "completed_gate_07_b4_final_gate",
+    "title": "b4 final gate closed",
+    "summary": "Ran scripts/kernel-b4-final-gate --repo /srv/projects/kernel-work/final/a733-dts-v1 on final branch codex/final/a733-dts-v1 at head 1d2642221795d611d607b153c119218e496856a8. Gate passed with no open b4 metadata or preflight blockers. Gate 07 is closed; only the human-only b4 send --reflect gate remains."
   },
   "latest_completed_test": {
     "id": "A733-SDMMC-H089",
@@ -1976,7 +1976,7 @@
       "fail_criteria": "Writes still fall into normal IDMAC before any PIO write proof, or the board fails before root mount.",
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h087-pio-write-runtime-result-20260611T0300Z.json",
-        "summary": "Completed partial pass. Corrected H087 fed CMD49 through PIO and reached read-only root/userspace. A later rw H088 run showed the real 24-block CMD25 boundary exceeded H087\u2019s <=16-block guard and fell back to IDMAC, reproducing IDST=0x4000 descriptor-read stall."
+        "summary": "Completed partial pass. Corrected H087 fed CMD49 through PIO and reached read-only root/userspace. A later rw H088 run showed the real 24-block CMD25 boundary exceeded H087’s <=16-block guard and fell back to IDMAC, reproducing IDST=0x4000 descriptor-read stall."
       }
     },
     {

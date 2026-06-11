@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T10:00:00Z",
+  "updated_utc": "2026-06-11T10:10:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "status": "not_send_ready",
   "purpose": "Executable checklist for turning the A733/Cubie A7S review snapshot into a human-approved b4 reflect candidate.",
@@ -94,9 +94,15 @@
     },
     {
       "id": "gate-07-b4-final-gate",
-      "status": "open",
+      "status": "closed",
       "command": "Run scripts/kernel-b4-final-gate --repo FINAL_BRANCH_WORKTREE.",
-      "pass": "Gate passes with no open b4 metadata/preflight blockers."
+      "pass": "Gate passes with no open b4 metadata/preflight blockers.",
+      "evidence": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h141-b4-final-gate-20260611T1010Z.json",
+        "worktree": "/srv/projects/kernel-work/final/a733-dts-v1",
+        "head": "1d2642221795d611d607b153c119218e496856a8",
+        "b4_final_gate": "PASS"
+      }
     },
     {
       "id": "gate-08-reflect-only",
@@ -105,7 +111,5 @@
       "pass": "Reflect copy is received and reviewed by the human; no real list send before this."
     }
   ],
-  "current_known_blockers": [
-    "Strix checkpatch subprocess cannot import Python ply for spdxcheck.py via /usr/bin/python3."
-  ]
+  "current_known_blockers": []
 }
