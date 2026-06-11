@@ -1,0 +1,21 @@
+{
+  "id": "A733-SDMMC-H083",
+  "created_utc": "2026-06-11T19:00:00Z",
+  "title": "Public export DCO trailer human-review audit",
+  "status": "completed_no_patch_rewrite",
+  "scope": "audit only; do not rewrite or submit patches yet",
+  "sources": {
+    "public_export": "/srv/projects/cubie-a7s-armbian-public/patches",
+    "workflow": "/srv/projects/cubie-a7s-armbian-public/docs/mainline-cleanup-workflow.md"
+  },
+  "finding": {
+    "issue": "DCO trailer review must be explicit before send",
+    "evidence": [
+      "Exported patches 0001 through 0004 contain Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>.",
+      "docs/mainline-cleanup-workflow.md says Signed-off-by is added only by the human submitter and final send requires human review with correct DCO sign-off."
+    ],
+    "required_action_before_submission": "Before any mailing, the human submitter must explicitly confirm the From identity and Signed-off-by trailers. Codex must not auto-send or silently modify these trailers."
+  },
+  "kernel_action": "none",
+  "next_action": "Keep this as a pre-send gate with H080/H081/H082 export fixups."
+}
