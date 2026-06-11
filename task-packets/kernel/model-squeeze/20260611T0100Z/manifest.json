@@ -1,0 +1,65 @@
+{
+  "angles": {
+    "runtime-probes": "Propose printk/devmem/UART probes that answer a yes/no question before a full kernel behavior change.",
+    "source-registry": "Name concrete source files, registers, and call paths to audit. Reject anything already closed by H009-H036."
+  },
+  "base_url": "http://192.168.50.225:4011/v1",
+  "context": "Current blocker: A733 SDMMC0 normal IDMAC stalls at first descriptor fetch. PIO reads, small PIO CMD18, partition discovery, CMD49 PIO cache-enable, and read-only root mount work. Closed: descriptor geometry/address shifts/below4G/coherent vs streaming/64-bit mask, safe MSI/IOMMU/NSI bits, public U-Boot IRQ40, and descriptor end-of-ring bit H036. Need source-backed or cheap runtime tests only.",
+  "created_utc": "20260610T235808Z",
+  "models": {
+    "amd3090": "3090 Qwen3.6 27B Dense Q4_K_M GGUF llama.cpp CUDA ctx64k chat",
+    "amd7900": "7900XT Qwen3.6 27B Dense Q4_K_M GGUF llama.cpp Vulkan ctx8k research",
+    "openrouter": "openrouter-free / Auto Free Router random available free model",
+    "strix": "Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding"
+  },
+  "outputs": [
+    {
+      "angle": "source-registry",
+      "file": "strix-source-registry.json",
+      "model": "strix",
+      "status": "ok"
+    },
+    {
+      "angle": "runtime-probes",
+      "file": "strix-runtime-probes.json",
+      "model": "strix",
+      "status": "ok"
+    },
+    {
+      "angle": "source-registry",
+      "file": "amd3090-source-registry.json",
+      "model": "amd3090",
+      "status": "ok"
+    },
+    {
+      "angle": "runtime-probes",
+      "file": "amd3090-runtime-probes.json",
+      "model": "amd3090",
+      "status": "ok"
+    },
+    {
+      "angle": "source-registry",
+      "file": "amd7900-source-registry.json",
+      "model": "amd7900",
+      "status": "ok"
+    },
+    {
+      "angle": "runtime-probes",
+      "file": "amd7900-runtime-probes.json",
+      "model": "amd7900",
+      "status": "ok"
+    },
+    {
+      "angle": "source-registry",
+      "file": "openrouter-source-registry.json",
+      "model": "openrouter",
+      "status": "ok"
+    },
+    {
+      "angle": "runtime-probes",
+      "file": "openrouter-runtime-probes.json",
+      "model": "openrouter",
+      "status": "ok"
+    }
+  ]
+}

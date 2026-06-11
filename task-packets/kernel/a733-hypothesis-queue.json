@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T00:35:00Z",
+  "updated_utc": "2026-06-11T01:15:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H037 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, initial public archive monitor, the public-U-Boot IRQ-40 clue, the descriptor end-of-ring bit, and basic model-suggested IDMAC reset/clock-offset concerns. H037 found public U-Boot is PIO-only for sunxi MMC data and its A733 MMC0 gate/reset offsets match Linux; it cannot justify another behavior patch. The descriptor-fetch question was sent by the user through Gmail plain text mode; no public archive hit or answer is visible yet. Continue four-lane model/source triage, but require a new named register, reset order, firmware handoff bit, master ID, or maintainer reply before building another kernel variant.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H038 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, the public-U-Boot IRQ-40 clue, the descriptor end-of-ring bit, and basic model-suggested IDMAC reset/clock-offset concerns. H038 found no visible Gmail bounce for the 18:01 plain-text resend, but no public archive proof yet. The latest focused model pass produced no source-backed patch candidate; the only fresh idea, IDMAC enable/write-posting delay/readback, remains watch-only until source or maintainer evidence appears.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,34 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H037",
+    "id": "A733-SDMMC-H038",
     "status": "completed_no_patch",
-    "title": "Model-guided public U-Boot/ATF/SCP no-build audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h037-uboot-atf-scp-audit-20260611T0035Z.json",
-    "result": "Public U-Boot's sunxi MMC data path is PIO-only and cannot validate Linux normal-IDMAC descriptor fetch. Its A733 MMC0 CCU gate/reset offsets match the Linux diagnostic CCU driver, and H035 already tested its IRQ 40 clue. Current Linux diagnostics already reset FIFO, DMA interface, and IDMAC controller before enabling IDMAC. No new behavior patch is justified from this audit."
+    "title": "Gmail delivery monitor and focused model/source triage",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h038-mail-model-monitor-20260611T0115Z.json",
+    "result": "Gmail shows the 18:01 plain-text resend in Sent with intended recipients and no visible 18:01 bounce in the rejection search. Public archive search still finds no thread. Focused four-lane model triage produced no source-backed behavior patch candidate."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H038",
+      "priority": 37,
+      "status": "completed_no_patch",
+      "title": "Gmail delivery monitor and focused model/source triage",
+      "question": "Did the 18:01 plain-text maintainer/list resend visibly bounce, and did the next four-lane model pass produce a source-backed patch candidate?",
+      "test_cost": "low; Gmail/Safari inspection, public search, and model-output triage",
+      "procedure": [
+        "Inspect the open Gmail/Safari thread and Sent view.",
+        "Search Gmail for recent blocked/rejected/not-delivered/mailer-daemon messages.",
+        "Search public web/archive queries for the A733 IDMAC subject/body.",
+        "Run a focused four-lane model squeeze for source-registry and runtime-probes angles.",
+        "Reject duplicate, wrong-driver, or non-source-backed suggestions."
+      ],
+      "pass_criteria": "A clear bounce/reply/archive hit is found, or a model/source item names one concrete source-backed runtime delta.",
+      "fail_criteria": "Only the old HTML bounces are visible and model output is duplicate/wrong-driver/non-source-backed.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h038-mail-model-monitor-20260611T0115Z.json",
+        "summary": "No visible Gmail bounce for the 18:01 plain-text resend. No public archive hit yet. No model-derived behavior patch was promoted."
+      }
+    },
     {
       "id": "A733-SDMMC-H037",
       "priority": 36,

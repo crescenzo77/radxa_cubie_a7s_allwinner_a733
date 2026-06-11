@@ -1,0 +1,38 @@
+{
+  "choices": [
+    {
+      "finish_reason": "length",
+      "index": 0,
+      "message": {
+        "content": "Based on the constraints (A733 SDMMC0, IDMAC stall at first descriptor fetch, PIO works, no vendor-DTS pollution), the issue likely lies in the **hardware state machine transition** from \"Idle/Reset\" to \"Active DMA\" or a **descriptor fetch address mismatch** due to bus mastering configuration.\n\nHere are three runtime-probe angles. Each answers a specific Yes/No question, requires only `devmem`/`printk`/`cat`, and has a clear falsifier.\n\n### Probe 1: The \"Descriptor Fetch Address\" Sanity Check\n**Question:** Does the SDMMC controller\u2019s internal DMA address register (`SDXC_DMAC`) match the physical address of the first descriptor in the ring buffer?\n\n**Hypothesis:** The driver calculates the descriptor address correctly, but the hardware expects a different alignment, or the address is being truncated/masked incorrectly by the SoC\u2019s bus matrix before reaching the SDMMC block. If the hardware sees a different address than the driver intends, it will stall waiting for data that isn\u2019t there.\n\n**Evidence to Inspect:**\n1.  The physical address of the first descriptor (from kernel logs or `dmesg` if you add a probe).\n2.  The value in the SDMMC DMA Control Register (`SDXC_DMAC`, offset `0x100` from SDMMC base).\n\n**Minimal Test:**\n1.  **Find SDMMC0 Base:** On A733, SDMMC0 is typically at `0x05010000` (verify via `cat /sys/class/mmc_host/mmc0/device/reserved_mem` or similar, or check `dmesg | grep sdhci`). Let\u2019s assume `0x05010000`.\n2.  **Read DMA Address Register:**\n    ```bash\n    devmem 0x05010100 4  # SDXC_DMAC (DMA Address Register)\n    ```\n3.  **Compare:** Compare this value with the physical address of the first descriptor. You can find the descriptor address by adding a `pr_info(\"desc_phys: %pa\\n\", &desc->phys);` in `sdhci_setup_data()` or by checking `dmesg` if you enable `sdhci_debug`.\n\n**Falsifier:**\n- **If the values match:** The hardware is seeing the correct address. The stall is *not* due to address mismatch. Move to Probe 2.\n- **If the values differ:** The hardware is not seeing the correct address. This suggests a bus mastering issue, IOMMU mapping error, or alignment issue. **This is the blocker.**\n\n---\n\n### Probe 2: The \"DMA Enable Bit\" Timing Check\n**Question:** Is the DMA Enable bit (`DMAE`) in the SDXC Control Register (`SDXC_CTRL`, offset `0x000`) set *before* the command is issued, and does it remain set?\n\n**Hypothesis:** The driver sets the DMA enable bit, but the hardware requires a specific sequence or timing. If the bit is cleared prematurely or not set at all, the hardware will stall when it tries to fetch the descriptor.\n\n**Evidence to Inspect:**\n1.  The value of the SDXC Control Register (`SDXC_CTRL`, offset `0x000`).\n2.  The timing of the DMA Enable bit relative to the command issue.\n\n**Minimal Test:**\n1.  **Read Control Register:**\n    ```bash\n    devmem 0x05010000 4  # SDXC_CTRL\n    ```\n2.  **Check Bit 0 (DMAE):** If bit 0 is `0`, DMA is disabled. If it\u2019s `1`, DMA is enabled.\n3.  **Timing:** You need to check this *during* the stall. Since the stall happens at the first descriptor fetch, you can add a `pr_info(\"SDXC_CTRL: 0x%08x\\n\", readl(host->ioaddr + SDHCI_CTRL));` in `sdhci_send_command()` just before the command is issued.\n\n**Falsifier:**\n- **If DMAE is 0:** The driver is not enabling DMA. This is a driver bug. **This is the blocker.**\n- **If DMAE is 1:** DMA is enabled. The stall is not due to DMA being disabled. Move to Probe 3.\n\n---\n\n### Probe 3: The \"Descriptor Ring End\" Bit Check\n**Question:** Is the \"End of Ring\" (EOR) bit set correctly in the *last* descriptor, and is the \"Interrupt on Completion\" (IOC) bit set in the *first* descriptor?\n\n**Hypothesis:** The hardware may stall if it doesn\u2019t see the EOR bit in the last descriptor, or if it doesn\u2019t see the IOC bit in the first descriptor. This is a common issue with IDMAC implementations.\n\n**Evidence to Inspect:**\n1.  The contents of the first and last descriptors in the ring buffer.\n2.  The hardware\u2019s behavior when the EOR bit is set/cleared.\n\n**Minimal Test:**\n1.  **Dump Descriptor Ring:** Add a `pr_info(\"desc[0]: 0x%08x, 0x%08x\\n\", desc[0].control, desc[0].address);` and `pr_info(\"desc[last]: 0x%08x, 0x%08x\\n\", desc[last].control, desc[last].address);` in `sdhci_setup_data()`.\n2.  **Check Bits:**\n    -   First descriptor: `control` should have `IOC` (bit 0) set.\n    -   Last descriptor: `control` should have `EOR` (bit 1) set.\n3.  **Modify:** If the bits are not set, modify the driver to set them. If they are set, try clearing the EOR bit in the last descriptor and see if the stall persists.\n\n**Falsifier:**\n- **If the bits are set correctly and the stall persists:** The issue is not with the descriptor ring configuration. Move to Probe 4.\n- **If the bits are not set correctly:** The driver is not setting the bits. This is a driver bug. **This is the blocker.**\n\n---\n\n### Probe 4: The \"Bus Mastering\" Enable Check\n**Question:** Is the SDMMC controller\u2019s bus mastering enabled in the SoC\u2019s bus matrix?\n\n**Hypothesis:** The SDMMC controller may not have bus mastering enabled, preventing it from fetching descriptors from memory. This is a common issue on Allwinner SoCs.\n\n**Evidence to Inspect:**\n1.  The value of the bus matrix control registers for the SDMMC controller.\n2.  The hardware\u2019s behavior when bus mastering is enabled/disabled.\n\n**Minimal Test:**\n1.  **Find Bus Matrix Registers:** On A733, the bus matrix is typically at `0x03000000`. The SDMMC0 bus mastering control register is likely at `0x03000000 + 0x100` (verify via datasheet or `dmesg`).\n2.  **Read Register:**\n    ```bash\n    devmem 0x03000100 4  # SDMMC0 Bus Mastering Control\n    ```\n3.  **Check Bit 0:** If bit 0 is `0`, bus mastering is disabled. If it\u2019s `1`, bus mastering is enabled.\n4.  **Enable Bus Mastering:** If disabled, enable it:\n    ```bash\n    devmem 0x03000100 4 1  # Enable bus mastering\n    ```\n5.  **Retry:** Retry the SDMMC operation.\n\n**Falsifier:**\n- **If bus mastering was disabled and enabling it fixes the stall:** The issue was bus mastering. **This is the blocker.**\n- **If bus mastering was already enabled and the stall persists:** The issue is not bus mastering. Move to Probe 5.\n\n---\n\n### Probe 5: The \"Descriptor Alignment\" Check\n**Question:** Is the descriptor ring buffer aligned to a 64-byte boundary?\n\n**Hypothesis:** The IDMAC hardware may require the descriptor ring buffer to be aligned to",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1781136034,
+  "id": "chatcmpl-L7zKGyn7kcJpiqIbf1XAUgqJKTuh5Pu8",
+  "model": "qwen3.6-27b-rocmfp4-mtp-headq6-noreason",
+  "object": "chat.completion",
+  "system_fingerprint": "b9220-c5bfb0d8d",
+  "timings": {
+    "cache_n": 0,
+    "draft_n": 1851,
+    "draft_n_accepted": 1182,
+    "predicted_ms": 73702.394,
+    "predicted_n": 1800,
+    "predicted_per_second": 24.422544537698464,
+    "predicted_per_token_ms": 40.945774444444446,
+    "prompt_ms": 1008.909,
+    "prompt_n": 217,
+    "prompt_per_second": 215.0838182630941,
+    "prompt_per_token_ms": 4.649350230414747
+  },
+  "usage": {
+    "completion_tokens": 1800,
+    "prompt_tokens": 217,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2017
+  }
+}

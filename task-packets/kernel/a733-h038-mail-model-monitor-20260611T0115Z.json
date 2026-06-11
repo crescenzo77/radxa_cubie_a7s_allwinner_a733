@@ -1,0 +1,69 @@
+{
+  "id": "A733-SDMMC-H038",
+  "created_utc": "2026-06-11T01:15:00Z",
+  "title": "Gmail delivery monitor and focused model/source triage",
+  "status": "completed_no_patch",
+  "gmail_evidence": {
+    "visible_sent_plain_text_resend": {
+      "time_local": "2026-06-10 18:01",
+      "subject": "sunxi-mmc: A733 IDMAC stuck in descriptor rea",
+      "to": "Ulf Hansson <ulfh@kernel.org>",
+      "cc": [
+        "Chen-Yu Tsai <wens@kernel.org>",
+        "Jernej Skrabec <jernej.skrabec@gmail.com>",
+        "Samuel Holland <samuel@sholland.org>",
+        "linux-mmc@vger.kernel.org",
+        "linux-arm-kernel@lists.infradead.org",
+        "linux-sunxi@lists.linux.dev",
+        "linux-kernel@vger.kernel.org"
+      ],
+      "observation": "The 18:01 message is visible in Gmail Sent with the intended recipients and body."
+    },
+    "visible_bounces": [
+      {
+        "time_local": "2026-06-10 17:40",
+        "recipient": "linux-arm-kernel@lists.infradead.org",
+        "reason": "550 Mailing lists do not accept HTML mail."
+      },
+      {
+        "time_local": "2026-06-10 17:40",
+        "recipient": "linux-kernel@vger.kernel.org",
+        "reason": "HTML message rejected."
+      },
+      {
+        "time_local": "2026-06-10 17:40",
+        "recipient": "linux-sunxi@lists.linux.dev",
+        "reason": "HTML message rejected."
+      },
+      {
+        "time_local": "2026-06-10 17:40",
+        "recipient": "linux-mmc@vger.kernel.org",
+        "reason": "HTML message rejected."
+      }
+    ],
+    "search_query": "newer_than:1d (\"Message blocked\" OR \"not delivered\" OR rejected OR blocked OR mailer-daemon)",
+    "search_result": "Gmail showed 6 results. The visible rejection results were the 17:40 HTML attempt and a draft/forward. No 18:01 plain-text resend bounce was visible.",
+    "interpretation": "There is evidence the first HTML attempt was rejected by lists, and evidence the later plain-text resend exists in Sent. There is no visible Gmail evidence that the 18:01 resend bounced. This does not prove list archive distribution or maintainer receipt."
+  },
+  "public_archive_check": {
+    "queries": [
+      "\"sunxi-mmc: A733 IDMAC stuck\"",
+      "\"A733\" \"IDMAC\" \"descriptor\" \"sunxi-mmc\"",
+      "\"SDMMC0\" \"IDMAC\" \"A733\""
+    ],
+    "result": "No public archive hit for the sent thread. Search still mainly finds the known U-Boot A733 series and generic forum pages."
+  },
+  "model_batch": "/Users/enzo/projects/homelab/task-packets/kernel/model-squeeze/20260611T0100Z",
+  "model_triage": {
+    "accepted_for_patch": [],
+    "watch_only": [
+      "IDMAC enable/write-posting delay or readback probe. This is cheap but model-derived only; do not boot-test without source or maintainer evidence."
+    ],
+    "rejected_or_duplicate": [
+      "Descriptor visibility/coherency/address suggestions duplicate H009-H036 evidence.",
+      "dw_mmc/SDHCI suggestions are the wrong driver family for this A733 sunxi-mmc diagnostic path.",
+      "STORE/MBUS/MSI-lite clock ideas are already represented in the diagnostic DTS/driver and were tested without fixing descriptor fetch."
+    ]
+  },
+  "decision": "No new behavior patch. Keep monitoring mail/list archives and continue source-backed audits only."
+}

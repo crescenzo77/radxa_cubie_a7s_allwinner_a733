@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "length",
+      "index": 0,
+      "message": {
+        "content": "Based on the constraints (A733 SDMMC0, IDMAC stall at first descriptor fetch, PIO works, H009-H036 closed), the issue is almost certainly a **hardware initialization sequence mismatch** or a **clock/reset domain dependency** that the generic `dw_mmc` driver does not handle for this specific SoC revision. The \"stall at first descriptor fetch\" implies the DMA engine is enabled but the bus handshake fails immediately, often due to a missing clock gate, incorrect bus width configuration, or a reset line not being de-asserted in the correct order relative to the DMA controller.\n\nHere are three concrete, source-backed angles to audit.\n\n### Angle 1: The \"Reset De-assertion Order\" Hypothesis\n**Theory:** The A733 SDMMC0 controller may require the `apb_pclk` (APB clock) to be stable and the `ahb_pclk` (AHB clock) to be enabled *before* the reset line is de-asserted. If the reset is de-asserted while the AHB clock is gated, the IDMAC engine may latch into a \"hung\" state where it sees no bus response to its first read. The generic `dw_mmc` driver often assumes a simple `reset_control_deassert` is sufficient, but Allwinner SoCs sometimes require a specific sequence: `clk_prepare_enable` -> `reset_deassert` -> `delay` -> `hw_init`.\n\n**Evidence to Inspect:**\n1.  **Source File:** `drivers/mmc/host/dw_mmc.c`\n    *   Look at `dw_mci_init()` and `dw_mci_slot_init()`.\n    *   Check if `reset_control_deassert()` is called before or after `clk_prepare_enable()` for the `ahb` and `apb` clocks.\n2.  **Source File:** `arch/arm64/boot/dts/allwinner/sun50i-a733.dtsi` (or the specific board DTS)\n    *   Inspect the `sdmmc0` node. Does it have multiple clocks? Typically `ahb` and `apb`.\n    *   Check the `resets` property. Is there a single reset line or multiple?\n3.  **Register:** `SDMMC0_BASE + 0x000` (SYS_CTRL)\n    *   Check bit 0 (`SDIO_RESET`). Is it 0 (de-asserted) when the stall occurs?\n    *   Check bit 1 (`SDIO_CLK_EN`). Is it 1?\n    *   Check bit 2 (`SDIO_INT_EN`). Is it 0? (Irrelevant for stall, but good sanity check).\n\n**Minimal Test:**\n1.  Add a `udelay(10)` after `clk_prepare_enable()` and before `reset_control_deassert()` in `dw_mci_init()`.\n2.  Alternatively, swap the order: de-assert reset *before* enabling clocks (if the hardware spec allows, though unlikely).\n3.  If the driver supports it, add a `reset_control_assert()` followed by `udelay(1)` then `reset_control_deassert()` to ensure a clean reset cycle.\n\n**Falsifier:**\nIf the stall persists after ensuring a clean reset cycle with proper clock gating (clocks on, reset de-asserted, 10us delay), then the reset order is not the cause. The IDMAC engine would still fail to fetch the descriptor if the address is invalid or the bus width is wrong, but those were closed by H009-H036.\n\n### Angle 2: The \"AHB Bus Width/Granularity\" Hypothesis\n**Theory:** The A733 SDMMC0 IDMAC may require the AHB bus to be configured for 32-bit or 64-bit access, but the `dw_mmc` driver might be leaving it in a default 8-bit or 16-bit mode, or the descriptor alignment is not meeting a hidden hardware requirement. The \"stall at first descriptor fetch\" could be an AHB bus error that is silently ignored or causes the DMA engine to hang because it cannot complete the read transaction. The `dw_mmc` driver sets the bus width via `SDMMC_CTRL` (bit 12-13), but this might not affect the *DMA* bus width, which could be controlled by a separate register or require a specific alignment.\n\n**Evidence to Inspect:**\n1.  **Source File:** `drivers/mmc/host/dw_mmc.c`\n    *   Look at `dw_mci_set_bus_width()`. Does it only set `SDMMC_CTRL` bits?\n    *   Check if there is any code that sets `SDMMC_IDMAC_SYSAD` (System Address) or `SDMMC_IDMAC_SYSCFG` (System Configuration).\n2.  **Register:** `SDMMC0_BASE + 0x040` (IDMAC_SYSAD)\n    *   What is the value written? Is it aligned to 4 bytes? 8 bytes?\n3.  **Register:** `SDMMC0_BASE + 0x044` (IDMAC_SYSCFG)\n    *   Check bit 0 (`DMA_MODE`). Is it 1 (IDMAC)?\n    *   Check bit 1 (`DMA_BURST_SIZE`). Is it set to 4 (16-beat) or 8 (32-beat)? The A733 might require a specific burst size for the first transaction.\n    *   Check bit 2 (`DMA_FIXED_BURST`). Is it 0?\n4.  **Source File:** `arch/arm64/boot/dts/allwinner/sun50i-a733.dtsi`\n    *   Check the `dma-coherent` property. If present, the driver might be using coherent memory, but the hardware might require non-coherent or vice versa.\n\n**Minimal Test:**\n1.  In `dw_mci_slot_init()`, after setting up the IDMAC, read back `IDMAC_SYSCFG`.\n2.  Try forcing `IDMAC_SYSCFG` bit 1 (`DMA_BURST_SIZE`) to 0 (1-beat) or 1 (4-beat) instead of the default 4 (16-beat).\n3.  Ensure the descriptor address in `IDMAC_SYSAD` is 8-byte aligned, even if the driver thinks 4-byte is enough.\n\n**Falsifier:**\nIf changing the burst size or alignment does not resolve the stall, and the descriptor address is correctly aligned and within the 32-bit address space (as per H009-H036), then the bus width/granularity is not the issue.\n\n### Angle 3: The \"Clock Divider/Phase\" Hypothesis\n**Theory:** The SDMMC0 clock might be enabled, but the divider or phase might be set incorrectly, causing the internal state machine to stall when it tries to initiate a DMA transaction. The PIO mode works because it uses a different clock path or is less sensitive to the exact clock phase. The IDMAC engine might require the clock to be stable and within a specific frequency range before it can fetch descriptors. The `dw_mmc` driver sets the clock via `dw_mci_set_ios()`, but this might be called *after* the DMA engine is initialized, leading to a race condition.\n\n**Evidence to Inspect:**\n1.  **Source File:** `drivers/mmc/host/dw_mmc.c`\n    *   Look at `dw_mci_set_ios()`. When is it called relative to `dw_mci_slot_init()`?\n    *   Check if `dw_mci_start_dma()` is called before `dw_mci_set_ios()` has had a chance to stabilize the clock.\n2.  **Register:** `SDMMC0_BASE + 0x004` (CLK_DIV)\n    *   What is the divider value? Is it 0? (Some SoCs treat 0 as 1, others as disabled).\n3.  **Register:** `SDMMC0_BASE + 0x008` (CLK_CTRL)\n    *   Check bit 0 (`CLK_EN`). Is it 1?\n    *   Check bit 1 (`CLK_SEL`). Is it selecting the correct parent clock?\n    *   Check bit 2 (`CLK",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1781136174,
+  "id": "chatcmpl-KaB7y1mqmrFQrIG72C4lfWHANQKHWDyM",
+  "model": "qwen36-27b-7900xt-research",
+  "object": "chat.completion",
+  "system_fingerprint": "b9536-308f61c31",
+  "timings": {
+    "cache_n": 74,
+    "predicted_ms": 59888.788,
+    "predicted_n": 1800,
+    "predicted_per_second": 30.055709258968474,
+    "predicted_per_token_ms": 33.27154888888889,
+    "prompt_ms": 563.86,
+    "prompt_n": 149,
+    "prompt_per_second": 264.24999113255063,
+    "prompt_per_token_ms": 3.784295302013423
+  },
+  "usage": {
+    "completion_tokens": 1800,
+    "prompt_tokens": 223,
+    "prompt_tokens_details": {
+      "cached_tokens": 74
+    },
+    "total_tokens": 2023
+  }
+}
