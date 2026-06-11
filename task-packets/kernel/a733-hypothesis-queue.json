@@ -1120,6 +1120,25 @@
       }
     },
     {
+      "id": "A733-SDMMC-H045",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "Orange Pi A733 BSP v5p3x threshold and start-DMA audit",
+      "question": "Does the full Orange Pi/A733 BSP MMC source reveal a v5p3x threshold, descriptor, or start-DMA delta that justifies one narrow Linux runtime patch for SDMMC0 IDMAC descriptor-fetch reachability?",
+      "test_cost": "low; source audit only, no kernel build and no board reboot",
+      "procedure": [
+        "Inspect BSP sunxi-mmc.c and sunxi-mmc-v5p3x.c for descriptor setup, DMA mask, descriptor address shift, threshold control, reset order, GCTRL/IDIE/DMAC enable sequence, and A733/v5p3x init hooks.",
+        "Compare only source-backed deltas against the local diagnostic Linux path and the already closed H009-H044 evidence.",
+        "Only patch Linux if a delta can plausibly affect descriptor word 0 fetch, not later FIFO data movement."
+      ],
+      "pass_criteria": "A source-backed descriptor-fetch delta is either promoted to one narrow runtime proof or explicitly rejected as not descriptor-fetch relevant.",
+      "fail_criteria": "The next session repeats the BSP v5p3x source audit or mistakes FIFO threshold policy for a proven IDMAC fetch precondition.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h045-bsp-v5p3x-threshold-audit-20260611T0435Z.json",
+        "summary": "Completed with no behavior patch. BSP v5p3x descriptor setup, shifted address helper, reset order, GCTRL DMA enable, read IDIE, and DMAC FIX_BURST|IDMA_ON sequence match paths already tested. The only new delta is THLD policy: BSP preserves existing bits, manages WR_THLD separately, and gates RD_THLD by high-speed timing. That affects FIFO threshold behavior after descriptor fetch, while the lab failure is still before descriptor word 0 is consumed: IDST=0x4000 DESC_READ, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, and descriptor OWN unchanged."
+      }
+    },
+    {
       "id": "A733-SDMMC-H004",
       "priority": 4,
       "status": "do_not_repeat_without_new_evidence",

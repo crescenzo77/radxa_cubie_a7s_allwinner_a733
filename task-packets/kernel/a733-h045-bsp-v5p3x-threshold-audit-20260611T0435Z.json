@@ -1,0 +1,25 @@
+{
+  "id": "A733-SDMMC-H045",
+  "timestamp_utc": "2026-06-11T04:35:00Z",
+  "title": "Orange Pi A733 BSP v5p3x threshold and start-DMA audit",
+  "scope": [
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc-v5p3x.c",
+    "/srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "trigger": "After the public/community repo audit exposed full BSP MMC sources, check whether v5p3x threshold or start-DMA logic reveals one specific, testable Linux delta for the A733 SDMMC0 IDMAC descriptor-fetch stall.",
+  "findings": [
+    "BSP v5p3x sets host->dma_tl to (0x2 << 28) | (7 << 16) | 248, host->idma_des_size_bits to 12, host->sunxi_mmc_thld_ctl to sunxi_mmc_thld_ctl_for_sdmmc_v5p3x(), and host->des_addr_shift to 2 when SMCV reports v5p3 or newer.",
+    "The descriptor setup still uses the known normal-IDMAC format: OWN | CH | DIC on each descriptor, shifted data buffer addresses, shifted next-descriptor addresses, FD on the first descriptor, LD on the last descriptor, DIC cleared on the last descriptor, then wmb().",
+    "The start-DMA sequence remains the same visible sequence already tested locally: initialize descriptors, reset FIFO, reset DMA interface, reset IDMAC control, set GCTRL DMA enable, enable receive interrupt for reads, then write DMAC FIX_BURST | IDMA_ON.",
+    "The v5p3x threshold helper differs from the local diagnostic shim. It preserves existing THLD bits, clears/sets WR_THLD for writes, and only enables RD_THLD for high-speed read timings. For data == NULL it sets both RD_THLD and WR_THLD with a 512-byte threshold.",
+    "This threshold delta is not a strong descriptor-fetch candidate. The failure signature is before descriptor word 0 is consumed: IDST=0x4000 DESC_READ, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, and descriptor OWN unchanged. FIFO threshold policy should affect data movement after descriptor fetch, not the initial memory read of descriptor word 0.",
+    "Existing register evidence already includes THLD values seen as 0x02000001 and 0x02000005 in different phases; neither has been tied to descriptor consumption."
+  ],
+  "decision": "No behavior patch.",
+  "reason": "The only new BSP-source delta is threshold policy, and it is not credible enough to justify another kernel build/boot against a pre-descriptor-fetch stall. Descriptor geometry, address shifting, DMA mask, reset order, and normal IDMAC enable path remain already covered.",
+  "next": [
+    "Keep waiting for maintainer/list feedback, public archive visibility, or a source-backed SDMMC0 master/firewall/security/firmware handoff bit.",
+    "Do not retest THLD-only variants unless a maintainer or vendor source specifically links THLD bit 2 or v5p3x threshold gating to IDMAC descriptor fetch."
+  ]
+}
