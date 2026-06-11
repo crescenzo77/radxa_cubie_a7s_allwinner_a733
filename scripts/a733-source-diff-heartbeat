@@ -1,0 +1,178 @@
+#!/usr/bin/env python3
+import datetime as dt
+import hashlib
+import json
+import os
+import pathlib
+import subprocess
+import time
+import urllib.request
+
+
+REPO = pathlib.Path(os.environ.get("A733_HERMES_REPO", "/srv/projects/homelab"))
+OUTDIR = pathlib.Path(os.environ.get(
+    "A733_SOURCE_DIFF_OUTDIR",
+    str(REPO / "task-packets/kernel/hermes-source-diff"),
+))
+STATE_PATH = pathlib.Path(os.environ.get(
+    "A733_SOURCE_DIFF_HEARTBEAT_STATE",
+    str(REPO / "task-packets/kernel/a733-source-diff-heartbeat.json"),
+))
+TELEGRAM_ENV = pathlib.Path(os.environ.get("A733_TELEGRAM_ENV", "/etc/telegram-tasks-bot/bot.env"))
+REPORT_BASE_URL = os.environ.get("A733_SOURCE_DIFF_REPORT_BASE_URL", "http://192.168.50.225:9181")
+GRACE_SECONDS = int(os.environ.get("A733_SOURCE_DIFF_GRACE_SECONDS", "600"))
+
+REQUIRED = [
+    "a733-vendor-mainline-diff-summary.md",
+    "a733-vendor-mainline-diff-candidates.json",
+    "a733-vendor-mainline-diff-report.html",
+]
+
+
+def run(cmd, timeout=30):
+    return subprocess.run(
+        cmd,
+        shell=True,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        timeout=timeout,
+    )
+
+
+def load_json(path, default):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return default
+
+
+def save_json(path, doc):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    tmp.replace(path)
+
+
+def env_file(path):
+    env = {}
+    if not path.exists():
+        return env
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        env[key.strip()] = value.strip().strip('"').strip("'")
+    return env
+
+
+def telegram_send(text):
+    cfg = env_file(TELEGRAM_ENV)
+    token = cfg.get("TELEGRAM_BOT_TOKEN")
+    chat_id = cfg.get("TASK_NOTIFY_USER_ID") or cfg.get("CLEAN_TASK_USER_ID")
+    if not token or not chat_id:
+        return "telegram skipped: missing token/chat id"
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=json.dumps({"chat_id": chat_id, "text": text, "disable_web_page_preview": False}).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        return resp.read().decode()
+
+
+def file_fingerprint(path):
+    if not path.exists():
+        return {"exists": False}
+    st = path.stat()
+    return {
+        "exists": True,
+        "mtime": int(st.st_mtime),
+        "size": st.st_size,
+        "sha256": hashlib.sha256(path.read_bytes()[-65536:]).hexdigest(),
+    }
+
+
+def snapshot():
+    proc = run(
+        "pgrep -af 'A733 vendor-mainline diff audit|a733-hermes-source-diff-audit-prompt|hermes.*cron|hermes.*agent' | grep -v pgrep || true",
+        timeout=10,
+    ).stdout.strip()
+    cron = run("/home/enzo/.local/bin/hermes cron list 2>/dev/null || true", timeout=20).stdout
+    files = {name: file_fingerprint(OUTDIR / name) for name in REQUIRED}
+    partials = {}
+    if OUTDIR.exists():
+        for path in sorted(OUTDIR.glob("a733-vendor-mainline-diff-*")):
+            partials[path.name] = file_fingerprint(path)
+    complete = all(files[name].get("exists") and files[name].get("size", 0) > 0 for name in REQUIRED)
+    active_job = "A733 vendor-mainline diff audit" in cron and "[active]" in cron
+    active_proc = bool(proc)
+    sig_src = json.dumps({"files": files, "partials": partials, "active_job": active_job, "active_proc": active_proc}, sort_keys=True)
+    return {
+        "utc": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "active_job": active_job,
+        "active_proc": active_proc,
+        "complete": complete,
+        "files": files,
+        "partials": partials,
+        "processes": proc[-4000:],
+        "cron": cron[-4000:],
+        "signature": hashlib.sha256(sig_src.encode()).hexdigest(),
+    }
+
+
+def is_suspect(snap, prev):
+    if snap["complete"]:
+        return False, "complete"
+    if not snap["active_job"] and not snap["active_proc"]:
+        return True, "audit is incomplete and no Hermes job/process appears active"
+    if prev and prev.get("signature") == snap["signature"]:
+        return True, "audit is active but outputs/process state did not move"
+    return False, "moving or newly started"
+
+
+def main():
+    state = load_json(STATE_PATH, {})
+    first = snapshot()
+    suspect, reason = is_suspect(first, state.get("last"))
+    state["last"] = first
+    state["last_reason"] = reason
+    save_json(STATE_PATH, state)
+
+    if not suspect:
+        print(f"source-diff heartbeat: ok ({reason})")
+        return
+
+    print(f"source-diff heartbeat: suspect; waiting {GRACE_SECONDS}s ({reason})")
+    time.sleep(GRACE_SECONDS)
+    second = snapshot()
+    still_suspect, second_reason = is_suspect(second, first)
+    state["last"] = second
+    state["last_reason"] = second_reason
+    save_json(STATE_PATH, state)
+
+    if not still_suspect:
+        print(f"source-diff heartbeat: recovered ({second_reason})")
+        return
+
+    alert_key = second["signature"]
+    if state.get("alerted_signature") == alert_key:
+        print("source-diff heartbeat: still stalled; alert already sent")
+        return
+
+    state["alerted_signature"] = alert_key
+    save_json(STATE_PATH, state)
+    report_url = f"{REPORT_BASE_URL.rstrip('/')}/hermes-source-diff/a733-vendor-mainline-diff-report.html"
+    telegram_send(
+        "A733 source-diff heartbeat alert: audit may be stalled\n"
+        f"Reason: {second_reason}\n"
+        f"Waited {GRACE_SECONDS // 60} minutes and saw no recovery.\n"
+        f"HTML report: {report_url}\n"
+        f"State file: {STATE_PATH}"
+    )
+    print("source-diff heartbeat: alert sent")
+
+
+if __name__ == "__main__":
+    main()
