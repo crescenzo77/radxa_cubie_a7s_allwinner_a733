@@ -2088,6 +2088,25 @@
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h096-storage-master-security-sweep-20260611T0420Z.json",
         "summary": "Completed with no behavior patch. Broad source grep found no A733-specific SMHC0/storage-master permission, firewall, MBUS/NSI, or secure handoff symbol beyond already closed generic SPC/TZMA text and prior MBUS/NSI audits. Hermes task t_ec1741d0 still has no result."
       }
+    },
+    {
+      "id": "A733-SDMMC-H097",
+      "priority": 2,
+      "status": "completed_cleanup_only",
+      "title": "Upstream DTS pinctrl property cleanup and Hermes dispatch",
+      "question": "Can the current candidate be made more upstream-clean while the IDMAC blocker remains unresolved?",
+      "test_cost": "low; source cleanup only",
+      "procedure": [
+        "Remove legacy vendor allwinner,pinmux properties where upstream function properties already describe the A733 pin groups.",
+        "Do not change MMC runtime behavior or expand board scope.",
+        "Dispatch the independent Hermes audit with source-backed-only constraints."
+      ],
+      "pass_criteria": "The candidate no longer contains allwinner,pinmux in sun60i-a733 DTS files, and the IDMAC blocker remains tracked separately.",
+      "fail_criteria": "A DTS cleanup is treated as an IDMAC fix or introduces vendor U-Boot compatibility pollution.",
+      "result": {
+        "result_file": null,
+        "summary": "Candidate branch /Users/enzo/projects/linux-a733 at commit 500b93f2e573 drops legacy allwinner,pinmux from the Cubie A7S UART pins and A733 MMC0 pins. This is upstream-readiness cleanup only; no boot/runtime claim. Hermes task t_ec1741d0 was reassigned from missing profile agent to default and dispatched on ThinkCentre; it needed source-path guidance because its initial workspace did not include the kernel tree."
+      }
     }
   ],
   "model_routes": [
