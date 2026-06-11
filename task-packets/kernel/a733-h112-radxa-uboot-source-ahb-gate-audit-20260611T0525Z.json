@@ -1,0 +1,22 @@
+{
+  "id": "A733-SDMMC-H112",
+  "title": "Radxa U-Boot source and A733 AHB gate audit",
+  "timestamp_utc": "2026-06-11T05:25:00Z",
+  "status": "completed_test_candidate_no_patch",
+  "inputs": {
+    "repo": "/Users/enzo/projects/vendor-src/u-boot-aw2501",
+    "upstream": "https://github.com/radxa-pkg/u-boot-aw2501",
+    "tag_range": "2018.07-12..2018.07-17",
+    "linux_tree": "/Users/enzo/projects/linux-a733"
+  },
+  "findings": [
+    "Radxa package tags exist for 2018.07-12 through 2018.07-17. The installed Cubie3 payload string matches the 2018.07-17 U-Boot source commit 4c7078cfdf7f.",
+    "U-Boot proper changed only ramdisk/initrd placement, SPI NOR ID support, and a DRM file-load revert between b2d229198b2c and 4c7078cfdf7f. No MMC, SDMMC, SMHC, IDMAC, NSI, MBUS, SMC, or firewall source change appeared in that range.",
+    "The device-a733 submodule did update opaque boot binaries at commit 80fc27c, but before-vs-after string comparison exposed no new storage/security strings beyond a BL31 DRAM-size string.",
+    "The A733 generated SPL clock header defines SMHC0 core clock/BGR at CCU offsets 0xd00/0xd0c, matching the local Linux CCU scaffold for CLK_MMC0, CLK_BUS_MMC0, and RST_BUS_MMC0.",
+    "The same generated header also defines an AHB gate register around CCU offset 0x5dc with SMHC0/1/2/3 AHB gate bits. The local Linux CCU scaffold does not model this separate AHB gate.",
+    "A vendor runtime audit H074 previously read offset 0x5c0, not 0x5dc. A new read-only attempt using dd on /dev/mem returned empty values on both Cubie2 and Cubie3, consistent with earlier vendor /dev/mem caveats, so it is not value evidence."
+  ],
+  "decision": "Do not create an upstream patch from this alone. Promote a lab-only H113 runtime test: enable or snapshot the A733 AHB gate at CCU base 0x02002000 + 0x5dc, especially bit 5 for SMHC0 per the generated clear mask, while keeping the existing SMHC0 BGR/reset at 0xd0c. If that changes IDMAC descriptor fetch, then convert the evidence into a CCU/dependency discussion rather than a board DTS workaround.",
+  "next": "A733-SDMMC-H113"
+}

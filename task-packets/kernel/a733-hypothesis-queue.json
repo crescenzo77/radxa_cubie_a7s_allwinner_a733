@@ -2377,6 +2377,48 @@
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h111-uboot-package-changelog-audit-20260611T0510Z.json",
         "summary": "Completed with no behavior patch. The changelog from 2018.07-12 to 2018.07-17 mostly says chore: update submodules and does not name MMC, SDMMC, SMHC, IDMAC, NSI, MBUS, firewall, or storage-fabric changes. Source metadata points to radxa-pkg/u-boot-aw2501, but installed docs do not expose submodule SHAs or a concrete reason to expect an IDMAC fix."
       }
+    },
+    {
+      "id": "A733-SDMMC-H112",
+      "priority": 1,
+      "status": "completed_test_candidate_no_patch",
+      "title": "Audit Radxa U-Boot package source and A733 AHB gate",
+      "question": "Does Radxa's 2018.07-12..2018.07-17 U-Boot/package source reveal a storage-relevant delta or a named missing Linux gate?",
+      "test_cost": "low; source diff plus read-only register probe attempt",
+      "procedure": [
+        "Clone/fetch https://github.com/radxa-pkg/u-boot-aw2501 with submodules.",
+        "Diff package tags 2018.07-12..2018.07-17 and inspect src/device-a733 submodule changes.",
+        "Compare pre/post boot binary strings from the device-a733 binary update.",
+        "Compare A733 generated clock registers against local Linux CCU modeling."
+      ],
+      "pass_criteria": "A specific source-backed runtime test is promoted, or the U-Boot delta is closed.",
+      "fail_criteria": "Future sessions assume newer Radxa U-Boot contains an MMC/IDMAC fix without source evidence.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h112-radxa-uboot-source-ahb-gate-audit-20260611T0525Z.json",
+        "summary": "Completed with no upstream patch. U-Boot proper changed ramdisk/initrd/SPI-NOR/DRM paths only; no MMC/SMHC/IDMAC/NSI/MBUS source delta. The opaque boot binary update had no new storage/security strings. New source-backed test candidate: A733 generated headers define a separate AHB gate register at CCU offset 0x5dc with SMHC0 bit mask 0x20, while local Linux models only the SMHC0 BGR at 0xd0c. A read-only /dev/mem attempt returned empty values on both boards, so H113 should test/snapshot this gate with kernel instrumentation or a working register reader."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H113",
+      "priority": 1,
+      "status": "pending",
+      "title": "Test A733 SMHC0 AHB gate at CCU offset 0x5dc",
+      "question": "Does enabling or preserving the separate A733 SMHC0 AHB gate allow SDMMC0 IDMAC to fetch descriptor word 0?",
+      "test_cost": "medium; lab-only kernel build and Cubie2/Cubie3 UART boot",
+      "procedure": [
+        "Create a lab-only branch from the current diagnostic kernel.",
+        "At CCU probe or MMC probe time, snapshot CCU base + 0x5dc, CCU base + 0xd0c, and CCU base + 0xd00 before and after clock enable.",
+        "Test a minimal write setting bit 5 at CCU base + 0x5dc while leaving existing SMHC0 BGR/reset handling unchanged.",
+        "Boot Cubie3 first over UART and capture the normal IDMAC descriptor-fetch outcome.",
+        "Restore Cubie3 to vendor kernel, then repeat on Cubie2 only if Cubie3 shows a changed result."
+      ],
+      "pass_criteria": "IDMAC consumes descriptor word 0 or register evidence proves the gate state changes the failure mode.",
+      "fail_criteria": "IDMAC remains at DESC_READ with CHDA=DLBA, CBDA=0, descriptor OWN unchanged, and 0x5dc is proven enabled.",
+      "guardrails": [
+        "Lab-only diagnostic; do not submit as-is.",
+        "Do not add DTS vendor-U-Boot workarounds.",
+        "Do not expand into Ethernet, VPU, display, USB-C, PCIe, or wireless."
+      ]
     }
   ],
   "model_routes": [
