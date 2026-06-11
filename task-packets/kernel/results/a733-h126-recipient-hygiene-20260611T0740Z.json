@@ -1,0 +1,33 @@
+{
+  "id": "A733-UPSTREAM-H126",
+  "status": "completed_recipient_hygiene_check",
+  "series": "/Users/enzo/projects/Home Lab/cubie-a7s-armbian/patches",
+  "base": "b327168a182e^",
+  "applied_worktree": "/tmp/a733-h126-maint-check",
+  "checks": {
+    "git_am": "passed for patches 0001-0004",
+    "get_maintainer": "completed for patches 0001-0004",
+    "checkpatch_strict": "0 errors; warnings limited to MAINTAINERS heuristic and RFC-dependent A733 pinctrl/ccu compatibles; Mac SPDX helper lacked python ply"
+  },
+  "recipients_unique": [
+    "J. Neuschäfer <j.ne@posteo.net>",
+    "Andre Przywara <andre.przywara@arm.com>",
+    "Chen-Yu Tsai <wens@kernel.org>",
+    "Conor Dooley <conor+dt@kernel.org>",
+    "Enzo Adriano <enzo.adriano.code@gmail.com>",
+    "Jernej Skrabec <jernej.skrabec@gmail.com>",
+    "Jun Yan <jerrysteve1101@gmail.com>",
+    "Krzysztof Kozlowski <krzk+dt@kernel.org>",
+    "Lukas Schmid <lukas.schmid@netcube.li>",
+    "Maxime Ripard <mripard@kernel.org>",
+    "Rob Herring <robh@kernel.org>",
+    "Samuel Holland <samuel@sholland.org>",
+    "Ulf Hansson <ulfh@kernel.org>",
+    "devicetree@vger.kernel.org",
+    "linux-arm-kernel@lists.infradead.org",
+    "linux-kernel@vger.kernel.org",
+    "linux-mmc@vger.kernel.org",
+    "linux-sunxi@lists.linux.dev"
+  ],
+  "send_status": "not_send_ready; final RFC dependency recheck and b4 send --reflect still required"
+}
