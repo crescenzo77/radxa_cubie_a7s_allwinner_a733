@@ -68,6 +68,16 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
 
 ## Latest Observations
 
+- Operator-approved repo authority cleanup on 2026-06-11: the ThinkCentre
+  public clone was fast-forwarded from `/srv/git/cubie-a7s-armbian.git` to the
+  Mac-authoritative head `b54dade62c44`. Repo drift is now false, actual patch
+  files no longer contain `allwinner,pinmux` or cover placeholders, and the
+  remaining readiness blocker is the human-only final-send checklist gate
+  `gate-08-reflect-only`.
+- The public patch readiness monitor now scans only `patches/*.patch` for
+  rejected vendor pinmux text or `b4` placeholder markers. Historical mentions
+  in `docs/status.md` and `patches/README.md` are recorded as context, not
+  treated as active patch-export blockers.
 - Telegram sends from A733/kernel-specific Hermes scripts are disabled as of
   2026-06-11 while a centralized notification point is being prepared. The
   shared Hermes Telegram bot/platform was not disabled; only these A733 script

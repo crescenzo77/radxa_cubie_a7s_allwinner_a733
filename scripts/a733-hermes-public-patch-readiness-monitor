@@ -64,8 +64,8 @@ if public_repo.exists():
         run("git status --short --branch", cwd=public_repo),
         run("git log --oneline --decorate -5", cwd=public_repo),
         run("find patches -maxdepth 1 -type f -name '*.patch' -print | sort", cwd=public_repo),
-        run("rg -n '\\*\\*\\* SUBJECT HERE \\*\\*\\*|\\*\\*\\* BLURB HERE \\*\\*\\*|allwinner,pinmux' patches 2>/dev/null || true", cwd=public_repo),
-        run("rg -n '\\*\\*\\* SUBJECT HERE \\*\\*\\*|\\*\\*\\* BLURB HERE \\*\\*\\*|allwinner,pinmux' docs README.md 2>/dev/null || true", cwd=public_repo),
+        run("find patches -maxdepth 1 -type f -name '*.patch' -print0 | xargs -0 rg -n '\\*\\*\\* SUBJECT HERE \\*\\*\\*|\\*\\*\\* BLURB HERE \\*\\*\\*|allwinner,pinmux' 2>/dev/null || true", cwd=public_repo),
+        run("rg -n '\\*\\*\\* SUBJECT HERE \\*\\*\\*|\\*\\*\\* BLURB HERE \\*\\*\\*|allwinner,pinmux' docs README.md patches/README.md 2>/dev/null || true", cwd=public_repo),
         run("sed -n '1,100p' docs/status.md", cwd=public_repo),
         run("sed -n '1,90p' patches/README.md", cwd=public_repo),
     ]
@@ -86,7 +86,7 @@ known_blockers = []
 if not public_repo.exists():
     known_blockers.append("public repo path missing")
 if placeholders.strip():
-    known_blockers.append("review export contains placeholders or rejected vendor pinmux text")
+    known_blockers.append("review patch files contain placeholders or rejected vendor pinmux text")
 if final_send["returncode"] != 0:
     known_blockers.append("private final-send checklist is not send_ready")
 
