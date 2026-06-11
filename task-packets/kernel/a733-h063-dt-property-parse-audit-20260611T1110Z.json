@@ -1,0 +1,20 @@
+{
+  "id": "A733-SDMMC-H063",
+  "status": "completed_no_patch",
+  "title": "BSP SDMMC0 DT property parse audit",
+  "timestamp_utc": "2026-06-11T11:10:00Z",
+  "scope": [
+    "Strix BSP source: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "Strix BSP DTS: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/sun60iw2p1.dtsi",
+    "Strix diagnostic DTS/source"
+  ],
+  "observations": [
+    "BSP extra DT parsing covers many policy properties, including CMD23, CQE, HSQ, wait-busy, filters, performance, tuning, power delay, and request page count.",
+    "Vendor A733 SDMMC0 active properties are clocks/reset, pinctrl, max-frequency, bus-width, req-page-count, cap-sd-highspeed, cap-wait-while-busy, ctl-spec-caps, and status.",
+    "Previously audited vendor SDMMC0 properties cover store/MBUS/MSI-lite clocks, ctl-spec-caps, card-detect/power policy, timing delays, CMD23 absence, and threshold/CSDC behavior.",
+    "No active vendor SDMMC0 property was found that changes normal IDMAC descriptor memory access."
+  ],
+  "decision": "no_behavior_patch",
+  "reason": "The remaining active SDMMC0 properties are either already covered or affect card/policy behavior rather than descriptor fetch.",
+  "next": "Do not add vendor-only DT properties to upstream DTS; wait for source-backed fabric/security evidence."
+}
