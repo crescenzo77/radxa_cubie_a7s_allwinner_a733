@@ -1,0 +1,34 @@
+{
+  "id": "A733-SDMMC-H080",
+  "created_utc": "2026-06-11T18:05:00Z",
+  "title": "Public patch export upstream-readiness audit",
+  "status": "completed_no_patch_rewrite",
+  "scope": "audit only; do not rewrite or submit patches yet",
+  "sources": {
+    "public_export": "/srv/projects/cubie-a7s-armbian-public/patches",
+    "status_repo": "/srv/projects/cubie-a7s-armbian",
+    "diagnostic_tree": "/srv/projects/a733-diag-rtc-extosc-orphan"
+  },
+  "findings": [
+    {
+      "issue": "vendor pinmux property remains in exported DTS patches",
+      "evidence": [
+        "patches/0003-arm64-dts-allwinner-add-Allwinner-A733-SoC.patch contains allwinner,pinmux = <2>",
+        "patches/0004-arm64-dts-allwinner-add-Radxa-Cubie-A7S.patch contains allwinner,pinmux = <2>"
+      ],
+      "required_action_before_submission": "Drop allwinner,pinmux and keep only upstream pinctrl binding properties such as function, drive-strength, and bias settings."
+    },
+    {
+      "issue": "MMC compatible binding patch is separate",
+      "evidence": "patches/0001-dt-bindings-mmc-add-Allwinner-A733-compatible.patch adds allwinner,sun60i-a733-mmc independently of the DTSI patch.",
+      "required_action_before_submission": "Decide during the next intentional export whether this remains standalone or is folded into the minimal SoC support flow, depending on maintainer/dependency feedback."
+    },
+    {
+      "issue": "scope guardrail still holds",
+      "evidence": "The public cover letter and status docs explicitly exclude Ethernet, VPU/Cedrus, display, Wi-Fi, Bluetooth, USB-C, PCIe, and other board features.",
+      "required_action_before_submission": "Keep this scope unchanged."
+    }
+  ],
+  "decision": "No patch rewrite in H080. Queue these as required fixups before any next public series export.",
+  "next_action": "Wait for the IDMAC reply or, if moving on the DTS-only submission path, regenerate a clean minimal series without vendor pinmux properties and with CCU/pinctrl RFC dependencies stated."
+}
