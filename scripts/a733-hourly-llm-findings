@@ -1,0 +1,260 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+out_dir="${A733_FINDINGS_OUT_DIR:-${repo_root}/task-packets/kernel/hourly-findings}"
+llm_url="${A733_FINDINGS_LLM_URL:-http://127.0.0.1:8082/v1/chat/completions}"
+llm_model="${A733_FINDINGS_LLM_MODEL:-qwen3.6-27b-q4km-native-vulkan}"
+llm_timeout="${A733_FINDINGS_TIMEOUT:-600}"
+diag_repo="${A733_DIAG_REPO:-/srv/projects/a733-diag-rtc-extosc-orphan}"
+lock_file="${A733_FINDINGS_LOCK:-/tmp/a733-hourly-llm-findings.lock}"
+start_llm="${A733_FINDINGS_START_LLM:-1}"
+
+usage() {
+  cat <<'USAGE'
+Usage: scripts/a733-hourly-llm-findings ACTION
+
+Run on Strix. Uses the Strix local OpenAI-compatible LLM endpoint once per run
+to write a timestamped Markdown summary of current A733 findings.
+
+Actions:
+  run                  Create one .md summary now.
+  install-user-timer   Install and enable an hourly systemd user timer.
+  uninstall-user-timer Remove the hourly systemd user timer.
+  timer-status         Show timer/service status.
+
+Defaults:
+  A733_FINDINGS_LLM_URL=http://127.0.0.1:8082/v1/chat/completions
+  A733_FINDINGS_LLM_MODEL=qwen3.6-27b-q4km-native-vulkan
+  A733_FINDINGS_OUT_DIR=/srv/projects/homelab/task-packets/kernel/hourly-findings
+  A733_FINDINGS_START_LLM=1
+
+No sudo is required for the timer.
+USAGE
+}
+
+json_escape() {
+  python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))'
+}
+
+collect_context() {
+  python3 - "$repo_root" "$diag_repo" <<'PY'
+import json
+import os
+import pathlib
+import subprocess
+import sys
+
+repo = pathlib.Path(sys.argv[1])
+diag = pathlib.Path(sys.argv[2])
+queue = repo / "task-packets/kernel/a733-hypothesis-queue.json"
+results = repo / "task-packets/kernel/results"
+
+def cmd(args, cwd=None):
+    try:
+        return subprocess.check_output(args, cwd=cwd, text=True, stderr=subprocess.STDOUT, timeout=20).strip()
+    except Exception as exc:
+        return f"ERROR: {exc}"
+
+def read_json(path):
+    try:
+        return json.loads(path.read_text())
+    except Exception as exc:
+        return {"error": str(exc), "path": str(path)}
+
+doc = {
+    "homelab_git": {
+        "head": cmd(["git", "log", "-1", "--oneline"], repo),
+        "status": cmd(["git", "status", "--short"], repo),
+    },
+    "diag_git": {
+        "path": str(diag),
+        "head": cmd(["git", "log", "-1", "--oneline"], diag) if diag.exists() else "missing",
+        "branch": cmd(["git", "branch", "--show-current"], diag) if diag.exists() else "missing",
+        "status": cmd(["git", "status", "--short"], diag) if diag.exists() else "missing",
+    },
+}
+
+q = read_json(queue)
+doc["active_blocker"] = q.get("active_blocker")
+doc["latest_completed_test"] = q.get("latest_completed_test")
+items = q.get("hypotheses", [])
+doc["queued_items"] = [
+    {
+        "id": i.get("id"),
+        "priority": i.get("priority"),
+        "status": i.get("status"),
+        "title": i.get("title"),
+        "question": i.get("question"),
+        "procedure": i.get("procedure", [])[:3],
+    }
+    for i in items
+    if str(i.get("status", "")).startswith("queued")
+][-8:]
+
+latest = []
+if results.exists():
+    latest = sorted(results.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)[:12]
+doc["latest_result_files"] = []
+for path in latest:
+    data = read_json(path)
+    small = {
+        "file": str(path),
+        "id": data.get("id") or data.get("test") or data.get("label"),
+        "status": data.get("status"),
+        "result": data.get("result") or data.get("summary") or data.get("conclusion"),
+        "winning_candidate": data.get("winning_candidate"),
+        "exit_code": data.get("exit_code"),
+    }
+    doc["latest_result_files"].append(small)
+
+print(json.dumps(doc, indent=2, ensure_ascii=False))
+PY
+}
+
+run_once() {
+  mkdir -p "$out_dir"
+  exec 9>"$lock_file"
+  if ! flock -n 9; then
+    echo "already running: $lock_file" >&2
+    exit 0
+  fi
+
+  local stamp context prompt req tmp out
+  stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  tmp="${out_dir}/.${stamp}.tmp"
+  out="${out_dir}/${stamp}-a733-findings.md"
+  context="$(collect_context)"
+  if ! curl -fsS --max-time 3 "${llm_url%/chat/completions}/models" >/dev/null 2>&1; then
+    if [ "$start_llm" = "1" ] && [ -x "${repo_root}/scripts/strix-llamacpp-native" ]; then
+      "${repo_root}/scripts/strix-llamacpp-native" start >/dev/null
+    fi
+  fi
+  prompt="$(cat <<EOF
+You are summarizing the Radxa Cubie A7S / Allwinner A733 kernel bring-up.
+
+Write a concise Markdown status note for the next engineer. Use plain language.
+Include:
+- current blocker
+- what changed since the prior summaries, if visible
+- strongest evidence
+- queued/running unattended work
+- what not to do
+- next best action
+
+Do not invent results. If the brute-force sweep has no result yet, say so.
+Do not suggest Ethernet, VPU, display, USB-C, PCIe, Wi-Fi, vendor DTS pollution,
+or submitting raw lab register pokes upstream.
+
+Context JSON:
+${context}
+EOF
+)"
+
+  req="$(
+    python3 - "$llm_model" "$prompt" <<'PY'
+import json, sys
+model, prompt = sys.argv[1:]
+print(json.dumps({
+    "model": model,
+    "messages": [
+        {"role": "system", "content": "You are a careful Linux kernel bring-up note-taker. Be concise, factual, and skeptical."},
+        {"role": "user", "content": prompt},
+    ],
+    "temperature": 0.1,
+    "max_tokens": 1800,
+}))
+PY
+  )"
+
+  if ! curl -fsS --max-time "$llm_timeout" \
+    -H 'Content-Type: application/json' \
+    -d "$req" "$llm_url" > "${tmp}.json"; then
+    {
+      echo "# A733 Hourly Findings - ${stamp}"
+      echo
+      echo "LLM request failed against \`${llm_url}\`."
+      echo
+      echo "## Context"
+      echo
+      echo '```json'
+      printf '%s\n' "$context"
+      echo '```'
+    } > "$out"
+    echo "$out"
+    return 1
+  fi
+
+  python3 - "${tmp}.json" "$out" "$stamp" <<'PY'
+import json
+import pathlib
+import sys
+
+raw = json.loads(pathlib.Path(sys.argv[1]).read_text())
+out = pathlib.Path(sys.argv[2])
+stamp = sys.argv[3]
+content = raw.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+if not content:
+    content = "LLM returned no message content."
+out.write_text(f"# A733 Hourly Findings - {stamp}\n\n{content}\n", encoding="utf-8")
+PY
+  rm -f "${tmp}.json"
+  echo "$out"
+}
+
+install_user_timer() {
+  local systemd_dir service timer script_path
+  systemd_dir="${HOME}/.config/systemd/user"
+  service="${systemd_dir}/a733-hourly-llm-findings.service"
+  timer="${systemd_dir}/a733-hourly-llm-findings.timer"
+  script_path="${repo_root}/scripts/a733-hourly-llm-findings"
+  mkdir -p "$systemd_dir"
+
+  cat > "$service" <<EOF
+[Unit]
+Description=A733 hourly LLM findings summary
+
+[Service]
+Type=oneshot
+WorkingDirectory=${repo_root}
+ExecStart=${script_path} run
+TimeoutStartSec=45min
+EOF
+
+  cat > "$timer" <<'EOF'
+[Unit]
+Description=Run A733 hourly LLM findings summary
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+RandomizedDelaySec=180
+
+[Install]
+WantedBy=timers.target
+EOF
+
+  systemctl --user daemon-reload
+  systemctl --user enable --now a733-hourly-llm-findings.timer
+  systemctl --user list-timers a733-hourly-llm-findings.timer
+}
+
+uninstall_user_timer() {
+  systemctl --user disable --now a733-hourly-llm-findings.timer 2>/dev/null || true
+  rm -f "${HOME}/.config/systemd/user/a733-hourly-llm-findings.service" \
+        "${HOME}/.config/systemd/user/a733-hourly-llm-findings.timer"
+  systemctl --user daemon-reload
+}
+
+timer_status() {
+  systemctl --user status a733-hourly-llm-findings.timer a733-hourly-llm-findings.service --no-pager || true
+}
+
+case "${1:-}" in
+  run) run_once ;;
+  install-user-timer) install_user_timer ;;
+  uninstall-user-timer) uninstall_user_timer ;;
+  timer-status) timer_status ;;
+  -h|--help|help|"") usage ;;
+  *) usage >&2; exit 2 ;;
+esac
