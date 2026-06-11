@@ -2105,7 +2105,7 @@
       "fail_criteria": "A DTS cleanup is treated as an IDMAC fix or introduces vendor U-Boot compatibility pollution.",
       "result": {
         "result_file": null,
-        "summary": "Candidate branch /Users/enzo/projects/linux-a733 at commit 500b93f2e573 drops legacy allwinner,pinmux from the Cubie A7S UART pins and A733 MMC0 pins. This is upstream-readiness cleanup only; no boot/runtime claim. Hermes task t_ec1741d0 was reassigned from missing profile agent to default and dispatched on ThinkCentre; it needed source-path guidance because its initial workspace did not include the kernel tree."
+        "summary": "Candidate branch /Users/enzo/projects/linux-a733 at commit 500b93f2e573 drops legacy allwinner,pinmux from the Cubie A7S UART pins and A733 MMC0 pins. This is upstream-readiness cleanup only; no boot/runtime claim. Hermes task t_ec1741d0 was reassigned from missing profile agent to default and dispatched on ThinkCentre; it needed source-path guidance because its initial workspace did not include the kernel tree. The attempted run was reclaimed after the worker PID disappeared, so the task is ready rather than completed."
       }
     }
   ],
