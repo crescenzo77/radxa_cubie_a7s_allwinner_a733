@@ -2050,6 +2050,25 @@
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h094-cmd18-pio-boundary-result-20260611T0410Z.json",
         "summary": "Passed as boundary evidence. H094 showed repeated 8-block CMD18 reads through PIO with wait_dma=0 pio=1, RX/DATA_OVER status, 4096/4096 copied, and err=0. The lab-only PIO path is progressing but too slow/noisy for a practical rw shell proof. The upstream blocker remains unchanged: normal IDMAC still cannot fetch descriptor word 0."
       }
+    },
+    {
+      "id": "A733-SDMMC-H095",
+      "priority": 1,
+      "status": "completed_no_patch",
+      "title": "Post-PIO IDMAC source-backed lead audit",
+      "question": "After H094, is there any remaining source-backed MMC/security/fabric/register delta worth testing before maintainer/vendor feedback?",
+      "test_cost": "low; source audit only",
+      "procedure": [
+        "Search the A733 datasheet, full BSP MMC driver, trimmed BSP slice, public U-Boot tree, preserved queue files, and UART logs.",
+        "Reject candidates already closed by prior hypotheses.",
+        "Promote a runtime patch only if a new source-backed bit or ordering delta can affect descriptor fetch before word 0."
+      ],
+      "pass_criteria": "A new concrete runtime test is identified, or the absence of a new testable delta is recorded.",
+      "fail_criteria": "A speculative register write is queued without source evidence or repeats a closed result.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h095-post-pio-idmac-source-audit-20260611T0415Z.json",
+        "summary": "Completed with no behavior patch. Rechecked GCTRL AHB/DMA mode, FIX_BURST/IDMA_ON, B2C/CQE ECC, EMCE, generic SPC/TZMA text, and burst/HBURST references. All were either already closed (H013/H045/H048/H055/H060/H073/H085) or lacked a source-backed A733 SDMMC0 normal-IDMAC descriptor-fetch register. Hermes task t_ec1741d0 was queued for an independent bounded audit."
+      }
     }
   ],
   "model_routes": [

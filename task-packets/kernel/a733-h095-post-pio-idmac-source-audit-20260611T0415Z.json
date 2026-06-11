@@ -1,0 +1,48 @@
+{
+  "id": "A733-SDMMC-H095",
+  "status": "completed_no_patch",
+  "date_utc": "2026-06-11T04:15:00Z",
+  "scope": [
+    "/srv/projects/homelab/task-packets/kernel/A733_Datasheet_V0.93.txt",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc",
+    "/srv/projects/kernel-work/tmp/linux-orangepi-full/bsp",
+    "/srv/projects/references/u-boot-a733",
+    "/srv/projects/homelab/task-packets/kernel/a733-hypothesis-queue.json",
+    "/srv/projects/cubie-uart/logs"
+  ],
+  "checks": [
+    {
+      "lead": "GCTRL access mode",
+      "decision": "closed_no_patch",
+      "reason": "H013/H055 already proved clearing SDXC_ACCESS_BY_AHB and using DMA access mode still leaves IDST=0x4000 with CHDA=DLBA, CBDA=0, CBCR=0x400, and BBCR=0."
+    },
+    {
+      "lead": "DMAC FIX_BURST | IDMA_ON",
+      "decision": "closed_no_patch",
+      "reason": "Vendor BSP writes FIX_BURST|IDMA_ON, and H045/H073 already recorded this as matching a tested path. No new burst-control register was found for SMHC0."
+    },
+    {
+      "lead": "B2C/CQE ECC",
+      "decision": "closed_no_patch",
+      "reason": "Full BSP has sunxi_mmc_smhc_ecc_enable(), but H048 already showed SDMMC0 vendor DTS lacks b2c-ecc-on, cqe-on, and cqe-ecc-on. This is gated off and not normal IDMAC descriptor fetch."
+    },
+    {
+      "lead": "EMCE/encryption hook",
+      "decision": "closed_no_patch",
+      "reason": "H060 already found EMCE scaffolding but no active assigned hook for ordinary SDMMC0 reads."
+    },
+    {
+      "lead": "SPC/TZMA/firewall generic datasheet text",
+      "decision": "no_patch",
+      "reason": "The datasheet says SPC sets secure peripheral areas and TZMA sets secure SRAM areas, but no SMHC0/storage-master register, offset, or Linux-applicable handoff bit was found."
+    }
+  ],
+  "hermes_agent": {
+    "url": "http://192.168.50.225:9120/",
+    "task_id": "t_ec1741d0",
+    "status_at_creation": "triage",
+    "note": "Queued independent bounded audit for source-backed non-closed IDMAC descriptor-fetch leads. RTX 3090 route remains disabled."
+  },
+  "decision": "no_behavior_patch",
+  "next": "Wait for maintainer/vendor response or Hermes independent audit. Only patch if a new source-backed A733 SDMMC0 normal-IDMAC descriptor-fetch precondition appears."
+}
