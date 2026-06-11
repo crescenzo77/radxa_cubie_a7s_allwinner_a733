@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo=${A733_HERMES_REPO:-/srv/projects/homelab}
+public_repo=${A733_PUBLIC_REPO:-/home/enzo/projects/radxa_cubie_a7s_allwinner_a733}
+outdir="$repo/task-packets/kernel/hermes-hourly"
+json="$outdir/a733-public-patch-readiness-latest.json"
+md="$outdir/a733-public-patch-readiness-latest.md"
+html="$outdir/a733-public-patch-readiness-latest.html"
+state="$outdir/a733-public-patch-readiness-state.json"
+telegram_env=${A733_TELEGRAM_ENV:-/etc/telegram-tasks-bot/bot.env}
+report_url=${A733_PUBLIC_PATCH_REPORT_URL:-http://192.168.50.225:9181/hermes-hourly/a733-public-patch-readiness-latest.html}
+mkdir -p "$outdir"
+
+python3 - "$repo" "$public_repo" "$json" "$md" "$html" "$state" "$telegram_env" "$report_url" <<'PY'
+import datetime as dt
+import hashlib
+import html
+import json
+import pathlib
+import subprocess
+import sys
+import urllib.request
+
+repo, public_repo, json_path, md_path, html_path, state_path, telegram_env, report_url = sys.argv[1:]
+repo = pathlib.Path(repo)
+public_repo = pathlib.Path(public_repo)
+
+def run(cmd, cwd=None, timeout=30):
+    p = subprocess.run(cmd, shell=True, cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
+    return {"cmd": cmd, "cwd": str(cwd or ""), "returncode": p.returncode, "output": p.stdout[-12000:]}
+
+def read_env(path):
+    d = {}
+    p = pathlib.Path(path)
+    if not p.exists():
+        return d
+    for line in p.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        d[k.strip()] = v.strip().strip('"').strip("'")
+    return d
+
+def telegram(text):
+    cfg = read_env(telegram_env)
+    token = cfg.get("TELEGRAM_BOT_TOKEN")
+    chat = cfg.get("TASK_NOTIFY_USER_ID") or cfg.get("CLEAN_TASK_USER_ID")
+    if not token or not chat:
+        return
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=json.dumps({"chat_id": chat, "text": text, "disable_web_page_preview": False}).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    urllib.request.urlopen(req, timeout=15).read()
+
+now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+checks = []
+if public_repo.exists():
+    checks += [
+        run("git status --short --branch", cwd=public_repo),
+        run("git log --oneline --decorate -5", cwd=public_repo),
+        run("find patches -maxdepth 1 -type f -name '*.patch' -print | sort", cwd=public_repo),
+        run("rg -n '\\*\\*\\* SUBJECT HERE \\*\\*\\*|\\*\\*\\* BLURB HERE \\*\\*\\*|allwinner,pinmux' patches docs README.md 2>/dev/null || true", cwd=public_repo),
+        run("sed -n '1,100p' docs/status.md", cwd=public_repo),
+        run("sed -n '1,90p' patches/README.md", cwd=public_repo),
+    ]
+else:
+    checks.append({"cmd": "public repo exists", "cwd": str(public_repo), "returncode": 2, "output": f"missing public repo: {public_repo}"})
+
+final_send = run("scripts/kernel-final-send-status", cwd=repo)
+checks.append(final_send)
+
+patch_files = []
+placeholders = ""
+if public_repo.exists():
+    patch_files = [str(p.relative_to(public_repo)) for p in sorted((public_repo / "patches").glob("*.patch"))]
+    placeholders = checks[3]["output"] if len(checks) > 3 else ""
+
+known_blockers = []
+if not public_repo.exists():
+    known_blockers.append("public repo path missing")
+if placeholders.strip():
+    known_blockers.append("review export contains placeholders or rejected vendor pinmux text")
+if final_send["returncode"] != 0:
+    known_blockers.append("private final-send checklist is not send_ready")
+
+status_map = {
+    "public_repo_exists": public_repo.exists(),
+    "patch_file_count": len(patch_files),
+    "placeholder_or_pinmux_hits": bool(placeholders.strip()),
+    "final_send_status_ok": final_send["returncode"] == 0,
+}
+status_hash = hashlib.sha256(json.dumps(status_map, sort_keys=True).encode()).hexdigest()
+doc = {
+    "generated_at": now,
+    "public_repo": str(public_repo),
+    "status": status_map,
+    "status_hash": status_hash,
+    "known_blockers": known_blockers,
+    "patch_files": patch_files,
+    "checks": checks,
+    "recommendation": "monitor-only; do not send or regenerate patches without explicit human approval",
+}
+pathlib.Path(json_path).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+
+lines = [
+    "# A733 Public Patch Readiness",
+    "",
+    f"Generated: `{now}`",
+    "",
+    f"Public repo: `{public_repo}`",
+    f"Status hash: `{status_hash}`",
+    "",
+    "## Summary",
+    "",
+]
+for k, v in status_map.items():
+    lines.append(f"- `{k}`: `{v}`")
+lines += ["", "## Known Blockers", ""]
+if known_blockers:
+    lines += [f"- {b}" for b in known_blockers]
+else:
+    lines.append("- none detected by this read-only monitor")
+lines += ["", "## Patch Files", ""]
+lines += [f"- `{p}`" for p in patch_files] or ["- none"]
+lines += ["", "## Check Output", ""]
+for c in checks:
+    lines += [f"### `{c['cmd']}`", "", f"Return code: `{c['returncode']}`", "", "```text", c["output"], "```", ""]
+pathlib.Path(md_path).write_text("\n".join(lines) + "\n", encoding="utf-8")
+body = html.escape(pathlib.Path(md_path).read_text(encoding="utf-8"))
+pathlib.Path(html_path).write_text(
+    "<!doctype html><meta charset='utf-8'><title>A733 Public Patch Readiness</title>"
+    "<style>body{font-family:system-ui,sans-serif;max-width:1100px;margin:2rem auto;line-height:1.45}"
+    "pre{white-space:pre-wrap;background:#f6f8fa;padding:1rem;border:1px solid #ddd}</style>"
+    f"<pre>{body}</pre>\n",
+    encoding="utf-8",
+)
+
+state_file = pathlib.Path(state_path)
+old = {}
+if state_file.exists():
+    try:
+        old = json.loads(state_file.read_text(encoding="utf-8"))
+    except Exception:
+        old = {}
+state_file.write_text(json.dumps({"last_hash": status_hash, "last_status": status_map, "updated_at": now}, indent=2) + "\n", encoding="utf-8")
+if old and old.get("last_hash") != status_hash:
+    telegram(
+        "A733 public patch readiness changed\n"
+        f"Blockers: {', '.join(known_blockers) if known_blockers else 'none'}\n"
+        f"Report: {report_url}"
+    )
+
+print(f"wrote {md_path}")
+PY

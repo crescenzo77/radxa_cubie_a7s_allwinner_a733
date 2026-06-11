@@ -21,6 +21,7 @@ Live ThinkCentre Hermes jobs after setup:
 | A733 workflow status monitor | `069906e27192` | `17 * * * *` | `no-agent` | Reports queue head, maintainer blockers, dispatcher waiting actions, git status, and token-offload status. |
 | A733 public-source monitor | `10dddfb0ab2b` | `23 * * * *` | `no-agent` | Searches local SearXNG for A733/Radxa/SDMMC0 public-source changes and records URLs/timestamps. |
 | A733 model endpoint health | `cdab23637c7c` | `*/15 * * * *` | `no-agent` | Checks gateway and model endpoint availability through read-only `/health` and `/v1/models` requests. No inference is sent. |
+| A733 public patch readiness | `b4a75d6a1c83` | `37 * * * *` | `no-agent` | Checks the public review repo, patch snapshot, and private final-send checklist without regenerating, validating, sending, or editing branches. |
 
 ## Report URLs
 
@@ -29,6 +30,7 @@ http://192.168.50.225:9181/hermes-hourly/a733-workflow-status-latest.md
 http://192.168.50.225:9181/hermes-hourly/a733-public-source-latest.md
 http://192.168.50.225:9181/hermes-hourly/a733-model-health-latest.md
 http://192.168.50.225:9181/hermes-hourly/a733-h149-approval-brief-latest.md
+http://192.168.50.225:9181/hermes-hourly/a733-public-patch-readiness-latest.md
 http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest.md
 ```
 
@@ -45,6 +47,11 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
 - The model health baseline reports Strix, 7900XT, embeddings, ThinkCentre
   gateway, and SearXNG reachable. The AMD RTX 3090 endpoint on
   `192.168.50.252:8001` is currently refusing connections.
+- The public patch-readiness baseline reports ThinkCentre public repo
+  `/home/enzo/projects/radxa_cubie_a7s_allwinner_a733` clean against its
+  origin, but the exported patches still contain `allwinner,pinmux` and the
+  private final-send checklist is not `send_ready`. Hermes must report this,
+  not fix it autonomously.
 - One false Telegram stall alert was sent during smoke testing because the
   heartbeat matched the Hermes gateway process as an active audit. The matcher
   was narrowed and the state file was cleared; a subsequent Hermes-triggered
@@ -59,6 +66,7 @@ scripts/a733-hermes-public-source-monitor
 scripts/a733-hermes-model-health-monitor
 scripts/a733-hermes-radxa-provenance-audit
 scripts/a733-hermes-h149-approval-brief
+scripts/a733-hermes-public-patch-readiness-monitor
 ```
 
 ## Validation
