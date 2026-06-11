@@ -1,0 +1,92 @@
+# A733 Hermes Monitor Setup
+
+Date: 2026-06-11
+
+## Scope
+
+This records the conservative Hermes setup for Radxa Cubie A7S / Allwinner A733
+kernel work.
+
+Hermes is acting as a read-only monitor/reporter. It must not edit kernel
+repositories, run H149, boot or power-cycle Cubie boards, add trailers, promote
+branches, send mail, or mutate model routing.
+
+## Active Hermes Jobs
+
+Live ThinkCentre Hermes jobs after setup:
+
+| Job | ID | Cadence | Mode | Purpose |
+|---|---|---:|---|---|
+| A733 source-diff heartbeat | `56633ee4233b` | `*/20 * * * *` | `no-agent` | Checks whether a source-diff audit is active or stalled. Now treats no active audit as idle, not a fault. |
+| A733 workflow status monitor | `069906e27192` | `17 * * * *` | `no-agent` | Reports queue head, maintainer blockers, dispatcher waiting actions, git status, and token-offload status. |
+| A733 public-source monitor | `10dddfb0ab2b` | `23 * * * *` | `no-agent` | Searches local SearXNG for A733/Radxa/SDMMC0 public-source changes and records URLs/timestamps. |
+| A733 model endpoint health | `cdab23637c7c` | `*/15 * * * *` | `no-agent` | Checks gateway and model endpoint availability through read-only `/health` and `/v1/models` requests. No inference is sent. |
+
+## Report URLs
+
+```text
+http://192.168.50.225:9181/hermes-hourly/a733-workflow-status-latest.md
+http://192.168.50.225:9181/hermes-hourly/a733-public-source-latest.md
+http://192.168.50.225:9181/hermes-hourly/a733-model-health-latest.md
+http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest.md
+```
+
+## Latest Observations
+
+- The broken heartbeat wrapper was fixed. Hermes runs `.sh` files through
+  `bash`, so the live wrapper now calls the Python heartbeat with `python3`.
+- The source-diff heartbeat last recorded `ok`.
+- The workflow status report sees queue head `A733-SDMMC-H149`, status
+  `queued_unattended_runtime`; this is not approval to run it.
+- The Radxa provenance audit did not prove an exact Radxa
+  `5.15.147-21-a733` kernel source. Orange Pi remains a secondary BSP
+  reference only.
+- The model health baseline reports Strix, 7900XT, embeddings, ThinkCentre
+  gateway, and SearXNG reachable. The AMD RTX 3090 endpoint on
+  `192.168.50.252:8001` is currently refusing connections.
+- One false Telegram stall alert was sent during smoke testing because the
+  heartbeat matched the Hermes gateway process as an active audit. The matcher
+  was narrowed and the state file was cleared; a subsequent Hermes-triggered
+  heartbeat run recorded `ok`.
+
+## Files Added
+
+```text
+scripts/a733-hermes-source-diff-heartbeat-wrapper
+scripts/a733-hermes-workflow-status-monitor
+scripts/a733-hermes-public-source-monitor
+scripts/a733-hermes-model-health-monitor
+scripts/a733-hermes-radxa-provenance-audit
+```
+
+## Validation
+
+Commands run:
+
+```text
+bash -n scripts/a733-hermes-source-diff-heartbeat-wrapper scripts/a733-hermes-workflow-status-monitor scripts/a733-hermes-public-source-monitor
+python3 -m py_compile scripts/a733-source-diff-heartbeat
+bash -n scripts/a733-hermes-model-health-monitor
+bash -n scripts/a733-hermes-radxa-provenance-audit
+git diff --check -- <new/changed monitor scripts>
+```
+
+Live smoke checks:
+
+```text
+/home/enzo/.hermes/scripts/a733-source-diff-heartbeat.sh
+/home/enzo/.hermes/scripts/a733-workflow-status-monitor.sh
+/home/enzo/.hermes/scripts/a733-public-source-monitor.sh
+/home/enzo/.hermes/scripts/a733-model-health-monitor.sh
+/home/enzo/.hermes/scripts/a733-radxa-provenance-audit.sh
+```
+
+## Next Safe Increment
+
+The next safe setup increment is a read-only approval-brief generator for
+`A733-SDMMC-H149`. It should summarize why H149 is queued, what hardware it
+would touch, exact stop conditions, how Cubie2/Cubie3 would be restored, and
+what human command would approve it.
+
+It must not run H149.
+

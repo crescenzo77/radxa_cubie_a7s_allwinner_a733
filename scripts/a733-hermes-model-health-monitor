@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo=${A733_HERMES_REPO:-/srv/projects/homelab}
+outdir="$repo/task-packets/kernel/hermes-hourly"
+state="$outdir/a733-model-health-state.json"
+json="$outdir/a733-model-health-latest.json"
+md="$outdir/a733-model-health-latest.md"
+html="$outdir/a733-model-health-latest.html"
+telegram_env=${A733_TELEGRAM_ENV:-/etc/telegram-tasks-bot/bot.env}
+report_url=${A733_MODEL_HEALTH_REPORT_URL:-http://192.168.50.225:9181/hermes-hourly/a733-model-health-latest.html}
+mkdir -p "$outdir"
+
+python3 - "$state" "$json" "$md" "$html" "$telegram_env" "$report_url" <<'PY'
+import datetime as dt
+import hashlib
+import html
+import json
+import pathlib
+import sys
+import urllib.request
+
+state_path, json_path, md_path, html_path, telegram_env, report_url = sys.argv[1:]
+
+CHECKS = [
+    ("thinkcentre_gateway_health", "http://192.168.50.225:4011/health"),
+    ("thinkcentre_gateway_status", "http://192.168.50.225:4011/homelab/status"),
+    ("thinkcentre_gateway_models", "http://192.168.50.225:4011/v1/models"),
+    ("strix_qwen_models", "http://192.168.50.11:8080/v1/models"),
+    ("amd_3090_models_readonly", "http://192.168.50.252:8001/v1/models"),
+    ("amd_7900xt_models", "http://192.168.50.252:8092/v1/models"),
+    ("amd_embedding_models", "http://192.168.50.252:8091/v1/models"),
+]
+
+def fetch(name, url):
+    try:
+        with urllib.request.urlopen(url, timeout=8) as resp:
+            body = resp.read(65536).decode("utf-8", "replace")
+            return {"name": name, "url": url, "ok": 200 <= resp.status < 300, "status": resp.status, "body": body[:4000]}
+    except Exception as exc:
+        return {"name": name, "url": url, "ok": False, "error": str(exc)}
+
+def read_env(path):
+    d = {}
+    p = pathlib.Path(path)
+    if not p.exists():
+        return d
+    for line in p.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        d[k.strip()] = v.strip().strip('"').strip("'")
+    return d
+
+def telegram(text):
+    cfg = read_env(telegram_env)
+    token = cfg.get("TELEGRAM_BOT_TOKEN")
+    chat = cfg.get("TASK_NOTIFY_USER_ID") or cfg.get("CLEAN_TASK_USER_ID")
+    if not token or not chat:
+        return
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=json.dumps({"chat_id": chat, "text": text, "disable_web_page_preview": False}).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    urllib.request.urlopen(req, timeout=15).read()
+
+now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+checks = [fetch(name, url) for name, url in CHECKS]
+status_map = {c["name"]: bool(c.get("ok")) for c in checks}
+status_hash = hashlib.sha256(json.dumps(status_map, sort_keys=True).encode()).hexdigest()
+doc = {"generated_at": now, "status_hash": status_hash, "checks": checks}
+pathlib.Path(json_path).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+
+lines = ["# A733 Model Endpoint Health", "", f"Generated: `{now}`", "", f"Status hash: `{status_hash}`", ""]
+for c in checks:
+    state = "ok" if c.get("ok") else "fail"
+    lines += [f"## {c['name']}", "", f"- URL: `{c['url']}`", f"- State: `{state}`"]
+    if "status" in c:
+        lines.append(f"- HTTP: `{c['status']}`")
+    if "error" in c:
+        lines.append(f"- Error: `{c['error']}`")
+    lines += ["", "```text", c.get("body", "")[:1200], "```", ""]
+pathlib.Path(md_path).write_text("\n".join(lines) + "\n", encoding="utf-8")
+body = html.escape(pathlib.Path(md_path).read_text(encoding="utf-8"))
+pathlib.Path(html_path).write_text(
+    "<!doctype html><meta charset='utf-8'><title>A733 Model Endpoint Health</title>"
+    "<style>body{font-family:system-ui,sans-serif;max-width:1100px;margin:2rem auto;line-height:1.45}"
+    "pre{white-space:pre-wrap;background:#f6f8fa;padding:1rem;border:1px solid #ddd}</style>"
+    f"<pre>{body}</pre>\n",
+    encoding="utf-8",
+)
+
+state_file = pathlib.Path(state_path)
+old = {}
+if state_file.exists():
+    try:
+        old = json.loads(state_file.read_text(encoding="utf-8"))
+    except Exception:
+        old = {}
+state_file.write_text(json.dumps({"last_status": status_map, "last_hash": status_hash, "updated_at": now}, indent=2) + "\n", encoding="utf-8")
+
+if old and old.get("last_hash") != status_hash:
+    failing = ", ".join(k for k, v in status_map.items() if not v) or "none"
+    telegram(
+        "A733 model endpoint health changed\n"
+        f"Failing endpoints: {failing}\n"
+        f"Report: {report_url}"
+    )
+
+print(f"wrote {md_path}")
+PY
