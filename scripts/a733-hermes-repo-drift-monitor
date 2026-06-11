@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo=${A733_HERMES_REPO:-/srv/projects/homelab}
+public_repo=${A733_PUBLIC_REPO:-/home/enzo/projects/radxa_cubie_a7s_allwinner_a733}
+expected=${A733_PUBLIC_EXPECTED_HEAD:-$repo/task-packets/kernel/a733-public-expected-head.json}
+outdir="$repo/task-packets/kernel/hermes-hourly"
+json="$outdir/a733-repo-drift-latest.json"
+md="$outdir/a733-repo-drift-latest.md"
+html="$outdir/a733-repo-drift-latest.html"
+state="$outdir/a733-repo-drift-state.json"
+telegram_env=${A733_TELEGRAM_ENV:-/etc/telegram-tasks-bot/bot.env}
+report_url=${A733_REPO_DRIFT_REPORT_URL:-http://192.168.50.225:9181/hermes-hourly/a733-repo-drift-latest.html}
+mkdir -p "$outdir"
+
+python3 - "$repo" "$public_repo" "$expected" "$json" "$md" "$html" "$state" "$telegram_env" "$report_url" <<'PY'
+import datetime as dt
+import hashlib
+import html
+import json
+import pathlib
+import subprocess
+import sys
+import urllib.request
+
+repo, public_repo, expected_path, json_path, md_path, html_path, state_path, telegram_env, report_url = sys.argv[1:]
+repo = pathlib.Path(repo)
+public_repo = pathlib.Path(public_repo)
+expected_path = pathlib.Path(expected_path)
+
+def run(cmd, cwd=None, timeout=20):
+    p = subprocess.run(cmd, shell=True, cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
+    return {"cmd": cmd, "cwd": str(cwd or ""), "returncode": p.returncode, "output": p.stdout.strip()}
+
+def load_json(path):
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return {"load_error": str(exc), "path": str(path)}
+
+def read_env(path):
+    d = {}
+    p = pathlib.Path(path)
+    if not p.exists():
+        return d
+    for line in p.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        d[k.strip()] = v.strip().strip('"').strip("'")
+    return d
+
+def telegram(text):
+    cfg = read_env(telegram_env)
+    token = cfg.get("TELEGRAM_BOT_TOKEN")
+    chat = cfg.get("TASK_NOTIFY_USER_ID") or cfg.get("CLEAN_TASK_USER_ID")
+    if not token or not chat:
+        return
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=json.dumps({"chat_id": chat, "text": text, "disable_web_page_preview": False}).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    urllib.request.urlopen(req, timeout=15).read()
+
+now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+expected = load_json(expected_path)
+checks = []
+for name, path in (("homelab", repo), ("public", public_repo)):
+    if path.exists():
+        checks.append({"name": name, **run("git rev-parse --short=12 HEAD && git status --short --branch && git remote -v", cwd=path)})
+        checks.append({"name": f"{name}_log", **run("git log --oneline --decorate -3", cwd=path)})
+    else:
+        checks.append({"name": name, "cmd": "exists", "cwd": str(path), "returncode": 2, "output": "missing"})
+
+public_head = ""
+if public_repo.exists():
+    public_head = run("git rev-parse --short=12 HEAD", cwd=public_repo)["output"]
+expected_head = expected.get("head", "")
+drift = bool(expected_head and public_head and expected_head != public_head)
+missing_expected = not bool(expected_head)
+
+blockers = []
+if missing_expected:
+    blockers.append("Mac/public expected-head file is missing or unreadable")
+if drift:
+    blockers.append(f"ThinkCentre public clone head {public_head} differs from Mac expected head {expected_head}")
+
+status = {
+    "expected_head": expected_head,
+    "thinkcentre_public_head": public_head,
+    "drift": drift,
+    "missing_expected": missing_expected,
+}
+status_hash = hashlib.sha256(json.dumps(status, sort_keys=True).encode()).hexdigest()
+doc = {
+    "generated_at": now,
+    "expected_file": str(expected_path),
+    "expected": expected,
+    "status": status,
+    "status_hash": status_hash,
+    "blockers": blockers,
+    "checks": checks,
+    "recommendation": "monitor-only; do not pull, push, reset, or sync repos without explicit operator approval",
+}
+pathlib.Path(json_path).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+
+lines = [
+    "# A733 Repo Drift Monitor",
+    "",
+    f"Generated: `{now}`",
+    "",
+    "## Status",
+    "",
+    f"- Mac expected head: `{expected_head or 'unknown'}`",
+    f"- ThinkCentre public head: `{public_head or 'unknown'}`",
+    f"- Drift: `{drift}`",
+    "",
+    "## Blockers",
+    "",
+]
+lines += [f"- {b}" for b in blockers] or ["- none"]
+lines += ["", "## Expected Source", "", "```json", json.dumps(expected, indent=2), "```", ""]
+lines += ["## Check Output", ""]
+for c in checks:
+    lines += [f"### {c.get('name')} :: `{c.get('cmd')}`", "", f"Return code: `{c.get('returncode')}`", "", "```text", c.get("output", ""), "```", ""]
+lines += ["This report is read-only. It does not authorize repo sync, reset, pull, push, patch regeneration, or send actions.", ""]
+pathlib.Path(md_path).write_text("\n".join(lines), encoding="utf-8")
+body = html.escape(pathlib.Path(md_path).read_text(encoding="utf-8"))
+pathlib.Path(html_path).write_text(
+    "<!doctype html><meta charset='utf-8'><title>A733 Repo Drift Monitor</title>"
+    "<style>body{font-family:system-ui,sans-serif;max-width:1000px;margin:2rem auto;line-height:1.45}"
+    "pre{white-space:pre-wrap;background:#f6f8fa;padding:1rem;border:1px solid #ddd}</style>"
+    f"<pre>{body}</pre>\n",
+    encoding="utf-8",
+)
+
+state_file = pathlib.Path(state_path)
+old = {}
+if state_file.exists():
+    try:
+        old = json.loads(state_file.read_text(encoding="utf-8"))
+    except Exception:
+        old = {}
+state_file.write_text(json.dumps({"last_hash": status_hash, "last_status": status, "updated_at": now}, indent=2) + "\n", encoding="utf-8")
+if old and old.get("last_hash") != status_hash:
+    telegram(
+        "A733 repo drift status changed\n"
+        f"Drift: {drift}\n"
+        f"Report: {report_url}"
+    )
+
+print(f"wrote {md_path}")
+PY
