@@ -75,12 +75,20 @@ for key, title, stem in reports:
 blocker_data = next((r["data"] for r in rows if r["key"] == "blocker_brief"), {})
 workflow_data = next((r["data"] for r in rows if r["key"] == "workflow_status"), {})
 health_data = next((r["data"] for r in rows if r["key"] == "model_health"), {})
+safety_data = next((r["data"] for r in rows if r["key"] == "safety_audit"), {})
 
 blockers = blocker_data.get("blockers") or []
 queue_head = blocker_data.get("queue_head") or {}
 model_failures = blocker_data.get("model_failures") or []
 if not model_failures:
     model_failures = [c.get("name", "unknown") for c in health_data.get("checks", []) if not c.get("ok")]
+safety_status = safety_data.get("status", "unknown")
+
+next_safe_actions = [
+    "Keep Hermes monitor-only until the operator approves a repo sync path or H149 live hardware work.",
+    "Use the repo sync approval brief before treating ThinkCentre patch-readiness output as authoritative.",
+    "Do not run H149 unless the explicit approval text in the H149 approval brief is provided.",
+]
 
 doc = {
     "generated_at": now,
@@ -88,6 +96,8 @@ doc = {
     "queue_head": queue_head,
     "blockers": blockers,
     "model_failures": model_failures,
+    "safety_status": safety_status,
+    "next_safe_actions": next_safe_actions,
     "workflow_queue_head": workflow_data.get("queue_head"),
     "reports": [{k: v for k, v in r.items() if k != "data"} for r in rows],
     "not_authorized": [
@@ -115,6 +125,9 @@ lines = [
     "",
 ]
 lines += [f"- {b}" for b in blockers] or ["- none reported by blocker brief"]
+lines += ["", "## Next Safe Actions", ""]
+lines += [f"- {a}" for a in next_safe_actions]
+lines += ["", "## Hermes Safety", "", f"- Scheduler audit status: `{safety_status}`"]
 lines += ["", "## Model Endpoint Failures", ""]
 lines += [f"- `{m}`" for m in model_failures] or ["- none reported"]
 lines += ["", "## Reports", ""]

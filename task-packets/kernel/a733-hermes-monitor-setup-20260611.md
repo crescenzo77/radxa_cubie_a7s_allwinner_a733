@@ -81,7 +81,8 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
   brief.
 - The dashboard index is the preferred human landing page for this Hermes lane.
   It summarizes current queue head, blockers, model failures, report freshness,
-  and links while preserving the same read-only/no-approval boundary.
+  next safe actions, scheduler safety state, and links while preserving the
+  same read-only/no-approval boundary.
 - The safety audit validates the Hermes cron surface against the current
   monitor-only allowlist. Its first clean run saw all approved jobs and no
   unexpected live hardware/runtime jobs.
@@ -138,9 +139,16 @@ Live smoke checks:
 
 ## Next Safe Increment
 
-The next safe setup increment is a read-only approval-brief generator for
-`A733-SDMMC-H149`. It should summarize why H149 is queued, what hardware it
-would touch, exact stop conditions, how Cubie2/Cubie3 would be restored, and
-what human command would approve it.
+The next safe operator decision is whether to keep monitoring only or approve a
+repo authority/sync path. The dashboard and blocker brief currently show three
+open blockers:
 
-It must not run H149.
+- the ThinkCentre public clone differs from the Mac-recorded public head
+- the ThinkCentre public patch snapshot still contains rejected
+  `allwinner,pinmux` text
+- the private final-send checklist is not `send_ready`
+
+Hermes must continue reporting these as blockers. It must not resolve them by
+syncing repos, regenerating patches, promoting branches, sending mail, or
+running H149 unless the operator gives explicit approval for that specific
+action.
