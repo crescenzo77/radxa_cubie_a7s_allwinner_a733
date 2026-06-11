@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+out="${1:-${repo_root}/task-packets/kernel/results/a733-rfc-dependency-recheck-latest.json}"
+
+mkdir -p "$(dirname "$out")"
+
+python3 - "$out" <<'PY'
+from __future__ import annotations
+
+import datetime as dt
+import json
+import sys
+import urllib.request
+
+out = sys.argv[1]
+deps = [
+    {
+        "name": "A733 RTC",
+        "message_id": "20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech",
+        "source": "https://lwn.net/Articles/1055358/",
+        "markers": ["[PATCH 0/7]", "rtc: sun6i: Add support for Allwinner A733 SoC"],
+        "expected_if_unchanged": "v1 PATCH 0/7 is still the visible public series",
+    },
+    {
+        "name": "A733 CCU/PRCM",
+        "message_id": "20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech",
+        "source": "https://patchew.org/linux/20260310-a733-clk-v1-0-36b4e9b24457%40pigmoral.tech/",
+        "markers": ["[PATCH RFC 0/8]", "Add support for Allwinner A733 CCU and PRCM"],
+        "expected_if_unchanged": "PATCH RFC 0/8 is still the visible public series",
+    },
+    {
+        "name": "A733 pinctrl",
+        "message_id": "20250821004232.8134-1-andre.przywara@arm.com",
+        "source": "https://patchwork.armbian.eu/project/patchwork/cover/20250821004232.8134-1-andre.przywara%40arm.com/",
+        "markers": ["[RFC,0/9]", "pinctrl: sunxi: Allwinner A733 support"],
+        "expected_if_unchanged": "RFC 0/9 is still the visible public series",
+    },
+]
+
+results = []
+for dep in deps:
+    try:
+        with urllib.request.urlopen(dep["source"], timeout=20) as response:
+            body = response.read().decode("utf-8", errors="replace")
+        found = [marker for marker in dep["markers"] if marker in body]
+        ok = len(found) == len(dep["markers"])
+        results.append({
+            "name": dep["name"],
+            "message_id": dep["message_id"],
+            "source": dep["source"],
+            "reachable": True,
+            "markers_found": found,
+            "observed_state": dep["expected_if_unchanged"] if ok else "marker mismatch; inspect manually",
+            "needs_manual_review": not ok,
+        })
+    except Exception as exc:  # noqa: BLE001 - CLI diagnostic should capture any fetch failure.
+        results.append({
+            "name": dep["name"],
+            "message_id": dep["message_id"],
+            "source": dep["source"],
+            "reachable": False,
+            "error": str(exc),
+            "observed_state": "fetch failed; inspect manually",
+            "needs_manual_review": True,
+        })
+
+needs_manual = any(item["needs_manual_review"] for item in results)
+payload = {
+    "id": "A733-UPSTREAM-RFC-RECHECK",
+    "checked_utc": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+    "status": "manual_review_needed" if needs_manual else "completed_dependency_recheck",
+    "result": "Public dependency markers unchanged" if not needs_manual else "One or more public dependency checks needs manual review",
+    "dependencies": results,
+    "send_status": "not_send_ready",
+}
+
+with open(out, "w", encoding="utf-8") as handle:
+    json.dump(payload, handle, indent=2)
+    handle.write("\n")
+
+print(f"result_file={out}")
+print(f"status={payload['status']}")
+for item in results:
+    print(f"{item['name']}: {item['observed_state']}")
+
+sys.exit(1 if needs_manual else 0)
+PY
