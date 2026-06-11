@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T10:30:00Z",
+  "updated_utc": "2026-06-11T06:55:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
+  "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H143 freshly reproduced the stall on Cubie3 from a clean H020-derived measurement branch: IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, descriptor checksum unchanged, OWN still set after CPU sync. PIO remains diagnostic/lab infrastructure only.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -48,9 +48,10 @@
   },
   "latest_completed_test": {
     "id": "A733-SDMMC-H143",
-    "status": "queued_next_runtime_proof",
-    "title": "Fresh fixed-schema IDMAC stall capture queued",
-    "summary": "No open runtime hypothesis existed after H142. Added H143 as the next executable work order: fresh clean diagnostic IDMAC stall capture using the fixed register schema before any new behavior patch."
+    "status": "completed_measurement_no_patch",
+    "title": "Fresh fixed-schema IDMAC stall capture",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h143-fixed-schema-runtime-result-20260611T0652Z.json",
+    "result": "Fresh Cubie3 direct-boot capture preserved at tools/hardware-logs/cubie-uart/20260611T065204Z-a733-h143-fixed-schema-3b4060f731b1-ttyUSB0.uart.log. The normal-IDMAC descriptor-read stall is reproduced; no new behavior patch is justified because the visible fabric deltas match already-tested H020/H021 evidence."
   },
   "hypotheses": [
     {
@@ -2625,7 +2626,7 @@
     {
       "id": "A733-SDMMC-H143",
       "priority": 1,
-      "status": "queued_next_runtime_proof",
+      "status": "completed_measurement_no_patch",
       "title": "Fresh fixed-schema IDMAC stall capture on clean diagnostic branch",
       "question": "Can a fresh clean diagnostic boot capture enough fixed-schema SDMMC0 and fabric state at the descriptor-read stall to expose a remaining vendor-vs-mainline delta, without adding another speculative behavior change?",
       "test_cost": "medium; one clean rebuild/deploy plus one Cubie3 UART boot, no real upstream patch",
@@ -2644,6 +2645,32 @@
         "No Ethernet/VPU/display/USB-C/PCIe/wireless scope expansion.",
         "No local CCU/pinctrl submission change.",
         "No speculative secure/fabric writes unless this capture names a concrete register delta."
+      ],
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h143-fixed-schema-runtime-result-20260611T0652Z.json",
+        "summary": "Fresh H143 Cubie3 direct-boot capture reproduced the IDMAC descriptor-read stall from a clean H020-derived branch. Artifact built on Strix, UART log preserved locally, and Cubie3 restored to vendor 5.15.147-21-a733. No new behavior patch is justified from H143 alone."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H144",
+      "priority": 1,
+      "status": "queued_source_audit",
+      "title": "Audit hidden SDMMC0 descriptor-fetch handoff outside visible register dump",
+      "question": "Can local source, firmware strings, manuals, or captured logs name a concrete A733 SDMMC0/SMHC0 IDMAC descriptor-fetch precondition not visible in the H143 SDMMC0/fabric register dump?",
+      "test_cost": "low to medium; source/artifact audit only, no board reboot",
+      "procedure": [
+        "Search local BSP/U-Boot/firmware/manual artifacts for SMHC0, SDMMC0, IDMAC, descriptor, DESC_READ, master ID, SPC, TZMA, SMC, MBUS, NSI, DMA permission, firewall, and secure switch terms.",
+        "Cross-check against H020/H021/H073/H074/H095/H096/H113/H117 so closed leads are not repeated.",
+        "Promote only a named register, binding, reset/clock order, firmware handoff, or erratum to the next runtime behavior test.",
+        "If no concrete source-backed lead appears, record no-patch and keep waiting for maintainer/vendor feedback."
+      ],
+      "pass_criteria": "A new source-backed, non-duplicate behavior test is identified with exact register/source evidence, or the audit closes with no patch and documented search scope.",
+      "fail_criteria": "The audit proposes a generic fabric/security write without a source naming SMHC0/SDMMC0 descriptor-fetch access.",
+      "guardrails": [
+        "No Cubie1 use.",
+        "No Ethernet/VPU/display/USB-C/PCIe/wireless expansion.",
+        "No local CCU/pinctrl submission changes.",
+        "No vendor U-Boot workaround in DTS."
       ],
       "result": null
     }

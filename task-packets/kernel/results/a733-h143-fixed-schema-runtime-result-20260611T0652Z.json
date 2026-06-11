@@ -1,0 +1,75 @@
+{
+  "id": "A733-SDMMC-H143",
+  "status": "completed_measurement_no_patch",
+  "completed_utc": "2026-06-11T06:52:00Z",
+  "title": "Fresh fixed-schema IDMAC stall capture on clean diagnostic branch",
+  "host": "strix",
+  "target": "cubie3",
+  "source_worktree": "/srv/projects/kernel-work/runtime/a733-h143-fixed-schema",
+  "branch": "codex/a733-h143-fixed-schema",
+  "kernel_head": "3b4060f731b1dad7dca4d1fee137e023dfb5410d",
+  "artifact": "/srv/projects/kernel-work/outgoing/a733-h143-fixed-schema-3b4060f731b1-20260611T064934Z",
+  "artifact_sha256": {
+    "Image": "c8300036457b895fb9a6c556e6a41bf807915176090bce01cae8bb33812bf96a",
+    "sun60i-a733-cubie-a7s.dtb": "8fbc772e12639842e4de2435a2525696b7f30c07ff97d6cb02fb8b712ffc2acf",
+    "config": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
+    "manifest.txt": "11e1f8eb462cf1879222f441915998d2071e41851f10d44bae6e0b97a7f43d8d"
+  },
+  "uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260611T065204Z-a733-h143-fixed-schema-3b4060f731b1-ttyUSB0.uart.log",
+  "uart_log_strix": "/srv/projects/cubie-uart/logs/20260611T065204Z-a733-h143-fixed-schema-3b4060f731b1-ttyUSB0.uart.log",
+  "uart_log_sha256": "c30c9ce20e92341f5a86ebe92cfb904bf0a2da3b876a668f4cc651b2cd481db4",
+  "bootargs": "console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel drm_debug=1 root=PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e rootfstype=ext4 rootwait ro rootflags=noload init=/bin/sh",
+  "observations": {
+    "kernel": "Linux 7.1.0-rc5-00277-g3b4060f731b1",
+    "mmcblk0": "mmc0:544c USD00 117 GiB",
+    "cmd18": "single 8-block CMD18 forced through normal IDMAC",
+    "descriptor_before_cmdr": {
+      "dlba": "0x3f600000",
+      "checksum": "0x0abf1f04",
+      "des0": "0x8000001c",
+      "size": "0x00001000",
+      "buf": "0x3f600800",
+      "next": "0x3f600004"
+    },
+    "idma_post_cmdr": {
+      "gctrl": "0x20000030",
+      "dmac": "0x00000282",
+      "dlba": "0x3f600000",
+      "idst": "0x00004000",
+      "idie": "0x00000002",
+      "chda": "0x3f600000",
+      "cbda": "0x00000000",
+      "cbcr": "0x00000400",
+      "bbcr": "0x00000000",
+      "thld": "0x02000001",
+      "cmdr": "0x00003352",
+      "stas": "0x02009509"
+    },
+    "descriptor_after_cpu_sync": {
+      "checksum": "0x0abf1f04",
+      "des0": "0x8000001c",
+      "size": "0x00001000",
+      "buf": "0x3f600800",
+      "next": "0x3f600004"
+    },
+    "fabric_at_stall": {
+      "mbus": "0x81000000",
+      "iommu0": "0x00010004",
+      "msi0": "0x00030000",
+      "msi1": "0x00030001",
+      "msi2": "0x00030000",
+      "iommu1": "0x00010004",
+      "ahb": "0x01000000",
+      "mbus0": "0x60000000",
+      "mbus1": "0x00000000",
+      "mmc0": "0x81000007",
+      "bus_mmc0": "0x00010001"
+    }
+  },
+  "restore": {
+    "target": "cubie3",
+    "verified_kernel": "5.15.147-21-a733"
+  },
+  "conclusion": "H143 reproduced the normal-IDMAC descriptor-read stall from a fresh clean measurement branch and preserved a fixed-schema UART log. The descriptor contents and checksum remained unchanged after CPU sync, OWN stayed set, CHDA stayed equal to DLBA, CBDA stayed zero, CBCR stopped at 0x400, BBCR stayed zero, and IDST stayed 0x4000. The fabric values match the already-known H020/H021 class of deltas; H021 already proved the safe MSI/IOMMU subset does not fix descriptor fetch. No new behavior patch is justified from H143 alone.",
+  "next_action": "Do not patch from H143. The next responsible step is a source-backed audit for a register or firmware handoff not represented in the visible SDMMC0/fabric dump, or human reflect review of the prepared DTS series."
+}
