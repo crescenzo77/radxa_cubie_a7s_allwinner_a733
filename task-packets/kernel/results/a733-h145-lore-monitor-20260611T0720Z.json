@@ -1,0 +1,23 @@
+{
+  "checked_utc": "2026-06-11T07:01:47Z",
+  "queries": [
+    {
+      "name": "linux-mmc-a733-idmac",
+      "url": "https://lore.kernel.org/linux-mmc/?q=A733%20IDMAC%20descriptor%20read",
+      "reachable": false,
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "name": "linux-kernel-a733-idmac",
+      "url": "https://lore.kernel.org/lkml/?q=A733%20IDMAC%20descriptor%20read",
+      "reachable": false,
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "name": "linux-arm-kernel-a733-idmac",
+      "url": "https://lore.kernel.org/linux-arm-kernel/?q=A733%20IDMAC%20descriptor%20read",
+      "reachable": false,
+      "error": "HTTP Error 403: Forbidden"
+    }
+  ]
+}
