@@ -1,0 +1,186 @@
+#!/usr/bin/env python3
+import datetime as dt
+import hashlib
+import json
+import os
+import pathlib
+import subprocess
+import urllib.request
+
+
+REPO = pathlib.Path(os.environ.get("A733_HERMES_REPO", "/srv/projects/homelab"))
+BOARD = os.environ.get("A733_HEARTBEAT_BOARD", "cubie3")
+STATE_PATH = pathlib.Path(os.environ.get(
+    "A733_HEARTBEAT_STATE",
+    str(REPO / f"task-packets/kernel/a733-heartbeat-{BOARD}.json"),
+))
+STRIX = os.environ.get("A733_HERMES_STRIX", "strix")
+TELEGRAM_ENV = pathlib.Path(os.environ.get("A733_TELEGRAM_ENV", "/etc/telegram-tasks-bot/bot.env"))
+REPORT_BASE_URL = os.environ.get("A733_REPORT_BASE_URL", "http://192.168.50.225:9180")
+
+
+def run(cmd, timeout=60):
+    return subprocess.run(
+        cmd,
+        shell=True,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        timeout=timeout,
+    )
+
+
+def ssh_strix(script, timeout=60):
+    quoted = script.replace("'", "'\"'\"'")
+    proc = run(f"ssh -o BatchMode=yes -o ConnectTimeout=10 {STRIX} '{quoted}'", timeout=timeout)
+    return proc.returncode, proc.stdout
+
+
+def load_json(path, default):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return default
+
+
+def save_json(path, doc):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    tmp.replace(path)
+
+
+def env_file(path):
+    env = {}
+    if not path.exists():
+        return env
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        env[key.strip()] = value.strip().strip('"').strip("'")
+    return env
+
+
+def telegram_send(text):
+    return "telegram disabled: centralized notifier pending"
+    cfg = env_file(TELEGRAM_ENV)
+    token = cfg.get("TELEGRAM_BOT_TOKEN")
+    chat_id = cfg.get("TASK_NOTIFY_USER_ID") or cfg.get("CLEAN_TASK_USER_ID")
+    if not token or not chat_id:
+        return "telegram skipped: missing token/chat id"
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=json.dumps({"chat_id": chat_id, "text": text, "disable_web_page_preview": False}).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        return resp.read().decode()
+
+
+def snapshot_cubie3():
+    rc, out = ssh_strix(
+        r'''
+cd /srv/projects/homelab
+echo '--- processes ---'
+pgrep -af 'a733-idmac-bruteforce-lab|cubie-direct-uboot-load-session|picocom' | grep -v pgrep || true
+echo '--- latest_result ---'
+ls -t task-packets/kernel/results/a733-idmac-bruteforce-*.json 2>/dev/null | head -1 || true
+echo '--- latest_result_mtime ---'
+latest=$(ls -t task-packets/kernel/results/a733-idmac-bruteforce-*.json 2>/dev/null | head -1 || true)
+[ -n "$latest" ] && stat -c '%Y %s %n' "$latest" || true
+echo '--- latest_uart ---'
+ls -t /srv/projects/cubie-uart/logs/*a733-idmac-bf*ttyUSB0.uart.log 2>/dev/null | head -1 || true
+echo '--- latest_uart_mtime ---'
+uart=$(ls -t /srv/projects/cubie-uart/logs/*a733-idmac-bf*ttyUSB0.uart.log 2>/dev/null | head -1 || true)
+[ -n "$uart" ] && stat -c '%Y %s %n' "$uart" || true
+''',
+        timeout=60,
+    )
+    return rc, out
+
+
+def snapshot_cubie2():
+    rc, out = ssh_strix(
+        r'''
+cd /srv/projects/homelab
+echo '--- processes ---'
+pgrep -af 'a733-idmac-bf-cubie2|cubie-direct-uboot-load-session|picocom' | grep -v pgrep || true
+echo '--- ssh ---'
+ssh -o BatchMode=yes -o ConnectTimeout=5 codex@192.168.50.85 'hostname; uname -r; uptime' 2>&1 || true
+echo '--- latest_uart ---'
+ls -t /srv/projects/cubie-uart/logs/*a733-idmac-bf-cubie2*.uart.log 2>/dev/null | head -1 || true
+echo '--- latest_uart_mtime ---'
+uart=$(ls -t /srv/projects/cubie-uart/logs/*a733-idmac-bf-cubie2*.uart.log 2>/dev/null | head -1 || true)
+[ -n "$uart" ] && stat -c '%Y %s %n' "$uart" || true
+''',
+        timeout=60,
+    )
+    return rc, out
+
+
+def classify(text):
+    process_section = ""
+    if "--- processes ---" in text:
+        process_section = text.split("--- processes ---", 1)[1].split("---", 1)[0]
+    active = bool(process_section.strip()) and any(
+        marker in text for marker in (
+            "a733-idmac-bruteforce-lab",
+            "cubie-direct-uboot-load-session",
+            "picocom",
+            "a733-idmac-bf-cubie2",
+        )
+    )
+    movement_lines = []
+    for line in text.splitlines():
+        if "latest_result_mtime" in line or "latest_uart_mtime" in line:
+            continue
+        if line.strip() and ("/srv/projects/cubie-uart/logs/" in line or "task-packets/kernel/results/" in line or line[:10].isdigit()):
+            movement_lines.append(line.strip())
+    sig_src = "\n".join(movement_lines + [line for line in text.splitlines() if "ssh:" in line or "No route" in line])
+    signature = hashlib.sha256(sig_src.encode()).hexdigest()
+    return {"active": active, "signature": signature, "movement": movement_lines}
+
+
+def main():
+    now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    rc, text = snapshot_cubie3() if BOARD == "cubie3" else snapshot_cubie2()
+    status = classify(text)
+    state = load_json(STATE_PATH, {})
+    previous = state.get("last", {})
+    suspect = status["active"] and previous.get("signature") == status["signature"]
+    alert = False
+    if suspect:
+        first_seen = state.get("suspect_since") or now
+        state["suspect_since"] = first_seen
+        alert = state.get("alerted_signature") != status["signature"] and first_seen != now
+    else:
+        state.pop("suspect_since", None)
+        state.pop("alerted_signature", None)
+
+    state["last"] = {
+        "utc": now,
+        "return_code": rc,
+        "raw": text[-8000:],
+        **status,
+    }
+    save_json(STATE_PATH, state)
+
+    if alert:
+        state["alerted_signature"] = status["signature"]
+        save_json(STATE_PATH, state)
+        report_url = f"{REPORT_BASE_URL.rstrip('/')}/breakthroughs.html"
+        telegram_send(
+            f"A733 heartbeat alert: {BOARD} appears stalled\n"
+            f"No state movement across two heartbeat checks.\n"
+            f"Report index: {report_url}\n"
+            f"State file: {STATE_PATH}"
+        )
+        print(f"alerted {BOARD}")
+    else:
+        print(f"heartbeat {BOARD}: active={status['active']} suspect={suspect}")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,318 @@
+#!/usr/bin/env python3
+import datetime as dt
+import html
+import json
+import os
+import pathlib
+import re
+import subprocess
+import urllib.parse
+import urllib.request
+
+
+REPO = pathlib.Path(os.environ.get("A733_HERMES_REPO", "/srv/projects/homelab"))
+OUT_DIR = pathlib.Path(os.environ.get(
+    "A733_BREAKTHROUGH_OUT_DIR",
+    str(REPO / "task-packets/kernel/hermes-hourly"),
+))
+STATE_PATH = pathlib.Path(os.environ.get(
+    "A733_BREAKTHROUGH_STATE",
+    str(REPO / "task-packets/kernel/a733-breakthrough-watch-state.json"),
+))
+HANDOFF_PATH = pathlib.Path(os.environ.get(
+    "A733_CUBIE3_HANDOFF",
+    str(REPO / "task-packets/kernel/a733-cubie3-to-cubie2-handoff.json"),
+))
+STRIX = os.environ.get("A733_HERMES_STRIX", "strix")
+REPORT_BASE_URL = os.environ.get("A733_REPORT_BASE_URL", "http://192.168.50.225:9180")
+TELEGRAM_ENV = pathlib.Path(os.environ.get("A733_TELEGRAM_ENV", "/etc/telegram-tasks-bot/bot.env"))
+
+
+def run(cmd, timeout=60):
+    return subprocess.run(
+        cmd,
+        shell=True,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        timeout=timeout,
+    )
+
+
+def ssh_strix(script, timeout=60):
+    quoted = script.replace("'", "'\"'\"'")
+    proc = run(f"ssh -o BatchMode=yes -o ConnectTimeout=10 {STRIX} '{quoted}'", timeout=timeout)
+    return proc.returncode, proc.stdout
+
+
+def load_json(path, default):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return default
+
+
+def save_json(path, doc):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    tmp.replace(path)
+
+
+def env_file(path):
+    env = {}
+    if not path.exists():
+        return env
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        env[key.strip()] = value.strip().strip('"').strip("'")
+    return env
+
+
+def telegram_send(text):
+    return "telegram disabled: centralized notifier pending"
+    cfg = env_file(TELEGRAM_ENV)
+    token = cfg.get("TELEGRAM_BOT_TOKEN")
+    chat_id = cfg.get("TASK_NOTIFY_USER_ID") or cfg.get("CLEAN_TASK_USER_ID")
+    if not token or not chat_id:
+        return "telegram skipped: missing token/chat id"
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=json.dumps({
+            "chat_id": chat_id,
+            "text": text,
+            "disable_web_page_preview": False,
+        }).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        return resp.read().decode()
+
+
+def collect_cubie3_passes():
+    rc, out = ssh_strix(
+        r'''
+cd /srv/projects/homelab
+python3 - <<'PY'
+import glob, json, os
+items = []
+for path in glob.glob("task-packets/kernel/results/a733-idmac-bruteforce-*.json"):
+    try:
+        doc = json.load(open(path))
+    except Exception:
+        continue
+    cand = doc.get("winning_candidate") or {}
+    if doc.get("status") != "pass" or not cand:
+        continue
+    items.append({
+        "board": "cubie3",
+        "kind": cand.get("kind"),
+        "addr": cand.get("addr"),
+        "bit": cand.get("bit"),
+        "uart_log": cand.get("log"),
+        "result_path": path,
+        "tests_before_pass": len(doc.get("tests", [])),
+        "updated_utc": doc.get("updated_utc") or doc.get("started_utc"),
+    })
+print(json.dumps(items))
+PY
+''',
+        timeout=60,
+    )
+    if rc:
+        return []
+    try:
+        return json.loads(out.strip().splitlines()[-1])
+    except Exception:
+        return []
+
+
+def collect_cubie2_passes():
+    items = []
+    for path in OUT_DIR.glob("*-a733-cubie2-lead.json"):
+        doc = load_json(path, {})
+        result = doc.get("run_result") or {}
+        lead = doc.get("lead") or {}
+        if result.get("result") != "progressed":
+            continue
+        env = lead.get("env") or {}
+        items.append({
+            "board": "cubie2",
+            "kind": env.get("A733_BF_KIND"),
+            "addr": env.get("A733_BF_ADDR"),
+            "bit": int(env.get("A733_BF_BIT", -1)),
+            "uart_log": result.get("uart_log"),
+            "result_path": str(path),
+            "lead_id": lead.get("id"),
+            "updated_utc": doc.get("stamp"),
+        })
+    return items
+
+
+def key(item):
+    return f"{item.get('board')}:{item.get('kind')}:{item.get('addr')}:{item.get('bit')}:{item.get('lead_id','')}"
+
+
+def write_handoff(item, stamp):
+    if item.get("board") != "cubie3":
+        return
+    handoff = {
+        "stamp": stamp,
+        "producer": "a733-breakthrough-watch",
+        "consumer": "cubie2-hermes-lead",
+        "status": "viable-avenue",
+        "candidate": {
+            "kind": item.get("kind"),
+            "addr": item.get("addr"),
+            "bit": item.get("bit"),
+            "log": item.get("uart_log"),
+        },
+        "result_path": item.get("result_path"),
+        "uart_path": item.get("uart_log"),
+        "plain_english": "Cubie3 found a positive candidate; Cubie2 should run targeted replication, strobe, and neighbor-control tests.",
+    }
+    save_json(HANDOFF_PATH, handoff)
+
+
+def write_report(item, stamp):
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    slug = f"{stamp}-a733-breakthrough-{item['board']}-{item.get('kind')}-{str(item.get('addr')).replace('0x','')}-b{item.get('bit')}"
+    json_path = OUT_DIR / f"{slug}.json"
+    md_path = OUT_DIR / f"{slug}.md"
+    html_path = OUT_DIR / f"{slug}.html"
+    url = f"{REPORT_BASE_URL.rstrip('/')}/{urllib.parse.quote(html_path.name)}"
+
+    doc = {"stamp": stamp, "breakthrough": item, "html_url": url}
+    json_path.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    md = f"""# A733 Breakthrough - {stamp}
+
+## Positive Result
+
+- Board: `{item.get('board')}`
+- Candidate: `{item.get('kind')}` `{item.get('addr')}` bit `{item.get('bit')}`
+- UART log: `{item.get('uart_log')}`
+- Result path: `{item.get('result_path')}`
+
+## Meaning
+
+This is a new positive result. It should be treated as lab evidence, not an upstreamable raw register write. Cubie3 positives are handed to Cubie2 for targeted follow-up.
+"""
+    md_path.write_text(md, encoding="utf-8")
+    html_path.write_text(f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A733 Breakthrough {html.escape(stamp)}</title>
+  <style>
+    body {{ font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 0; background: #f6f8fb; color: #1f2933; }}
+    main {{ max-width: 960px; margin: 0 auto; padding: 32px 20px 56px; }}
+    .panel {{ background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 18px; margin: 16px 0; }}
+    code {{ background: #101828; color: #eef4ff; border-radius: 6px; padding: 2px 5px; }}
+    pre {{ background: #101828; color: #eef4ff; border-radius: 6px; padding: 14px; overflow: auto; white-space: pre-wrap; }}
+  </style>
+</head>
+<body>
+<main>
+  <h1>A733 Breakthrough</h1>
+  <p>{html.escape(stamp)}</p>
+  <section class="panel">
+    <h2>Positive Result</h2>
+    <p><strong>Board:</strong> <code>{html.escape(str(item.get('board')))}</code></p>
+    <p><strong>Candidate:</strong> <code>{html.escape(str(item.get('kind')))} {html.escape(str(item.get('addr')))} bit {html.escape(str(item.get('bit')))}</code></p>
+    <p><strong>UART log:</strong> <code>{html.escape(str(item.get('uart_log')))}</code></p>
+    <p><strong>Result path:</strong> <code>{html.escape(str(item.get('result_path')))}</code></p>
+  </section>
+  <section class="panel">
+    <h2>Plain-English Meaning</h2>
+    <p>A new positive candidate was found. This is useful lab evidence and should be followed up carefully, not copied upstream as a raw register poke.</p>
+  </section>
+  <section class="panel">
+    <h2>Raw JSON</h2>
+    <pre>{html.escape(json.dumps(doc, indent=2, ensure_ascii=False))}</pre>
+  </section>
+</main>
+</body>
+</html>
+""", encoding="utf-8")
+    for src, name in (
+        (json_path, "latest-a733-breakthrough.json"),
+        (md_path, "latest-a733-breakthrough.md"),
+        (html_path, "latest-a733-breakthrough.html"),
+    ):
+        dst = OUT_DIR / name
+        if dst.exists() or dst.is_symlink():
+            dst.unlink()
+        dst.symlink_to(src.name)
+    return json_path, md_path, html_path, url
+
+
+def launch_cubie2_followup():
+    log = REPO / "logs" / f"a733-hermes-cubie2-breakthrough-{dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.log"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.Popen(
+        f"nohup /home/enzo/.hermes/scripts/a733-hermes-cubie2-lead-supervisor.sh > {log} 2>&1 < /dev/null &",
+        shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return str(log)
+
+
+def update_index():
+    links = []
+    for path in sorted(OUT_DIR.glob("*-a733-breakthrough-*.html"), reverse=True):
+        links.append(f'<li><a href="{html.escape(path.name)}">{html.escape(path.name)}</a></li>')
+    index = OUT_DIR / "breakthroughs.html"
+    index.write_text(f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A733 Breakthroughs</title></head><body>
+<main><h1>A733 Breakthroughs</h1><ul>{''.join(links) or '<li>No breakthroughs yet.</li>'}</ul></main>
+</body></html>
+""", encoding="utf-8")
+
+
+def main():
+    state = load_json(STATE_PATH, {"notified": {}})
+    positives = collect_cubie3_passes() + collect_cubie2_passes()
+    new_items = [item for item in positives if key(item) not in state.get("notified", {})]
+    if os.environ.get("A733_BREAKTHROUGH_SEED_ONLY") == "1":
+        for item in new_items:
+            state.setdefault("notified", {})[key(item)] = {
+                "stamp": dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
+                "item": item,
+                "seeded": True,
+            }
+        save_json(STATE_PATH, state)
+        print(f"seeded_breakthroughs={len(new_items)}")
+        return
+    for item in new_items:
+        stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        write_handoff(item, stamp)
+        _, _, _, url = write_report(item, stamp)
+        followup = launch_cubie2_followup() if item.get("board") == "cubie3" else ""
+        msg = (
+            "A733 breakthrough found\n"
+            f"Board: {item.get('board')}\n"
+            f"Candidate: {item.get('kind')} {item.get('addr')} bit {item.get('bit')}\n"
+            f"Report: {url}"
+        )
+        if followup:
+            msg += f"\nCubie2 follow-up launched: {followup}"
+        send_result = telegram_send(msg)
+        state.setdefault("notified", {})[key(item)] = {
+            "stamp": stamp,
+            "item": item,
+            "url": url,
+            "telegram": send_result,
+        }
+    update_index()
+    save_json(STATE_PATH, state)
+    print(f"new_breakthroughs={len(new_items)}")
+
+
+if __name__ == "__main__":
+    main()

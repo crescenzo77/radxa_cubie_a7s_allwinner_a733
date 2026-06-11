@@ -30,16 +30,16 @@ source_diff_url = "http://192.168.50.225:9181/hermes-source-diff"
 stale_after_seconds = 75 * 60
 
 reports = [
-    ("safety_audit", "Hermes safety audit", outdir, hourly_url, "a733-hermes-safety-audit-latest"),
-    ("blocker_brief", "Patch blocker brief", outdir, hourly_url, "a733-patch-blocker-brief-latest"),
-    ("workflow_status", "Workflow status", outdir, hourly_url, "a733-workflow-status-latest"),
-    ("public_patch_readiness", "Public patch readiness", outdir, hourly_url, "a733-public-patch-readiness-latest"),
-    ("repo_drift", "Repo drift", outdir, hourly_url, "a733-repo-drift-latest"),
-    ("repo_sync_approval", "Repo sync approval brief", outdir, hourly_url, "a733-repo-sync-approval-brief-latest"),
-    ("h149_approval", "H149 approval brief", outdir, hourly_url, "a733-h149-approval-brief-latest"),
-    ("model_health", "Model endpoint health", outdir, hourly_url, "a733-model-health-latest"),
-    ("public_source", "Public source monitor", outdir, hourly_url, "a733-public-source-latest"),
-    ("radxa_provenance", "Radxa provenance audit", kernel_reports_dir / "hermes-source-diff", source_diff_url, "a733-radxa-provenance-audit-latest"),
+    ("safety_audit", "Hermes safety audit", outdir, hourly_url, "a733-hermes-safety-audit-latest", True),
+    ("blocker_brief", "Patch blocker brief", outdir, hourly_url, "a733-patch-blocker-brief-latest", True),
+    ("workflow_status", "Workflow status", outdir, hourly_url, "a733-workflow-status-latest", True),
+    ("public_patch_readiness", "Public patch readiness", outdir, hourly_url, "a733-public-patch-readiness-latest", True),
+    ("repo_drift", "Repo drift", outdir, hourly_url, "a733-repo-drift-latest", True),
+    ("repo_sync_approval", "Repo sync approval brief", outdir, hourly_url, "a733-repo-sync-approval-brief-latest", True),
+    ("h149_approval", "H149 approval brief", outdir, hourly_url, "a733-h149-approval-brief-latest", False),
+    ("model_health", "Model endpoint health", outdir, hourly_url, "a733-model-health-latest", True),
+    ("public_source", "Public source monitor", outdir, hourly_url, "a733-public-source-latest", True),
+    ("radxa_provenance", "Radxa provenance audit", kernel_reports_dir / "hermes-source-diff", source_diff_url, "a733-radxa-provenance-audit-latest", False),
 ]
 
 now_dt = dt.datetime.now(dt.timezone.utc)
@@ -93,6 +93,7 @@ def read_env(path):
     return env
 
 def telegram(text):
+    return "telegram disabled: centralized notifier pending"
     cfg = read_env(telegram_env)
     token = cfg.get("TELEGRAM_BOT_TOKEN")
     chat = cfg.get("TASK_NOTIFY_USER_ID") or cfg.get("CLEAN_TASK_USER_ID")
@@ -124,7 +125,7 @@ def age_text(path):
     return f"{minutes // 60}h{minutes % 60:02d}m"
 
 rows = []
-for key, title, report_dir, url_base, stem in reports:
+for key, title, report_dir, url_base, stem, freshness_required in reports:
     data, state = load_json(report_dir, stem)
     md_file = report_dir / f"{stem}.md"
     html_file = report_dir / f"{stem}.html"
@@ -138,7 +139,8 @@ for key, title, report_dir, url_base, stem in reports:
         "generated_at": data.get("generated_at", "unknown"),
         "age": age_text(md_file),
         "age_seconds": age_s,
-        "stale": age_s is None or age_s > stale_after_seconds,
+        "freshness_required": freshness_required,
+        "stale": freshness_required and (age_s is None or age_s > stale_after_seconds),
         "md_url": f"{url_base}/{stem}.md",
         "html_url": f"{url_base}/{stem}.html",
         "json_url": f"{url_base}/{stem}.json",
@@ -229,7 +231,7 @@ lines = [
 ]
 lines += [f"- {b}" for b in blockers] or ["- none reported by blocker brief"]
 lines += ["", "## Report Health", ""]
-lines += [f"- {f}" for f in report_findings] or [f"- all reports fresh within `{stale_after_seconds}` seconds"]
+lines += [f"- {f}" for f in report_findings] or [f"- all scheduled reports fresh within `{stale_after_seconds}` seconds"]
 lines += ["", "## Next Safe Actions", ""]
 lines += [f"- {a}" for a in next_safe_actions]
 lines += ["", "## Hermes Safety", "", f"- Scheduler audit status: `{safety_status}`"]
@@ -257,7 +259,7 @@ lines += ["", "## Reports", ""]
 lines += ["| Report | State | Fresh | Generated | Age | Links |", "|---|---:|---:|---:|---:|---|"]
 for row in rows:
     links = f"[html]({row['html_url']}) [md]({row['md_url']}) [json]({row['json_url']})"
-    fresh = "no" if row["stale"] else "yes"
+    fresh = "n/a" if not row["freshness_required"] else ("no" if row["stale"] else "yes")
     lines.append(f"| {row['title']} | `{row['state']}` | `{fresh}` | `{row['generated_at']}` | `{row['age']}` | {links} |")
 lines += [
     "",

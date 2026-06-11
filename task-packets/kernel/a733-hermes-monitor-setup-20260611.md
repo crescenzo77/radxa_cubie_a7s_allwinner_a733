@@ -33,16 +33,22 @@ Paused after cleanup review:
 |---|---|---:|---|
 | A733 source-diff heartbeat | `56633ee4233b` | `*/20 * * * *` | No active source-diff audit is running; this added scheduler noise without moving the kernel work forward. |
 
-Quarantined deployed Hermes scripts:
+Deployed but inactive project helpers:
 
 ```text
-/home/enzo/.hermes/scripts.disabled/a733-cleanup-20260611/a733-breakthrough-watch.sh
-/home/enzo/.hermes/scripts.disabled/a733-cleanup-20260611/a733-cubie3-discovery-keeper.sh
-/home/enzo/.hermes/scripts.disabled/a733-cleanup-20260611/a733-heartbeat-cubie2.sh
-/home/enzo/.hermes/scripts.disabled/a733-cleanup-20260611/a733-heartbeat-cubie3.sh
-/home/enzo/.hermes/scripts.disabled/a733-cleanup-20260611/a733-hermes-cubie2-lead-supervisor.sh
-/home/enzo/.hermes/scripts.disabled/a733-cleanup-20260611/a733-hermes-hourly-supervisor.sh
+/home/enzo/.hermes/scripts/a733-breakthrough-watch.sh
+/home/enzo/.hermes/scripts/a733-cubie3-discovery-keeper.sh
+/home/enzo/.hermes/scripts/a733-heartbeat-cubie2.sh
+/home/enzo/.hermes/scripts/a733-heartbeat-cubie3.sh
+/home/enzo/.hermes/scripts/a733-hermes-cubie2-lead-supervisor.sh
+/home/enzo/.hermes/scripts/a733-hermes-hourly-supervisor.sh
 ```
+
+These are preserved because `runbooks/hermes-thinkcentre-integration.md`
+names them as A733 kernel integration surfaces. They are not enabled in the
+current monitor-only scheduler. Any job that launches brute force, Cubie
+runtime tests, reboot/power actions, or candidate-followup hardware work still
+requires explicit operator approval.
 
 ## Report URLs
 
@@ -62,6 +68,11 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
 
 ## Latest Observations
 
+- Telegram sends from A733/kernel-specific Hermes scripts are disabled as of
+  2026-06-11 while a centralized notification point is being prepared. The
+  shared Hermes Telegram bot/platform was not disabled; only these A733 script
+  helper functions now return before reading bot credentials or calling the
+  Telegram API.
 - Cleanup review on 2026-06-11: the source-diff heartbeat was paused and
   removed from the safety audit required-job allowlist. It was reasonable while
   an audit was active, but unreasonable as a permanent no-op heartbeat.
@@ -105,6 +116,10 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
 - The dashboard now emits `dashboard_status`, per-report freshness, and
   `report_findings`. Reports older than 75 minutes, missing reports, JSON load
   errors, or a non-`ok` safety audit turn the dashboard status to `attention`.
+- Cleanup review on 2026-06-11: the dashboard now enforces freshness only for
+  scheduled monitor reports. On-demand reports such as the H149 approval brief
+  and Radxa provenance audit stay linked and summarized, but stale copies do
+  not imply Hermes is unhealthy.
 - The dashboard keeps a local state file and sends a Telegram notification only
   when `dashboard_status`, `report_findings`, or scheduler safety status
   changes after a prior state exists. Clean repeat runs do not spam Telegram.
@@ -212,7 +227,8 @@ Removed from active schedule:
 - Source-diff heartbeat: useful only during an active source-diff audit. It is
   paused now.
 
-Deleted from the tracked helper set and quarantined from active Hermes scripts:
+Restored as tracked helper surfaces, but kept out of the active monitor-only
+schedule:
 
 - `a733-breakthrough-watch`
 - `a733-cubie3-discovery-keeper`
@@ -220,9 +236,10 @@ Deleted from the tracked helper set and quarantined from active Hermes scripts:
 - `a733-hermes-cubie2-lead-supervisor`
 - `a733-hermes-hourly-supervisor`
 
-These were too close to unattended hardware orchestration for the current
-monitor-only phase. They remain recoverable from git history and the disabled
-ThinkCentre script directory if explicitly needed later.
+These remain too close to unattended hardware orchestration for the current
+monitor-only phase. The correct state is present-but-inactive: available for a
+future approved kernel task packet, absent from the active Hermes cron allowlist
+today.
 
 Do not add more:
 

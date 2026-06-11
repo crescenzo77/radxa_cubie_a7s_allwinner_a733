@@ -53,6 +53,7 @@ def read_env(path):
     return d
 
 def telegram(text):
+    return "telegram disabled: centralized notifier pending"
     cfg = read_env(telegram_env)
     token = cfg.get("TELEGRAM_BOT_TOKEN")
     chat = cfg.get("TASK_NOTIFY_USER_ID") or cfg.get("CLEAN_TASK_USER_ID")

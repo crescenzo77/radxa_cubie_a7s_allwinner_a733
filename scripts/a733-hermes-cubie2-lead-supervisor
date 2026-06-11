@@ -1,0 +1,698 @@
+#!/usr/bin/env python3
+import datetime as dt
+import html
+import json
+import os
+import pathlib
+import re
+import shlex
+import subprocess
+import textwrap
+import urllib.error
+import urllib.request
+
+
+REPO = pathlib.Path(os.environ.get("A733_HERMES_REPO", "/srv/projects/homelab"))
+OUT_DIR = pathlib.Path(os.environ.get(
+    "A733_HERMES_OUT_DIR",
+    str(REPO / "task-packets/kernel/hermes-hourly"),
+))
+REPORT_BASE_URL = os.environ.get("A733_REPORT_BASE_URL", "http://192.168.50.225:9180")
+TELEGRAM_ENV = pathlib.Path(os.environ.get("A733_TELEGRAM_ENV", "/etc/telegram-tasks-bot/bot.env"))
+STATE_PATH = pathlib.Path(os.environ.get(
+    "A733_CUBIE2_LEAD_STATE",
+    str(REPO / "task-packets/kernel/a733-cubie2-lead-state.json"),
+))
+HANDOFF_PATH = pathlib.Path(os.environ.get(
+    "A733_CUBIE3_HANDOFF",
+    str(REPO / "task-packets/kernel/a733-cubie3-to-cubie2-handoff.json"),
+))
+STRIX = os.environ.get("A733_HERMES_STRIX", "strix")
+GATEWAY = os.environ.get("A733_HERMES_GATEWAY", "http://192.168.50.225:4011/v1")
+TOKEN = os.environ.get("A733_HERMES_GATEWAY_TOKEN", "local-open-webui-gateway")
+TIMEOUT = int(os.environ.get("A733_HERMES_TIMEOUT", "180"))
+MAX_LEADS_PER_RUN = int(os.environ.get("A733_CUBIE2_MAX_LEADS_PER_RUN", "2"))
+TEST_MODE = os.environ.get("A733_CUBIE2_TEST_MODE", "propose-only")
+
+STRIX_MODEL = "Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding"
+
+SAFE_RANGES = {
+    "ccu": (0x02002000, 0x02002fff),
+    "smhc": (0x04020000, 0x04020fff),
+}
+
+
+def run(cmd, *, timeout=60, check=False):
+    proc = subprocess.run(
+        cmd,
+        shell=True,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        timeout=timeout,
+    )
+    if check and proc.returncode:
+        raise RuntimeError(f"command failed {proc.returncode}: {cmd}\n{proc.stdout}")
+    return proc.returncode, proc.stdout.strip()
+
+
+def ssh_strix(script, timeout=120):
+    quoted = script.replace("'", "'\"'\"'")
+    return run(f"ssh -o BatchMode=yes -o ConnectTimeout=10 {STRIX} '{quoted}'", timeout=timeout)
+
+
+def load_state():
+    if STATE_PATH.exists():
+        try:
+            return json.loads(STATE_PATH.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            pass
+    return {"completed": {}, "runs": []}
+
+
+def save_state(state):
+    STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp = STATE_PATH.with_suffix(".tmp")
+    tmp.write_text(json.dumps(state, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    tmp.replace(STATE_PATH)
+
+
+def env_file(path):
+    env = {}
+    if not path.exists():
+        return env
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        env[key.strip()] = value.strip().strip('"').strip("'")
+    return env
+
+
+def telegram_send(text):
+    return "telegram disabled: centralized notifier pending"
+    cfg = env_file(TELEGRAM_ENV)
+    token = cfg.get("TELEGRAM_BOT_TOKEN")
+    chat_id = cfg.get("TASK_NOTIFY_USER_ID") or cfg.get("CLEAN_TASK_USER_ID")
+    if not token or not chat_id:
+        return "telegram skipped: missing token/chat id"
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=json.dumps({
+            "chat_id": chat_id,
+            "text": text,
+            "disable_web_page_preview": False,
+        }).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        return resp.read().decode()
+
+
+def load_handoff():
+    if not HANDOFF_PATH.exists():
+        return {}
+    try:
+        return json.loads(HANDOFF_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+
+def extract_json(text):
+    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.S)
+    if match:
+        text = match.group(1)
+    else:
+        start = text.find("{")
+        end = text.rfind("}")
+        if start >= 0 and end > start:
+            text = text[start:end + 1]
+    return json.loads(text)
+
+
+def normalize_lead(doc):
+    kind = str(doc.get("kind", "")).lower().strip()
+    addr_text = str(doc.get("addr", "")).strip()
+    bit = int(doc.get("bit", -1))
+    if kind not in SAFE_RANGES:
+        raise ValueError(f"unsupported kind: {kind}")
+    if not re.fullmatch(r"0x[0-9a-fA-F]+", addr_text):
+        raise ValueError(f"addr must be hex: {addr_text}")
+    addr = int(addr_text, 16)
+    lo, hi = SAFE_RANGES[kind]
+    if not (lo <= addr <= hi):
+        raise ValueError(f"addr outside {kind} safe range: {addr_text}")
+    if not (0 <= bit <= 31):
+        raise ValueError(f"bit outside 0..31: {bit}")
+    lead_id = str(doc.get("id") or f"cubie2-{kind}-{addr_text.lower().replace('0x', '')}-bit{bit}")
+    if not re.fullmatch(r"[a-z0-9][a-z0-9._-]{5,96}", lead_id):
+        raise ValueError(f"unsafe lead id: {lead_id}")
+    env = {"A733_BF_KIND": kind, "A733_BF_ADDR": addr_text.lower(), "A733_BF_BIT": str(bit)}
+    if doc.get("restore") is True:
+        env["A733_BF_RESTORE"] = "1"
+    if doc.get("value") not in (None, ""):
+        value = str(doc["value"]).strip()
+        if not re.fullmatch(r"0x[0-9a-fA-F]{1,8}", value):
+            raise ValueError(f"value must be 32-bit hex: {value}")
+        env["A733_BF_VALUE"] = value.lower()
+    return {
+        "id": lead_id,
+        "title": str(doc.get("title") or f"{kind} {addr_text} bit {bit}")[:140],
+        "why": str(doc.get("why") or "Hermes selected this from the latest reports.")[:1200],
+        "source": str(doc.get("source") or "hermes-model-proposal")[:200],
+        "env": env,
+    }
+
+
+def handoff_targeted_leads(handoff):
+    candidate = handoff.get("candidate") or {}
+    kind = str(candidate.get("kind") or "").lower()
+    addr = str(candidate.get("addr") or "").lower()
+    try:
+        bit = int(candidate.get("bit"))
+    except (TypeError, ValueError):
+        return []
+    if kind not in SAFE_RANGES or not re.fullmatch(r"0x[0-9a-f]+", addr):
+        return []
+
+    base = {"kind": kind, "addr": addr, "source": f"cubie3 handoff {handoff.get('stamp', '')}"}
+    raw = [
+        {
+            **base,
+            "id": f"cubie2-replicate-{kind}-{addr.replace('0x', '')}-bit{bit}",
+            "title": "Replicate Cubie3 viable avenue on Cubie2",
+            "why": "Cubie3 reported this exact register bit as the current viable avenue; Cubie2 should confirm whether it reproduces on a second board.",
+            "bit": bit,
+        },
+        {
+            **base,
+            "id": f"cubie2-strobe-{kind}-{addr.replace('0x', '')}-bit{bit}",
+            "title": "Check whether the Cubie3 bit behaves like a strobe",
+            "why": "The Cubie3 clue appeared self-clearing/non-sticky. Restoring the original value tests whether the write event, not the held bit, is what matters.",
+            "bit": bit,
+            "restore": True,
+        },
+    ]
+    if bit > 0:
+        raw.append({
+            **base,
+            "id": f"cubie2-control-{kind}-{addr.replace('0x', '')}-bit{bit - 1}",
+            "title": "Neighbor-bit control below Cubie3 viable bit",
+            "why": "A nearby failing bit helps separate a real signal from accidental progress.",
+            "bit": bit - 1,
+        })
+    if bit < 31:
+        raw.append({
+            **base,
+            "id": f"cubie2-control-{kind}-{addr.replace('0x', '')}-bit{bit + 1}",
+            "title": "Neighbor-bit control above Cubie3 viable bit",
+            "why": "A second nearby control helps bound the viable bit.",
+            "bit": bit + 1,
+        })
+
+    leads = []
+    for doc in raw:
+        try:
+            leads.append(normalize_lead(doc))
+        except ValueError:
+            continue
+    return leads
+
+
+def latest_local_reports():
+    snippets = []
+    for name in ("latest-a733-hermes-hourly.md", "latest-a733-cubie2-lead.md"):
+        path = OUT_DIR / name
+        if path.exists():
+            snippets.append(f"--- {name} ---\n{path.read_text(encoding='utf-8', errors='replace')[-6000:]}")
+    return "\n\n".join(snippets)
+
+
+def propose_lead(state, context):
+    handoff = load_handoff()
+    for lead in handoff_targeted_leads(handoff):
+        prior = state.get("completed", {}).get(lead["id"], {})
+        if not prior or prior.get("result") in ("no_uart_log", "proposed_only"):
+            lead["proposal_raw"] = json.dumps({
+                "source": "cubie3-to-cubie2-handoff",
+                "handoff": handoff,
+                "selected": lead,
+            }, indent=2, ensure_ascii=False)
+            return lead
+
+    prompt = textwrap.dedent(f"""
+    Read the latest A733 SDMMC0 reports and choose the single next lead.
+
+    You are not choosing from a prewritten queue. Infer the best next lead from the evidence.
+    Prefer source-backed work: TRM/register-map lookup, vendor CCU/U-Boot comparison, or
+    verification of whether the issue is AHB/APB/MBUS/NSI rather than another blind bit guess.
+    If test mode is enabled, the runner can execute exactly one boot-time diagnostic write and
+    then restores Cubie2. In default propose-only mode, it only documents the lead.
+
+    Allowed safety envelope:
+    - kind must be "ccu" with addr 0x02002000..0x02002fff, or "smhc" with addr 0x04020000..0x04020fff.
+    - bit must be 0..31.
+    - optional value must be a 32-bit hex value.
+    - use restore=true only when the hypothesis is that the write is a strobe/self-clearing trigger.
+    - do not choose Ethernet, VPU, display, USB-C, PCIe, Wi-Fi, vendor DTS pollution, or a raw upstream patch.
+
+    Avoid repeating completed lead ids unless the last run was infrastructure failure.
+
+    Return only JSON with this shape. If the next responsible step is research instead of
+    hardware testing, still include the best bounded hardware candidate, but explain the
+    research prerequisite in "why".
+    {{
+      "id": "cubie2-short-kebab-id",
+      "title": "short human title",
+      "why": "why this is the next best lead",
+      "kind": "ccu",
+      "addr": "0x02002580",
+      "bit": 27,
+      "restore": false,
+      "value": "",
+      "source": "which report/log clue drove this"
+    }}
+
+    Completed leads:
+    {json.dumps(state.get("completed", {}), indent=2, ensure_ascii=False)}
+
+    Cubie3-to-Cubie2 handoff:
+    {json.dumps(handoff, indent=2, ensure_ascii=False)}
+
+    Latest report snippets:
+    {latest_local_reports()}
+
+    Strix context:
+    {context["text"][-7000:]}
+    """).strip()
+    errors = []
+    for model in (STRIX_MODEL,):
+        try:
+            raw = gateway_chat(model, prompt)
+            lead = normalize_lead(extract_json(raw))
+            prior = state.get("completed", {}).get(lead["id"], {})
+            if prior and prior.get("result") not in ("no_uart_log", "proposed_only"):
+                raise ValueError(f"model repeated completed lead: {lead['id']}")
+            lead["proposal_raw"] = raw
+            return lead
+        except Exception as exc:
+            errors.append(f"{model}: {exc}")
+    raise RuntimeError("Hermes could not produce a safe lead:\n" + "\n".join(errors))
+
+
+def next_lead(state, context):
+    force = os.environ.get("A733_CUBIE2_FORCE_LEAD")
+    if force:
+        return normalize_lead(json.loads(force))
+    return propose_lead(state, context)
+
+
+def gateway_chat(model, prompt):
+    payload = {
+        "model": model,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are reviewing lab evidence for Allwinner A733 SDMMC0 IDMAC bring-up. "
+                    "Do not invent test results. Do not propose Ethernet, VPU, display, PCIe, "
+                    "Wi-Fi, vendor DTS pollution, or upstreaming raw register pokes."
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.1,
+        "max_tokens": 800,
+    }
+    req = urllib.request.Request(
+        GATEWAY.rstrip("/") + "/chat/completions",
+        data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json", "Authorization": "Bearer " + TOKEN},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+        data = json.loads(resp.read().decode())
+    return data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+
+
+def collect_context():
+    rc, out = ssh_strix(
+        r'''
+cd /srv/projects/homelab
+echo '--- cubie2 ---'
+ssh -o BatchMode=yes -o ConnectTimeout=5 codex@192.168.50.85 'hostname; uname -r' 2>&1 || true
+echo '--- cubie2_uart ---'
+ls -l /dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0 2>&1 || true
+echo '--- latest_cubie3_result ---'
+python3 - <<'PY' || true
+import glob, json, os
+paths = sorted(glob.glob("task-packets/kernel/results/a733-idmac-bruteforce-*.json"), key=os.path.getmtime, reverse=True)
+chosen = None
+for path in paths:
+    try:
+        doc = json.load(open(path))
+    except Exception:
+        continue
+    if doc.get("status") == "pass" and doc.get("winning_candidate"):
+        chosen = path
+        break
+if chosen is None and paths:
+    chosen = paths[0]
+if chosen:
+    print(open(chosen).read())
+PY
+echo '--- latest_cubie2_uart ---'
+ls -t /srv/projects/cubie-uart/logs/*a733-idmac-bf-cubie2*.uart.log 2>/dev/null | head -1 || true
+''',
+        timeout=90,
+    )
+    return {"return_code": rc, "text": out}
+
+
+def shell_exports(env):
+    merged = {
+        "A733_TARGET": "codex@192.168.50.85",
+        "A733_BF_LABEL": "a733-idmac-bf-cubie2",
+        "A733_BF_SECONDS": "150",
+        "CUBIE_UART_DEVICE": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0",
+        "CUBIE_POWER_CMD": "/home/enzo/.local/bin/cubie2-power cycle 5",
+    }
+    merged.update(env)
+    lines = []
+    for key, value in merged.items():
+        lines.append(f"export {key}={shlex.quote(value)}")
+    return "\n".join(lines)
+
+
+def run_lead(lead):
+    script = f'''
+set -eu
+cd /srv/projects/homelab
+{shell_exports(lead["env"])}
+mkdir -p logs task-packets/kernel/results
+echo "lead_id={lead['id']}"
+echo "lead_title={lead['title']}"
+echo "preflight_cubie2_start"
+ssh -o BatchMode=yes -o ConnectTimeout=8 codex@192.168.50.85 'hostname; uname -r'
+echo "stage_start"
+scripts/a733-idmac-bruteforce-lab stage
+echo "boot_one_start"
+set +e
+scripts/a733-idmac-bruteforce-lab boot-one
+boot_rc=$?
+set -e
+log=$(find /srv/projects/cubie-uart/logs -maxdepth 1 -type f -name '*a733-idmac-bf-cubie2*.uart.log' -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
+echo "boot_rc=$boot_rc"
+echo "uart_log=$log"
+if [ -n "$log" ]; then
+  grep -E 'diag a733-bf (apply|result)' "$log" | tail -20 || true
+  if grep -q 'diag a733-bf result .*progressed=1' "$log"; then
+    echo "lead_result=progressed"
+  else
+    echo "lead_result=no_progress"
+  fi
+else
+  echo "lead_result=no_uart_log"
+fi
+echo "restore_cubie2_start"
+$HOME/.local/bin/cubie2-power cycle 5 || true
+for i in $(seq 1 30); do
+  if ssh -o BatchMode=yes -o ConnectTimeout=3 codex@192.168.50.85 'hostname; uname -r' 2>/dev/null; then
+    echo "restore_cubie2_ok"
+    break
+  fi
+  sleep 5
+done
+exit 0
+'''
+    rc, out = ssh_strix(script, timeout=360)
+    result = "error"
+    if "lead_result=progressed" in out:
+        result = "progressed"
+    elif "lead_result=no_progress" in out:
+        result = "no_progress"
+    elif "lead_result=no_uart_log" in out:
+        result = "no_uart_log"
+    log_match = re.search(r"uart_log=(\S+)", out)
+    return {"return_code": rc, "result": result, "uart_log": log_match.group(1) if log_match else "", "output": out}
+
+
+def model_reviews(lead, run_result, state, context):
+    prompt = (
+        "A Hermes-controlled Cubie2 lead test just ran. Explain what it means in concise Markdown. "
+        "Also identify the next best source-backed lead from the evidence, while respecting the safety envelope. "
+        "Do not propose unsafe arbitrary pokes.\n\n"
+        + json.dumps({
+            "lead": lead,
+            "result": run_result,
+            "completed_leads": state.get("completed", {}),
+            "safe_ranges": {k: [hex(v[0]), hex(v[1])] for k, v in SAFE_RANGES.items()},
+            "context": context["text"][-5000:],
+        }, indent=2, ensure_ascii=False)
+    )
+    reviews = []
+    for lane, model in (("strix", STRIX_MODEL),):
+        try:
+            reviews.append({"lane": lane, "status": "ok", "text": gateway_chat(model, prompt)})
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError) as exc:
+            reviews.append({"lane": lane, "status": "error", "text": str(exc)})
+    return reviews
+
+
+def write_reports(stamp, lead, run_result, state, context, reviews):
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    json_path = OUT_DIR / f"{stamp}-a733-cubie2-lead.json"
+    md_path = OUT_DIR / f"{stamp}-a733-cubie2-lead.md"
+    html_path = OUT_DIR / f"{stamp}-a733-cubie2-lead.html"
+    html_url = f"{REPORT_BASE_URL.rstrip('/')}/{html_path.name}"
+    doc = {
+        "stamp": stamp,
+        "lead": lead,
+        "run_result": run_result,
+        "html_url": html_url,
+        "safe_ranges": {k: [hex(v[0]), hex(v[1])] for k, v in SAFE_RANGES.items()},
+        "context": context,
+        "reviews": reviews,
+    }
+    json_path.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    md_lines = [
+        f"# A733 Cubie2 Lead Report - {stamp}",
+        "",
+        "## Lead Tested",
+        "",
+        f"- `{lead['id'] if lead else 'none'}`",
+        f"- Result: `{run_result.get('result', 'none')}`",
+        f"- UART log: `{run_result.get('uart_log', '')}`",
+        "",
+        "## Plain-English Meaning",
+        "",
+    ]
+    if lead:
+        if run_result.get("result") == "progressed":
+            md_lines.append("Cubie2 reproduced a DMA-progress clue for this lead. That makes the lead stronger because it is not limited to one board.")
+        elif run_result.get("result") == "no_progress":
+            md_lines.append("Cubie2 did not show DMA progress for this lead. That makes this candidate weaker or more conditional.")
+        elif run_result.get("result") == "proposed_only":
+            md_lines.append("Hermes selected this as the next lead but did not boot Cubie2 or write registers. This keeps the workflow moving toward source-backed evidence without more blind pokes.")
+        else:
+            md_lines.append("The test did not produce a clean yes/no result, so the next run should treat it as an infrastructure issue.")
+    else:
+        md_lines.append("Hermes did not produce a safe lead to run.")
+    md_lines += [
+        "",
+        "## Selection Model",
+        "",
+        "Hermes reads the latest reports and proposes the next lead itself. The runner only accepts one controlled write inside these lab-safe ranges:",
+        "",
+    ]
+    md_lines += [f"- `{kind}`: `{hex(lo)}` through `{hex(hi)}`" for kind, (lo, hi) in SAFE_RANGES.items()]
+    md_lines += ["", "## Model Reviews", ""]
+    for review in reviews:
+        md_lines += [f"### {review['lane']} ({review['status']})", "", review["text"], ""]
+    md_path.write_text("\n".join(md_lines).rstrip() + "\n", encoding="utf-8")
+
+    review_html = "\n".join(
+        f"<section><h3>{html.escape(r['lane'])} - {html.escape(r['status'])}</h3><pre>{html.escape(r['text'])}</pre></section>"
+        for r in reviews
+    )
+    html_path.write_text(f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A733 Cubie2 Lead Report {html.escape(stamp)}</title>
+  <style>
+    body {{ font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 0; color: #1f2933; background: #f6f8fb; }}
+    main {{ max-width: 1120px; margin: 0 auto; padding: 32px 20px 56px; }}
+    h1 {{ margin: 0 0 8px; font-size: 32px; }}
+    h2 {{ margin-top: 30px; border-bottom: 1px solid #ccd6e0; padding-bottom: 6px; }}
+    .panel {{ background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 18px; margin: 16px 0; }}
+    .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }}
+    .metric {{ background: #eef4f8; border-radius: 6px; padding: 12px; }}
+    code, pre {{ background: #101828; color: #eef4ff; border-radius: 6px; }}
+    code {{ padding: 2px 5px; }}
+    pre {{ padding: 14px; overflow: auto; white-space: pre-wrap; }}
+  </style>
+</head>
+<body>
+<main>
+  <h1>A733 Cubie2 Lead Report</h1>
+  <p>{html.escape(stamp)}</p>
+  <section class="panel">
+    <h2>Plain-English Summary</h2>
+    <p>Hermes read the latest reports and proposed the next Cubie2 lead itself. In default propose-only mode it does not boot Cubie2 or write registers; if explicitly switched to execute mode, it runs one controlled UART boot through Strix and restores Cubie2 afterward. It asks only the local Strix LLM lane to explain the evidence, with no OpenRouter or RTX 3090 use.</p>
+  </section>
+  <section class="grid">
+    <div class="metric"><strong>Lead</strong><br><code>{html.escape(lead['id'] if lead else 'none')}</code></div>
+    <div class="metric"><strong>Result</strong><br><code>{html.escape(run_result.get('result', 'none'))}</code></div>
+    <div class="metric"><strong>UART log</strong><br><code>{html.escape(run_result.get('uart_log', ''))}</code></div>
+    <div class="metric"><strong>Selection</strong><br>Hermes-proposed, safety-checked</div>
+  </section>
+  <section class="panel">
+    <h2>Why This Lead Was Tried</h2>
+    <p>{html.escape(lead.get('why', '') if lead else 'Hermes did not produce a safe lead to run.')}</p>
+  </section>
+  <section class="panel">
+    <h2>Strix Output</h2>
+    <pre>{html.escape(run_result.get('output', '')[-12000:])}</pre>
+  </section>
+  <section class="panel">
+    <h2>Safety Envelope</h2>
+    <ul>{''.join(f"<li><code>{html.escape(kind)}</code>: <code>{hex(lo)}</code> through <code>{hex(hi)}</code></li>" for kind, (lo, hi) in SAFE_RANGES.items())}</ul>
+  </section>
+  <section class="panel">
+    <h2>LLM Reviews</h2>
+    {review_html}
+  </section>
+</main>
+</body>
+</html>
+""", encoding="utf-8")
+
+    for src, name in (
+        (json_path, "latest-a733-cubie2-lead.json"),
+        (md_path, "latest-a733-cubie2-lead.md"),
+        (html_path, "latest-a733-cubie2-lead.html"),
+    ):
+        dst = OUT_DIR / name
+        try:
+            if dst.exists() or dst.is_symlink():
+                dst.unlink()
+            dst.symlink_to(src.name)
+        except OSError:
+            dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    update_index()
+    return json_path, md_path, html_path, html_url
+
+
+def notify_cubie2_attempt(lead, run_result, html_url):
+    env = lead.get("env", {}) if lead else {}
+    assessment = {
+        "progressed": "positive: Cubie2 reproduced DMA progress for this avenue",
+        "no_progress": "negative: Cubie2 did not reproduce DMA progress",
+        "no_uart_log": "inconclusive: no UART log was captured",
+        "error": "infrastructure error during the Cubie2 attempt",
+        "proposed_only": "proposal only: no Cubie2 hardware test ran",
+    }.get(run_result.get("result"), f"result: {run_result.get('result')}")
+    message = (
+        "A733 Cubie2 avenue assessed\n"
+        f"Lead: {lead.get('id') if lead else 'none'}\n"
+        f"Candidate: {env.get('A733_BF_KIND')} {env.get('A733_BF_ADDR')} bit {env.get('A733_BF_BIT')}\n"
+        f"Assessment: {assessment}\n"
+        f"Report: {html_url}"
+    )
+    if run_result.get("uart_log"):
+        message += f"\nUART: {run_result.get('uart_log')}"
+    return telegram_send(message)
+
+
+def update_index():
+    links = []
+    for path in sorted(OUT_DIR.glob("*.html"), reverse=True):
+        if path.name == "index.html" or path.name.startswith("latest-"):
+            continue
+        links.append(f'<li><a href="{html.escape(path.name)}">{html.escape(path.name)}</a></li>')
+    (OUT_DIR / "index.html").write_text(f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A733 Hermes Reports</title>
+  <style>
+    body {{ font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 0; color: #1f2933; background: #f6f8fb; }}
+    main {{ max-width: 960px; margin: 0 auto; padding: 32px 20px 56px; }}
+    h1 {{ margin: 0 0 8px; font-size: 32px; }}
+    .panel {{ background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 18px; margin: 16px 0; }}
+    a {{ color: #0f5f8c; }}
+    li {{ margin: 8px 0; }}
+  </style>
+</head>
+<body>
+<main>
+  <h1>A733 Hermes Reports</h1>
+  <section class="panel">
+    <h2>Latest</h2>
+    <p><a href="latest-a733-hermes-hourly.html">Latest hourly report</a></p>
+    <p><a href="latest-a733-cubie2-lead.html">Latest Cubie2 lead report</a></p>
+  </section>
+  <section class="panel">
+    <h2>All HTML Reports</h2>
+    <ul>{''.join(links) if links else '<li>No reports generated yet.</li>'}</ul>
+  </section>
+</main>
+</body>
+</html>
+""", encoding="utf-8")
+
+
+def main():
+    state = load_state()
+    paths = []
+    for run_index in range(MAX_LEADS_PER_RUN):
+        stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        if MAX_LEADS_PER_RUN > 1:
+            stamp = f"{stamp}-r{run_index + 1}"
+        context = collect_context()
+        lead = next_lead(state, context)
+        if TEST_MODE == "execute":
+            run_result = run_lead(lead)
+        else:
+            run_result = {
+                "return_code": 0,
+                "result": "proposed_only",
+                "uart_log": "",
+                "output": "propose-only mode: Hermes documented this lead but did not boot Cubie2 or write registers.",
+            }
+        state.setdefault("completed", {})[lead["id"]] = {
+            "stamp": stamp,
+            "result": run_result["result"],
+            "uart_log": run_result.get("uart_log", ""),
+        }
+        state.setdefault("runs", []).append({"stamp": stamp, "lead": lead["id"], "result": run_result["result"]})
+        save_state(state)
+        reviews = model_reviews(lead, run_result, state, context)
+        report_paths = write_reports(stamp, lead, run_result, state, context, reviews)
+        paths.extend(report_paths[:3])
+        try:
+            notify_cubie2_attempt(lead, run_result, report_paths[3])
+        except Exception as exc:
+            print(f"telegram notification failed: {exc}")
+        if run_result["result"] == "no_uart_log":
+            break
+    print("A733 Cubie2 lead supervisor complete")
+    for path in paths:
+        print(path)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as exc:
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        path = OUT_DIR / f"{stamp}-a733-cubie2-lead-error.txt"
+        path.write_text(str(exc) + "\n", encoding="utf-8")
+        print(path)
+        raise

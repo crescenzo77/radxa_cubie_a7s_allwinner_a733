@@ -1,0 +1,487 @@
+#!/usr/bin/env python3
+import datetime as dt
+import html
+import json
+import os
+import pathlib
+import subprocess
+import sys
+import textwrap
+import urllib.error
+import urllib.request
+
+
+REPO = pathlib.Path(os.environ.get("A733_HERMES_REPO", "/srv/projects/homelab"))
+OUT_DIR = pathlib.Path(os.environ.get(
+    "A733_HERMES_OUT_DIR",
+    str(REPO / "task-packets/kernel/hermes-hourly"),
+))
+HANDOFF_PATH = pathlib.Path(os.environ.get(
+    "A733_CUBIE3_HANDOFF",
+    str(REPO / "task-packets/kernel/a733-cubie3-to-cubie2-handoff.json"),
+))
+STRIX = os.environ.get("A733_HERMES_STRIX", "strix")
+GATEWAY = os.environ.get("A733_HERMES_GATEWAY", "http://192.168.50.225:4011/v1")
+TOKEN = os.environ.get("A733_HERMES_GATEWAY_TOKEN", "local-open-webui-gateway")
+TIMEOUT = int(os.environ.get("A733_HERMES_TIMEOUT", "180"))
+BRUTE_MODE = os.environ.get("A733_HERMES_BRUTE_MODE", "report-only")
+
+MODELS = [
+    (
+        "strix",
+        "Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding",
+        "Explain the current state and identify the safest next kernel action.",
+    ),
+]
+
+
+def run(cmd, *, timeout=60, check=False):
+    proc = subprocess.run(
+        cmd,
+        shell=True,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        timeout=timeout,
+    )
+    if check and proc.returncode:
+        raise RuntimeError(f"command failed {proc.returncode}: {cmd}\n{proc.stdout}")
+    return proc.returncode, proc.stdout.strip()
+
+
+def ssh_strix(script, timeout=120):
+    quoted = script.replace("'", "'\"'\"'")
+    return run(f"ssh -o BatchMode=yes -o ConnectTimeout=10 {STRIX} '{quoted}'", timeout=timeout)
+
+
+def load_json_text(text):
+    try:
+        return json.loads(text)
+    except Exception:
+        return None
+
+
+def collect_state():
+    rc, out = ssh_strix(
+        r'''
+cd /srv/projects/homelab
+echo '--- processes ---'
+ps -eo pid,ppid,stat,cmd | awk '/a733-idmac-bruteforce-lab|cubie-direct-uboot-load-session/ && !/awk/'
+echo '--- latest_result_path ---'
+python3 - <<'PY' || true
+import glob, json, os
+paths = sorted(glob.glob("task-packets/kernel/results/a733-idmac-bruteforce-*.json"), key=os.path.getmtime, reverse=True)
+chosen = None
+for path in paths:
+    try:
+        doc = json.load(open(path))
+    except Exception:
+        continue
+    if doc.get("status") == "pass" and doc.get("winning_candidate"):
+        chosen = path
+        break
+if chosen is None and paths:
+    chosen = paths[0]
+if chosen:
+    print(chosen)
+PY
+echo '--- latest_result_json ---'
+python3 - <<'PY' || true
+import glob, json, os
+paths = sorted(glob.glob("task-packets/kernel/results/a733-idmac-bruteforce-*.json"), key=os.path.getmtime, reverse=True)
+chosen = None
+for path in paths:
+    try:
+        doc = json.load(open(path))
+    except Exception:
+        continue
+    if doc.get("status") == "pass" and doc.get("winning_candidate"):
+        chosen = path
+        break
+if chosen is None and paths:
+    chosen = paths[0]
+if chosen:
+    print(open(chosen).read())
+PY
+echo '--- latest_log_path ---'
+ls -t logs/a733-idmac-bruteforce-*.log 2>/dev/null | head -1 || true
+echo '--- latest_log_tail ---'
+log=$(ls -t logs/a733-idmac-bruteforce-*.log 2>/dev/null | head -1 || true)
+[ -n "$log" ] && tail -120 "$log" || true
+echo '--- latest_uart_path ---'
+ls -t /srv/projects/cubie-uart/logs/*a733-idmac-bf*.uart.log 2>/dev/null | head -1 || true
+echo '--- cubie3 ---'
+ssh -o BatchMode=yes -o ConnectTimeout=5 codex@192.168.50.95 'hostname; uname -r' 2>&1 || true
+''',
+        timeout=180,
+    )
+    raw = out
+    sections = {}
+    current = None
+    buf = []
+    for line in raw.splitlines():
+        if line.startswith("--- ") and line.endswith(" ---"):
+            if current is not None:
+                sections[current] = "\n".join(buf).strip()
+            current = line.strip("- ").strip()
+            buf = []
+        else:
+            buf.append(line)
+    if current is not None:
+        sections[current] = "\n".join(buf).strip()
+
+    result = load_json_text(sections.get("latest_result_json", "")) or {}
+    processes = sections.get("processes", "")
+    running = "a733-idmac-bruteforce-lab" in processes or "cubie-direct-uboot-load-session" in processes
+    pass_found = result.get("status") == "pass" and bool(result.get("winning_candidate"))
+    return {
+        "ssh_return_code": rc,
+        "raw": raw,
+        "sections": sections,
+        "result": result,
+        "running": running,
+        "pass_found": pass_found,
+    }
+
+
+def supervise_bruteforce(state):
+    if state["running"]:
+        return "brute-force loop already running on Strix; left it alone"
+    if BRUTE_MODE == "report-only":
+        return "report-only mode: inspected evidence but did not launch brute-force"
+    if state["pass_found"] and BRUTE_MODE != "always":
+        return "brute-force campaign already has a passing candidate; did not relaunch"
+
+    rc, out = ssh_strix(
+        r'''
+cd /srv/projects/homelab
+mkdir -p logs
+log=logs/a733-idmac-bruteforce-$(date -u +%Y%m%dT%H%M%SZ).log
+skip=$(
+python3 - <<'PY'
+import glob, json
+items = []
+seen = set()
+for path in glob.glob("task-packets/kernel/results/a733-idmac-bruteforce-*.json"):
+    try:
+        doc = json.load(open(path))
+    except Exception:
+        continue
+    cand = doc.get("winning_candidate") or {}
+    if doc.get("status") != "pass" or not cand:
+        continue
+    key = f"{cand.get('kind')}:{cand.get('addr')}:{cand.get('bit')}"
+    if key not in seen:
+        seen.add(key)
+        items.append(key)
+print(",".join(items))
+PY
+)
+export A733_BF_SKIP_CANDIDATES="$skip"
+export A733_BF_REUSE_ARTIFACT="${A733_BF_REUSE_ARTIFACT:-1}"
+nohup scripts/a733-idmac-bruteforce-lab full-auto > "$log" 2>&1 < /dev/null &
+pid=$!
+printf 'started pid=%s log=%s skip=%s\n' "$pid" "$log" "$skip"
+''',
+        timeout=30,
+    )
+    if rc:
+        return "attempted to start brute-force loop, but launch failed:\n" + out
+    return out
+
+
+def gateway_chat(model, prompt):
+    payload = {
+        "model": model,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are helping with Linux kernel bring-up for Radxa Cubie A7S / Allwinner A733. "
+                    "Be factual. Do not invent results. Do not suggest Ethernet, VPU, display, USB-C, "
+                    "PCIe, Wi-Fi, vendor DTS pollution, or upstreaming raw lab register pokes."
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.1,
+        "max_tokens": 900,
+    }
+    req = urllib.request.Request(
+        GATEWAY.rstrip("/") + "/chat/completions",
+        data=json.dumps(payload).encode(),
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + TOKEN,
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+        data = json.loads(resp.read().decode())
+    return data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+
+
+def model_reviews(state, action):
+    context = {
+        "hourly_action": action,
+        "brute_running": state["running"],
+        "pass_found": state["pass_found"],
+        "latest_result": state["result"],
+        "latest_result_path": state["sections"].get("latest_result_path"),
+        "latest_uart_path": state["sections"].get("latest_uart_path"),
+        "latest_log_tail": state["sections"].get("latest_log_tail", "")[-4000:],
+        "cubie3": state["sections"].get("cubie3"),
+    }
+    prompt_base = (
+        "Review this hourly A733 SDMMC0 brute-force/kernel bring-up state. "
+        "Return concise Markdown with: findings, plain-English meaning, risks, and next action.\n\n"
+        + json.dumps(context, indent=2, ensure_ascii=False)
+    )
+    reviews = []
+    for key, model, angle in MODELS:
+        try:
+            reviews.append({
+                "lane": key,
+                "model": model,
+                "status": "ok",
+                "text": gateway_chat(model, angle + "\n\n" + prompt_base),
+            })
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError) as exc:
+            reviews.append({
+                "lane": key,
+                "model": model,
+                "status": "error",
+                "text": str(exc),
+            })
+    return reviews
+
+
+def write_reports(stamp, state, action, reviews):
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    json_path = OUT_DIR / f"{stamp}-a733-hermes-hourly.json"
+    md_path = OUT_DIR / f"{stamp}-a733-hermes-hourly.md"
+    html_path = OUT_DIR / f"{stamp}-a733-hermes-hourly.html"
+
+    doc = {
+        "stamp": stamp,
+        "action": action,
+        "state": {
+            "running": state["running"],
+            "pass_found": state["pass_found"],
+            "latest_result_path": state["sections"].get("latest_result_path"),
+            "latest_log_path": state["sections"].get("latest_log_path"),
+            "latest_uart_path": state["sections"].get("latest_uart_path"),
+            "cubie3": state["sections"].get("cubie3"),
+            "result": state["result"],
+        },
+        "reviews": reviews,
+    }
+    json_path.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n")
+
+    candidate = state["result"].get("winning_candidate") or {}
+    tests = len(state["result"].get("tests", []))
+    if candidate:
+        handoff = {
+            "stamp": stamp,
+            "producer": "cubie3-hermes-hourly",
+            "consumer": "cubie2-hermes-lead",
+            "status": "viable-avenue",
+            "action": action,
+            "candidate": candidate,
+            "tests_before_pass": tests,
+            "result_path": state["sections"].get("latest_result_path"),
+            "uart_path": candidate.get("log") or state["sections"].get("latest_uart_path"),
+            "plain_english": (
+                "Cubie3 found a register/bit that lets SDMMC0 IDMAC make progress. "
+                "Cubie2 should adapt this into targeted replication and neighbor/strobe tests, "
+                "not a broad blind scan."
+            ),
+            "guardrails": [
+                "lab-only diagnostic evidence",
+                "do not upstream raw register pokes",
+                "use Cubie2 only for targeted follow-up",
+                "keep reports in JSON, Markdown, and HTML",
+            ],
+        }
+        HANDOFF_PATH.parent.mkdir(parents=True, exist_ok=True)
+        tmp = HANDOFF_PATH.with_suffix(".tmp")
+        tmp.write_text(json.dumps(handoff, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        tmp.replace(HANDOFF_PATH)
+    md = [
+        f"# A733 Hermes Hourly Report - {stamp}",
+        "",
+        "## What Happened",
+        "",
+        action,
+        "",
+        "## Current Finding",
+        "",
+    ]
+    if candidate:
+        md += [
+            f"- Passing candidate: `{candidate.get('kind')}` `{candidate.get('addr')}` bit `{candidate.get('bit')}`",
+            f"- UART proof log: `{candidate.get('log')}`",
+            f"- Candidates tried before pass: `{tests}`",
+        ]
+    else:
+        md += ["- No passing brute-force candidate recorded yet.", f"- Candidates recorded: `{tests}`"]
+    md += [
+        "",
+        "## Layman's Meaning",
+        "",
+        (
+            "The SD card path itself works, but the DMA engine needed to move data directly "
+            "from memory was getting blocked. The brute-force test found a clock/control bit "
+            "that lets the DMA engine make progress. That is evidence of a missing bus/clock/"
+            "fabric enable, not proof that the exact raw register write is upstreamable."
+            if candidate else
+            "The hourly job did not yet have a successful candidate to explain."
+        ),
+        "",
+        "## Model Reviews",
+        "",
+    ]
+    for r in reviews:
+        md += [f"### {r['lane']} ({r['status']})", "", r["text"], ""]
+    md_path.write_text("\n".join(md).rstrip() + "\n")
+
+    review_html = "\n".join(
+        f"<section><h3>{html.escape(r['lane'])} - {html.escape(r['status'])}</h3>"
+        f"<pre>{html.escape(r['text'])}</pre></section>"
+        for r in reviews
+    )
+    html_path.write_text(f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A733 Hermes Hourly Report {html.escape(stamp)}</title>
+  <style>
+    body {{ font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 0; color: #1f2933; background: #f6f8fb; }}
+    main {{ max-width: 1120px; margin: 0 auto; padding: 32px 20px 56px; }}
+    h1 {{ margin: 0 0 8px; font-size: 32px; }}
+    h2 {{ margin-top: 30px; border-bottom: 1px solid #ccd6e0; padding-bottom: 6px; }}
+    .panel {{ background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 18px; margin: 16px 0; }}
+    .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }}
+    .metric {{ background: #eef4f8; border-radius: 6px; padding: 12px; }}
+    code, pre {{ background: #101828; color: #eef4ff; border-radius: 6px; }}
+    code {{ padding: 2px 5px; }}
+    pre {{ padding: 14px; overflow: auto; white-space: pre-wrap; }}
+    .ok {{ color: #0f766e; font-weight: 700; }}
+    .warn {{ color: #b45309; font-weight: 700; }}
+  </style>
+</head>
+<body>
+<main>
+  <h1>A733 Hermes Hourly Report</h1>
+  <p>{html.escape(stamp)}</p>
+  <section class="panel">
+    <h2>Plain-English Summary</h2>
+    <p>Hermes checked the Strix brute-force campaign, reviewed the latest logs and result JSON, and asked only the local Strix LLM lane to explain the evidence. It does not use OpenRouter or the RTX 3090 lane for this job.</p>
+    <p>{html.escape(action)}</p>
+  </section>
+  <section class="grid">
+    <div class="metric"><strong>Brute-force running</strong><br>{state['running']}</div>
+    <div class="metric"><strong>Pass found</strong><br>{state['pass_found']}</div>
+    <div class="metric"><strong>Candidates recorded</strong><br>{tests}</div>
+    <div class="metric"><strong>Cubie3</strong><br><code>{html.escape(state['sections'].get('cubie3',''))}</code></div>
+  </section>
+  <section class="panel">
+    <h2>Best Current Evidence</h2>
+    <p><strong>Candidate:</strong> <code>{html.escape(str(candidate))}</code></p>
+    <p><strong>Result JSON:</strong> <code>{html.escape(str(state['sections'].get('latest_result_path','')))}</code></p>
+    <p><strong>UART proof:</strong> <code>{html.escape(str(state['sections'].get('latest_uart_path','')))}</code></p>
+    <p>In layman's terms: the brute-force test found a switch that lets the storage DMA engine start moving. The exact raw register write is a lab clue. The responsible kernel task is to identify the named clock/reset/fabric bit behind it and express that through the proper CCU/DT binding path.</p>
+  </section>
+  <section class="panel">
+    <h2>Latest Log Tail</h2>
+    <pre>{html.escape(state['sections'].get('latest_log_tail',''))}</pre>
+  </section>
+  <section class="panel">
+    <h2>LLM Reviews</h2>
+    {review_html}
+  </section>
+</main>
+</body>
+</html>
+""", encoding="utf-8")
+    for src, name in (
+        (json_path, "latest-a733-hermes-hourly.json"),
+        (md_path, "latest-a733-hermes-hourly.md"),
+        (html_path, "latest-a733-hermes-hourly.html"),
+    ):
+        dst = OUT_DIR / name
+        try:
+            if dst.exists() or dst.is_symlink():
+                dst.unlink()
+            dst.symlink_to(src.name)
+        except OSError:
+            dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    report_links = []
+    for path in sorted(OUT_DIR.glob("*-a733-hermes-hourly.html"), reverse=True):
+        if not path.name[:8].isdigit():
+            continue
+        label = path.name.replace("-a733-hermes-hourly.html", "")
+        report_links.append(
+            f'<li><a href="{html.escape(path.name)}">{html.escape(label)}</a></li>'
+        )
+    (OUT_DIR / "index.html").write_text(f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A733 Hermes Reports</title>
+  <style>
+    body {{ font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 0; color: #1f2933; background: #f6f8fb; }}
+    main {{ max-width: 960px; margin: 0 auto; padding: 32px 20px 56px; }}
+    h1 {{ margin: 0 0 8px; font-size: 32px; }}
+    .panel {{ background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 18px; margin: 16px 0; }}
+    a {{ color: #0f5f8c; }}
+    li {{ margin: 8px 0; }}
+    code {{ background: #101828; color: #eef4ff; border-radius: 6px; padding: 2px 5px; }}
+  </style>
+</head>
+<body>
+<main>
+  <h1>A733 Hermes Reports</h1>
+  <p>Hourly layman's reports for the Radxa Cubie A7S / Allwinner A733 SDMMC0 bring-up.</p>
+  <section class="panel">
+    <h2>Latest</h2>
+    <p><a href="latest-a733-hermes-hourly.html">Open the latest HTML report</a></p>
+    <p><a href="latest-a733-hermes-hourly.md">Latest Markdown</a> | <a href="latest-a733-hermes-hourly.json">Latest JSON</a></p>
+  </section>
+  <section class="panel">
+    <h2>All HTML Reports</h2>
+    <ul>
+      {''.join(report_links) if report_links else '<li>No reports generated yet.</li>'}
+    </ul>
+  </section>
+</main>
+</body>
+</html>
+""", encoding="utf-8")
+    return json_path, md_path, html_path
+
+
+def main():
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    state = collect_state()
+    action = supervise_bruteforce(state)
+    state = collect_state()
+    reviews = model_reviews(state, action)
+    paths = write_reports(stamp, state, action, reviews)
+    print("A733 Hermes hourly supervisor complete")
+    for p in paths:
+        print(p)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as exc:
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        path = OUT_DIR / f"{stamp}-a733-hermes-hourly-error.txt"
+        path.write_text(str(exc) + "\n")
+        print(path)
+        raise
