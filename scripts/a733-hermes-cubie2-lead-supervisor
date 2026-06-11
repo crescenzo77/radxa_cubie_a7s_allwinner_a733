@@ -28,7 +28,6 @@ TIMEOUT = int(os.environ.get("A733_HERMES_TIMEOUT", "180"))
 MAX_LEADS_PER_RUN = int(os.environ.get("A733_CUBIE2_MAX_LEADS_PER_RUN", "2"))
 
 STRIX_MODEL = "Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding"
-VULKAN_MODEL = "7900XT Qwen3.6 27B Dense Q4_K_M GGUF llama.cpp Vulkan ctx8k research"
 
 SAFE_RANGES = {
     "ccu": (0x02002000, 0x02002fff),
@@ -165,7 +164,7 @@ def propose_lead(state, context):
     {context["text"][-7000:]}
     """).strip()
     errors = []
-    for model in (STRIX_MODEL, VULKAN_MODEL):
+    for model in (STRIX_MODEL,):
         try:
             raw = gateway_chat(model, prompt)
             lead = normalize_lead(extract_json(raw))
@@ -313,7 +312,7 @@ def model_reviews(lead, run_result, state, context):
         }, indent=2, ensure_ascii=False)
     )
     reviews = []
-    for lane, model in (("strix", STRIX_MODEL), ("amd7900xt", VULKAN_MODEL)):
+    for lane, model in (("strix", STRIX_MODEL),):
         try:
             reviews.append({"lane": lane, "status": "ok", "text": gateway_chat(model, prompt)})
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError) as exc:
@@ -399,7 +398,7 @@ def write_reports(stamp, lead, run_result, state, context, reviews):
   <p>{html.escape(stamp)}</p>
   <section class="panel">
     <h2>Plain-English Summary</h2>
-    <p>Hermes read the latest reports, proposed the next Cubie2 lead itself, ran one controlled UART boot through Strix, restored Cubie2 afterward, and asked the Strix and 7900XT model lanes to explain the evidence. It did not use the RTX 3090 lane.</p>
+    <p>Hermes read the latest reports, proposed the next Cubie2 lead itself, ran one controlled UART boot through Strix, restored Cubie2 afterward, and asked only the local Strix LLM lane to explain the evidence. It does not use OpenRouter or the RTX 3090 lane for this job.</p>
   </section>
   <section class="grid">
     <div class="metric"><strong>Lead</strong><br><code>{html.escape(lead['id'] if lead else 'none')}</code></div>
