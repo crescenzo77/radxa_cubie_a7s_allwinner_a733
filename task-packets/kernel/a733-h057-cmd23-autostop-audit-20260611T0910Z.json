@@ -1,0 +1,20 @@
+{
+  "id": "A733-SDMMC-H057",
+  "status": "completed_no_patch",
+  "title": "BSP CMD23 and auto-stop policy audit",
+  "timestamp_utc": "2026-06-11T09:10:00Z",
+  "scope": [
+    "Strix BSP source: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "Strix BSP DTS: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/sun60iw2p1.dtsi",
+    "Strix diagnostic source: /srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "observations": [
+    "The BSP suppresses auto-stop when a request has SBC/CMD23, and may use an SoC-specific opacmd23 callback when provided.",
+    "Vendor A733 SDMMC0 does not set cap-cmd23; cap-cmd23 appears on the eMMC-style SDMMC2/SDMMC3 nodes.",
+    "The local failing proof logs CMD18 with auto-stop, but the failure is IDMAC stuck in descriptor read before descriptor word 0 is consumed.",
+    "Stop/CMD23 policy can affect transfer termination, but it does not name a memory-access precondition for fetching the first IDMAC descriptor."
+  ],
+  "decision": "no_behavior_patch",
+  "reason": "The BSP CMD23/auto-stop delta is not active for vendor SDMMC0 and is downstream of the observed descriptor-fetch stall.",
+  "next": "Do not retest CMD23/autostop as a descriptor-fetch fix without new SDMMC0-specific evidence."
+}
