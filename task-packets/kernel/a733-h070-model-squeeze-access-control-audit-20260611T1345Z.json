@@ -1,0 +1,33 @@
+{
+  "id": "A733-SDMMC-H070",
+  "created_utc": "2026-06-11T13:45:00Z",
+  "title": "Model-squeeze SDMMC0 access-control lead audit",
+  "inputs": [
+    "/Users/enzo/projects/homelab/task-packets/kernel/a733-h070-model-speculative-leads-raw-20260611T1325Z.json",
+    "/Users/enzo/Documents/Homelab/THINKCENTRE_MODEL_USAGE.md"
+  ],
+  "model_routes": [
+    "Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding",
+    "3090 Qwen3.6 27B Dense Q4_K_M GGUF llama.cpp CUDA ctx64k chat",
+    "7900XT Qwen3.6 27B Dense Q4_K_M GGUF llama.cpp Vulkan ctx8k research",
+    "openrouter-free / Auto Free Router random available free model"
+  ],
+  "question": "Do four model routes plus local source cross-check identify a non-repeated, source-backed A733 SDMMC0 IDMAC memory-access delta?",
+  "checks": [
+    {
+      "lead": "descriptor alignment/coherency/IOMMU/DLBA/OWN/reset/order/clock-output suggestions",
+      "finding": "repeat of H009-H069 closed classes; not promoted without new source evidence"
+    },
+    {
+      "lead": "force single/no-fixed burst for descriptor fetch",
+      "finding": "already covered by H017/no-fixed-burst evidence; status notes fixed-burst removal changed DMAC readback but still reached RINTR=0x24 and IDST=0x4000"
+    },
+    {
+      "lead": "AHB bus matrix / firewall / security / NSI / MBUS master bit",
+      "finding": "direct searches across Orange Pi full tree, BSP slice, diagnostic tree, and public U-Boot did not expose an A733 SDMMC0-specific setup register or property"
+    }
+  ],
+  "result": "completed_no_behavior_patch",
+  "decision": "Do not patch from model speculation. Keep blocker unchanged: need maintainer/list/vendor reply or a concrete source-backed SDMMC0 master/firewall/security bit.",
+  "next_responsible_step": "Monitor email/public archives and continue source acquisition; only build a kernel if a new register or handoff bit is identified."
+}
