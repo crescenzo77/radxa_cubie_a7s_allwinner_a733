@@ -1,0 +1,39 @@
+{
+  "id": "A733-SDMMC-H073",
+  "created_utc": "2026-06-11T15:30:00Z",
+  "title": "A733 user manual SMHC/MBUS register audit",
+  "source": {
+    "repo": "https://github.com/DeciHD/allwinner_docs.git",
+    "repo_commit": "d6cfc7c",
+    "manual_pdf": "/Users/enzo/backups/kernel-a733-source-index/allwinner_docs.git/a733/A733_User Manual_V0.92.pdf",
+    "manual_text": "/Users/enzo/backups/kernel-a733-source-index/extracted/A733_User_Manual_V0.92.txt",
+    "manual_pdf_sha256": "e3f907b32843aa860204f21da89922939f860ee1ecf0cf9b6ad4c0bf899d78eb",
+    "manual_text_sha256": "6725f238ca2e78ce13eaa8e1a7e46a07c957015d48c0f898db40c32c3250698f"
+  },
+  "question": "Does the public A733 user manual reveal a source-backed SDMMC0 IDMAC access-control or setup delta that should be tested?",
+  "findings": [
+    {
+      "topic": "IDMAC descriptor basics",
+      "evidence": "Manual section 11.3.5.4 documents 16-byte chained descriptors, 32-bit/bus-width alignment, DES0 OWN at bit 31, and DLBA as a 4-byte word address.",
+      "impact": "Matches the already-tested mainline/BSP descriptor model; no new descriptor geometry patch."
+    },
+    {
+      "topic": "IDMAC enable sequence",
+      "evidence": "Manual transfer procedures repeatedly say reset SMHC_CTRL[DMA_RST], write SMHC_IDMAC=0x82, configure IDIE, FIFOTH, DLBA, BYTCNT, descriptor, then launch command.",
+      "impact": "0x82 equals FIX_BURST|IDMA_ON and matches the vendor/mainline path already tested; no new DMAC control patch."
+    },
+    {
+      "topic": "MBUS/AHB master gates",
+      "evidence": "Manual lists MBUS_MAT_CLK_GATING_REG, MBUS_GATE_EN_REG, and AHB_MAT_CLK_GATING_REG bitfields. These name IOMMU, media, GMAC, NAND, DMA, CE, etc., but no SMHC0/SMHCx master gate.",
+      "impact": "Closes the obvious MBUS master-gate hypothesis for SMHC0; there is no SMHC bit to enable."
+    },
+    {
+      "topic": "CCMU security switch",
+      "evidence": "Manual documents CCMU_SEC_SWITCH_REG at 0x1F00 with PLL/BUS/MBUS security bits; many clock registers are secure by default unless switched by secure firmware.",
+      "impact": "This supports the firmware/security-handoff blocker class, but it is secure-world controlled and not an upstream Linux SDMMC driver patch."
+    }
+  ],
+  "result": "completed_no_behavior_patch",
+  "decision": "Do not patch. The A733 user manual confirms the tested IDMAC sequence and shows no SMHC MBUS/AHB gate. The only remaining new detail is secure-world CCMU security switching, which requires firmware/maintainer evidence before any runtime diagnostic.",
+  "next_responsible_step": "If maintainers/vendor mention CCMU_SEC_SWITCH_REG or secure firmware handoff, build a read-only diagnostic around CCU security/readability first; otherwise keep waiting/source acquisition."
+}
