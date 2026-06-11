@@ -63,7 +63,8 @@ if public_repo.exists():
         run("git status --short --branch", cwd=public_repo),
         run("git log --oneline --decorate -5", cwd=public_repo),
         run("find patches -maxdepth 1 -type f -name '*.patch' -print | sort", cwd=public_repo),
-        run("rg -n '\\*\\*\\* SUBJECT HERE \\*\\*\\*|\\*\\*\\* BLURB HERE \\*\\*\\*|allwinner,pinmux' patches docs README.md 2>/dev/null || true", cwd=public_repo),
+        run("rg -n '\\*\\*\\* SUBJECT HERE \\*\\*\\*|\\*\\*\\* BLURB HERE \\*\\*\\*|allwinner,pinmux' patches 2>/dev/null || true", cwd=public_repo),
+        run("rg -n '\\*\\*\\* SUBJECT HERE \\*\\*\\*|\\*\\*\\* BLURB HERE \\*\\*\\*|allwinner,pinmux' docs README.md 2>/dev/null || true", cwd=public_repo),
         run("sed -n '1,100p' docs/status.md", cwd=public_repo),
         run("sed -n '1,90p' patches/README.md", cwd=public_repo),
     ]
@@ -78,6 +79,7 @@ placeholders = ""
 if public_repo.exists():
     patch_files = [str(p.relative_to(public_repo)) for p in sorted((public_repo / "patches").glob("*.patch"))]
     placeholders = checks[3]["output"] if len(checks) > 3 else ""
+    doc_mentions = checks[4]["output"] if len(checks) > 4 else ""
 
 known_blockers = []
 if not public_repo.exists():
@@ -100,6 +102,7 @@ doc = {
     "status": status_map,
     "status_hash": status_hash,
     "known_blockers": known_blockers,
+    "documentation_mentions": doc_mentions,
     "patch_files": patch_files,
     "checks": checks,
     "recommendation": "monitor-only; do not send or regenerate patches without explicit human approval",

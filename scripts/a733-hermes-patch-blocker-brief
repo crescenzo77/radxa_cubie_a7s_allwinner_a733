@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo=${A733_HERMES_REPO:-/srv/projects/homelab}
+outdir="$repo/task-packets/kernel/hermes-hourly"
+readiness="$outdir/a733-public-patch-readiness-latest.json"
+model_health="$outdir/a733-model-health-latest.json"
+queue="$repo/task-packets/kernel/a733-hypothesis-queue.json"
+json="$outdir/a733-patch-blocker-brief-latest.json"
+md="$outdir/a733-patch-blocker-brief-latest.md"
+html="$outdir/a733-patch-blocker-brief-latest.html"
+mkdir -p "$outdir"
+
+python3 - "$readiness" "$model_health" "$queue" "$json" "$md" "$html" <<'PY'
+import datetime as dt
+import html
+import json
+import pathlib
+import sys
+
+readiness_path, model_path, queue_path, json_path, md_path, html_path = sys.argv[1:]
+
+def load(path, default):
+    p = pathlib.Path(path)
+    if not p.exists():
+        return default
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return {"load_error": str(exc), "path": str(path)}
+
+now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+readiness = load(readiness_path, {})
+model = load(model_path, {})
+queue = load(queue_path, {})
+items = queue.get("items") or queue.get("hypotheses") or []
+items = sorted(items, key=lambda x: x.get("priority", 0), reverse=True)
+queue_head = items[0] if items else {}
+
+blockers = readiness.get("known_blockers") or []
+status = readiness.get("status") or {}
+checks = readiness.get("checks") or []
+public_repo = readiness.get("public_repo", "unknown")
+
+patch_hit_output = ""
+for check in checks:
+    if check.get("cmd", "").startswith("rg -n") and " patches " in check.get("cmd", ""):
+        patch_hit_output = check.get("output", "")
+
+model_failures = []
+for check in model.get("checks", []):
+    if not check.get("ok"):
+        model_failures.append(check.get("name", "unknown"))
+
+recommendations = [
+    "Do not run H149 without explicit human approval.",
+    "Do not regenerate, rewrite, or send patches from Hermes.",
+    "Treat the ThinkCentre public clone as a monitored artifact, not the authority if it disagrees with the Mac/public workflow state.",
+]
+if status.get("placeholder_or_pinmux_hits"):
+    recommendations.append("Human should inspect/regenerate the public review export from the intended clean branch before any send path.")
+if not status.get("final_send_status_ok"):
+    recommendations.append("Keep final-send gate closed until the checklist reports send_ready.")
+if model_failures:
+    recommendations.append("Route advisory model work away from failed endpoints until health recovers.")
+
+doc = {
+    "generated_at": now,
+    "readiness_report": readiness_path,
+    "model_health_report": model_path,
+    "queue_head": queue_head,
+    "public_repo": public_repo,
+    "readiness_status": status,
+    "blockers": blockers,
+    "patch_hit_output": patch_hit_output,
+    "model_failures": model_failures,
+    "recommendations": recommendations,
+    "approval_required_for": [
+        "H149 or any live hardware/runtime sweep",
+        "public patch regeneration or branch changes",
+        "b4 send, git send-email, b4 send --reflect, or trailer changes",
+        "Cubie reboot, power-cycle, or /boot artifact staging",
+    ],
+}
+pathlib.Path(json_path).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+
+lines = [
+    "# A733 Patch Blocker Brief",
+    "",
+    f"Generated: `{now}`",
+    "",
+    f"Public repo monitored: `{public_repo}`",
+    "",
+    "## Current Queue Head",
+    "",
+    f"- ID: `{queue_head.get('id', 'unknown')}`",
+    f"- Status: `{queue_head.get('status', 'unknown')}`",
+    f"- Title: `{queue_head.get('title', 'unknown')}`",
+    "",
+    "## Blockers",
+    "",
+]
+lines += [f"- {b}" for b in blockers] or ["- none reported by readiness monitor"]
+lines += ["", "## Patch Hits", "", "```text", patch_hit_output or "none", "```", ""]
+lines += ["## Model Endpoint Failures", ""]
+lines += [f"- `{m}`" for m in model_failures] or ["- none"]
+lines += ["", "## Recommendations", ""]
+lines += [f"- {r}" for r in recommendations]
+lines += [
+    "",
+    "## Approval Required For",
+    "",
+]
+lines += [f"- {x}" for x in doc["approval_required_for"]]
+lines += [
+    "",
+    "This brief is read-only. It does not authorize H149, patch regeneration, branch promotion, or mail sending.",
+]
+pathlib.Path(md_path).write_text("\n".join(lines) + "\n", encoding="utf-8")
+body = html.escape(pathlib.Path(md_path).read_text(encoding="utf-8"))
+pathlib.Path(html_path).write_text(
+    "<!doctype html><meta charset='utf-8'><title>A733 Patch Blocker Brief</title>"
+    "<style>body{font-family:system-ui,sans-serif;max-width:1000px;margin:2rem auto;line-height:1.45}"
+    "pre{white-space:pre-wrap;background:#f6f8fa;padding:1rem;border:1px solid #ddd}</style>"
+    f"<pre>{body}</pre>\n",
+    encoding="utf-8",
+)
+print(f"wrote {md_path}")
+PY
