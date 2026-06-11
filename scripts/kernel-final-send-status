@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+checklist="${1:-${repo_root}/task-packets/kernel/a733-final-send-checklist.json}"
+
+python3 - "$checklist" <<'PY'
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+data = json.loads(path.read_text())
+gates = data.get("required_gates", [])
+open_gates = [gate for gate in gates if gate.get("status") != "closed"]
+
+print(f"project={data.get('project', '')}")
+print(f"status={data.get('status', '')}")
+print(f"checklist={path}")
+print(f"gates_total={len(gates)}")
+print(f"gates_open={len(open_gates)}")
+
+if open_gates:
+    print("open_gates:")
+    for gate in open_gates:
+        print(f"- {gate.get('id')}: {gate.get('command')}")
+
+blockers = data.get("current_known_blockers", [])
+if blockers:
+    print("known_blockers:")
+    for blocker in blockers:
+        print(f"- {blocker}")
+
+sys.exit(1 if open_gates or data.get("status") != "send_ready" else 0)
+PY
