@@ -2167,6 +2167,25 @@
         "result_file": null,
         "summary": "Passed on Strix in /srv/projects/a733-platform-clean-v3-validate at candidate/a733-platform-clean-v6. Command used PATH=/srv/projects/kernel-work/dtschema-venv/bin:$PATH make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- DT_SCHEMA_FILES='Documentation/devicetree/bindings/arm/sunxi.yaml:Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml:Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml:Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml' dt_binding_check. The A733 pinctrl, A733 CCU, and MMC examples built and validated."
       }
+    },
+    {
+      "id": "A733-SDMMC-H101",
+      "priority": 1,
+      "status": "completed_validation",
+      "title": "Targeted A733 object build validation",
+      "question": "Do the v6 A733 CCU and pinctrl C objects build cleanly after the review-branch cleanup?",
+      "test_cost": "low; targeted arm64 cross-build only",
+      "procedure": [
+        "Use the Strix validation worktree at candidate/a733-platform-clean-v6.",
+        "Build drivers/clk/sunxi-ng/ccu-sun60i-a733.o and drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o with ARCH=arm64 and aarch64-linux-gnu cross compiler.",
+        "Confirm v6 has no final-tree diff versus v5 and no board state changed."
+      ],
+      "pass_criteria": "Both touched C objects build and v6 is tree-equivalent to v5 final state.",
+      "fail_criteria": "Either object fails to build, v6 changes the final tree, or a test target is left off the vendor kernel.",
+      "result": {
+        "result_file": null,
+        "summary": "Passed on Strix in /srv/projects/a733-platform-clean-v3-validate at 703bdfd76da3. Command built drivers/clk/sunxi-ng/ccu-sun60i-a733.o and drivers/pinctrl/sunxi/pinctrl-sun60i-a733.o with ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-. git diff candidate/a733-platform-clean-v5..candidate/a733-platform-clean-v6 is empty, confirming the branch cleanup changed history only. Cubie2 and Cubie3 remain on vendor 5.15.147-21-a733."
+      }
     }
   ],
   "model_routes": [
