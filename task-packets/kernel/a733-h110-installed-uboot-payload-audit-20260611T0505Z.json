@@ -1,0 +1,17 @@
+{
+  "id": "A733-SDMMC-H110",
+  "title": "Installed U-Boot package payload audit",
+  "timestamp_utc": "2026-06-11T05:05:00Z",
+  "status": "completed_no_patch",
+  "target": "cubie3",
+  "findings": [
+    "Installed packages include u-boot-radxa-a733 2018.07-17, u-boot-aw2501 2018.07-17, radxa-firmware 0.2.29, and radxa-bootutils 0.2.6.",
+    "Package payloads exist under /usr/lib/u-boot/radxa-cubie-a7a and /usr/lib/u-boot/radxa-cubie-a7z, including boot0_sdcard.bin and boot_package.fex.",
+    "The installed A7A boot_package.fex contains U-Boot 2018.07-17-boot-aw2501-g4c7078cfdf7-dirty built Apr 29 2026.",
+    "The on-card capture contains U-Boot 2018.07-12-boot-aw2501-gb2d229198b2-dirty built Jan 06 2026.",
+    "SHA-256 comparison confirms the installed A7A boot0_sdcard.bin and boot_package.fex do not match likely on-card segments.",
+    "The installed package payloads contain the same class of sdmmc0_mod, sdc_mbus, BL31, and ARISC strings, but still no SMHC or IDMAC string."
+  ],
+  "decision": "No kernel patch. The installed package gives newer boot firmware provenance and payloads for comparison, but the boards are booting older on-card firmware. Do not use installed-package strings as proof of the active boot chain without restaging.",
+  "next": "If firmware path continues, either analyze the active on-card Jan 2026 blobs or intentionally restage a newer package payload as a separate bootloader experiment. Do not mix that with kernel DTS/driver patch validation."
+}

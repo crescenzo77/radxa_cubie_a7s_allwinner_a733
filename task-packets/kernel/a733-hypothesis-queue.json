@@ -2339,6 +2339,25 @@
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h109-boot-sector-provenance-20260611T0500Z.json",
         "summary": "Completed with no behavior patch. The capture identifies U-Boot 2018.07-12-boot-aw2501-gb2d229198b2-dirty built Jan 06 2026 and BL31 v2.5(debug):5fc237a6a built Feb 26 2025. It maps U-Boot strings near 0xc00000-0xcbffff, SDMMC clock/devicetree-style strings near 0xd23xxx, BL31/SCP strings near 0xd3c000-0xd3fxxx, and ARISC/standby strings near 0xd4c000. No SMHC, IDMAC, firewall, TZMA, or SPC clue surfaced."
       }
+    },
+    {
+      "id": "A733-SDMMC-H110",
+      "priority": 1,
+      "status": "completed_no_patch",
+      "title": "Compare installed U-Boot payloads against active boot sectors",
+      "question": "Do installed Radxa U-Boot package payloads match the active on-card boot firmware or expose an IDMAC clue?",
+      "test_cost": "low; read-only package file copy/hash/string audit",
+      "procedure": [
+        "List installed u-boot and Radxa firmware packages on Cubie3.",
+        "Copy package payloads from /usr/lib/u-boot to Strix for hashing and strings.",
+        "Compare package payload hashes/strings against active boot-sector capture."
+      ],
+      "pass_criteria": "A matching payload or concrete source clue is identified, or the mismatch is documented.",
+      "fail_criteria": "Future sessions assume installed package payloads are the active boot chain without checking.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h110-installed-uboot-payload-audit-20260611T0505Z.json",
+        "summary": "Completed with no behavior patch. Installed u-boot-aw2501/u-boot-radxa-a733 are 2018.07-17 and contain A7A/A7Z boot payloads, but active card firmware is older U-Boot 2018.07-12 from Jan 2026. Hash comparisons show installed A7A boot0_sdcard.bin and boot_package.fex do not match likely on-card segments. Installed payloads contain similar SDMMC/MBUS/BL31/ARISC strings but no SMHC or IDMAC clue."
+      }
     }
   ],
   "model_routes": [
