@@ -3,12 +3,14 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 out_dir="${A733_FINDINGS_OUT_DIR:-${repo_root}/task-packets/kernel/hourly-findings}"
-llm_url="${A733_FINDINGS_LLM_URL:-http://127.0.0.1:8082/v1/chat/completions}"
-llm_model="${A733_FINDINGS_LLM_MODEL:-qwen3.6-27b-q4km-native-vulkan}"
+gateway_base="${A733_FINDINGS_GATEWAY_BASE:-http://192.168.50.225:4011/v1}"
+gateway_token="${A733_FINDINGS_GATEWAY_TOKEN:-local-open-webui-gateway}"
+llm_url="${A733_FINDINGS_LLM_URL:-${gateway_base}/chat/completions}"
+llm_model="${A733_FINDINGS_LLM_MODEL:-Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding}"
 llm_timeout="${A733_FINDINGS_TIMEOUT:-600}"
 diag_repo="${A733_DIAG_REPO:-/srv/projects/a733-diag-rtc-extosc-orphan}"
 lock_file="${A733_FINDINGS_LOCK:-/tmp/a733-hourly-llm-findings.lock}"
-start_llm="${A733_FINDINGS_START_LLM:-1}"
+start_llm="${A733_FINDINGS_START_LLM:-0}"
 
 usage() {
   cat <<'USAGE'
@@ -24,10 +26,10 @@ Actions:
   timer-status         Show timer/service status.
 
 Defaults:
-  A733_FINDINGS_LLM_URL=http://127.0.0.1:8082/v1/chat/completions
-  A733_FINDINGS_LLM_MODEL=qwen3.6-27b-q4km-native-vulkan
+  A733_FINDINGS_GATEWAY_BASE=http://192.168.50.225:4011/v1
+  A733_FINDINGS_LLM_MODEL=Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding
   A733_FINDINGS_OUT_DIR=/srv/projects/homelab/task-packets/kernel/hourly-findings
-  A733_FINDINGS_START_LLM=1
+  A733_FINDINGS_START_LLM=0
 
 No sudo is required for the timer.
 USAGE
@@ -125,7 +127,7 @@ run_once() {
   tmp="${out_dir}/.${stamp}.tmp"
   out="${out_dir}/${stamp}-a733-findings.md"
   context="$(collect_context)"
-  if ! curl -fsS --max-time 3 "${llm_url%/chat/completions}/models" >/dev/null 2>&1; then
+  if ! curl -fsS --max-time 3 "${gateway_base}/models" >/dev/null 2>&1; then
     if [ "$start_llm" = "1" ] && [ -x "${repo_root}/scripts/strix-llamacpp-native" ]; then
       "${repo_root}/scripts/strix-llamacpp-native" start >/dev/null
     fi
@@ -169,6 +171,7 @@ PY
 
   if ! curl -fsS --max-time "$llm_timeout" \
     -H 'Content-Type: application/json' \
+    -H "Authorization: Bearer ${gateway_token}" \
     -d "$req" "$llm_url" > "${tmp}.json"; then
     {
       echo "# A733 Hourly Findings - ${stamp}"
