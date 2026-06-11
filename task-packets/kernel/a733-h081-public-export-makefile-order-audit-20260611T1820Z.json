@@ -1,0 +1,17 @@
+{
+  "id": "A733-SDMMC-H081",
+  "created_utc": "2026-06-11T18:20:00Z",
+  "title": "Public export DTS Makefile ordering audit",
+  "status": "completed_no_patch_rewrite",
+  "scope": "audit only; do not rewrite or submit patches yet",
+  "sources": {
+    "public_export": "/srv/projects/cubie-a7s-armbian-public/patches/0004-arm64-dts-allwinner-add-Radxa-Cubie-A7S.patch"
+  },
+  "finding": {
+    "issue": "DTB Makefile ordering is wrong in the current export",
+    "evidence": "Patch 0004 inserts sun60i-a733-cubie-a7s.dtb before the existing sun55i-a527-cubie-a5e.dtb and sun55i-* entries.",
+    "required_action_before_submission": "Regenerate or edit the export so sun55 entries remain before sun60, matching local numeric/lexical ordering in arch/arm64/boot/dts/allwinner/Makefile."
+  },
+  "kernel_action": "none",
+  "next_action": "Fold this into the next intentional clean export along with H080 vendor pinmux removal."
+}

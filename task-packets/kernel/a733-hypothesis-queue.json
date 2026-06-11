@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T18:05:00Z",
+  "updated_utc": "2026-06-11T18:20:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H077 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, BSP IRQ wait-dma finalize logic, public A733 U-Boot/SPL handoff source audit, BOOT0/BL31 provenance/package audit, existing register/UART artifact audit, four-route model speculation/access-control source cross-check, public archive monitoring, public datasheet SPC/TZMA audit, A733 user manual SMHC/MBUS register audit, vendor runtime CCU/SMHC0 register reads, current-binding MMC0 reset-cell test, BSP Andes DMA adapter applicability, and A733 user manual SPC/TZMA deep audit. The remaining blocker still requires a maintainer/list/vendor reply or source-backed secure-world/SPC handoff detail that explains why SMHC0 IDMAC cannot fetch descriptors.",
   "operator_model": {
@@ -1833,6 +1833,25 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h080-public-export-readiness-audit-20260611T1805Z.json",
         "summary": "Completed without rewriting patches. The public 4-patch export still contains vendor-style allwinner,pinmux in patches 0003 and 0004; those properties must be dropped before any upstream submission. The export also keeps an MMC compatible binding patch separate, which may need folding depending on the final dependency posture."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H081",
+      "priority": 2,
+      "status": "completed_no_patch_rewrite",
+      "title": "Public export DTS Makefile ordering audit",
+      "question": "Does the current public A733/Cubie A7S export preserve Allwinner DTB Makefile ordering?",
+      "test_cost": "low; patch-file audit only",
+      "procedure": [
+        "Inspect patch 0004 in /srv/projects/cubie-a7s-armbian-public/patches.",
+        "Check the placement of sun60i-a733-cubie-a7s.dtb against nearby sun55 entries.",
+        "Record the required fix without rewriting patches yet."
+      ],
+      "pass_criteria": "Makefile ordering is captured as a required fixup before any next export.",
+      "fail_criteria": "A future review has to rediscover the ordering issue.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h081-public-export-makefile-order-audit-20260611T1820Z.json",
+        "summary": "Completed without rewriting patches. Patch 0004 inserts sun60i-a733-cubie-a7s.dtb before existing sun55i entries. Before submission, regenerate or edit the export so the Allwinner DTB Makefile keeps the local numeric/lexical order, with sun55 entries before sun60."
       }
     }
   ]
