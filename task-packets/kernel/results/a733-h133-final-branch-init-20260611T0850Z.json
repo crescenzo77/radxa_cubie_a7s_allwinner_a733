@@ -1,0 +1,15 @@
+{
+  "id": "A733-UPSTREAM-H133",
+  "status": "completed_final_branch_init_helper",
+  "checked_utc": "2026-06-11T08:50:00Z",
+  "script": "/Users/enzo/projects/homelab/scripts/kernel-final-branch-init",
+  "purpose": "Create a named final-review worktree from a prerequisite base, apply exactly four promoted A733 patches, and verify branch cleanliness/count before b4 prep.",
+  "validation": {
+    "bash_n": "passed",
+    "mac_dirty_repo": "failed closed because /Users/enzo/projects/linux-a733 has unrelated dirty files visible in linked worktrees",
+    "strix_clean_repo": "passed on /srv/projects/a733-diag-rtc-extosc-orphan using branch codex/final/a733-h133-smoke and worktree /tmp/a733-h133-final-branch",
+    "commits_above_base": 4
+  },
+  "send_status": "not_send_ready",
+  "next_action": "Use this helper from Strix or another clean Linux repo for gate-01-final-branch on the real final branch. Do not close gate 01 from the smoke branch."
+}

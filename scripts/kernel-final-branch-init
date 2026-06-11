@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: scripts/kernel-final-branch-init --repo PATH --patch-dir PATH --base REF --branch NAME --worktree PATH
+
+Create a clean final-review worktree from BASE, apply numbered patches from
+PATCH_DIR, and verify the result is a named branch with exactly four commits
+above BASE. No mail is sent.
+USAGE
+}
+
+repo=
+patch_dir=
+base=
+branch=
+worktree=
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --repo) repo="${2:?}"; shift 2 ;;
+    --patch-dir) patch_dir="${2:?}"; shift 2 ;;
+    --base) base="${2:?}"; shift 2 ;;
+    --branch) branch="${2:?}"; shift 2 ;;
+    --worktree) worktree="${2:?}"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "unknown argument: $1" >&2; usage >&2; exit 2 ;;
+  esac
+done
+
+[ -n "$repo" ] || { echo "--repo is required" >&2; exit 2; }
+[ -n "$patch_dir" ] || { echo "--patch-dir is required" >&2; exit 2; }
+[ -n "$base" ] || { echo "--base is required" >&2; exit 2; }
+[ -n "$branch" ] || { echo "--branch is required" >&2; exit 2; }
+[ -n "$worktree" ] || { echo "--worktree is required" >&2; exit 2; }
+
+git -C "$repo" rev-parse --git-dir >/dev/null 2>&1 || { echo "not a git repo: $repo" >&2; exit 2; }
+[ -d "$patch_dir" ] || { echo "patch dir not found: $patch_dir" >&2; exit 2; }
+git -C "$repo" rev-parse --verify "$base^{commit}" >/dev/null
+
+case "$branch" in
+  final/*|codex/final/*) ;;
+  *) echo "branch must start with final/ or codex/final/" >&2; exit 2 ;;
+esac
+
+patches=()
+while IFS= read -r patch; do
+  patches+=("$patch")
+done < <(find "$patch_dir" -maxdepth 1 -type f -name '000[1-9]-*.patch' | sort)
+[ "${#patches[@]}" -eq 4 ] || { echo "expected exactly 4 numbered patches, found ${#patches[@]}" >&2; exit 1; }
+
+if [ -e "$worktree" ]; then
+  echo "worktree path already exists: $worktree" >&2
+  exit 1
+fi
+
+git -C "$repo" worktree add -B "$branch" "$worktree" "$base"
+git -C "$worktree" am "${patches[@]}"
+
+current_branch="$(git -C "$worktree" branch --show-current)"
+[ "$current_branch" = "$branch" ] || { echo "unexpected branch: $current_branch" >&2; exit 1; }
+
+count="$(git -C "$worktree" rev-list --count "$base..HEAD")"
+[ "$count" = "4" ] || { echo "expected 4 commits above base, found $count" >&2; exit 1; }
+
+if [ -n "$(git -C "$worktree" status --short)" ]; then
+  git -C "$worktree" status --short
+  echo "worktree is dirty after applying patches" >&2
+  exit 1
+fi
+
+echo "final_branch=$branch"
+echo "worktree=$worktree"
+echo "base=$(git -C "$worktree" rev-parse "$base")"
+echo "head=$(git -C "$worktree" rev-parse HEAD)"
+echo "commits_above_base=$count"

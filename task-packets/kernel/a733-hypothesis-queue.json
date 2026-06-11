@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T08:40:00Z",
+  "updated_utc": "2026-06-11T08:50:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -32,7 +32,7 @@
   ],
   "submission_workflow": {
     "series_manager": "Use b4 from a clean generated review branch for final mailing-list preparation.",
-    "branch_hierarchy": "Use topic branches, candidate branches, and generated review branches; update dependent refs together with git rebase --update-refs when rebasing a stack.",
+    "branch_hierarchy": "Use topic branches, candidate branches, and generated review branches; update dependent refs together with git rebase --update-refs when rebasing a stack. H133 added scripts/kernel-final-branch-init for clean final review worktree creation.",
     "validation_floor": "Run scripts/kernel-validation-floor locally; H132 fixed it to accept both normal git repos and linked worktrees. The public repo CI mirrors this floor for candidate/**, topic/**, review/**, codex/**, pull requests, and manual dispatch.",
     "review_export": "Treat patches/ as a review snapshot only. H125 promoted the folded export into the maintained snapshot and validation-floor apply-check passes from b327168a182e^. H126 completed recipient/checkpatch hygiene. H127 found the same external RTC, CCU/PRCM, and pinctrl dependency state. H128 proved b4 prep can track the series but metadata/preflight are not reflect-ready. H129 added a no-send b4 final gate that fails closed on those open gates.",
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step.",
@@ -40,10 +40,10 @@
     "final_send_status_command": "/Users/enzo/projects/homelab/scripts/kernel-final-send-status"
   },
   "latest_upstream_prep": {
-    "id": "A733-UPSTREAM-H132",
-    "status": "completed_validation_floor_worktree_fix",
-    "title": "Validation floor worktree support",
-    "summary": "Updated scripts/kernel-validation-floor to use git rev-parse --git-dir instead of requiring .git to be a directory. Validation passed for both /Users/enzo/projects/linux-a733 and a throwaway linked worktree from b327168a182e^."
+    "id": "A733-UPSTREAM-H133",
+    "status": "completed_final_branch_init_helper",
+    "title": "Final branch init helper",
+    "summary": "Added scripts/kernel-final-branch-init. It creates a named final-review worktree from a base, applies exactly four promoted A733 patches, and verifies branch name, clean status, and commit count. It failed closed on the dirty Mac Linux repo and passed on Strix clean repo. Result file: /Users/enzo/projects/homelab/task-packets/kernel/results/a733-h133-final-branch-init-20260611T0850Z.json"
   },
   "latest_completed_test": {
     "id": "A733-SDMMC-H089",
