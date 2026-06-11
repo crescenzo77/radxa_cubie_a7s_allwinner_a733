@@ -1,0 +1,20 @@
+{
+  "id": "A733-SDMMC-H119",
+  "title": "Review export apply-check after pinmux cleanup",
+  "status": "completed_export_not_send_ready",
+  "tested_at_utc": "2026-06-11T06:25:00Z",
+  "host": "mac",
+  "question": "Does the cleaned four-patch review snapshot apply cleanly to a local candidate ancestry base?",
+  "procedure": [
+    "Created a temporary worktree from local candidate ancestry at 9c2f8ef004d6^.",
+    "Ran git am over exported review patches 0001 through 0004.",
+    "Checked A733 review patches for stale allwinner,pinmux after H118."
+  ],
+  "result": [
+    "Patch 0001 applied.",
+    "Patch 0002 failed because Documentation/devicetree/bindings/arm/sunxi.yaml already contains the Radxa Cubie A7S entry in that local ancestry.",
+    "H118 pinmux cleanup remains verified: no allwinner,pinmux appears in the A733 source DTS files or exported A733 review patches."
+  ],
+  "decision": "The review snapshot is not send-ready. Do not hand-edit more flat patches for submission; regenerate the review series from a clean branch with the fixup folded.",
+  "next_action": "Create a fresh review branch from the intended base, fold b1f20d455a60 into the DTS commits, regenerate patches with b4/format-patch, then rerun the validation floor."
+}

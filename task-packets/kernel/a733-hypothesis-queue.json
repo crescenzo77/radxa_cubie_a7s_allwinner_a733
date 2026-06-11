@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T06:15:00Z",
+  "updated_utc": "2026-06-11T06:25:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -2517,6 +2517,25 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h118-review-export-pinmux-cleanup-20260611T0615Z.json",
         "summary": "Cleaned candidate/a733-platform-clean-v6 with fixup commit b1f20d455a60 and removed allwinner,pinmux from review snapshot patches 0003/0004. Verified rg finds no allwinner,pinmux in the A733 source files or the A733 review patches. No runtime boot needed."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H119",
+      "priority": 1,
+      "status": "completed_export_not_send_ready",
+      "title": "Review export apply-check after pinmux cleanup",
+      "question": "Does the cleaned four-patch review snapshot apply cleanly to a local candidate ancestry base?",
+      "test_cost": "low; temporary worktree apply-check",
+      "procedure": [
+        "Create a temporary worktree from local candidate ancestry.",
+        "Apply exported review patches 0001 through 0004 with git am.",
+        "Record whether the flat snapshot is send-ready."
+      ],
+      "pass_criteria": "All four patches apply cleanly from the intended base.",
+      "fail_criteria": "Any patch fails or the intended base cannot be reconstructed from the snapshot.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h119-review-export-apply-check-20260611T0625Z.json",
+        "summary": "The snapshot is not send-ready. Patch 0001 applied, but patch 0002 failed on local candidate ancestry because sunxi.yaml already contains the Cubie A7S binding there. H118 pinmux cleanup remains verified. Regenerate from a clean intended base with fixup b1f20d455a60 folded before any send."
       }
     }
   ],
