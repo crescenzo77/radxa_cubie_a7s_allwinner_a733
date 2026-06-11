@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T05:45:00Z",
+  "updated_utc": "2026-06-11T05:55:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -2460,6 +2460,25 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h115-public-archive-recheck-20260611T0545Z.json",
         "summary": "No patch. Public search still surfaces the already-audited U-Boot A733 series, general A733 pages, and downstream/vendor boot logs. No public reply/archive hit or source-backed SMHC0 IDMAC, firewall, NSI, MBUS, or security handoff delta was found."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H116",
+      "priority": 1,
+      "status": "completed_no_patch",
+      "title": "Active vs installed boot payload SDMMC window compare",
+      "question": "Does the newer installed U-Boot/boot package contain changed SDMMC/MBUS/NSI/security windows that justify testing a bootloader update as an IDMAC fix?",
+      "test_cost": "low; no-build binary window comparison",
+      "procedure": [
+        "Find SDMMC/MBUS/security/ARISC string anchors in the active Cubie3 pre-partition boot capture and installed A7A boot package.",
+        "Compare aligned 0x80, 0x400, and 0x1000 byte windows around anchors.",
+        "Promote a bootloader runtime test only if SDMMC/MBUS/NSI/security windows changed in a storage-relevant way."
+      ],
+      "pass_criteria": "Installed payload shows a storage-relevant SDMMC/MBUS/NSI/security code-window change.",
+      "fail_criteria": "Anchored storage windows are identical or only non-storage build metadata changes.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h116-boot-payload-window-compare-20260611T0555Z.json",
+        "summary": "No bootloader restage and no patch. Aligned active-vs-installed windows around sdmmc0_mod and sdc_mbus anchors were identical at 0x400 bytes; sdmmc0_mod table and ARISC SMC clock-glitch windows were identical at 0x1000 bytes. The security window mainly changed BL31 build string/version. No storage-relevant payload delta justifies a bootloader-update test."
       }
     }
   ],

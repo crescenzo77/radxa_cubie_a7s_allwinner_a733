@@ -1,0 +1,41 @@
+{
+  "id": "A733-SDMMC-H116",
+  "title": "Active vs installed boot payload SDMMC window compare",
+  "status": "completed_no_patch",
+  "tested_at_utc": "2026-06-11T05:55:00Z",
+  "host": "strix",
+  "inputs": {
+    "active_boot_capture": "/srv/projects/homelab/task-packets/kernel/boot-firmware-captures/20260611T0450Z/cubie3/mmcblk0-prep1-16MiB.bin",
+    "installed_boot_package": "/srv/projects/homelab/task-packets/kernel/boot-firmware-captures/20260611T0450Z/package-payloads/_usr_lib_u-boot_radxa-cubie-a7a_boot_package.fex",
+    "installed_boot0": "/srv/projects/homelab/task-packets/kernel/boot-firmware-captures/20260611T0450Z/package-payloads/_usr_lib_u-boot_radxa-cubie-a7a_boot0_sdcard.bin"
+  },
+  "question": "Does the newer installed U-Boot/boot package contain changed SDMMC/MBUS/NSI/security windows that justify testing a bootloader update as an IDMAC fix?",
+  "anchor_offsets": {
+    "active": {
+      "sdmmc0_mod_early": "0xcb1893",
+      "sdc_mbus_early": "0xcb8314",
+      "sdmmc0_mod_table": "0xd23df4",
+      "sdc_mbus_table": "0xd2cac8",
+      "security_state": "0xd3c3de",
+      "arisc_glitch": "0xd4cb10"
+    },
+    "installed": {
+      "sdmmc0_mod_early": "0xb18be",
+      "sdc_mbus_early": "0xb834a",
+      "sdmmc0_mod_table": "0x123e34",
+      "sdc_mbus_table": "0x12cb08",
+      "security_state": "0x13c3de",
+      "arisc_glitch": "0x14cb10"
+    }
+  },
+  "window_compare": [
+    "sdmmc0_mod early: 0x400-byte window identical; 0x1000-byte window 99.30% identical.",
+    "sdc_mbus early: 0x1000-byte window identical.",
+    "sdmmc0_mod table: 0x1000-byte window identical.",
+    "sdc_mbus table: 0x400-byte window identical; 0x1000-byte window 71.94% identical due to nearby non-anchor changes.",
+    "security_state window changed mostly in BL31 build string/version: active 2025-02-26 5fc237a6a vs installed 2025-07-02 48e54578a.",
+    "ARISC SMC clock-glitch window is 0x1000-byte identical."
+  ],
+  "decision": "No bootloader restage and no kernel patch. The installed package does not expose a changed SDMMC/MBUS/ARISC window that plausibly explains the Linux SDMMC0 IDMAC descriptor-fetch stall.",
+  "next_action": "Do not spend a Cubie bootloader-update cycle on this evidence alone. Continue looking for a named SDMMC0 access-control handoff or maintainer/vendor feedback."
+}
