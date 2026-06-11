@@ -1,0 +1,29 @@
+{
+  "id": "A733-SDMMC-H051",
+  "timestamp_utc": "2026-06-11T06:55:00Z",
+  "title": "Vendor v5p3x timing-delay property audit",
+  "scope": [
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/sun60iw2p1.dtsi",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc-v5p3x.c",
+    "/srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "trigger": "Clock phase/delay guesses keep recurring in model output and prior triage, so close the vendor DTS/source evidence explicitly.",
+  "findings": [
+    "Vendor SDMMC0 has only commented sunxi-dly-* override examples; no active delay override is set for sdc0.",
+    "Vendor SDMMC1 has an active sunxi-dly-208M override and execute_tuning_in_kernel, but SDMMC1 is the SDIO-style node, not the SD-card SDMMC0 proof target.",
+    "BSP v5p3x source initializes default delay tables for 400k, 26M, 52M, 104M, 208M, and DDR modes.",
+    "BSP v5p3x has sunxi_of_parse_clk_dly(host) commented out in the init path, so DTS delay overrides are not a required SDMMC0 path in this BSP slice.",
+    "The local diagnostic tree already includes delay/phase diagnostics and a prior forced A733 drive-delay preservation test; the IDMAC stall remained before descriptor word 0 was consumed."
+  ],
+  "public_search": {
+    "exact_email_archive_hit": false,
+    "answer_visible": false,
+    "notes": "Search still did not reveal a public archive hit or answer for the manually sent A733 SDMMC0 descriptor-fetch question. Public hits were unrelated or repeated the known U-Boot A733 PIO support."
+  },
+  "decision": "No behavior patch.",
+  "reason": "Vendor SDMMC0 does not use an active timing-delay override, and clock phase affects card signaling after command/data timing rather than normal-IDMAC descriptor memory reachability. Prior delay diagnostics did not change the descriptor-fetch stall.",
+  "next": [
+    "Do not retest clock phase or sunxi-dly properties as standalone descriptor-fetch fixes.",
+    "Keep waiting for a maintainer/list reply or a source-backed SDMMC0 firewall/security/master-permission bit."
+  ]
+}

@@ -1235,6 +1235,25 @@
       }
     },
     {
+      "id": "A733-SDMMC-H051",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "Vendor v5p3x timing-delay property audit",
+      "question": "Do vendor sunxi-dly or v5p3x delay defaults identify a missing SDMMC0 normal-IDMAC descriptor-fetch precondition?",
+      "test_cost": "low; source audit only, no kernel build and no board reboot",
+      "procedure": [
+        "Inspect active and commented vendor SDMMC0/1 timing-delay properties.",
+        "Inspect BSP v5p3x default delay table and DT delay parsing path.",
+        "Only patch if vendor SDMMC0 has an active delay setting or source path that plausibly affects descriptor fetch."
+      ],
+      "pass_criteria": "A specific SDMMC0 delay delta is promoted or delay is closed as unrelated to descriptor-fetch reachability.",
+      "fail_criteria": "The next session retests clock phase/sunxi-dly as a standalone IDMAC descriptor-fetch fix without new evidence.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h051-v5p3x-delay-audit-20260611T0655Z.json",
+        "summary": "Completed with no behavior patch. Vendor SDMMC0 has only commented sunxi-dly examples, while the lone active v5p3x delay override is on SDMMC1/SDIO. BSP v5p3x uses built-in default delay tables and has sunxi_of_parse_clk_dly(host) commented out in init. Prior delay/drive diagnostics did not change the descriptor-fetch stall."
+      }
+    },
+    {
       "id": "A733-SDMMC-H004",
       "priority": 4,
       "status": "do_not_repeat_without_new_evidence",
