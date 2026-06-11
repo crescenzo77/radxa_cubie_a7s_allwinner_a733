@@ -1,0 +1,19 @@
+{
+  "id": "A733-SDMMC-H060",
+  "status": "completed_no_patch",
+  "title": "BSP EMCE encryption hook audit",
+  "timestamp_utc": "2026-06-11T10:10:00Z",
+  "scope": [
+    "Strix BSP source: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "Strix BSP header: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.h"
+  ],
+  "observations": [
+    "The BSP host struct has a sunxi_mmc_on_off_emce hook and request-path call sites guarded by crypt flags.",
+    "The audited BSP slice has no assignment to sunxi_mmc_on_off_emce.",
+    "Without an assigned hook, the EMCE path is inactive for ordinary SDMMC0 reads.",
+    "The crypt flag is encoded in scatterlist offset metadata and is not part of the normal failing CMD18 proof."
+  ],
+  "decision": "no_behavior_patch",
+  "reason": "EMCE is inactive scaffolding in this BSP slice and does not name a concrete A733 SDMMC0 descriptor-fetch access/security bit.",
+  "next": "Do not retest EMCE unless another source provides an assigned A733 register hook used by SDMMC0 normal IDMAC."
+}
