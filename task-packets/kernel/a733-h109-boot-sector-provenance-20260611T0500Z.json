@@ -1,0 +1,18 @@
+{
+  "id": "A733-SDMMC-H109",
+  "title": "Boot-sector firmware provenance and segment string scan",
+  "timestamp_utc": "2026-06-11T05:00:00Z",
+  "status": "completed_no_patch",
+  "input_capture": "/srv/projects/homelab/task-packets/kernel/boot-firmware-captures/20260611T0450Z",
+  "findings": [
+    "Cubie3 pre-partition strings show U-Boot 2018.07-12-boot-aw2501-gb2d229198b2-dirty built Jan 06 2026.",
+    "BL31 strings show v2.5(debug):5fc237a6a built 09:05:28 Feb 26 2025.",
+    "Early duplicate BOOT0/SCP strings appear near 0x37700 and 0x119700; U-Boot command/help strings begin around 0xc00000 to 0xcbffff.",
+    "Allwinner clock/devicetree-style SDMMC strings cluster around 0xd23xxx.",
+    "BL31 and SCP/ARISC strings cluster around 0xd3c000 to 0xd3fxxx.",
+    "ARISC/standby strings, including SMC clk glitch workaround in arisc, cluster around 0xd4c000.",
+    "No SMHC, IDMAC, firewall, TZMA, or SPC string appeared in the segment scan."
+  ],
+  "decision": "No kernel patch. The capture now has boot firmware provenance and rough segment string map, but no concrete SDMMC0 IDMAC descriptor-fetch handoff bit.",
+  "next": "If pursuing this path, compare the U-Boot aw2501 commit string/package payload or do bounded binary analysis around 0xd23xxx SDMMC clock-name tables; do not infer a Linux driver change from provenance alone."
+}

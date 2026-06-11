@@ -2320,6 +2320,25 @@
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h108-boot-sector-string-offset-map-20260611T0455Z.json",
         "summary": "Completed with no behavior patch. SDMMC/MBUS/security/ARISC strings were mapped to offset clusters in the boot-sector capture and representative bytes match between Cubie2 and Cubie3. Public u-boot-a733 does not contain the exact A733 strings. No SMHC, IDMAC, firewall, TZMA, or SPC string was found, and no Linux-programmable descriptor-fetch permission bit surfaced."
       }
+    },
+    {
+      "id": "A733-SDMMC-H109",
+      "priority": 1,
+      "status": "completed_no_patch",
+      "title": "Record boot-sector firmware provenance",
+      "question": "Can the boot-sector capture identify vendor firmware versions or segment clusters that sharpen the IDMAC investigation?",
+      "test_cost": "low; strings and bounded offset scan",
+      "procedure": [
+        "Search boot-sector strings with hex offsets for BOOT0, U-Boot, BL31, SCP/ARISC, SDMMC, NSI, and security terms.",
+        "Record version/build strings and rough segment clusters.",
+        "Promote a patch only if a concrete SDMMC0 IDMAC handoff bit appears."
+      ],
+      "pass_criteria": "Firmware provenance is recorded, and any absence of a patch lead is explicit.",
+      "fail_criteria": "Future sessions repeat provenance extraction or treat version strings as a kernel patch.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h109-boot-sector-provenance-20260611T0500Z.json",
+        "summary": "Completed with no behavior patch. The capture identifies U-Boot 2018.07-12-boot-aw2501-gb2d229198b2-dirty built Jan 06 2026 and BL31 v2.5(debug):5fc237a6a built Feb 26 2025. It maps U-Boot strings near 0xc00000-0xcbffff, SDMMC clock/devicetree-style strings near 0xd23xxx, BL31/SCP strings near 0xd3c000-0xd3fxxx, and ARISC/standby strings near 0xd4c000. No SMHC, IDMAC, firewall, TZMA, or SPC clue surfaced."
+      }
     }
   ],
   "model_routes": [
