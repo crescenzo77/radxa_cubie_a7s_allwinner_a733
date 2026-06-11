@@ -2244,6 +2244,25 @@
         "result_file": null,
         "summary": "Passed as a smoke test. Installed b4 0.15.2 in /srv/projects/kernel-work/b4-venv and enrolled throwaway branch codex/a733-v6-b4-prep-smoke in /srv/projects/a733-v6-b4-prep-smoke. b4 reports base-commit 6f3ed7fec72f, 11 tracked commits, needs-editing true, needs-recipients true, and preflight-checks-failing true. b4 prep --check still fails SPDX helper imports for ply despite venv deps; direct checkpatch with the venv works and reports only MAINTAINERS heuristic warnings. No mail sent; authoritative v6 branch unchanged."
       }
+    },
+    {
+      "id": "A733-SDMMC-H105",
+      "priority": 1,
+      "status": "completed_no_patch",
+      "title": "Audit dma-ranges as an IDMAC descriptor-fetch explanation",
+      "question": "Could a missing A733 DMA address translation window explain SDMMC0 IDMAC never fetching descriptor word 0?",
+      "test_cost": "low; source and prior-log audit only",
+      "procedure": [
+        "Compare sun60i-a733.dtsi against nearby Allwinner arm64 DTSI files for dma-ranges and MBUS/interconnect usage.",
+        "Check whether the SDMMC host binding consumes an MBUS/interconnect path.",
+        "Compare against prior shifted, low-address, and below-4G descriptor tests before proposing a boot test."
+      ],
+      "pass_criteria": "A source-backed dma-ranges or address-window patch is promoted only if it explains the exact descriptor-fetch symptom.",
+      "fail_criteria": "A future session burns a boot cycle adding speculative dma-ranges to the A733 SoC bus without new address-translation evidence.",
+      "result": {
+        "result_file": null,
+        "summary": "Completed with no behavior patch. sun60i-a733.dtsi has the same simple-bus ranges shape as newer Allwinner SoCs such as H616, while older A64-style dma-ranges appear on an MBUS node used by display/media interconnect clients, not by the sunxi MMC host. Prior H004/H018/H027/H036/H073-style tests already covered shifted descriptors, descriptor memory below 4G, and vendor 64-bit DMA-mask behavior, all still reaching the same DESC_READ stall. Missing DTS dma-ranges is not a justified next boot test without new evidence."
+      }
     }
   ],
   "model_routes": [
