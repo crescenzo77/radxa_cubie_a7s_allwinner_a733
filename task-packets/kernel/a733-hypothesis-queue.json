@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T04:10:00Z",
+  "updated_utc": "2026-06-11T07:55:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H044 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, the public-U-Boot IRQ-40 clue, the descriptor end-of-ring bit, basic model-suggested IDMAC reset/clock-offset concerns, the current public Linux dependency status, the plain IDMAC enable write-readback idea, a vendor NSI/public-U-Boot clock audit, a public community Armbian repo audit, the A733 MMC clock-rate math clue, and an Orange Pi full-driver audit. H044 found no new A733-specific normal-IDMAC code.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H054 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, model-suggested IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, and BSP DMA mapping/cookie lifecycle. The remaining blocker still requires a maintainer/list reply or source-backed SDMMC0 master/firewall/security bit.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,32 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H044",
+    "id": "A733-SDMMC-H054",
     "status": "completed_no_patch",
-    "title": "Orange Pi full sunxi-mmc driver audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h044-orangepi-full-driver-audit-20260611T0410Z.json",
-    "result": "The Orange Pi full tree has no new A733-specific normal-IDMAC code. Its diff is lifecycle/API churn, and the last-descriptor next=0 shape is already covered by prior descriptor evidence. No patch."
+    "title": "BSP DMA mapping and pre_req cookie audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h054-dma-map-cookie-audit-20260611T0755Z.json",
+    "result": "BSP pre_req/post_req cookies do not identify a descriptor-fetch fix. Local proof maps DMA directly, logs sg_len=dma_len=1, validates alignment, and exercises descriptor sync/coherent allocation. No patch."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H054",
+      "priority": 53,
+      "status": "completed_no_patch",
+      "title": "BSP DMA mapping and pre_req cookie audit",
+      "question": "Does the BSP pre_req/post_req DMA-cookie path reveal a missing SDMMC0 normal-IDMAC descriptor-fetch precondition?",
+      "test_cost": "low; source audit only",
+      "procedure": [
+        "Inspect BSP sunxi_mmc_map_dma, pre_req, post_req, and request-time DMA mapping paths.",
+        "Compare DMA direction, dma_map_sg result checks, sg alignment checks, and descriptor setup against the local diagnostic tree.",
+        "Promote a patch only if the BSP uses a concrete DMA mapping, cache, or descriptor-ordering step absent from the local proof."
+      ],
+      "pass_criteria": "A concrete missing DMA map/cache/descriptor-ordering step is found.",
+      "fail_criteria": "The BSP lifecycle differs only by pre-mapping cookies while the same DMA mapping and alignment semantics are already covered locally.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h054-dma-map-cookie-audit-20260611T0755Z.json",
+        "summary": "BSP pre_req/post_req cookies do not identify a descriptor-fetch fix. Local proof maps DMA directly, logs sg_len=dma_len=1, validates alignment, and exercises descriptor sync/coherent allocation. No patch."
+      }
+    },
     {
       "id": "A733-SDMMC-H044",
       "priority": 43,

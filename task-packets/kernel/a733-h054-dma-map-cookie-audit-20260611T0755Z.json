@@ -1,0 +1,21 @@
+{
+  "id": "A733-SDMMC-H054",
+  "status": "completed_no_patch",
+  "title": "BSP DMA mapping and pre_req cookie audit",
+  "timestamp_utc": "2026-06-11T07:55:00Z",
+  "scope": [
+    "Strix BSP source: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "Strix diagnostic source: /srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c",
+    "Safari/Gmail visible state for latest plain-text resend"
+  ],
+  "observations": [
+    "The BSP has pre_req/post_req hooks and COOKIE_PRE_MAPPED/COOKIE_MAPPED states, but they feed the same dma_map_sg direction and scatterlist checks used by the request-time map path.",
+    "The BSP requires dma_map_sg to return a nonzero length and warns/fails when dma_len differs from data->sg_len; the local proof already logs sg_len=dma_len=1 for the failing CMD18 path.",
+    "The BSP validates 4-byte scatterlist offset/length alignment before descriptor setup; the local proof already logs the same alignment data and rejects unaligned entries.",
+    "The local diagnostic tree maps DMA directly for the controlled synchronous CMD18 proof, logs the SG DMA address, and has already tested descriptor sync and coherent allocation paths.",
+    "Gmail/Safari shows the plain-text resend as a sent message addressed to Ulf, the sunxi maintainers, linux-mmc, linux-arm-kernel, linux-sunxi, and linux-kernel. No fresh obvious bounce was visible in the current rejection-search state."
+  ],
+  "decision": "no_behavior_patch",
+  "reason": "The BSP DMA cookie lifecycle is a throughput/lifecycle optimization and does not name a missing A733 SDMMC0 descriptor-fetch precondition. The failure remains earlier: IDMAC is enabled with DLBA set, but the controller does not consume descriptor word 0.",
+  "next": "Wait for maintainer/list/vendor reply or continue only source-backed audits that name a concrete SDMMC0 master, firewall, security, or fabric access bit."
+}
