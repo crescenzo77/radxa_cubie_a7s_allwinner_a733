@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T19:20:00Z",
+  "updated_utc": "2026-06-11T19:50:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. Normal IDMAC still stalls before descriptor word 0 is consumed. Descriptor geometry, cache, address placement, DMA mask, visible MMC register setup, and obvious clock/reset hypotheses are exhausted. The best independent path is now source-backed security/firewall/interconnect/firmware-handoff evidence, with lab-only PIO boot/runtime support as the operational workaround while maintainer/vendor replies are pending.",
+  "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H085 found no local source-backed SMHC0 firewall/fabric/security/firmware handoff bit. The responsible independent path is now operational: create a lab-only PIO root/runtime proof path for deeper inspection while keeping the upstream DTS/series clean and waiting for maintainer/vendor or new source evidence for the real IDMAC fix.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -38,11 +38,11 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H084",
-    "status": "completed_path_adjusted",
-    "title": "Independent roadblock model squeeze and path adjustment",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h084-independent-roadblock-model-squeeze-20260611T1915Z.json",
-    "result": "Strix, 7900XT, OpenRouter-free, and Hermes routes converged on security/firewall/interconnect/firmware handoff as the highest-value independent path. No behavior patch from model output alone."
+    "id": "A733-SDMMC-H085",
+    "status": "completed_no_patch",
+    "title": "Source-backed SMHC0 firewall/fabric/firmware handoff audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h085-smhc0-firewall-fabric-handoff-audit-20260611T1945Z.json",
+    "result": "Fresh source/artifact sweep found no new SMHC0-named SPC/TZMA/MBUS/NSI/CCU security bit and no boot blob/source package exposing a Linux-applicable handoff. No behavior patch."
   },
   "hypotheses": [
     {
@@ -1914,18 +1914,38 @@
     {
       "id": "A733-SDMMC-H085",
       "priority": 1,
-      "status": "queued",
+      "status": "completed_no_patch",
       "title": "Source-backed SMHC0 firewall/fabric/firmware handoff audit",
-      "question": "Can local public/vendor sources or preserved artifacts identify a concrete SMHC0 master permission, SPC/TZMA, MBUS/NSI, CCU security switch, or firmware handoff bit that explains IDMAC descriptor fetch starvation?",
-      "test_cost": "low to medium; source/artifact audit before any boot test",
+      "question": "Can local sources/artifacts identify a concrete SMHC0 permission or handoff bit explaining IDMAC descriptor fetch starvation?",
+      "test_cost": "low to medium; source/artifact audit only",
       "procedure": [
-        "Search Strix references and preserved boot artifacts for SMHC0, SDMMC0, IDMAC, SPC, TZMA, MBUS, NSI, firewall, secure, nonsecure, and CCU security writes.",
-        "Compare any candidate register against prior closed H009-H084 results and preserved vendor/mainline register dumps.",
-        "Only promote a runtime patch if a source-backed register/write/order difference names SMHC0 or its memory master.",
-        "If no named bit is found, queue a lab-only PIO root/runtime path to gather userspace evidence without claiming an upstream fix."
+        "Search local public/vendor sources and preserved artifacts for SMHC0, SDMMC0, IDMAC, SPC, TZMA, MBUS, NSI, CCU security, BOOT0, BL31, SCP, and AR100 clues.",
+        "Compare candidate clues against closed H009-H084 results.",
+        "Promote a runtime patch only if a source-backed SMHC0 or storage-master bit is found."
       ],
-      "pass_criteria": "A concrete source-backed register/write/order difference is found, or the lack of one is recorded and the PIO runtime workaround becomes the next operational path.",
-      "fail_criteria": "A speculative register write is tested without source support.",
+      "pass_criteria": "A concrete source-backed bit/order delta is found, or absence is recorded and the next operational path is queued.",
+      "fail_criteria": "Speculative register writes continue without source support.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h085-smhc0-firewall-fabric-handoff-audit-20260611T1945Z.json",
+        "summary": "Completed. No new SMHC0-named firewall/fabric/security/firmware handoff bit was found. No patch."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H086",
+      "priority": 1,
+      "status": "queued",
+      "title": "Lab-only PIO root/runtime proof path",
+      "question": "Can we turn the proven A733 SDMMC0 PIO read path into a controlled lab-only boot/runtime path for userspace inspection without presenting it as an upstream fix?",
+      "test_cost": "medium; local diagnostic branch and Cubie2/Cubie3 UART boot only",
+      "procedure": [
+        "Inspect existing PIO diagnostics and identify the smallest already-proven PIO read path that supports read-only rootfs access.",
+        "Create a lab-only diagnostic branch or config that disables/avoids normal IDMAC for A733 SDMMC0 while preserving logs that state this is not upstreamable.",
+        "Boot on Cubie3 first over UART; pass only if it reaches userspace/root shell with read-only rootfs and records the PIO path clearly.",
+        "Optionally repeat on Cubie2 for board-to-board sanity.",
+        "Restore both targets to vendor kernel 5.15.147-21-a733 before ending."
+      ],
+      "pass_criteria": "Cubie3 reaches a read-only userspace/root shell through PIO-only SDMMC0, with UART proof and no public export changes.",
+      "fail_criteria": "The branch changes upstream DTS policy, hides IDMAC failure, writes rootfs unexpectedly, or expands into unrelated peripherals.",
       "result": null
     }
   ],

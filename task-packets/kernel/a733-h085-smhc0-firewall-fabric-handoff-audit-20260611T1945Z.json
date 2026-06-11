@@ -1,0 +1,51 @@
+{
+  "id": "A733-SDMMC-H085",
+  "title": "Source-backed SMHC0 firewall/fabric/firmware handoff audit",
+  "timestamp_utc": "2026-06-11T19:45:00Z",
+  "status": "completed_no_patch",
+  "question": "Can local public/vendor sources or preserved artifacts identify a concrete SMHC0 master permission, SPC/TZMA, MBUS/NSI, CCU security switch, or firmware handoff bit that explains IDMAC descriptor fetch starvation?",
+  "sources_checked": [
+    "/srv/projects/references/u-boot-a733",
+    "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "/srv/projects/a733-prereq-stack-v2-20260609T183944Z",
+    "/srv/projects/a733-diag-mbusstore",
+    "/srv/projects/cubie-uart/logs",
+    "/srv/projects/homelab/task-packets/kernel",
+    "/Users/enzo/projects/homelab/task-packets/kernel",
+    "/Users/enzo/projects/homelab/inventory/kernel-a733-thread-quick-reference-20260608.md",
+    "/Users/enzo/projects/homelab/inventory/kernel-a733-prior-work-index-20260606.md",
+    "/Users/enzo/projects/homelab/inventory/kernel-a733-ccu-unused-clock-evidence-20260610.md"
+  ],
+  "search_terms": [
+    "SMHC",
+    "SDMMC",
+    "MMC0",
+    "IDMAC",
+    "DLBA",
+    "SPC",
+    "TZMA",
+    "TZASC",
+    "firewall",
+    "secure",
+    "nonsecure",
+    "MBUS",
+    "NSI",
+    "DMA_SEC",
+    "CCU security",
+    "master permission",
+    "BOOT0",
+    "BL31",
+    "ATF",
+    "SCP",
+    "AR100"
+  ],
+  "findings": [
+    "Public A733 U-Boot remains PIO/AHB evidence only; it does not exercise SMHC0 internal IDMAC descriptor fetch.",
+    "The preserved H028 firmware inventory already found no local boot0, BL31/ATF, SCP, secure-monitor, NSI/MBUS, IOMMU, or storage-master permission delta suitable for a behavior patch.",
+    "The preserved H069 register/artifact audit already found no unclosed named SDMMC0 firewall/security/master-permission register.",
+    "A fresh source/artifact sweep found no new SMHC0-named SPC/TZMA/MBUS/NSI/CCU security bit and no boot blob/source package that exposes a Linux-applicable handoff.",
+    "Package metadata still leaves BOOT0 and BL31 provenance unresolved; no package matching boot0, bl31, or trusted was found in the preserved metadata."
+  ],
+  "decision": "Do not patch behavior from H085. The remaining independent path is operational: build/use a lab-only PIO root/runtime path so Cubie2/Cubie3 can keep booting far enough for userspace inspection while the real IDMAC root cause awaits maintainer/vendor reply or newly found firmware/security source.",
+  "next": "Queue H086 as the lab-only PIO root/runtime proof plan. Keep it explicitly non-upstream and do not modify the public export."
+}
