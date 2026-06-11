@@ -1,0 +1,17 @@
+{
+  "id": "A733-SDMMC-H121",
+  "title": "Create cleaned A733 review marker branch",
+  "status": "completed_workflow_marker",
+  "tested_at_utc": "2026-06-11T06:45:00Z",
+  "host": "mac",
+  "kernel_tree": "/Users/enzo/projects/linux-a733",
+  "source": "candidate/a733-platform-clean-v6",
+  "review_branch": "review/a733-platform-clean-v6-pinmux-clean",
+  "head": "b1f20d455a600d33999cf893fdf0df8fb2ace538",
+  "verification": [
+    "scripts/kernel-review-branch created/updated the review marker branch.",
+    "scripts/kernel-validation-floor --repo /Users/enzo/projects/linux-a733 passed the basic diff/pinmux floor."
+  ],
+  "decision": "The cleaned candidate now has a named local review marker branch. This is not a sendable regenerated series yet because H119 still requires a clean-base regeneration/folded patch stack.",
+  "next_action": "Regenerate the actual review series from this marker after selecting the intended clean base and folding fixup b1f20d455a60 into the DTS commits."
+}
