@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T11:10:00Z",
+  "updated_utc": "2026-06-11T11:30:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H063 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, model-suggested IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, and BSP SDMMC0 DT property parsing. The remaining blocker still requires a maintainer/list reply or source-backed SDMMC0 master/firewall/security bit.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H064 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, model-suggested IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, and BSP IRQ wait-dma finalize logic. The remaining blocker still requires a maintainer/list reply or source-backed SDMMC0 master/firewall/security bit.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,31 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H063",
+    "id": "A733-SDMMC-H064",
     "status": "completed_no_patch",
-    "title": "BSP SDMMC0 DT property parse audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h063-dt-property-parse-audit-20260611T1110Z.json",
-    "result": "No active untested vendor SDMMC0 DT property changes normal IDMAC descriptor memory access. No patch."
+    "title": "BSP IRQ wait-dma finalize audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h064-irq-waitdma-audit-20260611T1130Z.json",
+    "result": "BSP/local relevant IRQ/finalize wait_dma logic matches. No patch."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H064",
+      "priority": 63,
+      "status": "completed_no_patch",
+      "title": "BSP IRQ wait-dma finalize audit",
+      "question": "Does BSP IRQ/finalize wait_dma logic differ from local in a way that changes the A733 normal-IDMAC descriptor-fetch failure?",
+      "test_cost": "low; source audit only",
+      "procedure": [
+        "Compare BSP IRQ logic for IDST receive interrupt, int_sum, wait_dma, and finalize conditions against local diagnostic branch.",
+        "Promote a patch only if local finalizes early or ignores an IDMAC signal BSP waits for."
+      ],
+      "pass_criteria": "A missing wait/finalize condition is found that could affect the failing proof.",
+      "fail_criteria": "BSP and local relevant IRQ/finalize conditions match.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h064-irq-waitdma-audit-20260611T1130Z.json",
+        "summary": "BSP/local both clear wait_dma on IDMAC receive interrupt, accumulate MISTA into int_sum, finalize on error, or finalize on done only when wait_dma is false. No patch."
+      }
+    },
     {
       "id": "A733-SDMMC-H063",
       "priority": 62,

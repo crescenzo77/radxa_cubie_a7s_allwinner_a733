@@ -1,0 +1,19 @@
+{
+  "id": "A733-SDMMC-H064",
+  "status": "completed_no_patch",
+  "title": "BSP IRQ wait-dma finalize audit",
+  "timestamp_utc": "2026-06-11T11:30:00Z",
+  "scope": [
+    "Strix BSP source: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "Strix diagnostic source: /srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "observations": [
+    "BSP clears wait_dma when IDST has SDXC_IDMAC_RECEIVE_INTERRUPT.",
+    "Local diagnostic code clears wait_dma on the same IDMAC receive interrupt.",
+    "Both paths accumulate MISTA into int_sum, finalize on error, and finalize on done only when wait_dma is false.",
+    "No local early-finalize or missed BSP IDMAC signal was found."
+  ],
+  "decision": "no_behavior_patch",
+  "reason": "IRQ/finalize gating matches for the normal IDMAC read path and does not explain the first-descriptor-fetch stall.",
+  "next": "Do not retest IRQ wait_dma policy without new evidence that the controller reaches a later interrupt phase."
+}
