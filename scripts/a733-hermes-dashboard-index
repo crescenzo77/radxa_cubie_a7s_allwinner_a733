@@ -24,26 +24,29 @@ import urllib.request
 repo, outdir, json_path, md_path, html_path, state_path, telegram_env, report_url, script_path = sys.argv[1:]
 repo = pathlib.Path(repo)
 outdir = pathlib.Path(outdir)
-base_url = "http://192.168.50.225:9181/hermes-hourly"
+kernel_reports_dir = outdir.parent
+hourly_url = "http://192.168.50.225:9181/hermes-hourly"
+source_diff_url = "http://192.168.50.225:9181/hermes-source-diff"
 stale_after_seconds = 75 * 60
 
 reports = [
-    ("safety_audit", "Hermes safety audit", "a733-hermes-safety-audit-latest"),
-    ("blocker_brief", "Patch blocker brief", "a733-patch-blocker-brief-latest"),
-    ("workflow_status", "Workflow status", "a733-workflow-status-latest"),
-    ("public_patch_readiness", "Public patch readiness", "a733-public-patch-readiness-latest"),
-    ("repo_drift", "Repo drift", "a733-repo-drift-latest"),
-    ("repo_sync_approval", "Repo sync approval brief", "a733-repo-sync-approval-brief-latest"),
-    ("h149_approval", "H149 approval brief", "a733-h149-approval-brief-latest"),
-    ("model_health", "Model endpoint health", "a733-model-health-latest"),
-    ("public_source", "Public source monitor", "a733-public-source-latest"),
+    ("safety_audit", "Hermes safety audit", outdir, hourly_url, "a733-hermes-safety-audit-latest"),
+    ("blocker_brief", "Patch blocker brief", outdir, hourly_url, "a733-patch-blocker-brief-latest"),
+    ("workflow_status", "Workflow status", outdir, hourly_url, "a733-workflow-status-latest"),
+    ("public_patch_readiness", "Public patch readiness", outdir, hourly_url, "a733-public-patch-readiness-latest"),
+    ("repo_drift", "Repo drift", outdir, hourly_url, "a733-repo-drift-latest"),
+    ("repo_sync_approval", "Repo sync approval brief", outdir, hourly_url, "a733-repo-sync-approval-brief-latest"),
+    ("h149_approval", "H149 approval brief", outdir, hourly_url, "a733-h149-approval-brief-latest"),
+    ("model_health", "Model endpoint health", outdir, hourly_url, "a733-model-health-latest"),
+    ("public_source", "Public source monitor", outdir, hourly_url, "a733-public-source-latest"),
+    ("radxa_provenance", "Radxa provenance audit", kernel_reports_dir / "hermes-source-diff", source_diff_url, "a733-radxa-provenance-audit-latest"),
 ]
 
 now_dt = dt.datetime.now(dt.timezone.utc)
 now = now_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-def load_json(stem):
-    path = outdir / f"{stem}.json"
+def load_json(report_dir, stem):
+    path = report_dir / f"{stem}.json"
     if not path.exists():
         return {}, "missing"
     try:
@@ -121,23 +124,24 @@ def age_text(path):
     return f"{minutes // 60}h{minutes % 60:02d}m"
 
 rows = []
-for key, title, stem in reports:
-    data, state = load_json(stem)
-    md_file = outdir / f"{stem}.md"
-    html_file = outdir / f"{stem}.html"
+for key, title, report_dir, url_base, stem in reports:
+    data, state = load_json(report_dir, stem)
+    md_file = report_dir / f"{stem}.md"
+    html_file = report_dir / f"{stem}.html"
     age_s = age_seconds(md_file)
     rows.append({
         "key": key,
         "title": title,
+        "report_dir": str(report_dir),
         "stem": stem,
         "state": state,
         "generated_at": data.get("generated_at", "unknown"),
         "age": age_text(md_file),
         "age_seconds": age_s,
         "stale": age_s is None or age_s > stale_after_seconds,
-        "md_url": f"{base_url}/{stem}.md",
-        "html_url": f"{base_url}/{stem}.html",
-        "json_url": f"{base_url}/{stem}.json",
+        "md_url": f"{url_base}/{stem}.md",
+        "html_url": f"{url_base}/{stem}.html",
+        "json_url": f"{url_base}/{stem}.json",
         "data": data,
     })
 
@@ -180,7 +184,7 @@ next_safe_actions = [
 doc = {
     "generated_at": now,
     "dashboard_status": dashboard_status,
-    "base_url": base_url,
+    "base_url": hourly_url,
     "queue_head": queue_head,
     "blockers": blockers,
     "model_failures": model_failures,

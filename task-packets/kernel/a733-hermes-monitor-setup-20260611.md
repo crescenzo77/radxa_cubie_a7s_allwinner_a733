@@ -92,6 +92,9 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
 - The dashboard records provenance for the ThinkCentre homelab checkout and the
   deployed dashboard script: repo path, repo HEAD, dirty-count summary, script
   path, and script SHA-256. Full repo status remains in the JSON report.
+- The dashboard indexes both hourly reports and the source-diff Radxa
+  provenance report, so the public/Radxa source evidence is visible from the
+  same landing page.
 - The safety audit validates the Hermes cron surface against the current
   monitor-only allowlist. Its first clean run saw all approved jobs and no
   unexpected live hardware/runtime jobs.
