@@ -1,0 +1,43 @@
+{
+  "id": "A733-SDMMC-H078",
+  "created_utc": "2026-06-11T17:25:00Z",
+  "title": "Public U-Boot A733 MMC clock/reset/transfer audit",
+  "status": "completed_no_behavior_patch",
+  "sources": {
+    "uboot_tree": "/srv/projects/references/u-boot-a733",
+    "uboot_commit": "165f07a69706b92ff1200268664dddcbe0d04047",
+    "linux_diag_tree": "/srv/projects/a733-diag-rtc-extosc-orphan"
+  },
+  "commands": [
+    "rg -n \"MACH_SUN60I_A733|SUN60I_A733|RST_BUS_MMC0|CLK_BUS_MMC0|CLK_MMC0|0xd0c|0xd00\" /srv/projects/references/u-boot-a733",
+    "sed -n '260,470p' /srv/projects/references/u-boot-a733/drivers/mmc/sunxi_mmc.c",
+    "sed -n '668,746p' /srv/projects/references/u-boot-a733/drivers/mmc/sunxi_mmc.c",
+    "sed -n '220,360p' /srv/projects/references/u-boot-a733/arch/arm/dts/sun60i-a733.dtsi",
+    "sed -n '1,120p' /srv/projects/references/u-boot-a733/include/dt-bindings/reset/sun60i-a733-ccu.h",
+    "sed -n '2180,2225p' /srv/projects/a733-diag-rtc-extosc-orphan/drivers/clk/sunxi-ng/ccu-sun60i-a733.c"
+  ],
+  "findings": [
+    {
+      "topic": "U-Boot transfer engine",
+      "evidence": "drivers/mmc/sunxi_mmc.c routes data transfers through mmc_trans_data_by_cpu(), sets SUNXI_MMC_GCTRL_ACCESS_BY_AHB, and reads/writes the FIFO directly.",
+      "interpretation": "U-Boot SD-card reads do not prove SMHC0 internal IDMAC descriptor fetch works."
+    },
+    {
+      "topic": "U-Boot A733 MMC clock programming",
+      "evidence": "For CONFIG_MACH_SUN60I_A733, U-Boot uses MMC module clock offset 0xd00 plus 0x10 per host and divides the reported PLL6/PERIPH0 parent by 3.",
+      "interpretation": "This matches the known A733 SMHC0 clock-register family and does not expose a missing IDMAC-only register."
+    },
+    {
+      "topic": "Reset binding namespace drift",
+      "evidence": "U-Boot names RST_BUS_MMC0 as reset cell 19; the Linux RFC names RST_BUS_MMC0 as reset cell 36. U-Boot's clk_a733.c maps RST_BUS_MMC0 to CCU offset 0x0d0c bit 16; Linux ccu-sun60i-a733.c maps its RST_BUS_MMC0 to offset 0xd0c bit 16.",
+      "interpretation": "The numeric reset-cell mismatch is binding namespace drift, not a physical register delta. H075 already tested the current Linux symbolic reset and still hit the descriptor-read stall."
+    },
+    {
+      "topic": "A733 DTS comparison",
+      "evidence": "U-Boot DTS uses compatible allwinner,sun60i-a733-mmc, allwinner,sun20i-d1-mmc with clocks ahb/mmc, reset ahb, max-frequency 150 MHz, and the same SMHC0 base 0x04020000.",
+      "interpretation": "No DTS property in public U-Boot explains an IDMAC-only Linux failure."
+    }
+  ],
+  "conclusion": "No behavior patch. Public U-Boot confirms a PIO/AHB data path and does not exercise IDMAC. Its clock/reset mappings do not reveal a physical delta beyond already-tested reset cleanup.",
+  "next_action": "Keep the active blocker focused on missing secure/fabric/handoff detail or maintainer/vendor response. Do not repeat U-Boot-derived reset-cell tests without new evidence."
+}
