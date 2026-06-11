@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T17:25:00Z",
+  "updated_utc": "2026-06-11T17:45:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H077 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, BSP IRQ wait-dma finalize logic, public A733 U-Boot/SPL handoff source audit, BOOT0/BL31 provenance/package audit, existing register/UART artifact audit, four-route model speculation/access-control source cross-check, public archive monitoring, public datasheet SPC/TZMA audit, A733 user manual SMHC/MBUS register audit, vendor runtime CCU/SMHC0 register reads, current-binding MMC0 reset-cell test, BSP Andes DMA adapter applicability, and A733 user manual SPC/TZMA deep audit. The remaining blocker still requires a maintainer/list/vendor reply or source-backed secure-world/SPC handoff detail that explains why SMHC0 IDMAC cannot fetch descriptors.",
   "operator_model": {
@@ -1312,7 +1312,7 @@
     {
       "id": "A733-SDMMC-H030",
       "priority": 1,
-      "status": "prepared_not_sent",
+      "status": "superseded_by_h032_sent_plain_text",
       "title": "Route descriptor-fetch question and track answers",
       "question": "Can maintainer, Radxa, or Allwinner feedback identify the missing A733/SUN60IW2 SDMMC0 descriptor-fetch precondition for a single next runtime proof?",
       "test_cost": "low; coordination only unless a concrete answer arrives",
@@ -1330,7 +1330,7 @@
       "result": {
         "routing_tracker": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h030-routing-tracker-20260610T2021Z.json",
         "public_email_draft": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h030-public-email-draft-20260610T2021Z.txt",
-        "summary": "Prepared public-clean routing artifacts. Recommended first route is Ulf Hansson, sunxi maintainers, linux-mmc, linux-arm-kernel, linux-sunxi, and linux-kernel. DT maintainers/lists are intentionally not included in the first route because this is a runtime IDMAC question, not a binding submission. Not sent pending explicit user approval and confirmed mail transport."
+        "summary": "Prepared public-clean routing artifacts. Superseded by H032 after the user manually sent the question from Gmail in plain text mode. Do not treat H030 as an unsent blocker."
       }
     },
     {
@@ -1360,7 +1360,7 @@
     {
       "id": "A733-SDMMC-H032",
       "priority": 1,
-      "status": "sent_by_user_plain_text",
+      "status": "sent_by_user_plain_text_awaiting_response",
       "title": "Approve and send descriptor-fetch question",
       "question": "Which approved From identity and route should be used to send the public-clean A733 SDMMC0 descriptor-fetch question?",
       "test_cost": "low; external coordination only",
@@ -1382,7 +1382,7 @@
       "guarded_send_helper_preflight": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h032-guarded-send-helper-20260610T2033Z.json",
       "current_upstream_recheck": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h032-current-upstream-recheck-20260610T2037Z.json",
       "guarded_send_helper_selftest": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h032-guarded-send-helper-selftest-20260610T2039Z.json",
-      "result": "User sent the descriptor-fetch question manually from Gmail in plain text mode after HTML bounces from linux-arm-kernel, linux-mmc, and linux-kernel. The sent subject accidentally omitted the final 'd' in 'read'; do not resend only for that typo."
+      "result": "User sent the descriptor-fetch question manually from Gmail in plain text mode after HTML bounces from linux-arm-kernel, linux-mmc, and linux-kernel. The sent subject accidentally omitted the final 'd' in 'read'; do not resend only for that typo. As of H079, no local queue artifact records a concrete maintainer/list reply naming a register, reset/clock order, firmware handoff, master ID, binding, or erratum."
     },
     {
       "id": "A733-SDMMC-H033",
@@ -1794,6 +1794,26 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h078-public-uboot-mmc-audit-20260611T1725Z.json",
         "summary": "Completed with no behavior patch. Public A733 U-Boot uses mmc_trans_data_by_cpu() and sets SUNXI_MMC_GCTRL_ACCESS_BY_AHB for data, so it does not exercise SMHC0 IDMAC descriptor fetch. Its A733 MMC0 gate/reset symbols map to CCU offset 0x0d0c bit 0/16, matching the Linux physical register mapping despite different reset namespace numbering. No new Linux runtime patch is justified."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H079",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "Descriptor-fetch email routing queue cleanup",
+      "question": "Does the hypothesis queue accurately represent that the public descriptor-fetch question was sent and is awaiting response?",
+      "test_cost": "low; documentation only",
+      "procedure": [
+        "Do not build or rewrite kernel patches for H079.",
+        "Mark H030 as superseded by H032 rather than prepared_not_sent.",
+        "Mark H032 as sent_by_user_plain_text_awaiting_response.",
+        "Keep the next-runtime-proof rule: only queue a new behavior test if a response names one concrete register, reset/clock order, firmware handoff, master ID, binding, or erratum."
+      ],
+      "pass_criteria": "A future session does not re-derive or re-ask the already-sent email route.",
+      "fail_criteria": "The queue still implies the descriptor-fetch question was never sent.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h079-email-route-queue-cleanup-20260611T1745Z.json",
+        "summary": "Completed with no behavior patch. H030 is now superseded by H032, and H032 is tracked as sent by user in plain text mode while awaiting any concrete technical reply."
       }
     }
   ]
