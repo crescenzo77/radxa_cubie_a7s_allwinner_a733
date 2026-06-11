@@ -1,0 +1,20 @@
+{
+  "id": "A733-SDMMC-H056",
+  "status": "completed_no_patch",
+  "title": "BSP data/DMA/command launch ordering audit",
+  "timestamp_utc": "2026-06-11T08:45:00Z",
+  "scope": [
+    "Strix BSP source: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "Strix diagnostic source: /srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "observations": [
+    "The BSP data path writes REG_BLKSZ and REG_BCNTR before calling sunxi_mmc_start_dma().",
+    "The BSP start_dma path initializes descriptors, resets FIFO/DMAIF/DMAC, enables GCTRL DMA, sets IDIE for reads, and enables IDMAC.",
+    "The BSP then programs REG_IMASK and REG_CARG, executes wmb(), and writes REG_CMDR.",
+    "The local diagnostic branch follows the same ordering: BLKSZ/BCNTR, IDMAC setup/start, IMASK/CARG, wmb(), CMDR.",
+    "The local branch also dumps descriptors immediately before CMDR, so the failure evidence is collected after the launch-order barrier."
+  ],
+  "decision": "no_behavior_patch",
+  "reason": "No BSP command-launch ordering delta is missing locally. The failure remains an IDMAC descriptor-fetch stall after the expected launch sequence.",
+  "next": "Do not retest command/DMA launch ordering without new evidence for a different A733-specific ordering rule."
+}
