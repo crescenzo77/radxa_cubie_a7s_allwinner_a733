@@ -1832,7 +1832,7 @@
       "fail_criteria": "A future session sends or reviews the export without noticing known vendor DTS pollution.",
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h080-public-export-readiness-audit-20260611T1805Z.json",
-        "summary": "Completed without rewriting patches. The public 4-patch export still contains vendor-style allwinner,pinmux in patches 0003 and 0004; those properties must be dropped before any upstream submission. The export also keeps an MMC compatible binding patch separate, which may need folding depending on the final dependency posture."
+        "summary": "Completed without rewriting patches. Original note flagged allwinner,pinmux in patches 0003 and 0004 for removal, but H098/H103 supersedes that: the current A733 DT-derived pinctrl prerequisite requires allwinner,pinmux, so it must stay while that shape is used. The export also keeps an MMC compatible binding patch separate, which may need folding depending on the final dependency posture."
       }
     },
     {
@@ -2204,6 +2204,25 @@
       "result": {
         "result_file": "/tmp/a733-v6-export",
         "summary": "Export dry run succeeded: 0000 cover plus 11 patches, all non-cover patches have Signed-off-by, and cover letter includes base-commit 6f3ed7fec72f. This is not send-ready: cover letter still has placeholders, b4 is not installed on Mac/Strix, and v6 still includes local CCU/pinctrl scaffolding despite in-flight external A733 CCU/pinctrl RFC guardrails. Treat v6 as a validated local review branch, not a mailing-list submission."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H103",
+      "priority": 1,
+      "status": "completed_documentation_correction",
+      "title": "Correct stale pinmux removal guidance",
+      "question": "Do the status docs still tell future sessions to remove allwinner,pinmux after H098 proved it is required?",
+      "test_cost": "low; documentation audit only",
+      "procedure": [
+        "Search status/consolidation/queue text for stale allwinner,pinmux removal guidance.",
+        "Update current blocker and H080 interpretation without rewriting historical H097/H098 evidence.",
+        "Leave patches untouched."
+      ],
+      "pass_criteria": "Current guidance says allwinner,pinmux must stay while using the current DT-derived A733 pinctrl prerequisite shape.",
+      "fail_criteria": "A future session would still read a current blocker saying to drop allwinner,pinmux before submission.",
+      "result": {
+        "result_file": null,
+        "summary": "Corrected stale status/consolidation guidance. H080's original pinmux-removal note is now explicitly superseded by H098: the current A733 DT-derived pinctrl driver and binding require allwinner,pinmux, so the 4-patch maintainer snapshot should keep it while depending on that prerequisite shape. No patch files changed."
       }
     }
   ],
