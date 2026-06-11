@@ -1,0 +1,23 @@
+{
+  "id": "A733-SDMMC-H067",
+  "status": "completed_no_patch",
+  "title": "Public U-Boot A733 MMC/SPL handoff audit",
+  "updated_utc": "2026-06-11T12:30:00Z",
+  "question": "Does the local public A733 U-Boot/SPL reference reveal a source-backed SDMMC0 handoff, fabric, firewall, or IDMAC setup bit missing from Linux?",
+  "sources": [
+    {
+      "path": "/srv/projects/references/u-boot-a733",
+      "commit": "165f07a69706b92ff1200268664dddcbe0d04047",
+      "subject": "config: a733: add initial support for Cubie A7A"
+    }
+  ],
+  "findings": [
+    "The A733 U-Boot reference tree exists locally on Strix and is a public branch from https://github.com/dlan17/u-boot.git.",
+    "drivers/mmc/sunxi_mmc.c adds A733 clock math: PERIPH-derived MMC parent rate divided by 3, second-divider encoding, and A733 module-clock register offset 0xd00 with 0x10 stride.",
+    "The U-Boot sunxi MMC transfer path uses CPU/FIFO PIO and sets SUNXI_MMC_GCTRL_ACCESS_BY_AHB before data transfer; it does not exercise normal descriptor IDMAC fetch.",
+    "The visible A733 DT and U-Boot code do not name an SDMMC0 NSI/IOMMU/firewall/security master handoff bit.",
+    "A733 U-Boot board DTS contains vendor-style allwinner,pinmux properties and extra peripherals, but these are not upstream Linux DTS inputs and do not explain IDMAC descriptor memory access."
+  ],
+  "decision": "No kernel patch. Public U-Boot corroborates clock/register placement and PIO viability, but provides no source-backed Linux normal-IDMAC descriptor-fetch fix.",
+  "next_responsible_step": "Keep waiting for maintainer/list/vendor reply or continue only with source-backed SDMMC0 master/firewall/security evidence; do not promote speculative DTS or Ethernet/display/USB work."
+}
