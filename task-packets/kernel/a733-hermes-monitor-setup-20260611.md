@@ -89,6 +89,9 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
 - The dashboard keeps a local state file and sends a Telegram notification only
   when `dashboard_status`, `report_findings`, or scheduler safety status
   changes after a prior state exists. Clean repeat runs do not spam Telegram.
+- The dashboard records provenance for the ThinkCentre homelab checkout and the
+  deployed dashboard script: repo path, repo HEAD, dirty-count summary, script
+  path, and script SHA-256. Full repo status remains in the JSON report.
 - The safety audit validates the Hermes cron surface against the current
   monitor-only allowlist. Its first clean run saw all approved jobs and no
   unexpected live hardware/runtime jobs.

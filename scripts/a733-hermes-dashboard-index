@@ -11,15 +11,18 @@ telegram_env=${A733_TELEGRAM_ENV:-/etc/telegram-tasks-bot/bot.env}
 report_url=${A733_DASHBOARD_REPORT_URL:-http://192.168.50.225:9181/hermes-hourly/a733-dashboard-index-latest.html}
 mkdir -p "$outdir"
 
-python3 - "$outdir" "$json" "$md" "$html" "$state" "$telegram_env" "$report_url" <<'PY'
+python3 - "$repo" "$outdir" "$json" "$md" "$html" "$state" "$telegram_env" "$report_url" "$0" <<'PY'
 import datetime as dt
+import hashlib
 import html
 import json
 import pathlib
+import subprocess
 import sys
 import urllib.request
 
-outdir, json_path, md_path, html_path, state_path, telegram_env, report_url = sys.argv[1:]
+repo, outdir, json_path, md_path, html_path, state_path, telegram_env, report_url, script_path = sys.argv[1:]
+repo = pathlib.Path(repo)
 outdir = pathlib.Path(outdir)
 base_url = "http://192.168.50.225:9181/hermes-hourly"
 stale_after_seconds = 75 * 60
@@ -47,6 +50,32 @@ def load_json(stem):
         return json.loads(path.read_text(encoding="utf-8")), "ok"
     except Exception as exc:
         return {"load_error": str(exc)}, "error"
+
+def run(cmd, cwd=None):
+    try:
+        proc = subprocess.run(cmd, cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=10)
+        return proc.stdout.strip()
+    except Exception as exc:
+        return f"error: {exc}"
+
+def sha256(path):
+    p = pathlib.Path(path)
+    if not p.exists():
+        return "missing"
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+def summarize_status(status_text):
+    lines = [line for line in status_text.splitlines() if line.strip()]
+    branch = lines[0] if lines else "unknown"
+    modified = sum(1 for line in lines[1:] if line.startswith(" M") or line.startswith("M "))
+    untracked = sum(1 for line in lines[1:] if line.startswith("??"))
+    other = max(0, len(lines) - 1 - modified - untracked)
+    return {
+        "branch": branch,
+        "modified": modified,
+        "untracked": untracked,
+        "other": other,
+    }
 
 def read_env(path):
     env = {}
@@ -132,6 +161,15 @@ for row in rows:
 if safety_status != "ok":
     report_findings.append(f"Hermes safety audit status is {safety_status}")
 dashboard_status = "ok" if not report_findings else "attention"
+repo_status = run(["git", "status", "--short", "--branch"], cwd=repo)
+provenance = {
+    "repo": str(repo),
+    "repo_head": run(["git", "rev-parse", "--short=12", "HEAD"], cwd=repo),
+    "repo_status": repo_status,
+    "repo_status_summary": summarize_status(repo_status),
+    "script_path": script_path,
+    "script_sha256": sha256(script_path),
+}
 
 next_safe_actions = [
     "Keep Hermes monitor-only until the operator approves a repo sync path or H149 live hardware work.",
@@ -149,6 +187,7 @@ doc = {
     "safety_status": safety_status,
     "report_findings": report_findings,
     "stale_after_seconds": stale_after_seconds,
+    "provenance": provenance,
     "next_safe_actions": next_safe_actions,
     "workflow_queue_head": workflow_data.get("queue_head"),
     "reports": [{k: v for k, v in r.items() if k != "data"} for r in rows],
@@ -183,6 +222,17 @@ lines += [f"- {f}" for f in report_findings] or [f"- all reports fresh within `{
 lines += ["", "## Next Safe Actions", ""]
 lines += [f"- {a}" for a in next_safe_actions]
 lines += ["", "## Hermes Safety", "", f"- Scheduler audit status: `{safety_status}`"]
+lines += [
+    "",
+    "## Provenance",
+    "",
+    f"- Homelab repo: `{provenance['repo']}`",
+    f"- Homelab repo HEAD: `{provenance['repo_head']}`",
+    f"- Dashboard script: `{provenance['script_path']}`",
+    f"- Dashboard script SHA-256: `{provenance['script_sha256']}`",
+    f"- Repo branch: `{provenance['repo_status_summary']['branch']}`",
+    f"- Repo dirty counts: modified `{provenance['repo_status_summary']['modified']}`, untracked `{provenance['repo_status_summary']['untracked']}`, other `{provenance['repo_status_summary']['other']}`",
+]
 lines += ["", "## Model Endpoint Failures", ""]
 lines += [f"- `{m}`" for m in model_failures] or ["- none reported"]
 lines += ["", "## Reports", ""]
