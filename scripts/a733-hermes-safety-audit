@@ -21,7 +21,6 @@ import sys
 json_path, md_path, html_path, cron_output = sys.argv[1:]
 
 allowed = {
-    "A733 source-diff heartbeat": "a733-source-diff-heartbeat.sh",
     "A733 workflow status monitor": "a733-workflow-status-monitor.sh",
     "A733 public-source monitor": "a733-public-source-monitor.sh",
     "A733 model endpoint health": "a733-model-health-monitor.sh",

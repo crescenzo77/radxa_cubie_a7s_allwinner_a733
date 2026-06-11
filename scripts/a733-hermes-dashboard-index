@@ -149,6 +149,7 @@ blocker_data = next((r["data"] for r in rows if r["key"] == "blocker_brief"), {}
 workflow_data = next((r["data"] for r in rows if r["key"] == "workflow_status"), {})
 health_data = next((r["data"] for r in rows if r["key"] == "model_health"), {})
 safety_data = next((r["data"] for r in rows if r["key"] == "safety_audit"), {})
+radxa_data = next((r["data"] for r in rows if r["key"] == "radxa_provenance"), {})
 
 blockers = blocker_data.get("blockers") or []
 queue_head = blocker_data.get("queue_head") or {}
@@ -156,6 +157,11 @@ model_failures = blocker_data.get("model_failures") or []
 if not model_failures:
     model_failures = [c.get("name", "unknown") for c in health_data.get("checks", []) if not c.get("ok")]
 safety_status = safety_data.get("status", "unknown")
+radxa_kernel_source = {
+    "found_exact_radxa_kernel_source": radxa_data.get("found_exact_radxa_kernel_source"),
+    "question": radxa_data.get("question", "unknown"),
+    "recommendation": radxa_data.get("recommendation", "unknown"),
+}
 report_findings = []
 for row in rows:
     if row["state"] != "ok":
@@ -189,6 +195,7 @@ doc = {
     "blockers": blockers,
     "model_failures": model_failures,
     "safety_status": safety_status,
+    "radxa_kernel_source": radxa_kernel_source,
     "report_findings": report_findings,
     "stale_after_seconds": stale_after_seconds,
     "provenance": provenance,
@@ -226,6 +233,13 @@ lines += [f"- {f}" for f in report_findings] or [f"- all reports fresh within `{
 lines += ["", "## Next Safe Actions", ""]
 lines += [f"- {a}" for a in next_safe_actions]
 lines += ["", "## Hermes Safety", "", f"- Scheduler audit status: `{safety_status}`"]
+lines += [
+    "",
+    "## Radxa Kernel Source",
+    "",
+    f"- Exact Radxa `5.15.147-21-a733` source proven: `{radxa_kernel_source['found_exact_radxa_kernel_source']}`",
+    f"- Recommendation: {radxa_kernel_source['recommendation']}",
+]
 lines += [
     "",
     "## Provenance",

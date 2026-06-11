@@ -17,7 +17,6 @@ Live ThinkCentre Hermes jobs after setup:
 
 | Job | ID | Cadence | Mode | Purpose |
 |---|---|---:|---|---|
-| A733 source-diff heartbeat | `56633ee4233b` | `*/20 * * * *` | `no-agent` | Checks whether a source-diff audit is active or stalled. Now treats no active audit as idle, not a fault. |
 | A733 workflow status monitor | `069906e27192` | `17 * * * *` | `no-agent` | Reports queue head, maintainer blockers, dispatcher waiting actions, git status, and token-offload status. |
 | A733 public-source monitor | `10dddfb0ab2b` | `23 * * * *` | `no-agent` | Searches local SearXNG for A733/Radxa/SDMMC0 public-source changes and records URLs/timestamps. |
 | A733 model endpoint health | `cdab23637c7c` | `*/15 * * * *` | `no-agent` | Checks gateway and model endpoint availability through read-only `/health` and `/v1/models` requests. No inference is sent. |
@@ -25,8 +24,25 @@ Live ThinkCentre Hermes jobs after setup:
 | A733 patch blocker brief | `c4333a70d47c` | `39 * * * *` | `no-agent` | Converts readiness/model/queue findings into a human approval brief. It does not authorize or perform the action. |
 | A733 repo drift monitor | `46c0255f59a9` | `41 * * * *` | `no-agent` | Compares the ThinkCentre public clone against the Mac-recorded expected public head. It reports drift only; it does not sync repos. |
 | A733 repo sync approval brief | `9636aa1980e7` | `43 * * * *` | `no-agent` | Turns repo drift into explicit human choices. The default recommendation is monitor-only; sync/pull/push/reset still require approval. |
-| A733 dashboard index | `c1ac3adc75dc` | `*/10 * * * *` | `no-agent` | Builds a read-only landing page with queue head, blockers, model failures, report freshness, and links to all current A733 Hermes reports. |
-| A733 Hermes safety audit | `30edac32a8e5` | `*/10 * * * *` | `no-agent` | Checks active Hermes cron jobs against the approved monitor-only allowlist and reports unexpected hardware/runtime jobs. |
+| A733 dashboard index | `c1ac3adc75dc` | `*/30 * * * *` | `no-agent` | Builds a read-only landing page with queue head, blockers, model failures, report freshness, and links to all current A733 Hermes reports. |
+| A733 Hermes safety audit | `30edac32a8e5` | `*/30 * * * *` | `no-agent` | Checks active Hermes cron jobs against the approved monitor-only allowlist and reports unexpected hardware/runtime jobs. |
+
+Paused after cleanup review:
+
+| Job | ID | Former Cadence | Reason |
+|---|---|---:|---|
+| A733 source-diff heartbeat | `56633ee4233b` | `*/20 * * * *` | No active source-diff audit is running; this added scheduler noise without moving the kernel work forward. |
+
+Quarantined deployed Hermes scripts:
+
+```text
+/home/enzo/.hermes/scripts.disabled/a733-cleanup-20260611/a733-breakthrough-watch.sh
+/home/enzo/.hermes/scripts.disabled/a733-cleanup-20260611/a733-cubie3-discovery-keeper.sh
+/home/enzo/.hermes/scripts.disabled/a733-cleanup-20260611/a733-heartbeat-cubie2.sh
+/home/enzo/.hermes/scripts.disabled/a733-cleanup-20260611/a733-heartbeat-cubie3.sh
+/home/enzo/.hermes/scripts.disabled/a733-cleanup-20260611/a733-hermes-cubie2-lead-supervisor.sh
+/home/enzo/.hermes/scripts.disabled/a733-cleanup-20260611/a733-hermes-hourly-supervisor.sh
+```
 
 ## Report URLs
 
@@ -46,9 +62,12 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
 
 ## Latest Observations
 
-- The broken heartbeat wrapper was fixed. Hermes runs `.sh` files through
-  `bash`, so the live wrapper now calls the Python heartbeat with `python3`.
-- The source-diff heartbeat last recorded `ok`.
+- Cleanup review on 2026-06-11: the source-diff heartbeat was paused and
+  removed from the safety audit required-job allowlist. It was reasonable while
+  an audit was active, but unreasonable as a permanent no-op heartbeat.
+- Cleanup review on 2026-06-11: dashboard and safety audit cadence was reduced
+  from every 10 minutes to every 30 minutes. Ten minutes was unnecessarily
+  noisy for read-only status pages with a 75-minute stale threshold.
 - The workflow status report sees queue head `A733-SDMMC-H149`, status
   `queued_unattended_runtime`; this is not approval to run it.
 - The Radxa provenance audit did not prove an exact Radxa
@@ -95,9 +114,12 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
 - The dashboard indexes both hourly reports and the source-diff Radxa
   provenance report, so the public/Radxa source evidence is visible from the
   same landing page.
+- The dashboard surfaces the headline Radxa provenance result directly: exact
+  Radxa `5.15.147-21-a733` kernel source remains unproven, so Orange Pi 6.6
+  must stay labeled as a secondary BSP reference.
 - The safety audit validates the Hermes cron surface against the current
-  monitor-only allowlist. Its first clean run saw all approved jobs and no
-  unexpected live hardware/runtime jobs.
+  monitor-only allowlist. After cleanup, the intended active state is nine
+  jobs, all no-agent and all read-only.
 - The workflow status monitor now treats missing optional helper scripts on
   ThinkCentre as host capability gaps instead of reporting shell errors as if
   they were maintainer blockers.
@@ -165,3 +187,44 @@ Hermes must continue reporting these as blockers. It must not resolve them by
 syncing repos, regenerating patches, promoting branches, sending mail, or
 running H149 unless the operator gives explicit approval for that specific
 action.
+
+## Enhancement Review
+
+Keep:
+
+- Dashboard index: worth keeping as the single landing page.
+- Patch blocker brief and public patch readiness: worth keeping because they
+  protect against accidental send/regenerate work.
+- Repo drift and repo sync approval brief: worth keeping because Mac and
+  ThinkCentre public states differ.
+- Safety audit: worth keeping because it catches accidental live hardware jobs.
+- Dashboard freshness/status alerts: worth keeping, but only on state changes.
+
+Questionable but acceptable:
+
+- Public-source monitor: low-cost, but only useful if it finds new public
+  A733/Radxa/SDMMC information. Keep for now; retire if it stays uninformative.
+- Model endpoint health: useful because local-model routing was part of the
+  workflow, but it should remain read-only and non-inference.
+
+Removed from active schedule:
+
+- Source-diff heartbeat: useful only during an active source-diff audit. It is
+  paused now.
+
+Deleted from the tracked helper set and quarantined from active Hermes scripts:
+
+- `a733-breakthrough-watch`
+- `a733-cubie3-discovery-keeper`
+- `a733-heartbeat-watch`
+- `a733-hermes-cubie2-lead-supervisor`
+- `a733-hermes-hourly-supervisor`
+
+These were too close to unattended hardware orchestration for the current
+monitor-only phase. They remain recoverable from git history and the disabled
+ThinkCentre script directory if explicitly needed later.
+
+Do not add more:
+
+- No more Hermes process enhancements unless a live report is wrong, stale,
+  unsafe, or missing a specific operator decision.
