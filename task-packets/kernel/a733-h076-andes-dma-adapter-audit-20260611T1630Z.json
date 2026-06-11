@@ -1,0 +1,23 @@
+{
+  "id": "A733-SDMMC-H076",
+  "timestamp_utc": "2026-06-11T16:30:00Z",
+  "title": "BSP Andes DMA adapter applicability audit",
+  "question": "Does the Orange Pi/A733 BSP Andes DMA adapter explain why vendor SDMMC0 IDMAC can fetch descriptors while mainline cannot?",
+  "test_cost": "low; source and live config audit only, no kernel build and no board reboot",
+  "inputs": {
+    "bsp_tree": "/srv/projects/kernel-work/tmp/linux-orangepi-full",
+    "diagnostic_tree": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "cubie3_vendor_config": "CONFIG_AW_ANDES_DMA_ADAPT is not set; CONFIG_ARM64=y; CONFIG_DMA_CMA=y"
+  },
+  "observations": [
+    "The BSP has bsp/drivers/andes_adaptor/dma_ops_adapter.c, exporting aw_andes_dma_ops only when CONFIG_AW_ANDES_DMA_OPS is enabled.",
+    "The vendor Cubie3 running config reports CONFIG_AW_ANDES_DMA_ADAPT is not set.",
+    "Source search found no SDMMC0, ARM64, or platform path assigning aw_andes_dma_ops to the MMC device.",
+    "The adapter assumes a no-IOMMU contiguous-memory platform and appears unrelated to the ARM64 Cubie A7S SDMMC0 path actually under test."
+  ],
+  "decision": {
+    "status": "completed_no_behavior_patch",
+    "summary": "The Andes DMA adapter is not active in the vendor Cubie3 ARM64 kernel and is not wired to SDMMC0. It is not a credible explanation for the descriptor-fetch difference.",
+    "next_step": "Do not port or emulate aw_andes_dma_ops for A733 SDMMC0. Continue looking only for active vendor/runtime handoff or security/fabric evidence."
+  }
+}

@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T16:20:00Z",
+  "updated_utc": "2026-06-11T16:30:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H075 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, BSP IRQ wait-dma finalize logic, public A733 U-Boot/SPL handoff source audit, BOOT0/BL31 provenance/package audit, existing register/UART artifact audit, four-route model speculation/access-control source cross-check, public archive monitoring, public datasheet SPC/TZMA audit, A733 user manual SMHC/MBUS register audit, vendor runtime CCU/SMHC0 register reads, and the current-binding MMC0 reset-cell test. The remaining blocker still requires a maintainer/list/vendor reply or source-backed secure-world/CCMU/SPC handoff detail that explains why SMHC0 IDMAC cannot fetch descriptors.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H076 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, BSP IRQ wait-dma finalize logic, public A733 U-Boot/SPL handoff source audit, BOOT0/BL31 provenance/package audit, existing register/UART artifact audit, four-route model speculation/access-control source cross-check, public archive monitoring, public datasheet SPC/TZMA audit, A733 user manual SMHC/MBUS register audit, vendor runtime CCU/SMHC0 register reads, current-binding MMC0 reset-cell test, and BSP Andes DMA adapter applicability. The remaining blocker still requires a maintainer/list/vendor reply or source-backed secure-world/CCMU/SPC handoff detail that explains why SMHC0 IDMAC cannot fetch descriptors.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -1735,6 +1735,26 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h075-reset-binding-test-20260611T0155Z.json",
         "summary": "Completed with no behavior fix. The current-binding reset cell lets the kernel reach mmcblk0 and the same forced CMD18 descriptor stage, but IDST remains 0x4000, CHDA remains DLBA, CBDA remains 0, and descriptor word 0 remains unchanged after CPU sync."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H076",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "BSP Andes DMA adapter applicability audit",
+      "question": "Does the Orange Pi/A733 BSP Andes DMA adapter explain the SDMMC0 IDMAC descriptor-fetch difference?",
+      "test_cost": "low; source and live config audit only, no kernel build and no board reboot",
+      "procedure": [
+        "Inspect BSP andes_adaptor source and Kconfig.",
+        "Search for aw_andes_dma_ops users or set_dma_ops wiring.",
+        "Check the vendor Cubie3 live kernel config for AW_ANDES options.",
+        "Only promote a patch if the adapter is active in the ARM64 SDMMC0 path."
+      ],
+      "pass_criteria": "A real active DMA-ops delta is promoted or the adapter is closed as irrelevant.",
+      "fail_criteria": "A future session ports aw_andes_dma_ops to SDMMC0 despite vendor Cubie3 not enabling it.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h076-andes-dma-adapter-audit-20260611T1630Z.json",
+        "summary": "Completed with no behavior patch. Vendor Cubie3 reports CONFIG_AW_ANDES_DMA_ADAPT is not set, and source search found no SDMMC0/ARM64 path assigning aw_andes_dma_ops. The adapter is not a credible descriptor-fetch explanation."
       }
     }
   ]
