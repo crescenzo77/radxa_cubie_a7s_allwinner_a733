@@ -1,0 +1,17 @@
+{
+  "id": "A733-SDMMC-H108",
+  "title": "Boot-sector SDMMC/NSI string offset map",
+  "timestamp_utc": "2026-06-11T04:55:00Z",
+  "status": "completed_no_patch",
+  "input_capture": "/srv/projects/homelab/task-packets/kernel/boot-firmware-captures/20260611T0450Z",
+  "findings": [
+    "Cubie3 pre-partition capture contains sdmmc0_mod at 0xcb1893, 0xd23df4, 0xd23e40, and 0xd282ec.",
+    "Cubie3 contains sdmmc0_bus at 0xd23e64 and 0xd23eb0, sdmmc0_rst at 0xd23ed4 and 0xd23f20, and sdc_mbus at 0xcb8314 and 0xd2cac8.",
+    "Cubie3 contains nsi clk update failed at 0x37737 and 0x1197ff, security_state <= NON_SECURE at 0xd3c3de, and SMC clk glitch workaround in arisc at 0xd4cb10.",
+    "Representative SDMMC/MBUS/security/ARISC string bytes match between Cubie2 and Cubie3 despite whole-image hash differences.",
+    "Public u-boot-a733 source does not contain the exact A733 strings sdmmc0_mod, sdc_mbus, nsi clk update failed, security_state <= NON_SECURE, or SMC clk glitch workaround in arisc.",
+    "Nearby strings show U-Boot command/help text near 0xcb0000, Allwinner clock/devicetree-style names near 0xd23000, BL31 text near 0xd3c000, and ARISC/standby text near 0xd4c000."
+  ],
+  "decision": "No kernel patch. The map proves the captured boot sectors contain vendor-only SDMMC/MBUS/NSI/ARISC evidence, but still no SMHC, IDMAC, firewall, TZMA, or SPC string and no Linux-programmable descriptor-fetch permission bit.",
+  "next": "Only continue this path if doing binary reverse mapping around the offset clusters or obtaining matching vendor source/symbols; do not add DTS or driver changes from these strings alone."
+}

@@ -2301,6 +2301,25 @@
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h107-boot-sector-firmware-strings-20260611T0450Z.json",
         "summary": "Completed with no behavior patch. Read-only captures on Strix found real BOOT0/U-Boot/BL31/ARISC strings in the pre-partition 16 MiB from Cubie2 and Cubie3. Strings include sdmmc0_mod, sdmmc0_bus, sdmmc0_rst, sdc_mbus, nsi clk update failures, and security_state <= NON_SECURE. No SMHC, IDMAC, firewall, TZMA, or SPC string was found. This corrects H106's artifact gap but still does not expose a Linux-programmable SMHC0 IDMAC descriptor-fetch permission bit."
       }
+    },
+    {
+      "id": "A733-SDMMC-H108",
+      "priority": 1,
+      "status": "completed_no_patch",
+      "title": "Map boot-sector SDMMC/NSI string offsets",
+      "question": "Do captured boot-sector string offsets expose a concrete IDMAC handoff bit or public-source match?",
+      "test_cost": "low; binary string offset map only",
+      "procedure": [
+        "Locate offsets for SDMMC, MBUS, NSI, security-state, and ARISC strings in the Cubie3 pre-partition capture.",
+        "Check representative offsets against Cubie2 for byte equality.",
+        "Search public u-boot-a733 for exact string matches."
+      ],
+      "pass_criteria": "A concrete public-source match or handoff clue is promoted, or the string map is closed without a patch.",
+      "fail_criteria": "Future sessions infer a kernel change from generic vendor firmware strings alone.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h108-boot-sector-string-offset-map-20260611T0455Z.json",
+        "summary": "Completed with no behavior patch. SDMMC/MBUS/security/ARISC strings were mapped to offset clusters in the boot-sector capture and representative bytes match between Cubie2 and Cubie3. Public u-boot-a733 does not contain the exact A733 strings. No SMHC, IDMAC, firewall, TZMA, or SPC string was found, and no Linux-programmable descriptor-fetch permission bit surfaced."
+      }
     }
   ],
   "model_routes": [
