@@ -1254,6 +1254,25 @@
       }
     },
     {
+      "id": "A733-SDMMC-H052",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "Vendor SDMMC0 power and card-detect policy audit",
+      "question": "Does vendor SDMMC0 power, regulator, or card-detect policy identify a missing runtime precondition for normal-IDMAC descriptor fetch?",
+      "test_cost": "low; source audit only, no kernel build and no board reboot",
+      "procedure": [
+        "Inspect vendor SDMMC0 power, regulator, card-detect, card-power, and power-save properties.",
+        "Inspect BSP handling for those properties.",
+        "Compare with the local Cubie A7S DTS and runtime proofs that card init/PIO/root mount already work."
+      ],
+      "pass_criteria": "A concrete power/card-detect runtime gap is promoted or the class is closed as unrelated to descriptor-fetch reachability.",
+      "fail_criteria": "The next session adds vendor card-detect/card-power DTS pollution as an IDMAC fix without new board evidence.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h052-power-cd-policy-audit-20260611T0715Z.json",
+        "summary": "Completed with no behavior patch. Vendor SDMMC0 leaves non-removable, broken-cd, cd-gpios, vmmc/vqmc/vdmc, card-pwr-gpios, and power-save policy inactive or commented. The local DTS has an always-on 3.3V vmmc supply and SD-only constraints. Since card init, PIO reads, partition discovery, and read-only root mount already work, power/card-detect policy cannot explain the remaining pre-descriptor-fetch IDMAC stall."
+      }
+    },
+    {
       "id": "A733-SDMMC-H004",
       "priority": 4,
       "status": "do_not_repeat_without_new_evidence",

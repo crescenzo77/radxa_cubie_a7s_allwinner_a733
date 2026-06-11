@@ -1,0 +1,31 @@
+{
+  "id": "A733-SDMMC-H052",
+  "timestamp_utc": "2026-06-11T07:15:00Z",
+  "title": "Vendor SDMMC0 power and card-detect policy audit",
+  "scope": [
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/sun60iw2p1.dtsi",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.h",
+    "/srv/projects/a733-diag-rtc-extosc-orphan/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts",
+    "/srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "trigger": "Close vendor SDMMC0 power, regulator, and card-detect policy as a possible missing board-level runtime requirement.",
+  "findings": [
+    "Vendor SDMMC0 leaves non-removable, broken-cd, cd-gpios, vmmc/vqmc/vdmc, and sunxi-power-save-mode commented out.",
+    "BSP card-pwr-gpios handling exists, but vendor SDMMC0 does not use an active card-pwr-gpios property.",
+    "BSP cd-used-24M and data3-detect paths are DT-boolean gated; vendor SDMMC0 does not enable them.",
+    "The local Cubie A7S DTS provides a fixed always-on 3.3V vmmc supply and marks SDMMC0 as SD-only with no-mmc and no-sdio.",
+    "Runtime evidence already proves card init, pre-mmcblk CMD17, small PIO CMD18, partition discovery, and read-only EXT4 root mount with IDMA bypassed."
+  ],
+  "public_search": {
+    "exact_email_archive_hit": false,
+    "answer_visible": false,
+    "notes": "Search still did not reveal a public archive hit or answer for the manually sent A733 SDMMC0 descriptor-fetch question. Radxa public docs confirm Cubie A7S has a microSD slot, but provide no IDMAC descriptor-fetch clue."
+  },
+  "decision": "No behavior patch.",
+  "reason": "Power and card-detect policy can affect card presence or card initialization, but those stages already work. The remaining failure is normal-IDMAC memory reachability before descriptor word 0 is consumed.",
+  "next": [
+    "Do not add vendor card-detect or card-power properties to the upstream DTS as an IDMAC fix.",
+    "Keep waiting for a maintainer/list reply or a source-backed SDMMC0 firewall/security/master-permission bit."
+  ]
+}
