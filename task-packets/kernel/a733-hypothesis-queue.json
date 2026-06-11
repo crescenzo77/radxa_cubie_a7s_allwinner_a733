@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T07:20:00Z",
+  "updated_utc": "2026-06-11T07:30:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H143 freshly reproduced the stall on Cubie3 from a clean H020-derived measurement branch: IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, descriptor checksum unchanged, OWN still set after CPU sync. PIO remains diagnostic/lab infrastructure only.",
   "operator_model": {
@@ -47,11 +47,11 @@
     "summary": "Added task-packets/kernel/a733-h142-reflect-only-handoff-20260611T1020Z.md with the exact Strix b4 send --reflect command and review checklist. Machine gates 01-07 are closed; gate 08 remains open for human reflect review only."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H145",
+    "id": "A733-SDMMC-H146",
     "status": "completed_monitor_no_new_input",
-    "title": "Wait-state monitor",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h145-wait-state-monitor-20260611T0720Z.json",
-    "result": "Dependency markers unchanged; no public lore/search hit for A733 sunxi-mmc IDMAC descriptor-read; no new behavior patch. Runtime work is waiting for maintainer/vendor feedback or a source-backed new lead. Upstream DTS prep remains at human reflect-review gate."
+    "title": "Monitor for maintainer/vendor input or reflect result",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h146-monitor-20260611T0730Z.json",
+    "result": "No new public/dependency/reflect input. No runtime patch or send action. Runtime blocker waits for maintainer/vendor/source-backed input; DTS series waits for human reflect review."
   },
   "hypotheses": [
     {
@@ -2680,7 +2680,7 @@
     {
       "id": "A733-SDMMC-H146",
       "priority": 1,
-      "status": "queued_monitor_or_reflect",
+      "status": "completed_monitor_no_new_input",
       "title": "Monitor for maintainer/vendor input or run human reflect review",
       "question": "Has any new maintainer/vendor reply, public archive hit, dependency update, or human reflect result appeared that changes the A733 SDMMC0/DTS next step?",
       "test_cost": "low; no board reboot unless new source-backed lead appears",
@@ -2692,6 +2692,33 @@
       ],
       "pass_criteria": "New input is either promoted into a concrete next patch/test, or monitor records no change and preserves the wait state.",
       "fail_criteria": "A speculative runtime patch is queued without new source-backed evidence.",
+      "guardrails": [
+        "No Cubie1 use.",
+        "No Ethernet/VPU/display/USB-C/PCIe/wireless expansion.",
+        "No local CCU/pinctrl submission changes.",
+        "No vendor U-Boot workaround in DTS."
+      ],
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h146-monitor-20260611T0730Z.json",
+        "summary": "No new public/dependency/reflect input. No behavior patch and no send action."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H147",
+      "priority": 1,
+      "status": "queued_monitor_or_reflect",
+      "title": "Repeat monitor or process human reflect result",
+      "question": "Has a maintainer/vendor reply, public dependency update, public archive hit, or human b4 reflect result appeared?",
+      "test_cost": "low; no board reboot unless new source-backed lead appears",
+      "procedure": [
+        "Check final-send status; do not run b4 send without explicit human approval.",
+        "Re-run scripts/kernel-a733-rfc-dependency-recheck.",
+        "Check public archive/search and any user-provided mail result.",
+        "If no new input, record no-change monitor and keep wait state.",
+        "If new input names a concrete A733 SDMMC0 register/reset/clock/firmware handoff/master ID/binding/erratum, queue a narrow runtime test."
+      ],
+      "pass_criteria": "A new input is promoted into a concrete next step, or no-change wait state is documented.",
+      "fail_criteria": "Speculative runtime patching resumes without new evidence.",
       "guardrails": [
         "No Cubie1 use.",
         "No Ethernet/VPU/display/USB-C/PCIe/wireless expansion.",
