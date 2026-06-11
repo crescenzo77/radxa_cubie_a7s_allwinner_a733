@@ -17,6 +17,8 @@ OUT_DIR = pathlib.Path(os.environ.get(
     "A733_HERMES_OUT_DIR",
     str(REPO / "task-packets/kernel/hermes-hourly"),
 ))
+REPORT_BASE_URL = os.environ.get("A733_REPORT_BASE_URL", "http://192.168.50.225:9180")
+TELEGRAM_ENV = pathlib.Path(os.environ.get("A733_TELEGRAM_ENV", "/etc/telegram-tasks-bot/bot.env"))
 STATE_PATH = pathlib.Path(os.environ.get(
     "A733_CUBIE2_LEAD_STATE",
     str(REPO / "task-packets/kernel/a733-cubie2-lead-state.json"),
@@ -73,6 +75,38 @@ def save_state(state):
     tmp = STATE_PATH.with_suffix(".tmp")
     tmp.write_text(json.dumps(state, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     tmp.replace(STATE_PATH)
+
+
+def env_file(path):
+    env = {}
+    if not path.exists():
+        return env
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        env[key.strip()] = value.strip().strip('"').strip("'")
+    return env
+
+
+def telegram_send(text):
+    cfg = env_file(TELEGRAM_ENV)
+    token = cfg.get("TELEGRAM_BOT_TOKEN")
+    chat_id = cfg.get("TASK_NOTIFY_USER_ID") or cfg.get("CLEAN_TASK_USER_ID")
+    if not token or not chat_id:
+        return "telegram skipped: missing token/chat id"
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=json.dumps({
+            "chat_id": chat_id,
+            "text": text,
+            "disable_web_page_preview": False,
+        }).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        return resp.read().decode()
 
 
 def load_handoff():
@@ -430,10 +464,12 @@ def write_reports(stamp, lead, run_result, state, context, reviews):
     json_path = OUT_DIR / f"{stamp}-a733-cubie2-lead.json"
     md_path = OUT_DIR / f"{stamp}-a733-cubie2-lead.md"
     html_path = OUT_DIR / f"{stamp}-a733-cubie2-lead.html"
+    html_url = f"{REPORT_BASE_URL.rstrip('/')}/{html_path.name}"
     doc = {
         "stamp": stamp,
         "lead": lead,
         "run_result": run_result,
+        "html_url": html_url,
         "safe_ranges": {k: [hex(v[0]), hex(v[1])] for k, v in SAFE_RANGES.items()},
         "context": context,
         "reviews": reviews,
@@ -547,7 +583,28 @@ def write_reports(stamp, lead, run_result, state, context, reviews):
         except OSError:
             dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
     update_index()
-    return json_path, md_path, html_path
+    return json_path, md_path, html_path, html_url
+
+
+def notify_cubie2_attempt(lead, run_result, html_url):
+    env = lead.get("env", {}) if lead else {}
+    assessment = {
+        "progressed": "positive: Cubie2 reproduced DMA progress for this avenue",
+        "no_progress": "negative: Cubie2 did not reproduce DMA progress",
+        "no_uart_log": "inconclusive: no UART log was captured",
+        "error": "infrastructure error during the Cubie2 attempt",
+        "proposed_only": "proposal only: no Cubie2 hardware test ran",
+    }.get(run_result.get("result"), f"result: {run_result.get('result')}")
+    message = (
+        "A733 Cubie2 avenue assessed\n"
+        f"Lead: {lead.get('id') if lead else 'none'}\n"
+        f"Candidate: {env.get('A733_BF_KIND')} {env.get('A733_BF_ADDR')} bit {env.get('A733_BF_BIT')}\n"
+        f"Assessment: {assessment}\n"
+        f"Report: {html_url}"
+    )
+    if run_result.get("uart_log"):
+        message += f"\nUART: {run_result.get('uart_log')}"
+    return telegram_send(message)
 
 
 def update_index():
@@ -615,7 +672,12 @@ def main():
         state.setdefault("runs", []).append({"stamp": stamp, "lead": lead["id"], "result": run_result["result"]})
         save_state(state)
         reviews = model_reviews(lead, run_result, state, context)
-        paths.extend(write_reports(stamp, lead, run_result, state, context, reviews))
+        report_paths = write_reports(stamp, lead, run_result, state, context, reviews)
+        paths.extend(report_paths[:3])
+        try:
+            notify_cubie2_attempt(lead, run_result, report_paths[3])
+        except Exception as exc:
+            print(f"telegram notification failed: {exc}")
         if run_result["result"] == "no_uart_log":
             break
     print("A733 Cubie2 lead supervisor complete")
