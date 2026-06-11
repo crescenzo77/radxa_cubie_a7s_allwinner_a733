@@ -30,9 +30,19 @@ PY
 )
 
 git_status=$(git status --short --branch 2>&1 || true)
-blockers=$(scripts/kernel-workflow-status --maintainer-ready-blockers 2>&1 || true)
-waiting=$(scripts/kernel-workflow-status --dispatcher-waiting-actions 2>&1 || true)
-offload=$(scripts/kernel-token-offload status 2>&1 || true)
+run_optional() {
+  local label=$1
+  shift
+  if [ ! -x "$1" ]; then
+    printf '%s unavailable on this host: %s\n' "$label" "$1"
+    return 0
+  fi
+  "$@" 2>&1 || true
+}
+
+blockers=$(run_optional "kernel workflow status" scripts/kernel-workflow-status --maintainer-ready-blockers)
+waiting=$(run_optional "kernel workflow status" scripts/kernel-workflow-status --dispatcher-waiting-actions)
+offload=$(run_optional "kernel token offload" scripts/kernel-token-offload status)
 
 python3 - "$json" "$ts" "$queue_head" "$git_status" "$blockers" "$waiting" "$offload" <<'PY'
 import json, sys

@@ -71,6 +71,9 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
   ThinkCentre sync. It recommends monitor-only by default because the Mac public
   repo is ahead of its public remote by 214 commits and no sync approval has
   been given.
+- The workflow status monitor now treats missing optional helper scripts on
+  ThinkCentre as host capability gaps instead of reporting shell errors as if
+  they were maintainer blockers.
 - One false Telegram stall alert was sent during smoke testing because the
   heartbeat matched the Hermes gateway process as an active audit. The matcher
   was narrowed and the state file was cleared; a subsequent Hermes-triggered
@@ -100,6 +103,7 @@ bash -n scripts/a733-hermes-source-diff-heartbeat-wrapper scripts/a733-hermes-wo
 python3 -m py_compile scripts/a733-source-diff-heartbeat
 bash -n scripts/a733-hermes-model-health-monitor
 bash -n scripts/a733-hermes-radxa-provenance-audit
+bash -n scripts/a733-hermes-workflow-status-monitor
 git diff --check -- <new/changed monitor scripts>
 ```
 
