@@ -2224,6 +2224,26 @@
         "result_file": null,
         "summary": "Corrected stale status/consolidation guidance. H080's original pinmux-removal note is now explicitly superseded by H098: the current A733 DT-derived pinctrl driver and binding require allwinner,pinmux, so the 4-patch maintainer snapshot should keep it while depending on that prerequisite shape. No patch files changed."
       }
+    },
+    {
+      "id": "A733-SDMMC-H104",
+      "priority": 1,
+      "status": "completed_b4_smoke_test",
+      "title": "Install and smoke-test b4 on Strix",
+      "question": "Can Strix run b4 prep for the A733 v6 branch without sending anything?",
+      "test_cost": "low; isolated tooling install and throwaway worktree",
+      "procedure": [
+        "Install b4 in /srv/projects/kernel-work/b4-venv without sudo.",
+        "Create throwaway worktree /srv/projects/a733-v6-b4-prep-smoke from v6.",
+        "Run b4 prep -e HEAD~11 and b4 prep --show-info.",
+        "Run b4 prep --check and direct checkpatch to identify remaining tooling gaps."
+      ],
+      "pass_criteria": "b4 can enroll the branch and report series metadata without sending.",
+      "fail_criteria": "b4 is unavailable or any command sends mail or rewrites the authoritative branch.",
+      "result": {
+        "result_file": null,
+        "summary": "Passed as a smoke test. Installed b4 0.15.2 in /srv/projects/kernel-work/b4-venv and enrolled throwaway branch codex/a733-v6-b4-prep-smoke in /srv/projects/a733-v6-b4-prep-smoke. b4 reports base-commit 6f3ed7fec72f, 11 tracked commits, needs-editing true, needs-recipients true, and preflight-checks-failing true. b4 prep --check still fails SPDX helper imports for ply despite venv deps; direct checkpatch with the venv works and reports only MAINTAINERS heuristic warnings. No mail sent; authoritative v6 branch unchanged."
+      }
     }
   ],
   "model_routes": [
