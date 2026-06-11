@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T06:55:00Z",
+  "updated_utc": "2026-06-11T07:05:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -2593,6 +2593,25 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h122-folded-review-regeneration-20260611T0655Z.json",
         "summary": "Throwaway regeneration succeeded. Four clean commits were exported to /tmp/a733-folded-export; git diff --check passed; no allwinner,pinmux remained; a fresh worktree from b327168a182e^ applied patches 0001-0004 successfully. Repo snapshot was not replaced pending final base/cover-letter decisions."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H123",
+      "priority": 1,
+      "status": "completed_do_not_promote_yet",
+      "title": "Folded export promotion gate",
+      "question": "Should the H122 regenerated folded export replace the maintained review snapshot now?",
+      "test_cost": "low; export inspection only",
+      "procedure": [
+        "Inspect the generated folded export cover letter and patch order.",
+        "Check whether it is suitable to replace the maintained patches directory.",
+        "Record the promotion decision."
+      ],
+      "pass_criteria": "Folded export has complete cover letter/base/order metadata and can replace the maintained snapshot.",
+      "fail_criteria": "Folded export still has placeholder cover text or unresolved metadata.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h123-folded-export-promotion-gate-20260611T0705Z.json",
+        "summary": "Do not promote yet. Patch bodies are good and apply cleanly, but the generated cover letter still has *** SUBJECT HERE *** and *** BLURB HERE *** placeholders, and the folded order differs from the maintained snapshot. Refresh cover/base/order intentionally before replacing patches/."
       }
     }
   ],

@@ -1,0 +1,22 @@
+{
+  "id": "A733-SDMMC-H123",
+  "title": "Folded export promotion gate",
+  "status": "completed_do_not_promote_yet",
+  "tested_at_utc": "2026-06-11T07:05:00Z",
+  "host": "mac",
+  "inputs": [
+    "/tmp/a733-folded-export/0000-cover-letter.patch",
+    "/tmp/a733-folded-export/0001-dt-bindings-arm-sunxi-add-Radxa-Cubie-A7S.patch",
+    "/tmp/a733-folded-export/0002-dt-bindings-mmc-add-Allwinner-A733-compatible.patch",
+    "/tmp/a733-folded-export/0003-arm64-dts-allwinner-add-Allwinner-A733-SoC.patch",
+    "/tmp/a733-folded-export/0004-arm64-dts-allwinner-add-Radxa-Cubie-A7S.patch"
+  ],
+  "question": "Should the H122 regenerated folded export replace the maintained review snapshot now?",
+  "findings": [
+    "Patch bodies are useful: the folded export applies cleanly and contains no allwinner,pinmux.",
+    "The generated cover letter is not usable: it still contains *** SUBJECT HERE *** and *** BLURB HERE *** placeholders.",
+    "The regenerated order is bindings/arm, bindings/mmc, SoC DTSI, board DTS, while the maintained snapshot currently documents a different order. That is acceptable only after refreshing the cover letter and README together."
+  ],
+  "decision": "Do not promote the folded export into the maintained patches directory yet. Keep H122 as proof that regeneration works, then refresh the cover letter/base/order intentionally before replacing the snapshot.",
+  "next_action": "Prepare a real cover letter for the folded order, update patches/README, then replace patches/ only after another apply-check passes."
+}
