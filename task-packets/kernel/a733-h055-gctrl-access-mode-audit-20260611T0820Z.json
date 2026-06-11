@@ -1,0 +1,20 @@
+{
+  "id": "A733-SDMMC-H055",
+  "status": "completed_no_patch",
+  "title": "BSP GCTRL access-mode bit audit",
+  "timestamp_utc": "2026-06-11T08:20:00Z",
+  "scope": [
+    "Strix BSP source: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "Strix diagnostic source: /srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "observations": [
+    "The BSP defines GCTRL access bits SDXC_MEMORY_ACCESS_DONE, SDXC_ACCESS_DONE_DIRECT, SDXC_ACCESS_BY_AHB, and SDXC_ACCESS_BY_DMA.",
+    "The BSP host init clears SDXC_ACCESS_DONE_DIRECT and writes REG_A12A=0.",
+    "The local diagnostic tree already clears SDXC_ACCESS_DONE_DIRECT during init and writes REG_A12A=0.",
+    "Before enabling A733 IDMAC, the local diagnostic tree clears SDXC_ACCESS_BY_AHB so the controller is in DMA access mode.",
+    "The failing logs already occur after that local A733 DMA-access transition."
+  ],
+  "decision": "no_behavior_patch",
+  "reason": "The BSP GCTRL access-mode clue is already implemented in the diagnostic branch. It does not explain why IDMAC reaches DESC_READ with DLBA set but does not consume descriptor word 0.",
+  "next": "Do not reopen GCTRL access-mode bits unless new evidence shows a different A733-specific access bit outside REG_GCTRL."
+}

@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T07:55:00Z",
+  "updated_utc": "2026-06-11T08:20:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H054 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, model-suggested IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, and BSP DMA mapping/cookie lifecycle. The remaining blocker still requires a maintainer/list reply or source-backed SDMMC0 master/firewall/security bit.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H055 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, model-suggested IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, and BSP GCTRL access-mode bits. The remaining blocker still requires a maintainer/list reply or source-backed SDMMC0 master/firewall/security bit.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,32 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H054",
+    "id": "A733-SDMMC-H055",
     "status": "completed_no_patch",
-    "title": "BSP DMA mapping and pre_req cookie audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h054-dma-map-cookie-audit-20260611T0755Z.json",
-    "result": "BSP pre_req/post_req cookies do not identify a descriptor-fetch fix. Local proof maps DMA directly, logs sg_len=dma_len=1, validates alignment, and exercises descriptor sync/coherent allocation. No patch."
+    "title": "BSP GCTRL access-mode bit audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h055-gctrl-access-mode-audit-20260611T0820Z.json",
+    "result": "BSP GCTRL access-mode handling is already covered locally: ACCESS_DONE_DIRECT is cleared at init and ACCESS_BY_AHB is cleared before A733 IDMAC starts. No patch."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H055",
+      "priority": 54,
+      "status": "completed_no_patch",
+      "title": "BSP GCTRL access-mode bit audit",
+      "question": "Does the BSP GCTRL access-mode handling reveal a missing A733 SDMMC0 normal-IDMAC precondition?",
+      "test_cost": "low; source audit only",
+      "procedure": [
+        "Inspect BSP GCTRL access-mode bits around host init and DMA start.",
+        "Compare SDXC_ACCESS_DONE_DIRECT and SDXC_ACCESS_BY_AHB handling against the local diagnostic tree.",
+        "Promote a patch only if local code lacks a BSP access-mode transition relevant to IDMAC descriptor fetch."
+      ],
+      "pass_criteria": "A missing GCTRL access-mode transition is found.",
+      "fail_criteria": "Local diagnostic code already applies the same access-mode bits before IDMAC starts.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h055-gctrl-access-mode-audit-20260611T0820Z.json",
+        "summary": "BSP clears SDXC_ACCESS_DONE_DIRECT during init and uses DMA access mode for transfers. Local diagnostic code already clears ACCESS_DONE_DIRECT in init and clears ACCESS_BY_AHB before enabling A733 IDMAC. No patch."
+      }
+    },
     {
       "id": "A733-SDMMC-H054",
       "priority": 53,
