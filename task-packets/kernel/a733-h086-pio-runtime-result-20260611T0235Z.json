@@ -1,0 +1,43 @@
+{
+  "id": "A733-SDMMC-H086",
+  "status": "completed_lab_only_pass",
+  "created_utc": "2026-06-11T02:35:00Z",
+  "host": "strix",
+  "target": "cubie3",
+  "target_ip": "192.168.50.95",
+  "source_tree": "/srv/projects/a733-h086-pio-runtime",
+  "source_commit": "2e475c696c8bd71104db32b22ebd9dfeb2968684",
+  "source_subject": "mmc: test A733 CMD18 PIO up to 256 blocks for diag",
+  "artifact": "/srv/projects/kernel-work/outgoing/a733-h086-pio-runtime-2e475c696c8b-20260611T022717Z",
+  "artifact_manifest": {
+    "Image_sha256": "9ca5537794f7bb16b3170f0b37081352ecb6a28e4b81cafa2c229d6fd4d01672",
+    "dtb_sha256": "ed3cc474fe72c25c3e0cb96a3fc9fa243c1c01631bf4e651031d3cba8500708b",
+    "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
+    "build_log_sha256": "46cd9a9586657645e223b972c141d26691208501664402a3a4fb0cc541b0f3ef"
+  },
+  "cubie3_staging": {
+    "path": "/boot/cthu",
+    "backup": "/boot/cthu/backups/h086-20260611T022919Z",
+    "Image_sha256": "9ca5537794f7bb16b3170f0b37081352ecb6a28e4b81cafa2c229d6fd4d01672",
+    "a733_dtb_sha256": "ed3cc474fe72c25c3e0cb96a3fc9fa243c1c01631bf4e651031d3cba8500708b",
+    "config_sha256": "dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202",
+    "manifest_sha256": "d8e423ffa02f6813210b9aad3e4c484d04fa33fff50d9453ccd74039b7b77cf5"
+  },
+  "uart_log": "/srv/projects/cubie-uart/logs/20260611T022929Z-a733-h086-pio-runtime-2e475c696c8b-ttyUSB0.uart.log",
+  "uart_log_sha256": "cda85d9d8c2d99cf857d029e5e6d70eff835c254e0cb4c9ae478cea27751aa59",
+  "bootargs": "console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel drm_debug=1 root=PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e rootfstype=ext4 rootwait ro rootflags=noload init=/bin/sh",
+  "pass_evidence": [
+    "Linux version 7.1.0-rc5-00236-g2e475c696c8b",
+    "Machine model: Radxa Cubie A7S",
+    "EXT4-fs (mmcblk0p3): mounted filesystem ... ro without journal at 75.061663s",
+    "VFS: Mounted root (ext4 filesystem) readonly on device 179:3 at 75.073074s",
+    "VFS: Pivoted into new rootfs at 86.905442s",
+    "Run /bin/sh as init process at 86.915112s"
+  ],
+  "boundary_evidence": [
+    "PIO CMD18 reads completed up to 256 blocks and 131072-byte bcntr paths.",
+    "Later CMD25 write used normal IDMA: opcode=25, blocks=16, wait_dma=1.",
+    "CMD25 stalled with IDST=0x00004000, CBCR=0, BBCR=0, and descriptor OWN still set."
+  ],
+  "conclusion": "H086 is a useful lab-only read/runtime path and not an upstream fix. The real blocker remains A733 SDMMC0 normal IDMAC descriptor-fetch reachability."
+}
