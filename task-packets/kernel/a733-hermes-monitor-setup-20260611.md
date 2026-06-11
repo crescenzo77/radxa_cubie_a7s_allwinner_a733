@@ -25,11 +25,13 @@ Live ThinkCentre Hermes jobs after setup:
 | A733 patch blocker brief | `c4333a70d47c` | `39 * * * *` | `no-agent` | Converts readiness/model/queue findings into a human approval brief. It does not authorize or perform the action. |
 | A733 repo drift monitor | `46c0255f59a9` | `41 * * * *` | `no-agent` | Compares the ThinkCentre public clone against the Mac-recorded expected public head. It reports drift only; it does not sync repos. |
 | A733 repo sync approval brief | `9636aa1980e7` | `43 * * * *` | `no-agent` | Turns repo drift into explicit human choices. The default recommendation is monitor-only; sync/pull/push/reset still require approval. |
+| A733 dashboard index | `c1ac3adc75dc` | `*/10 * * * *` | `no-agent` | Builds a read-only landing page with queue head, blockers, model failures, report freshness, and links to all current A733 Hermes reports. |
 
 ## Report URLs
 
 ```text
 http://192.168.50.225:9181/hermes-hourly/a733-workflow-status-latest.md
+http://192.168.50.225:9181/hermes-hourly/a733-dashboard-index-latest.md
 http://192.168.50.225:9181/hermes-hourly/a733-public-source-latest.md
 http://192.168.50.225:9181/hermes-hourly/a733-model-health-latest.md
 http://192.168.50.225:9181/hermes-hourly/a733-h149-approval-brief-latest.md
@@ -75,6 +77,9 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
   ThinkCentre public clone differs from the Mac-recorded expected public head,
   that drift appears as a first-class blocker with a link to the sync approval
   brief.
+- The dashboard index is the preferred human landing page for this Hermes lane.
+  It summarizes current queue head, blockers, model failures, report freshness,
+  and links while preserving the same read-only/no-approval boundary.
 - The workflow status monitor now treats missing optional helper scripts on
   ThinkCentre as host capability gaps instead of reporting shell errors as if
   they were maintainer blockers.
@@ -96,6 +101,7 @@ scripts/a733-hermes-public-patch-readiness-monitor
 scripts/a733-hermes-patch-blocker-brief
 scripts/a733-hermes-repo-drift-monitor
 scripts/a733-hermes-repo-sync-approval-brief
+scripts/a733-hermes-dashboard-index
 ```
 
 ## Validation
@@ -109,6 +115,7 @@ bash -n scripts/a733-hermes-model-health-monitor
 bash -n scripts/a733-hermes-radxa-provenance-audit
 bash -n scripts/a733-hermes-workflow-status-monitor
 bash -n scripts/a733-hermes-patch-blocker-brief
+bash -n scripts/a733-hermes-dashboard-index
 git diff --check -- <new/changed monitor scripts>
 ```
 

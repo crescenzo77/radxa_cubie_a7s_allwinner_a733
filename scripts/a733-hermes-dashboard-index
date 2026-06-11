@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo=${A733_HERMES_REPO:-/srv/projects/homelab}
+outdir="$repo/task-packets/kernel/hermes-hourly"
+json="$outdir/a733-dashboard-index-latest.json"
+md="$outdir/a733-dashboard-index-latest.md"
+html="$outdir/a733-dashboard-index-latest.html"
+mkdir -p "$outdir"
+
+python3 - "$outdir" "$json" "$md" "$html" <<'PY'
+import datetime as dt
+import html
+import json
+import pathlib
+import sys
+
+outdir, json_path, md_path, html_path = sys.argv[1:]
+outdir = pathlib.Path(outdir)
+base_url = "http://192.168.50.225:9181/hermes-hourly"
+
+reports = [
+    ("blocker_brief", "Patch blocker brief", "a733-patch-blocker-brief-latest"),
+    ("workflow_status", "Workflow status", "a733-workflow-status-latest"),
+    ("public_patch_readiness", "Public patch readiness", "a733-public-patch-readiness-latest"),
+    ("repo_drift", "Repo drift", "a733-repo-drift-latest"),
+    ("repo_sync_approval", "Repo sync approval brief", "a733-repo-sync-approval-brief-latest"),
+    ("h149_approval", "H149 approval brief", "a733-h149-approval-brief-latest"),
+    ("model_health", "Model endpoint health", "a733-model-health-latest"),
+    ("public_source", "Public source monitor", "a733-public-source-latest"),
+]
+
+now_dt = dt.datetime.now(dt.timezone.utc)
+now = now_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+def load_json(stem):
+    path = outdir / f"{stem}.json"
+    if not path.exists():
+        return {}, "missing"
+    try:
+        return json.loads(path.read_text(encoding="utf-8")), "ok"
+    except Exception as exc:
+        return {"load_error": str(exc)}, "error"
+
+def age_text(path):
+    if not path.exists():
+        return "missing"
+    age = max(0, int((now_dt - dt.datetime.fromtimestamp(path.stat().st_mtime, dt.timezone.utc)).total_seconds()))
+    if age < 90:
+        return f"{age}s"
+    minutes = age // 60
+    if minutes < 120:
+        return f"{minutes}m"
+    return f"{minutes // 60}h{minutes % 60:02d}m"
+
+rows = []
+for key, title, stem in reports:
+    data, state = load_json(stem)
+    md_file = outdir / f"{stem}.md"
+    html_file = outdir / f"{stem}.html"
+    rows.append({
+        "key": key,
+        "title": title,
+        "stem": stem,
+        "state": state,
+        "generated_at": data.get("generated_at", "unknown"),
+        "age": age_text(md_file),
+        "md_url": f"{base_url}/{stem}.md",
+        "html_url": f"{base_url}/{stem}.html",
+        "json_url": f"{base_url}/{stem}.json",
+        "data": data,
+    })
+
+blocker_data = next((r["data"] for r in rows if r["key"] == "blocker_brief"), {})
+workflow_data = next((r["data"] for r in rows if r["key"] == "workflow_status"), {})
+health_data = next((r["data"] for r in rows if r["key"] == "model_health"), {})
+
+blockers = blocker_data.get("blockers") or []
+queue_head = blocker_data.get("queue_head") or {}
+model_failures = blocker_data.get("model_failures") or []
+if not model_failures:
+    model_failures = [c.get("name", "unknown") for c in health_data.get("checks", []) if not c.get("ok")]
+
+doc = {
+    "generated_at": now,
+    "base_url": base_url,
+    "queue_head": queue_head,
+    "blockers": blockers,
+    "model_failures": model_failures,
+    "workflow_queue_head": workflow_data.get("queue_head"),
+    "reports": [{k: v for k, v in r.items() if k != "data"} for r in rows],
+    "not_authorized": [
+        "live hardware/runtime sweep",
+        "Cubie reboot or power-cycle",
+        "repo sync, pull, push, reset, or branch promotion",
+        "patch regeneration or b4 send",
+        "email or maintainer-list action",
+    ],
+}
+pathlib.Path(json_path).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+
+lines = [
+    "# A733 Hermes Dashboard",
+    "",
+    f"Generated: `{now}`",
+    "",
+    "## Current Queue Head",
+    "",
+    f"- ID: `{queue_head.get('id', 'unknown')}`",
+    f"- Status: `{queue_head.get('status', workflow_data.get('queue_head', 'unknown'))}`",
+    f"- Title: `{queue_head.get('title', 'unknown')}`",
+    "",
+    "## Active Blockers",
+    "",
+]
+lines += [f"- {b}" for b in blockers] or ["- none reported by blocker brief"]
+lines += ["", "## Model Endpoint Failures", ""]
+lines += [f"- `{m}`" for m in model_failures] or ["- none reported"]
+lines += ["", "## Reports", ""]
+lines += ["| Report | State | Generated | Age | Links |", "|---|---:|---:|---:|---|"]
+for row in rows:
+    links = f"[html]({row['html_url']}) [md]({row['md_url']}) [json]({row['json_url']})"
+    lines.append(f"| {row['title']} | `{row['state']}` | `{row['generated_at']}` | `{row['age']}` | {links} |")
+lines += [
+    "",
+    "## Not Authorized",
+    "",
+]
+lines += [f"- {x}" for x in doc["not_authorized"]]
+lines += ["", "This dashboard is read-only. It summarizes existing Hermes reports and does not approve or perform work.", ""]
+pathlib.Path(md_path).write_text("\n".join(lines), encoding="utf-8")
+
+escaped = html.escape(pathlib.Path(md_path).read_text(encoding="utf-8"))
+pathlib.Path(html_path).write_text(
+    "<!doctype html><meta charset='utf-8'><title>A733 Hermes Dashboard</title>"
+    "<style>body{font-family:system-ui,sans-serif;max-width:1150px;margin:2rem auto;line-height:1.45}"
+    "pre{white-space:pre-wrap;background:#f6f8fa;padding:1rem;border:1px solid #ddd}</style>"
+    f"<pre>{escaped}</pre>\n",
+    encoding="utf-8",
+)
+print(f"wrote {md_path}")
+PY
