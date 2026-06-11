@@ -1,0 +1,26 @@
+{
+  "id": "A733-SDMMC-H068",
+  "status": "completed_no_patch",
+  "title": "BOOT0 and BL31 provenance/package audit",
+  "updated_utc": "2026-06-11T12:50:00Z",
+  "question": "Do preserved baseline artifacts or local Strix sources expose BOOT0/BL31/TF-A code or binaries with an SDMMC0 firewall/security handoff bit?",
+  "sources": [
+    {
+      "path": "/srv/projects/cubie-a7s-armbian/artifacts/baseline/read-only-cubie-capture-20260529/cubie-a7s-read-only-baseline-20260529T185325Z",
+      "kind": "read-only preserved baseline package metadata"
+    },
+    {
+      "path": "/srv/projects/cubie-a7s-armbian /srv/projects/homelab /srv/projects/references",
+      "kind": "local source/document search on Strix"
+    }
+  ],
+  "findings": [
+    "Preserved metadata confirms the working boot chain is documented as BOOT0 -> ATF/BL31 -> U-Boot 2018.07 -> extlinux -> Linux, but BOOT0 and BL31 provenance remain unresolved.",
+    "Installed/package metadata found u-boot-aw2501 2018.07-17, u-boot-radxa-a733 2018.07-17, and u-boot-menu 4.2.2.",
+    "The preserved baseline explicitly reports no packages matching *boot0*, *bl31*, or *trusted*.",
+    "Local Strix searches did not find an A733/sun60i BOOT0, BL31, TF-A, or trusted-firmware source tree that can be audited for SDMMC0 handoff bits.",
+    "No local binary/package evidence names an SDMMC0 firewall, NSI, IOMMU, secure-world, or storage-master configuration step."
+  ],
+  "decision": "No kernel patch. The boot-chain provenance gap is real, but current local evidence does not expose a Linux-applicable SDMMC0 IDMAC handoff bit.",
+  "next_responsible_step": "Keep the maintainer/vendor question open; only revisit BOOT0/BL31 if a source package, source repository, or read-only extracted boot binary inventory becomes available."
+}
