@@ -17,7 +17,9 @@ Hard constraints:
 - Do not use OpenRouter or RTX 3090.
 - Use the Strix local model lane for reasoning if a model is needed.
 - Produce markdown, JSON, and HTML reports.
-- Send a Telegram completion notification with the HTML report link.
+- Send Telegram only when you make meaningful headway or complete the task.
+- Headway means a new source-backed candidate, a concrete ruling-out of a top candidate, or discovery that the vendor tree does not match the working Cubie kernel.
+- Every Telegram message must include the HTML report link if the report exists, or the planned output path if it does not exist yet.
 
 Primary task:
 
@@ -33,5 +35,5 @@ Required outputs:
 - a733-vendor-mainline-diff-candidates.json
 - a733-vendor-mainline-diff-report.html
 
-The final answer should be concise and should name the top next technical action.
+The final answer should be concise and should name the top next technical action. Also send a Telegram completion message.
 PROMPT

@@ -187,7 +187,14 @@ Candidate JSON schema:
 
 ### 6. Notification
 
-Send one Telegram message when the report is complete. Include:
+Send Telegram messages only for meaningful progress:
+
+- Headway: a new source-backed candidate is found that was not already in the prior hypothesis queue.
+- Headway: an existing top candidate is ruled out by a concrete source diff.
+- Headway: the audit discovers that the available vendor tree is not the exact source for the working Cubie kernel, and names the mismatch.
+- Completion: the markdown, JSON, and HTML reports are written.
+
+Each message should include:
 
 - top recommendation
 - number of candidates found
@@ -198,4 +205,3 @@ Use the existing ThinkCentre Telegram bot configuration; do not hardcode tokens.
 ## Success Criteria
 
 This task is complete when Hermes produces a source-backed candidate queue. A good result may be "no safe new kernel patch found"; that still improves the project by closing the full-tree diff gap.
-
