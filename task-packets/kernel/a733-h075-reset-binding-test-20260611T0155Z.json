@@ -1,0 +1,35 @@
+{
+  "id": "A733-SDMMC-H075",
+  "timestamp_utc": "2026-06-11T01:55:00Z",
+  "title": "MMC0 reset binding diagnostic test",
+  "question": "Does replacing the raw vendor SDMMC0 reset cell 35 with the current Linux binding RST_BUS_MMC0 clear the A733 SDMMC0 IDMAC descriptor-read stall?",
+  "test_cost": "medium; one DTS-only patch, one DTB build, one Cubie3 UART boot",
+  "inputs": {
+    "kernel_tree": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "kernel_commit": "1d637f477818 arm64: dts: test A733 MMC0 reset binding",
+    "image_sha256": "c62bfd99d935e02bc7437e377a378372a575ee6e98eed35f6ccbf5d9168a6851",
+    "dtb_sha256": "3f38ab2bbbbc1b7ba95a2669ac13019f61b5e5f53c413bc0918c23883607a28f",
+    "uart_log": "/srv/projects/cubie-uart/logs/20260611T014810Z-a733-h075-reset36-ttyUSB0.uart.log",
+    "uart_log_sha256": "d64b02673d45ca158c7b74e1783ca23bafed1c1ae6a3d5800657fd80401ac5fc"
+  },
+  "change": {
+    "file": "arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi",
+    "from": "resets = <&ccu 35>; /* diag: vendor SDMMC0 reset cell 0x23 */",
+    "to": "resets = <&ccu RST_BUS_MMC0>;"
+  },
+  "observations": {
+    "boot": "Linux 7.1.0-rc5-00283-g86785e682c32 booted on Radxa Cubie A7S.",
+    "card": "mmcblk0 appeared before the forced CMD18 diagnostic.",
+    "before_cmdr": "desc ring before-cmdr: d0={8000003c,00001000,40575000,3f840004}, chda=0, cbda=0, idst=0.",
+    "after_cmdr": "idma-post-cmdr: IDST=0x00004000, CHDA=DLBA 0x3f840000, CBDA=0, CBCR=0x400, BBCR=0.",
+    "after_cpu_sync": "descriptor checksum and descriptor word 0 remained unchanged after CPU sync; OWN stayed set."
+  },
+  "decision": {
+    "status": "completed_no_behavior_fix",
+    "summary": "Using the current Linux binding reset cell RST_BUS_MMC0 does not clear the descriptor-read stall. The raw reset-cell mismatch is a cleanup issue for the diagnostic tree, but not the root cause of IDMAC failing to fetch descriptor word 0.",
+    "next_step": "Keep the diagnostic tree committed for reproducibility, but do not submit this as an upstream fix. Upstream DTS should eventually use the accepted reset binding symbol, not raw cells."
+  },
+  "restore": {
+    "cubie3": "verified vendor kernel 5.15.147-21-a733 after power cycle"
+  }
+}
