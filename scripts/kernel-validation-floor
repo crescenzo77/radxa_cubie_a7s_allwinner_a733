@@ -31,7 +31,10 @@ while [ "$#" -gt 0 ]; do
 done
 
 [ -n "$repo" ] || { echo "--repo is required" >&2; exit 2; }
-[ -d "$repo/.git" ] || { echo "not a git repo: $repo" >&2; exit 2; }
+git -C "$repo" rev-parse --git-dir >/dev/null 2>&1 || {
+  echo "not a git repo: $repo" >&2
+  exit 2
+}
 
 git -C "$repo" diff --check
 
