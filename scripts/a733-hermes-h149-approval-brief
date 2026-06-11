@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo=${A733_HERMES_REPO:-/srv/projects/homelab}
+outdir="$repo/task-packets/kernel/hermes-hourly"
+queue="$repo/task-packets/kernel/a733-hypothesis-queue.json"
+json="$outdir/a733-h149-approval-brief-latest.json"
+md="$outdir/a733-h149-approval-brief-latest.md"
+html="$outdir/a733-h149-approval-brief-latest.html"
+mkdir -p "$outdir"
+
+python3 - "$queue" "$json" "$md" "$html" <<'PY'
+import datetime as dt
+import html
+import json
+import pathlib
+import sys
+
+queue_path, json_path, md_path, html_path = sys.argv[1:]
+now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+queue = {}
+items = []
+if pathlib.Path(queue_path).exists():
+    queue = json.loads(pathlib.Path(queue_path).read_text(encoding="utf-8"))
+    items = queue.get("items") or queue.get("hypotheses") or []
+
+h149 = next((i for i in items if i.get("id") == "A733-SDMMC-H149"), None)
+if not h149:
+    h149 = {
+        "id": "A733-SDMMC-H149",
+        "title": "Automated one-candidate-per-boot IDMAC bus-fabric brute-force sweep",
+        "status": "missing_from_queue",
+    }
+
+doc = {
+    "generated_at": now,
+    "queue": str(queue_path),
+    "item": h149,
+    "decision_requested": "Whether to authorize H149 live unattended runtime hardware work.",
+    "recommended_default": "Do not run H149 unless the operator explicitly approves a live hardware sweep.",
+    "requires_explicit_approval": [
+        "starting scripts/a733-idmac-bruteforce-lab or equivalent",
+        "power-cycling Cubie2 or Cubie3",
+        "staging or replacing kernel boot artifacts",
+        "running unattended U-Boot or UART boot loops",
+    ],
+    "must_not_touch": ["cubie1 / 192.168.50.65", "Scandocs", "kernel mailing-list send paths"],
+}
+pathlib.Path(json_path).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+
+lines = [
+    "# H149 Approval Brief",
+    "",
+    f"Generated: `{now}`",
+    "",
+    "## Decision",
+    "",
+    "Authorize or decline the queued `A733-SDMMC-H149` live hardware sweep.",
+    "",
+    "Recommended default: **do not run H149 yet** unless the operator explicitly approves unattended runtime hardware work.",
+    "",
+    "## Queue Item",
+    "",
+    f"- ID: `{h149.get('id')}`",
+    f"- Status: `{h149.get('status')}`",
+    f"- Title: `{h149.get('title')}`",
+    f"- Priority: `{h149.get('priority', 'unknown')}`",
+    "",
+    "## Why This Exists",
+    "",
+    "The current blocker is A733 SDMMC0 normal IDMAC descriptor fetch. Many descriptor, DMA-mask, timing, visible-fabric, NSI, public U-Boot, and BSP driver hypotheses are already closed. H149 exists as a queued brute-force/runtime fallback, not as a source-backed upstream fix.",
+    "",
+    "## What H149 Would Risk",
+    "",
+    "- It is live hardware work.",
+    "- It may reboot or power-cycle test boards.",
+    "- It may stage temporary kernel artifacts.",
+    "- It may produce false positives unless every candidate is logged and restored cleanly.",
+    "- It must not touch Cubie1.",
+    "",
+    "## Required Stop Conditions",
+    "",
+    "- Cubie2/Cubie3 only; Cubie1 excluded.",
+    "- UART logs and result JSON for every candidate.",
+    "- Exact command, commit, kernel artifact hashes, and board target recorded.",
+    "- Restore Cubie2/Cubie3 to vendor `5.15.147-21-a733` afterward.",
+    "- Update and commit the hypothesis queue and status docs before ending.",
+    "",
+    "## Approval Text",
+    "",
+    "If the operator decides to proceed later, use an explicit approval like:",
+    "",
+    "```text",
+    "I approve running H149 as live unattended runtime hardware work on Cubie2/Cubie3 only. Do not touch Cubie1. Preserve logs, restore vendor kernel, and stop on unsafe behavior.",
+    "```",
+    "",
+    "This brief does not authorize H149 by itself.",
+]
+pathlib.Path(md_path).write_text("\n".join(lines) + "\n", encoding="utf-8")
+body = html.escape(pathlib.Path(md_path).read_text(encoding="utf-8"))
+pathlib.Path(html_path).write_text(
+    "<!doctype html><meta charset='utf-8'><title>H149 Approval Brief</title>"
+    "<style>body{font-family:system-ui,sans-serif;max-width:1000px;margin:2rem auto;line-height:1.45}"
+    "pre{white-space:pre-wrap;background:#f6f8fa;padding:1rem;border:1px solid #ddd}</style>"
+    f"<pre>{body}</pre>\n",
+    encoding="utf-8",
+)
+print(f"wrote {md_path}")
+PY

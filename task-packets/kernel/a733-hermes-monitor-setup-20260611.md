@@ -28,6 +28,7 @@ Live ThinkCentre Hermes jobs after setup:
 http://192.168.50.225:9181/hermes-hourly/a733-workflow-status-latest.md
 http://192.168.50.225:9181/hermes-hourly/a733-public-source-latest.md
 http://192.168.50.225:9181/hermes-hourly/a733-model-health-latest.md
+http://192.168.50.225:9181/hermes-hourly/a733-h149-approval-brief-latest.md
 http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest.md
 ```
 
@@ -57,6 +58,7 @@ scripts/a733-hermes-workflow-status-monitor
 scripts/a733-hermes-public-source-monitor
 scripts/a733-hermes-model-health-monitor
 scripts/a733-hermes-radxa-provenance-audit
+scripts/a733-hermes-h149-approval-brief
 ```
 
 ## Validation
@@ -89,4 +91,3 @@ would touch, exact stop conditions, how Cubie2/Cubie3 would be restored, and
 what human command would approve it.
 
 It must not run H149.
-
