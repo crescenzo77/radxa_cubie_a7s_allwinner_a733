@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T06:05:00Z",
+  "updated_utc": "2026-06-11T06:15:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -2498,6 +2498,25 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h117-bsp-secure-access-audit-20260611T0605Z.json",
         "summary": "No patch. Searches found A733 R-CCU TZMA clocks and generic secure-only SMC/SPC/TZMA references, but no SDMMC0/SMHC0 access-control register or Linux-callable firewall setup. SDMMC-relevant BSP hits remain the already-tested mmc_store, mmc_mbus, and mmc_msi_lite clocks."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H118",
+      "priority": 1,
+      "status": "completed_patch_cleanup_not_runtime",
+      "title": "Review export pinmux cleanup",
+      "question": "Does the public review export still carry stale vendor-style allwinner,pinmux properties?",
+      "test_cost": "low; source and patch snapshot cleanup only",
+      "procedure": [
+        "Search source branch and review patches for allwinner,pinmux in A733 DTS files.",
+        "Remove stale vendor-style allwinner,pinmux where upstream pinctrl binding uses function.",
+        "Verify the source files and review snapshot no longer contain the stale property."
+      ],
+      "pass_criteria": "No allwinner,pinmux remains in A733 source DTS or review patches.",
+      "fail_criteria": "The review export still carries vendor-style pinmux properties.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h118-review-export-pinmux-cleanup-20260611T0615Z.json",
+        "summary": "Cleaned candidate/a733-platform-clean-v6 with fixup commit b1f20d455a60 and removed allwinner,pinmux from review snapshot patches 0003/0004. Verified rg finds no allwinner,pinmux in the A733 source files or the A733 review patches. No runtime boot needed."
       }
     }
   ],

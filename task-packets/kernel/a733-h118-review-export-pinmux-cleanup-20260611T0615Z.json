@@ -1,0 +1,23 @@
+{
+  "id": "A733-SDMMC-H118",
+  "title": "Review export pinmux cleanup",
+  "status": "completed_patch_cleanup_not_runtime",
+  "tested_at_utc": "2026-06-11T06:15:00Z",
+  "host": "mac",
+  "kernel_tree": "/Users/enzo/projects/linux-a733",
+  "kernel_branch": "candidate/a733-platform-clean-v6",
+  "kernel_commit": "b1f20d455a60",
+  "question": "Does the public review export still carry stale vendor-style allwinner,pinmux properties?",
+  "change": [
+    "Removed allwinner,pinmux from sun60i-a733.dtsi mmc0_pins.",
+    "Removed allwinner,pinmux from sun60i-a733-cubie-a7s.dts uart0 pins.",
+    "Applied the same correction to the review snapshot patches 0003 and 0004."
+  ],
+  "verification": [
+    "git diff --check passed for the two source DTS files before commit.",
+    "rg found no allwinner,pinmux in the A733 source files after commit.",
+    "rg found no allwinner,pinmux in exported patches 0003/0004 after cleanup."
+  ],
+  "decision": "Patch cleanup only. No runtime boot was needed because this removes stale vendor binding properties and does not alter the proven lab runtime path.",
+  "next_action": "Before any upstream send, regenerate the review branch cleanly and squash/fold the fixup so the mailed DTS patches contain no vendor pinmux properties."
+}
