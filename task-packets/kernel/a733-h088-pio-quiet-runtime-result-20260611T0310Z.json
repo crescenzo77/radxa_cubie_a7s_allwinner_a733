@@ -1,0 +1,22 @@
+{
+  "id": "A733-SDMMC-H088",
+  "status": "completed_boundary_identified",
+  "artifact_commit": "9e0af20882d665f5fd27735057ee0fbf4c078026",
+  "uart_log": {
+    "path": "/srv/projects/cubie-uart/logs/20260611T025700Z-a733-h088-pio-quiet-runtime-9e0af20882d6-rw-ttyUSB0.uart.log",
+    "sha256": "f98dbeeeb0ed1dc83b349a719611c032c5ad4e673af9a8bf252b25bc593172a4"
+  },
+  "observed_boundary": {
+    "opcode": 25,
+    "arg": "0x000a6000",
+    "blocks": 24,
+    "blksz": 512,
+    "sg_len": 2,
+    "wait_dma": 1,
+    "pio": 0,
+    "idst": "0x00004000",
+    "cbcr": "0x00000000",
+    "bbcr": "0x00000000"
+  },
+  "conclusion": "The first rw CMD25 boundary exceeded the H087 PIO guard and reproduced the normal IDMAC descriptor-read stall."
+}

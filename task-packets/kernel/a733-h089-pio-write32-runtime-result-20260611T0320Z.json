@@ -1,0 +1,21 @@
+{
+  "id": "A733-SDMMC-H089",
+  "status": "completed_lab_only_pass",
+  "artifact_commit": "31e0a9d5df71b3e7fee6b527c4a166467e711bc8",
+  "artifact": "/srv/projects/kernel-work/outgoing/a733-h089-pio-write32-runtime-31e0a9d5df71-20260611T030627Z",
+  "uart_log": {
+    "path": "/srv/projects/cubie-uart/logs/20260611T030653Z-a733-h089-pio-write32-runtime-31e0a9d5df71-rw-ttyUSB0.uart.log",
+    "sha256": "04325da9f82922b41b09b3f63feed58183c04c2ebbabe4f40338b1b5c5e1fcb7"
+  },
+  "evidence": [
+    "The former failing 24-block CMD25 at arg=0x000a6000 used wait_dma=0 pio=1.",
+    "The PIO writer copied 12288/12288 bytes for that request and finalized with IDST=0x00000000.",
+    "Many later 8/16-block CMD25 writes finalized through PIO until the 360 second capture timeout.",
+    "No normal-IDMAC CMD25 descriptor-read stall appeared in the capture window."
+  ],
+  "restored_targets": {
+    "cubie2": "5.15.147-21-a733",
+    "cubie3": "5.15.147-21-a733"
+  },
+  "conclusion": "PIO read/write runtime is now useful lab infrastructure for rw userspace evidence. The upstream blocker remains A733 SDMMC0 IDMAC descriptor fetch, not the card or filesystem path."
+}

@@ -1,0 +1,17 @@
+{
+  "id": "A733-SDMMC-H087",
+  "status": "completed_lab_only_partial_pass",
+  "artifact_commit": "67c46d1835b4e0133e3badb5116f437c8c62881e",
+  "uart_logs": [
+    {
+      "path": "/srv/projects/cubie-uart/logs/20260611T024858Z-a733-h087-pio-write-runtime-67c46d1835b4-ttyUSB0.uart.log",
+      "sha256": "53e96e93421b2074858db121e5701eebfd59308b7a0c8988a6ab880b55e5a663"
+    }
+  ],
+  "evidence": [
+    "CMD49 single-block write used PIO: wait_dma=0 pio=1 and copied 512/512.",
+    "EXT4 root mounted read-only and /bin/sh started.",
+    "The later rw boundary was not covered because H087 allowed CMD25 writes only up to 16 blocks."
+  ],
+  "conclusion": "H087 proves small PIO writes and read-only userspace, but not the real 24-block CMD25 rw boundary."
+}

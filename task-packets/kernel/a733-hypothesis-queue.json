@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T02:35:00Z",
+  "updated_utc": "2026-06-11T03:25:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H086 proved the lab-only PIO read path can mount the read-only rootfs and run /bin/sh, but any normal IDMA write path still stalls in DESC_READ. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is only diagnostic infrastructure.",
+  "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -38,11 +38,11 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H086",
+    "id": "A733-SDMMC-H089",
     "status": "completed_lab_only_pass",
-    "title": "Lab-only PIO root/runtime proof path",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h086-pio-runtime-result-20260611T0235Z.json",
-    "result": "Rebuilt and staged commit 2e475c696c8b. Cubie3 direct UART boot mounted mmcblk0p3 read-only, pivoted into rootfs, and ran /bin/sh as init. Boundary: later CMD25 write used normal IDMA and stalled with IDST=0x4000 and descriptor OWN unchanged, proving PIO read runtime is useful lab infrastructure but not the real IDMAC fix."
+    "title": "Lab-only CMD25 PIO writes up to 32 blocks",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h089-pio-write32-runtime-result-20260611T0320Z.json",
+    "result": "Artifact commit 31e0a9d5df71 expanded only the lab-only CMD25 PIO guard to 32 blocks. Cubie3 rw UART proof showed the former failing 24-block CMD25 used wait_dma=0 pio=1, copied 12288/12288 bytes, and finalized with IDST=0. Many later CMD25 writes also finalized through PIO until capture timeout. Cubie2 and Cubie3 were restored to vendor 5.15.147-21-a733."
   },
   "hypotheses": [
     {
@@ -1949,6 +1949,66 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h086-pio-runtime-result-20260611T0235Z.json",
         "summary": "Rebuilt/staged 2e475c696c8b and direct-booted Cubie3. UART shows EXT4 root mounted read-only at 75.061663s, VFS mounted root at 75.073074s, pivot at 86.905442s, and /bin/sh as init at 86.915112s. Later CMD25 write still used IDMA and stalled at IDST=0x4000 with descriptor OWN unchanged. Lab-only PIO read runtime passes; IDMAC blocker remains."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H087",
+      "priority": 1,
+      "status": "completed_lab_only_partial_pass",
+      "title": "Lab-only PIO CMD25 write runtime path",
+      "question": "Can the A733 lab-only PIO runtime path feed write FIFO requests instead of falling back to broken IDMAC at the first write boundary?",
+      "test_cost": "medium; local diagnostic branch and Cubie3 UART boot",
+      "procedure": [
+        "Start from H086 PIO read runtime.",
+        "Add PIO FIFO feeding for MMC_DATA_WRITE requests and allow CMD25 writes up to 16 blocks.",
+        "Build/stage on Cubie3 and boot over UART.",
+        "Restore Cubie3 to vendor kernel before ending."
+      ],
+      "pass_criteria": "A small write such as CMD49 completes through PIO and read-only root still reaches userspace.",
+      "fail_criteria": "Writes still fall into normal IDMAC before any PIO write proof, or the board fails before root mount.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h087-pio-write-runtime-result-20260611T0300Z.json",
+        "summary": "Completed partial pass. Corrected H087 fed CMD49 through PIO and reached read-only root/userspace. A later rw H088 run showed the real 24-block CMD25 boundary exceeded H087\u2019s <=16-block guard and fell back to IDMAC, reproducing IDST=0x4000 descriptor-read stall."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H088",
+      "priority": 1,
+      "status": "completed_boundary_identified",
+      "title": "Quiet PIO runtime logging and rw CMD25 boundary proof",
+      "question": "Which write request still falls into normal IDMAC once PIO read/write runtime reaches rw root activity?",
+      "test_cost": "medium; one quieter diagnostic build and Cubie3 UART boot",
+      "procedure": [
+        "Thin PIO read chunk logging without changing behavior.",
+        "Boot Cubie3 with root rw over UART.",
+        "Capture first CMD25 boundary and restore vendor kernel."
+      ],
+      "pass_criteria": "The log identifies the exact request shape that still falls into IDMAC.",
+      "fail_criteria": "The run times out before any write boundary or changes the upstream/public export.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h088-pio-quiet-runtime-result-20260611T0310Z.json",
+        "summary": "Completed. H088 booted rw until a 24-block CMD25 at arg=0x000a6000, blksz=512, sg_len=2. Because H087 only allowed CMD25 <=16 blocks, it used wait_dma=1 pio=0 and reproduced the IDMAC stall: IDST=0x4000, CBCR=0, BBCR=0, descriptor OWN unchanged."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H089",
+      "priority": 1,
+      "status": "completed_lab_only_pass",
+      "title": "Lab-only CMD25 PIO writes up to 32 blocks",
+      "question": "Does the observed 24-block CMD25 write complete if forced through the A733 lab-only PIO path instead of IDMAC?",
+      "test_cost": "medium; one-line guard expansion, build, Cubie3 UART rw boot",
+      "procedure": [
+        "Start from H088.",
+        "Expand only the lab-only CMD25 PIO guard from <=16 to <=32 blocks.",
+        "Build/stage on Cubie3 and boot with root rw.",
+        "Capture whether the first 24-block CMD25 uses wait_dma=0 pio=1 and finalizes.",
+        "Restore Cubie2/Cubie3 to vendor 5.15.147-21-a733."
+      ],
+      "pass_criteria": "The 24-block CMD25 and subsequent CMD25 writes finalize with wait_dma=0 pio=1 and no IDMAC stall in the capture window.",
+      "fail_criteria": "PIO write stalls, data/CRC errors appear, or normal IDMAC is used for the 24-block request.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h089-pio-write32-runtime-result-20260611T0320Z.json",
+        "summary": "Passed as lab-only evidence. Artifact commit 31e0a9d5df71 expanded CMD25 PIO writes to 32 blocks. Cubie3 rw boot log shows the former failing 24-block CMD25 used wait_dma=0 pio=1 and copied 12288/12288 bytes, then finalized with IDST=0 and no IDMAC stall. Many later 8/16-block CMD25 writes also finalized through PIO until capture timeout. This is not an upstream fix; it proves the card/data path works when avoiding A733 IDMAC."
       }
     }
   ],
