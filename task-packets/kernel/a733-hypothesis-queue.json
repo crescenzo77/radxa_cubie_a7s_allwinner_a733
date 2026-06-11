@@ -2148,6 +2148,25 @@
         "result_file": null,
         "summary": "Created and pushed candidate/a733-platform-clean-v6 at 703bdfd76da3. Compared with v5, the final tree is unchanged, but the H097/H098 remove/restore churn is gone and the two cleanup commits now have bodies and signoffs. Strix validation worktree /srv/projects/a733-platform-clean-v3-validate builds allwinner/sun60i-a733-cubie-a7s.dtb and passes targeted CHECK_DTBS=y. Checkpatch on HEAD~11..HEAD reports only MAINTAINERS heuristic warnings for added files; the branch already has broad Allwinner F: patterns and an N: sun60i entry before the new files."
       }
+    },
+    {
+      "id": "A733-SDMMC-H100",
+      "priority": 1,
+      "status": "completed_validation",
+      "title": "Targeted A733 binding-example validation",
+      "question": "Do the v6 A733 binding examples validate in addition to the board DTB?",
+      "test_cost": "low; schema/example validation only",
+      "procedure": [
+        "Use Strix validation worktree at candidate/a733-platform-clean-v6.",
+        "Run dt_binding_check for sunxi board, MMC, A733 pinctrl, and A733 CCU schemas using the isolated dtschema venv.",
+        "Record pass/fail without changing runtime code."
+      ],
+      "pass_criteria": "dt_binding_check completes for the targeted schemas and builds the A733 pinctrl, A733 CCU, and MMC examples.",
+      "fail_criteria": "Any targeted binding or example fails validation.",
+      "result": {
+        "result_file": null,
+        "summary": "Passed on Strix in /srv/projects/a733-platform-clean-v3-validate at candidate/a733-platform-clean-v6. Command used PATH=/srv/projects/kernel-work/dtschema-venv/bin:$PATH make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- DT_SCHEMA_FILES='Documentation/devicetree/bindings/arm/sunxi.yaml:Documentation/devicetree/bindings/mmc/allwinner,sun4i-a10-mmc.yaml:Documentation/devicetree/bindings/pinctrl/allwinner,sun60i-a733-pinctrl.yaml:Documentation/devicetree/bindings/clock/allwinner,sun60i-a733-ccu.yaml' dt_binding_check. The A733 pinctrl, A733 CCU, and MMC examples built and validated."
+      }
     }
   ],
   "model_routes": [
