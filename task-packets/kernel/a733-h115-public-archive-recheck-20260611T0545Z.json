@@ -1,0 +1,25 @@
+{
+  "id": "A733-SDMMC-H115",
+  "title": "Public archive recheck for A733 SDMMC0 IDMAC blocker",
+  "status": "completed_no_patch",
+  "tested_at_utc": "2026-06-11T05:45:00Z",
+  "queries": [
+    "\"sunxi-mmc\" \"A733\" \"IDMAC\"",
+    "\"A733\" \"SDMMC0\" \"DESC_READ\"",
+    "\"sun60iw2\" \"sunxi-mmc\"",
+    "\"Radxa Cubie A7S\" \"sunxi-mmc\""
+  ],
+  "findings": [
+    "Public search still surfaces the already-audited U-Boot A733 support series, not a Linux sunxi-mmc descriptor-fetch fix.",
+    "Search also surfaced vendor/downstream boot logs and forum material with A733/sun60iw2 MMC strings, but no source-backed SMHC0 IDMAC, firewall, NSI, MBUS, or security handoff delta.",
+    "No public reply/archive hit for the sent A733 SDMMC0 DESC_READ question was found in this pass."
+  ],
+  "sources": [
+    "https://lists.denx.de/pipermail/u-boot/2025-November/603430.html",
+    "https://linux-sunxi.org/A733",
+    "https://gist.github.com/iuncuim/b858927b7591ef4d2d9c0ba3102a1331",
+    "https://pastebin.com/WB3XTfs1"
+  ],
+  "decision": "No build and no patch. Keep the blocker unchanged until maintainer/vendor feedback or a source-backed SDMMC0 IDMAC access-control clue appears.",
+  "next_action": "Continue local firmware/source mining or check mail/list archives again later."
+}

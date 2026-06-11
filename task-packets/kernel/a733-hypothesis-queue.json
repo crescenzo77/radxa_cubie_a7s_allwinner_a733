@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T05:35:00Z",
+  "updated_utc": "2026-06-11T05:45:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -2441,6 +2441,25 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h114-datasheet-burst-recheck-20260611T0535Z.json",
         "summary": "No patch. The datasheet confirms high-level SMHC0 SD3.0 and secure-only SMC/SPC/TZMA blocks but gives no SMHC0 IDMAC, bus-matrix, firewall, or master-permission registers. The diagnostic driver has DMAC FIX_BURST/IDMA_ON but no separate A733 HBURST/IDMAC burst field. H017/H070/H095 already closed no-fixed-burst and burst-control speculation."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H115",
+      "priority": 1,
+      "status": "completed_no_patch",
+      "title": "Public archive recheck for A733 SDMMC0 IDMAC blocker",
+      "question": "Has a public archive, mailing-list, forum, or source hit appeared that names the missing A733 SDMMC0 IDMAC descriptor-fetch precondition?",
+      "test_cost": "low; public search only",
+      "procedure": [
+        "Search for A733/sun60iw2 sunxi-mmc IDMAC and DESC_READ terms.",
+        "Separate already-audited U-Boot A733 support from Linux MMC behavior evidence.",
+        "Promote only source-backed SMHC0 IDMAC, firewall, NSI, MBUS, or security handoff deltas."
+      ],
+      "pass_criteria": "A public source names a new Linux-applicable SDMMC0 IDMAC access-control or descriptor-fetch precondition.",
+      "fail_criteria": "Only already-audited U-Boot support, generic A733 pages, or downstream logs appear.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h115-public-archive-recheck-20260611T0545Z.json",
+        "summary": "No patch. Public search still surfaces the already-audited U-Boot A733 series, general A733 pages, and downstream/vendor boot logs. No public reply/archive hit or source-backed SMHC0 IDMAC, firewall, NSI, MBUS, or security handoff delta was found."
       }
     }
   ],
