@@ -178,6 +178,7 @@ print(",".join(items))
 PY
 )
 export A733_BF_SKIP_CANDIDATES="$skip"
+export A733_BF_REUSE_ARTIFACT="${A733_BF_REUSE_ARTIFACT:-1}"
 nohup scripts/a733-idmac-bruteforce-lab full-auto > "$log" 2>&1 < /dev/null &
 pid=$!
 printf 'started pid=%s log=%s skip=%s\n' "$pid" "$log" "$skip"
