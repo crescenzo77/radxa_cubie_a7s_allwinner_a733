@@ -1,0 +1,36 @@
+{
+  "id": "A733-SDMMC-H049",
+  "timestamp_utc": "2026-06-11T06:15:00Z",
+  "title": "BSP ctl-spec-caps 0x428 audit",
+  "scope": [
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.h",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/sun60iw2p1.dtsi",
+    "/srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "trigger": "Vendor A733 SDMMC0 DTS uses ctl-spec-caps=<0x428>, which had not been explicitly decoded in the handoff queue.",
+  "decode": {
+    "0x008": "SUNXI_SC_EN_RETRY",
+    "0x020": "SUNXI_MANUAL_READ_DATA_TIMEOUT",
+    "0x400": "SUNXI_CMD11_TIMEOUT_DETECT",
+    "0x428": "retry + manual read data timeout + CMD11 timeout detect"
+  },
+  "findings": [
+    "BSP reads ctl-spec-caps into host->ctl_spec_cap.",
+    "The 0x428 bits affect retry and timeout handling paths.",
+    "These bits do not change descriptor format, descriptor address translation, DMA mask, storage fabric clocks, reset order, GCTRL DMA enable, IDIE, DMAC enable, or the IDMAC descriptor-fetch path.",
+    "The current lab failure occurs before descriptor word 0 is consumed: IDST=0x4000 DESC_READ, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, descriptor OWN unchanged.",
+    "Manual read-data timeout logic may affect how a hung read is detected or recovered, but not whether IDMAC can fetch descriptor word 0."
+  ],
+  "public_search": {
+    "exact_email_archive_hit": false,
+    "answer_visible": false,
+    "notes": "Search still did not reveal a public archive hit or answer for the manually sent A733 SDMMC0 descriptor-fetch question."
+  },
+  "decision": "No behavior patch.",
+  "reason": "ctl-spec-caps=<0x428> is timeout/retry policy, not a descriptor-fetch precondition. Testing it would only alter hang detection/recovery around the same stuck IDMAC state.",
+  "next": [
+    "Do not retest ctl-spec-caps as a standalone descriptor-fetch fix.",
+    "Keep waiting for a maintainer/list reply or a source-backed SDMMC0 firewall/security/master-permission bit."
+  ]
+}

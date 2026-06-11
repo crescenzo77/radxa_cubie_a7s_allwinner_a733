@@ -1197,6 +1197,25 @@
       }
     },
     {
+      "id": "A733-SDMMC-H049",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "BSP ctl-spec-caps 0x428 audit",
+      "question": "Does vendor SDMMC0 ctl-spec-caps=<0x428> encode a missing A733 normal-IDMAC descriptor-fetch precondition?",
+      "test_cost": "low; source audit only, no kernel build and no board reboot",
+      "procedure": [
+        "Decode ctl-spec-caps bits from BSP sunxi-mmc.h.",
+        "Find where those bits are consumed in BSP sunxi-mmc.c.",
+        "Only patch if a bit affects descriptor fetch, DMA address reachability, reset/clock setup, or IDMAC enable."
+      ],
+      "pass_criteria": "ctl-spec-caps is either promoted to a narrow descriptor-fetch proof or closed as unrelated timeout/retry policy.",
+      "fail_criteria": "The next session tests ctl-spec-caps as a standalone fix without evidence it changes IDMAC descriptor fetch.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h049-ctl-spec-caps-audit-20260611T0615Z.json",
+        "summary": "Completed with no behavior patch. 0x428 decodes to SUNXI_SC_EN_RETRY, SUNXI_MANUAL_READ_DATA_TIMEOUT, and SUNXI_CMD11_TIMEOUT_DETECT. These bits affect retry/timeout handling, not descriptor format, address translation, DMA mask, storage-fabric clocks, reset order, GCTRL/IDIE/DMAC setup, or descriptor word 0 fetch."
+      }
+    },
+    {
       "id": "A733-SDMMC-H004",
       "priority": 4,
       "status": "do_not_repeat_without_new_evidence",
