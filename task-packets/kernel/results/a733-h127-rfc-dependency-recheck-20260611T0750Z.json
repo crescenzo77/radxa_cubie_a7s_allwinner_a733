@@ -1,0 +1,28 @@
+{
+  "id": "A733-UPSTREAM-H127",
+  "status": "completed_dependency_recheck",
+  "checked_utc": "2026-06-11T07:50:00Z",
+  "result": "No newer accepted/replacement A733 RTC, CCU/PRCM, or pinctrl series found in the public checks used for this pass. Keep the promoted DTS review snapshot dependent on the same external RFCs and do not send yet.",
+  "dependencies": [
+    {
+      "name": "A733 RTC",
+      "message_id": "20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech",
+      "observed_state": "v1 PATCH 0/7 posted January 21 2026; no replacement found in this pass",
+      "source": "https://lwn.net/Articles/1055358/"
+    },
+    {
+      "name": "A733 CCU/PRCM",
+      "message_id": "20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech",
+      "observed_state": "PATCH RFC 0/8 posted March 10 2026; still marked RFC in Patchew/public archive; depends on RTC series",
+      "source": "https://patchew.org/linux/20260310-a733-clk-v1-0-36b4e9b24457%40pigmoral.tech/"
+    },
+    {
+      "name": "A733 pinctrl",
+      "message_id": "20250821004232.8134-1-andre.przywara@arm.com",
+      "observed_state": "RFC PATCH 0/9 posted August 21 2025; public patchwork still shows RFC shape; binding patch had Conor Dooley Acked-by",
+      "source": "https://patchwork.armbian.eu/project/patchwork/cover/20250821004232.8134-1-andre.przywara%40arm.com/"
+    }
+  ],
+  "send_status": "not_send_ready",
+  "next_action": "Keep review snapshot as dependency-stacked prep artifact. Before any send, re-run this check, regenerate from final branch, then run b4 send --reflect."
+}
