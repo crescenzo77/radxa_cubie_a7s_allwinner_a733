@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T03:25:00Z",
+  "updated_utc": "2026-06-11T05:25:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -2401,7 +2401,7 @@
     {
       "id": "A733-SDMMC-H113",
       "priority": 1,
-      "status": "pending",
+      "status": "completed_lab_only_fail",
       "title": "Test A733 SMHC0 AHB gate at CCU offset 0x5dc",
       "question": "Does enabling or preserving the separate A733 SMHC0 AHB gate allow SDMMC0 IDMAC to fetch descriptor word 0?",
       "test_cost": "medium; lab-only kernel build and Cubie2/Cubie3 UART boot",
@@ -2418,7 +2418,11 @@
         "Lab-only diagnostic; do not submit as-is.",
         "Do not add DTS vendor-U-Boot workarounds.",
         "Do not expand into Ethernet, VPU, display, USB-C, PCIe, or wireless."
-      ]
+      ],
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h113-smhc0-ahb-gate-result-20260611T0525Z.json",
+        "summary": "Cubie3 booted lab commit 5b4c0fac0ec7. The attempted 0x5dc bit5 write did not stick: before=0x00000000 after=0x00000000, and fabric dumps kept ahb_smhc=0x00000000. Normal IDMAC still stalled in DESC_READ with IDST=0x00004000, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, and descriptor OWN unchanged after CPU sync. Cubie3 was restored to vendor 5.15.147-21-a733. Do not repeat on Cubie2 without new evidence."
+      }
     }
   ],
   "model_routes": [

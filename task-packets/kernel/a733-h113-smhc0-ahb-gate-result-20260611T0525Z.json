@@ -1,0 +1,29 @@
+{
+  "id": "A733-SDMMC-H113",
+  "title": "Test A733 SMHC0 AHB gate at CCU offset 0x5dc",
+  "status": "completed_lab_only_fail",
+  "tested_at_utc": "2026-06-11T05:13:40Z",
+  "host": "strix",
+  "target": "cubie3",
+  "kernel_tree": "/srv/projects/a733-diag-rtc-extosc-orphan",
+  "branch": "codex/a733-h113-smhc0-ahb-gate",
+  "commit": "5b4c0fac0ec7",
+  "artifact": "/srv/projects/kernel-work/outgoing/a733-h113-smhc0-ahb-gate-5b4c0fac0ec7-20260611T051029Z",
+  "uart_log": "/srv/projects/cubie-uart/logs/20260611T051340Z-a733-h113-smhc0-ahb-gate-5b4c0fac0ec7-ttyUSB0.uart.log",
+  "local_uart_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260611T051340Z-a733-h113-smhc0-ahb-gate-5b4c0fac0ec7-ttyUSB0.uart.log",
+  "uart_log_sha256": "da27c16e4727147d949755e47d4b33954693e9fed8d995f508894e04fdb09c60",
+  "restore_status": {
+    "target": "cubie3",
+    "kernel": "5.15.147-21-a733",
+    "hostname": "cubie-3"
+  },
+  "observations": [
+    "The lab kernel attempted to set CCU offset 0x5dc bit 5 before normal IDMAC launch.",
+    "The write did not stick: before=0x00000000 and after=0x00000000.",
+    "The fabric dump continued to show ahb_smhc=0x00000000.",
+    "Normal IDMAC still entered DESC_READ with IDST=0x00004000, CHDA=DLBA, CBDA=0, CBCR=0x00000400, BBCR=0x00000000.",
+    "The descriptor remained unchanged after CPU sync, with OWN still set."
+  ],
+  "conclusion": "The 0x5dc bit5 SMHC0 AHB gate lead does not currently provide a Linux-side fix. It is either not a writable/live register in this context, is protected/owned by firmware, or the generated U-Boot header name does not map to a usable SDMMC0 IDMAC precondition.",
+  "next_action": "Do not repeat on Cubie2 unless a new reason appears. Continue with source-backed firmware/bootloader comparison or maintainer/vendor feedback for the missing SDMMC0 IDMAC descriptor-fetch precondition."
+}
