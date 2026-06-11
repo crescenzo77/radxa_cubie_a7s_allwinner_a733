@@ -1,0 +1,44 @@
+{
+  "id": "A733-SDMMC-H039",
+  "timestamp_utc": "2026-06-11T02:25:00Z",
+  "status": "completed_no_patch",
+  "title": "Public Linux A733 dependency and clock-source audit",
+  "inputs": {
+    "public_search_terms": [
+      "20260310-a733-clk-v1-0-36b4e9b24457",
+      "20250821004232.8134-1-andre.przywara",
+      "sun60i-a733 v2 pinctrl",
+      "A733 IDMAC descriptor rea"
+    ],
+    "local_kernel_repo": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "local_homelab_queue": "/Users/enzo/projects/homelab/task-packets/kernel/a733-hypothesis-queue.json"
+  },
+  "findings": [
+    {
+      "area": "Linux CCU/PRCM dependency",
+      "finding": "Public search still resolves the A733 CCU/PRCM dependency to Junhui Liu's RFC series 20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech.",
+      "decision": "Keep Depends-on tracking for this RFC; do not submit competing local CCU scaffolding."
+    },
+    {
+      "area": "Linux pinctrl dependency",
+      "finding": "Public search still resolves the A733 pinctrl dependency to Andre Przywara's RFC series 20250821004232.8134-1-andre.przywara@arm.com.",
+      "decision": "Keep Depends-on tracking for this RFC; do not submit competing local pinctrl scaffolding."
+    },
+    {
+      "area": "U-Boot results",
+      "finding": "Newer A733 v2 hits are U-Boot-side support, including A733 SoC, clock/reset, pinctrl, and MMC enablement.",
+      "decision": "Do not treat U-Boot v2 patch numbering as a Linux dependency replacement."
+    },
+    {
+      "area": "SDMMC0 clock/reset comparison",
+      "finding": "The diagnostic Linux tree already carries optional SDMMC0 store, MBUS, and MSI-lite clock consumers, and prior tests did not fix normal-IDMAC descriptor fetch. Public U-Boot/source evidence does not name a new untested MMC0 gate/reset offset.",
+      "decision": "No new behavior patch is justified from clock/reset evidence."
+    },
+    {
+      "area": "Maintainer/list mail",
+      "finding": "Public search did not yet find an archive hit for the A733 IDMAC descriptor-read question.",
+      "decision": "Continue monitoring; absence of archive proof is not a reason to resend immediately."
+    }
+  ],
+  "conclusion": "No source-backed runtime delta was found. The next kernel behavior patch still requires maintainer/list feedback, a public/vendor source clue naming a specific untested register/reset/fabric bit, or a deliberately labeled watch-only diagnostic promoted by stronger evidence."
+}

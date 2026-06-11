@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T01:15:00Z",
+  "updated_utc": "2026-06-11T02:25:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H038 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, the public-U-Boot IRQ-40 clue, the descriptor end-of-ring bit, and basic model-suggested IDMAC reset/clock-offset concerns. H038 found no visible Gmail bounce for the 18:01 plain-text resend, but no public archive proof yet. The latest focused model pass produced no source-backed patch candidate; the only fresh idea, IDMAC enable/write-posting delay/readback, remains watch-only until source or maintainer evidence appears.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H039 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, the public-U-Boot IRQ-40 clue, the descriptor end-of-ring bit, basic model-suggested IDMAC reset/clock-offset concerns, and the current public Linux dependency status. H039 confirmed the active Linux dependencies remain Junhui Liu's A733 CCU/PRCM RFC and Andre Przywara's A733 pinctrl RFC; newer public hits are U-Boot-side, not Linux replacements. No source-backed runtime patch emerged.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,34 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H038",
+    "id": "A733-SDMMC-H039",
     "status": "completed_no_patch",
-    "title": "Gmail delivery monitor and focused model/source triage",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h038-mail-model-monitor-20260611T0115Z.json",
-    "result": "Gmail shows the 18:01 plain-text resend in Sent with intended recipients and no visible 18:01 bounce in the rejection search. Public archive search still finds no thread. Focused four-lane model triage produced no source-backed behavior patch candidate."
+    "title": "Public Linux A733 dependency and clock-source audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h039-rfc-dependency-audit-20260611T0225Z.json",
+    "result": "Public search still points to Junhui Liu's 20260310 A733 CCU/PRCM RFC and Andre Przywara's 20250821 A733 pinctrl RFC as the active Linux dependencies. Newer A733 v2 hits are U-Boot-side. The local diagnostic tree already includes and has tested the vendor-visible SDMMC0 store/MBUS/MSI-lite clock consumers, and MMC0 CCU offsets match the public U-Boot/Linux evidence. No behavior patch is justified."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H039",
+      "priority": 38,
+      "status": "completed_no_patch",
+      "title": "Public Linux A733 dependency and clock-source audit",
+      "question": "Has public Linux A733 CCU/pinctrl work moved beyond the known RFCs, or does public U-Boot/source evidence reveal a new SDMMC0 clock/reset delta worth testing?",
+      "test_cost": "low; public search and local source audit only",
+      "procedure": [
+        "Search for the exact A733 CCU/PRCM and pinctrl RFC message IDs.",
+        "Search for newer Linux A733 CCU/pinctrl v2 work and A733 IDMAC descriptor discussion.",
+        "Separate U-Boot A733 v2 hits from Linux kernel dependencies.",
+        "Compare public/vendor-visible SDMMC0 clocks, resets, and MMC module offsets against the current diagnostic tree and prior H021/H037 results.",
+        "Promote a patch only if the audit names one untested Linux-side runtime delta."
+      ],
+      "pass_criteria": "A newer Linux dependency or one concrete untested runtime delta is found.",
+      "fail_criteria": "Only the known Linux RFCs and already-tested U-Boot/vendor-visible clock/reset facts remain.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h039-rfc-dependency-audit-20260611T0225Z.json",
+        "summary": "No new Linux dependency replaced the known CCU/PRCM or pinctrl RFCs. Newer A733 v2 search hits are U-Boot-side. The diagnostic tree already includes optional SDMMC0 store/MBUS/MSI-lite consumers and prior tests did not fix descriptor fetch."
+      }
+    },
     {
       "id": "A733-SDMMC-H038",
       "priority": 37,
