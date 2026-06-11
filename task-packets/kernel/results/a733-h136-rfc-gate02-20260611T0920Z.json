@@ -1,0 +1,45 @@
+{
+  "id": "A733-UPSTREAM-RFC-RECHECK",
+  "checked_utc": "2026-06-11T06:22:04Z",
+  "status": "completed_dependency_recheck",
+  "result": "Public dependency markers unchanged",
+  "dependencies": [
+    {
+      "name": "A733 RTC",
+      "message_id": "20260121-a733-rtc-v1-0-d359437f23a7@pigmoral.tech",
+      "source": "https://lwn.net/Articles/1055358/",
+      "reachable": true,
+      "markers_found": [
+        "[PATCH 0/7]",
+        "rtc: sun6i: Add support for Allwinner A733 SoC"
+      ],
+      "observed_state": "v1 PATCH 0/7 is still the visible public series",
+      "needs_manual_review": false
+    },
+    {
+      "name": "A733 CCU/PRCM",
+      "message_id": "20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech",
+      "source": "https://patchew.org/linux/20260310-a733-clk-v1-0-36b4e9b24457%40pigmoral.tech/",
+      "reachable": true,
+      "markers_found": [
+        "[PATCH RFC 0/8]",
+        "Add support for Allwinner A733 CCU and PRCM"
+      ],
+      "observed_state": "PATCH RFC 0/8 is still the visible public series",
+      "needs_manual_review": false
+    },
+    {
+      "name": "A733 pinctrl",
+      "message_id": "20250821004232.8134-1-andre.przywara@arm.com",
+      "source": "https://patchwork.armbian.eu/project/patchwork/cover/20250821004232.8134-1-andre.przywara%40arm.com/",
+      "reachable": true,
+      "markers_found": [
+        "[RFC,0/9]",
+        "pinctrl: sunxi: Allwinner A733 support"
+      ],
+      "observed_state": "RFC 0/9 is still the visible public series",
+      "needs_manual_review": false
+    }
+  ],
+  "send_status": "not_send_ready"
+}

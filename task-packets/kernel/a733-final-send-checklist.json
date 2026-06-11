@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T09:10:00Z",
+  "updated_utc": "2026-06-11T09:20:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "status": "not_send_ready",
   "purpose": "Executable checklist for turning the A733/Cubie A7S review snapshot into a human-approved b4 reflect candidate.",
@@ -36,9 +36,13 @@
     },
     {
       "id": "gate-02-rfc-dependencies",
-      "status": "open",
+      "status": "closed",
       "command": "Recheck public RTC, CCU/PRCM, and pinctrl dependency state.",
-      "pass": "Cover letter and b4 dependency metadata reflect current accepted/RFC state."
+      "pass": "Cover letter and b4 dependency metadata reflect current accepted/RFC state.",
+      "evidence": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h136-rfc-gate02-20260611T0920Z.json",
+        "observed_state": "RTC remains v1 PATCH 0/7; CCU/PRCM remains PATCH RFC 0/8; pinctrl remains RFC 0/9."
+      }
     },
     {
       "id": "gate-03-b4-cover",

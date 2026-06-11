@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T09:10:00Z",
+  "updated_utc": "2026-06-11T09:20:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H089 proved lab-only PIO reads and CMD25 writes up to 32 blocks can keep rw root activity moving, including the former 24-block CMD25 boundary. The upstream blocker remains the missing SDMMC0 IDMAC descriptor-fetch precondition; PIO is diagnostic infrastructure only.",
   "operator_model": {
@@ -34,16 +34,16 @@
     "series_manager": "Use b4 from a clean generated review branch for final mailing-list preparation.",
     "branch_hierarchy": "Use topic branches, candidate branches, and generated review branches; update dependent refs together with git rebase --update-refs when rebasing a stack. H135 created final branch codex/final/a733-dts-v1 in /srv/projects/kernel-work/final/a733-dts-v1.",
     "validation_floor": "Run scripts/kernel-validation-floor locally; H132 fixed it to accept both normal git repos and linked worktrees. The public repo CI mirrors this floor for candidate/**, topic/**, review/**, codex/**, pull requests, and manual dispatch.",
-    "review_export": "Treat patches/ as a review snapshot only. H125 promoted the folded export into the maintained snapshot and validation-floor apply-check passes from b327168a182e^. H126 completed recipient/checkpatch hygiene. H134 automated the external RTC, CCU/PRCM, and pinctrl dependency recheck and still found the same visible public state. H128 proved b4 prep can track the series but metadata/preflight are not reflect-ready. H129 added a no-send b4 final gate that fails closed on those open gates.",
+    "review_export": "Treat patches/ as a review snapshot only. H125 promoted the folded export into the maintained snapshot and validation-floor apply-check passes from b327168a182e^. H126 completed recipient/checkpatch hygiene. H136 closed final-send gate 02 with the same visible public RTC v1, CCU/PRCM RFC, and pinctrl RFC state. H128 proved b4 prep can track the series but metadata/preflight are not reflect-ready. H129 added a no-send b4 final gate that fails closed on those open gates.",
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step.",
     "final_send_checklist": "/Users/enzo/projects/homelab/task-packets/kernel/a733-final-send-checklist.json",
     "final_send_status_command": "/Users/enzo/projects/homelab/scripts/kernel-final-send-status"
   },
   "latest_upstream_prep": {
-    "id": "A733-UPSTREAM-H135",
-    "status": "completed_gate_01_final_branch",
-    "title": "Final branch gate closed",
-    "summary": "Created Strix final review branch codex/final/a733-dts-v1 at /srv/projects/kernel-work/final/a733-dts-v1 from b327168a182e^ with the promoted four patches applied. The worktree is clean, has exactly 4 commits above base, and kernel-validation-floor passes. Gate 01 is closed; the series remains not_send_ready."
+    "id": "A733-UPSTREAM-H136",
+    "status": "completed_gate_02_dependency_recheck",
+    "title": "Dependency recheck gate closed",
+    "summary": "Ran scripts/kernel-a733-rfc-dependency-recheck for final-send gate 02. Public markers still show RTC v1 PATCH 0/7, CCU/PRCM PATCH RFC 0/8, and pinctrl RFC 0/9. Gate 02 is closed; the series remains not_send_ready."
   },
   "latest_completed_test": {
     "id": "A733-SDMMC-H089",
