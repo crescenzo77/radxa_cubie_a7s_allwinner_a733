@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T07:40:00Z",
+  "updated_utc": "2026-06-11T09:17:07Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H143 freshly reproduced the stall on Cubie3 from a clean H020-derived measurement branch: IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, descriptor checksum unchanged, OWN still set after CPU sync. PIO remains diagnostic/lab infrastructure only.",
   "operator_model": {
@@ -2753,6 +2753,36 @@
         "No vendor U-Boot workaround in DTS."
       ],
       "result": null
+    },
+    {
+      "id": "A733-SDMMC-H149",
+      "priority": 149,
+      "status": "queued_unattended_runtime",
+      "title": "Automated one-candidate-per-boot IDMAC bus-fabric brute-force sweep",
+      "question": "Can a clean-boot register candidate make A733 SDMMC0 IDMAC progress beyond CBDA=0/BBCR=0 during the forced CMD18 proof?",
+      "test_cost": "high; unattended Cubie3 UART/power loop, one reboot per candidate",
+      "procedure": [
+        "Run on Strix: cd /srv/projects/homelab && scripts/a733-idmac-bruteforce-lab full-auto",
+        "The script patches only the diagnostic kernel tree at /srv/projects/a733-diag-rtc-extosc-orphan, builds Image/DTB, stages to Cubie3 /boot/cthu, and direct-boots candidates over UART.",
+        "Each candidate is applied by kernel cmdline module parameters before the forced A733 CMD18 IDMAC transfer; the UART log is parsed automatically for diag a733-bf result ... progressed=1.",
+        "On pass, stop immediately and record the winning kind/address/bit/log in task-packets/kernel/results/a733-idmac-bruteforce-*.json.",
+        "On failure or interruption, restore/power-cycle Cubie3 and preserve the JSON/log trail."
+      ],
+      "pass_criteria": "A candidate produces cbda != 0 or bbcr > 0 and the result JSON records progressed=1 with UART evidence.",
+      "fail_criteria": "The configured CCU and SMHC candidate ranges complete with no progressed=1 result.",
+      "guardrails": [
+        "Lab-only diagnostic; do not port raw register pokes upstream.",
+        "Do not use Cubie1.",
+        "Do not touch final DTS/b4 branch.",
+        "One candidate per reboot to keep evidence clean."
+      ],
+      "artifacts": {
+        "script_mac": "/Users/enzo/projects/homelab/scripts/a733-idmac-bruteforce-lab",
+        "script_strix": "/srv/projects/homelab/scripts/a733-idmac-bruteforce-lab",
+        "diagnostic_branch": "codex/a733-idmac-bruteforce-lab",
+        "built_artifact_strix": "/srv/projects/kernel-work/outgoing/a733-idmac-bf-0cf70fb087ca-20260611T091700Z",
+        "diagnostic_commit": "0cf70fb087ca"
+      }
     }
   ],
   "model_routes": [

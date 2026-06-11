@@ -1,0 +1,419 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo="${A733_KERNEL_REPO:-/srv/projects/a733-diag-rtc-extosc-orphan}"
+branch="${A733_BF_BRANCH:-codex/a733-idmac-bruteforce-lab}"
+jobs="${A733_BUILD_JOBS:-$(nproc)}"
+target="${A733_TARGET:-codex@192.168.50.95}"
+label_prefix="${A733_BF_LABEL:-a733-idmac-bf}"
+stage_root="${A733_STAGE_ROOT:-/srv/projects/kernel-work/outgoing}"
+dtb_rel="${A733_DTB_REL:-arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dtb}"
+dtb_target="${A733_DTB_TARGET:-allwinner/sun60i-a733-cubie-a7s.dtb}"
+cross_compile="${CROSS_COMPILE:-aarch64-linux-gnu-}"
+
+usage() {
+  cat <<'USAGE'
+Usage: scripts/a733-idmac-bruteforce-lab ACTION
+
+Run on Strix. This is a lab-only A733 SDMMC0 IDMAC bus-fabric brute-force
+harness. It never modifies the upstream DTS series.
+
+Actions:
+  patch        Add the opt-in one-candidate-per-boot kernel probe.
+  build        Build Image + Cubie A7S DTB and create an outgoing artifact.
+  stage        Install the latest artifact to Cubie3 /boot/cthu.
+  boot-one     Boot one candidate over UART.
+  sweep-ccu    Try candidate CCU gate/reset bits one boot at a time.
+  sweep-smhc   Try selected SMHC-local bits one boot at a time.
+  full-auto    Patch/build/stage, sweep candidates, save JSON, restore Cubie3.
+  status       Show branch/status and latest outgoing artifact.
+
+Environment:
+  A733_KERNEL_REPO=/srv/projects/a733-diag-rtc-extosc-orphan
+  A733_BF_ADDR=0x020025dc          physical register address for boot-one
+  A733_BF_BIT=5                    bit to OR into that register for boot-one
+  A733_BF_VALUE=                   optional full value write instead of bit OR
+  A733_BF_RESTORE=0                restore original value before boot continues
+  A733_BF_KIND=ccu|nsi|mbus|smhc  log label only
+  A733_BF_SECONDS=150              UART capture duration per candidate
+  A733_BF_MAX_CANDIDATES=          optional cap for smoke testing
+
+The pass signal is any UART line containing:
+  diag a733-bf result ... progressed=1
+
+This script intentionally tests one register candidate per reboot. It is slower
+than poking everything in one run, but it keeps evidence clean and reversible.
+USAGE
+}
+
+remote_git() {
+  git -C "$repo" "$@"
+}
+
+patch_kernel() {
+  cd "$repo"
+  git switch -C "$branch"
+  python3 - <<'PY'
+from pathlib import Path
+
+p = Path("drivers/mmc/host/sunxi-mmc.c")
+s = p.read_text()
+
+if "a733_bf_enable" in s:
+    print("bruteforce probe already present")
+    raise SystemExit
+
+s = s.replace(
+    "#include <linux/spinlock.h>\n",
+    "#include <linux/spinlock.h>\n#include <linux/ioport.h>\n",
+)
+
+s = s.replace(
+    "struct sunxi_mmc_host {\n",
+    """static bool a733_bf_enable;
+static ulong a733_bf_addr;
+static int a733_bf_bit = -1;
+static uint a733_bf_value;
+static bool a733_bf_use_value;
+static bool a733_bf_restore;
+static char *a733_bf_kind = "raw";
+
+module_param_named(a733_bf_enable, a733_bf_enable, bool, 0644);
+module_param_named(a733_bf_addr, a733_bf_addr, ulong, 0644);
+module_param_named(a733_bf_bit, a733_bf_bit, int, 0644);
+module_param_named(a733_bf_value, a733_bf_value, uint, 0644);
+module_param_named(a733_bf_use_value, a733_bf_use_value, bool, 0644);
+module_param_named(a733_bf_restore, a733_bf_restore, bool, 0644);
+module_param_named(a733_bf_kind, a733_bf_kind, charp, 0644);
+
+struct sunxi_mmc_host {
+""",
+)
+
+s = s.replace(
+    "\tvoid __iomem\t*diag_ccu_base;\n",
+    "\tvoid __iomem\t*diag_ccu_base;\n"
+    "\tvoid __iomem\t*a733_bf_base;\n"
+    "\tresource_size_t\ta733_bf_phys;\n"
+    "\tu32\t\ta733_bf_page_off;\n",
+)
+
+insert = r'''
+static bool sunxi_mmc_a733_bf_active(struct sunxi_mmc_host *host,
+				     struct mmc_data *data)
+{
+	return a733_bf_enable && sunxi_mmc_diag_is_a733_cmd18_proof(host, data) &&
+	       host->a733_bf_base;
+}
+
+static void sunxi_mmc_a733_bf_apply(struct sunxi_mmc_host *host,
+				    struct mmc_data *data)
+{
+	void __iomem *reg;
+	u32 before, write, after;
+
+	if (!sunxi_mmc_a733_bf_active(host, data))
+		return;
+
+	reg = host->a733_bf_base + host->a733_bf_page_off;
+	before = readl(reg);
+	if (a733_bf_use_value)
+		write = a733_bf_value;
+	else if (a733_bf_bit >= 0 && a733_bf_bit < 32)
+		write = before | BIT(a733_bf_bit);
+	else
+		write = before;
+
+	writel(write, reg);
+	after = readl(reg);
+	dev_info(mmc_dev(host->mmc),
+		 "diag a733-bf apply kind=%s phys=0x%pa bit=%d use_value=%d value=0x%08x before=0x%08x write=0x%08x after=0x%08x restore=%d\n",
+		 a733_bf_kind, &host->a733_bf_phys, a733_bf_bit,
+		 a733_bf_use_value, a733_bf_value, before, write, after,
+		 a733_bf_restore);
+
+	if (a733_bf_restore) {
+		writel(before, reg);
+		dev_info(mmc_dev(host->mmc),
+			 "diag a733-bf restore phys=0x%pa restored=0x%08x\n",
+			 &host->a733_bf_phys, readl(reg));
+	}
+}
+
+static void sunxi_mmc_a733_bf_result(struct sunxi_mmc_host *host,
+				     struct mmc_data *data, const char *tag)
+{
+	u32 cbda, bbcr, cbcr, idst, chda;
+	bool progressed;
+
+	if (!sunxi_mmc_a733_bf_active(host, data))
+		return;
+
+	cbda = mmc_readl(host, REG_CBDA);
+	bbcr = mmc_readl(host, REG_BBCR);
+	cbcr = mmc_readl(host, REG_CBCR);
+	idst = mmc_readl(host, REG_IDST);
+	chda = mmc_readl(host, REG_CHDA);
+	progressed = cbda || bbcr;
+
+	dev_info(mmc_dev(host->mmc),
+		 "diag a733-bf result %s kind=%s phys=0x%pa bit=%d cbda=0x%08x bbcr=0x%08x cbcr=0x%08x idst=0x%08x chda=0x%08x progressed=%d\n",
+		 tag, a733_bf_kind, &host->a733_bf_phys, a733_bf_bit,
+		 cbda, bbcr, cbcr, idst, chda, progressed);
+}
+
+'''
+
+s = s.replace(
+    "static void sunxi_mmc_init_idma_des(struct sunxi_mmc_host *host,\n",
+    insert + "\nstatic void sunxi_mmc_init_idma_des(struct sunxi_mmc_host *host,\n",
+)
+
+s = s.replace(
+    "\tsunxi_mmc_diag_h025_mark(host, data, \"before-idma-desc-setup\");\n",
+    "\tsunxi_mmc_a733_bf_apply(host, data);\n"
+    "\tsunxi_mmc_diag_h025_mark(host, data, \"before-idma-desc-setup\");\n",
+)
+
+s = s.replace(
+    "\t\tif (!diag_pio) {\n\t\t\tstruct sunxi_idma_des *pdes = host->sg_cpu;\n",
+    "\t\tif (!diag_pio) {\n\t\t\tstruct sunxi_idma_des *pdes = host->sg_cpu;\n\n"
+    "\t\t\tsunxi_mmc_a733_bf_result(host, data, \"after-polls\");\n",
+)
+
+s = s.replace(
+    "\tif (sunxi_mmc_diag_is_a733(host)) {\n"
+    "\t\thost->diag_ccu_base = devm_ioremap(&pdev->dev, 0x02002000, 0x1000);\n"
+    "\t\tif (!host->diag_ccu_base)\n"
+    "\t\t\tdev_warn(&pdev->dev, \"diag failed to map A733 CCU registers\\n\");\n"
+    "\t}\n",
+    "\tif (sunxi_mmc_diag_is_a733(host)) {\n"
+    "\t\thost->diag_ccu_base = devm_ioremap(&pdev->dev, 0x02002000, 0x1000);\n"
+    "\t\tif (!host->diag_ccu_base)\n"
+    "\t\t\tdev_warn(&pdev->dev, \"diag failed to map A733 CCU registers\\n\");\n"
+    "\t\tif (a733_bf_enable && a733_bf_addr) {\n"
+    "\t\t\tresource_size_t page = a733_bf_addr & PAGE_MASK;\n"
+    "\n"
+    "\t\t\thost->a733_bf_phys = a733_bf_addr;\n"
+    "\t\t\thost->a733_bf_page_off = a733_bf_addr & ~PAGE_MASK;\n"
+    "\t\t\thost->a733_bf_base = devm_ioremap(&pdev->dev, page, PAGE_SIZE);\n"
+    "\t\t\tif (!host->a733_bf_base)\n"
+    "\t\t\t\tdev_warn(&pdev->dev, \"diag a733-bf failed to map phys=0x%lx\\n\",\n"
+    "\t\t\t\t\t a733_bf_addr);\n"
+    "\t\t\telse\n"
+    "\t\t\t\tdev_info(&pdev->dev,\n"
+    "\t\t\t\t\t \"diag a733-bf armed kind=%s phys=0x%pa page=0x%pa off=0x%x bit=%d use_value=%d value=0x%08x restore=%d\\n\",\n"
+    "\t\t\t\t\t a733_bf_kind, &host->a733_bf_phys, &page,\n"
+    "\t\t\t\t\t host->a733_bf_page_off, a733_bf_bit,\n"
+    "\t\t\t\t\t a733_bf_use_value, a733_bf_value,\n"
+    "\t\t\t\t\t a733_bf_restore);\n"
+    "\t\t}\n"
+    "\t}\n",
+)
+
+p.write_text(s)
+PY
+  git diff -- drivers/mmc/host/sunxi-mmc.c
+}
+
+build_kernel() {
+  cd "$repo"
+  make -j"$jobs" ARCH=arm64 CROSS_COMPILE="$cross_compile" Image "$dtb_target"
+  local head ts out
+  head="$(git rev-parse --short=12 HEAD)"
+  ts="$(date -u +%Y%m%dT%H%M%SZ)"
+  out="${stage_root}/a733-idmac-bf-${head}-${ts}"
+  mkdir -p "$out"
+  install -m 0644 arch/arm64/boot/Image "$out/Image"
+  install -m 0644 "$dtb_rel" "$out/sun60i-a733-cubie-a7s.dtb"
+  install -m 0644 .config "$out/config"
+  {
+    echo "label=a733-idmac-bf"
+    echo "repo=$repo"
+    echo "branch=$(git branch --show-current)"
+    echo "head=$(git rev-parse HEAD)"
+    sha256sum "$out/Image" "$out/sun60i-a733-cubie-a7s.dtb" "$out/config"
+  } > "$out/manifest.txt"
+  ln -sfn "$out" "${stage_root}/a733-idmac-bf-latest"
+  echo "$out"
+}
+
+latest_artifact() {
+  readlink -f "${stage_root}/a733-idmac-bf-latest"
+}
+
+stage_artifact() {
+  local out
+  out="$(latest_artifact)"
+  test -d "$out"
+  ssh -o BatchMode=yes "$target" 'sudo mkdir -p /boot/cthu/backups /boot/cthu'
+  ssh -o BatchMode=yes "$target" "ts=\$(date -u +%Y%m%dT%H%M%SZ); sudo mkdir -p /boot/cthu/backups/a733-bf-\$ts; sudo cp -a /boot/cthu/. /boot/cthu/backups/a733-bf-\$ts/ 2>/dev/null || true"
+  scp -q "$out/Image" "$out/sun60i-a733-cubie-a7s.dtb" "$out/config" "$out/manifest.txt" "$target:/tmp/"
+  ssh -o BatchMode=yes "$target" 'sudo install -m 0644 /tmp/Image /boot/cthu/Image; sudo install -m 0644 /tmp/sun60i-a733-cubie-a7s.dtb /boot/cthu/a733.dtb; sudo install -m 0644 /tmp/config /boot/cthu/config; sudo install -m 0644 /tmp/manifest.txt /boot/cthu/manifest.txt; sync; sha256sum /boot/cthu/Image /boot/cthu/a733.dtb /boot/cthu/config /boot/cthu/manifest.txt'
+}
+
+boot_one() {
+  local addr bit kind value use_value restore label bootargs seconds
+  addr="${A733_BF_ADDR:?set A733_BF_ADDR, e.g. 0x020025dc}"
+  bit="${A733_BF_BIT:--1}"
+  kind="${A733_BF_KIND:-raw}"
+  value="${A733_BF_VALUE:-0}"
+  use_value=0
+  restore="${A733_BF_RESTORE:-0}"
+  seconds="${A733_BF_SECONDS:-150}"
+  if [ -n "${A733_BF_VALUE:-}" ]; then
+    use_value=1
+  fi
+  label="${label_prefix}-${kind}-$(printf '%s' "$addr" | tr -d 'x')-b${bit}"
+  bootargs="console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x02500000 loglevel=8 ignore_loglevel drm_debug=1 root=PARTUUID=db375e07-7682-4d4e-b8bc-a923dd0b027e rootfstype=ext4 rootwait ro rootflags=noload init=/bin/sh sunxi_mmc.a733_bf_enable=1 sunxi_mmc.a733_bf_addr=${addr} sunxi_mmc.a733_bf_bit=${bit} sunxi_mmc.a733_bf_kind=${kind} sunxi_mmc.a733_bf_restore=${restore} sunxi_mmc.a733_bf_use_value=${use_value} sunxi_mmc.a733_bf_value=${value}"
+  CUBIE_BOOTARGS="$bootargs" CUBIE_BOOT_CAPTURE_SECONDS="$seconds" \
+    /srv/projects/homelab/scripts/cubie-direct-uboot-load-session "$label"
+}
+
+sweep_candidates() {
+  local kind="$1"; shift
+  local base="$1"; shift
+  local off bit addr log result_json count max
+  result_json="${A733_BF_RESULT_JSON:-}"
+  count=0
+  max="${A733_BF_MAX_CANDIDATES:-0}"
+  for off in "$@"; do
+    for bit in $(seq 0 31); do
+      count=$((count + 1))
+      if [ "$max" -gt 0 ] && [ "$count" -gt "$max" ]; then
+        echo "candidate cap reached: ${max}"
+        return 124
+      fi
+      addr="$(printf '0x%08x' $((base + off)))"
+      echo "== a733-bf ${kind} addr=${addr} bit=${bit} =="
+      set +e
+      A733_BF_KIND="$kind" A733_BF_ADDR="$addr" A733_BF_BIT="$bit" boot_one
+      set -e
+      log="$(find /srv/projects/cubie-uart/logs -maxdepth 1 -type f -name '*a733-idmac-bf*.uart.log' -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)"
+      if [ -n "$log" ] && grep -q 'diag a733-bf result .*progressed=1' "$log"; then
+        echo "PASS candidate kind=${kind} addr=${addr} bit=${bit} log=${log}"
+        if [ -n "$result_json" ]; then
+          python3 - "$result_json" "$kind" "$addr" "$bit" "$log" "pass" <<'PY'
+import json, sys, time
+path, kind, addr, bit, log, status = sys.argv[1:]
+doc = json.load(open(path)) if __import__("os").path.exists(path) else {"tests": []}
+doc["status"] = status
+doc["winning_candidate"] = {"kind": kind, "addr": addr, "bit": int(bit), "log": log}
+doc["updated_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+json.dump(doc, open(path, "w"), indent=2)
+print()
+PY
+        fi
+        exit 0
+      fi
+      if [ -n "$result_json" ]; then
+        python3 - "$result_json" "$kind" "$addr" "$bit" "${log:-}" "fail" <<'PY'
+import json, os, sys, time
+path, kind, addr, bit, log, status = sys.argv[1:]
+doc = json.load(open(path)) if os.path.exists(path) else {"tests": []}
+doc.setdefault("tests", []).append({
+    "kind": kind, "addr": addr, "bit": int(bit), "status": status,
+    "log": log, "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+})
+doc["status"] = "running"
+doc["updated_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+json.dump(doc, open(path, "w"), indent=2)
+print()
+PY
+      fi
+    done
+  done
+  echo "no passing ${kind} candidate"
+}
+
+restore_cubie3_vendor() {
+  ssh -o BatchMode=yes "$target" 'sudo true' || return 0
+  ssh -o BatchMode=yes "$target" 'sync' || true
+  ~/.local/bin/cubie3-power cycle 5 || true
+}
+
+full_auto() {
+  local ts result_dir result_json rc=1
+  ts="$(date -u +%Y%m%dT%H%M%SZ)"
+  result_dir="/srv/projects/homelab/task-packets/kernel/results"
+  mkdir -p "$result_dir"
+  result_json="${result_dir}/a733-idmac-bruteforce-${ts}.json"
+  A733_BF_RESULT_JSON="$result_json"
+  export A733_BF_RESULT_JSON
+
+  python3 - "$result_json" "$repo" "$branch" <<'PY'
+import json, sys, time
+path, repo, branch = sys.argv[1:]
+json.dump({
+    "id": "A733-IDMAC-BRUTEFORCE",
+    "status": "starting",
+    "repo": repo,
+    "branch": branch,
+    "started_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    "tests": [],
+    "guardrails": [
+        "lab-only diagnostic",
+        "one candidate per clean boot",
+        "do not port raw register pokes upstream",
+        "Cubie1 excluded",
+    ],
+}, open(path, "w"), indent=2)
+print()
+PY
+
+  trap 'restore_cubie3_vendor; echo "result_json='"$result_json"'"' EXIT
+  patch_kernel
+  build_kernel
+  stage_artifact
+
+  set +e
+  sweep_candidates ccu 0x02002000 0x580 0x584 0x588 0x58c 0x594 0x59c 0x5a4 0x5b4 0x5c0 0x5dc 0x5e0 0x5e4 0xd00 0xd0c
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    sweep_candidates smhc 0x04020000 0x00 0x50 0x54 0x80 0x100
+    rc=$?
+  fi
+  set -e
+
+  if [ "$rc" -ne 0 ]; then
+    python3 - "$result_json" "$rc" <<'PY'
+import json, sys, time
+path, rc = sys.argv[1:]
+doc = json.load(open(path))
+doc["status"] = "no_pass"
+doc["exit_code"] = int(rc)
+doc["updated_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+json.dump(doc, open(path, "w"), indent=2)
+print()
+PY
+  fi
+  return "$rc"
+}
+
+status() {
+  cd "$repo"
+  echo "repo=$repo"
+  echo "branch=$(git branch --show-current)"
+  echo "head=$(git rev-parse --short=12 HEAD)"
+  git status --short
+  echo "latest=$(latest_artifact 2>/dev/null || true)"
+}
+
+case "${1:-}" in
+  patch) patch_kernel ;;
+  build) build_kernel ;;
+  stage) stage_artifact ;;
+  boot-one) boot_one ;;
+  sweep-ccu)
+    # Existing diagnostic tree maps CCU at 0x02002000. Offsets are relative
+    # to that runtime mapping, so physical addresses use 0x02002000 + offset.
+    sweep_candidates ccu 0x02002000 0x580 0x584 0x588 0x58c 0x594 0x59c 0x5a4 0x5b4 0x5c0 0x5dc 0x5e0 0x5e4 0xd00 0xd0c
+    ;;
+  sweep-smhc)
+    sweep_candidates smhc 0x04020000 0x00 0x50 0x54 0x80 0x100
+    ;;
+  full-auto) full_auto ;;
+  status) status ;;
+  -h|--help|help|"") usage ;;
+  *) usage >&2; exit 2 ;;
+esac
