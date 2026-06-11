@@ -1,0 +1,29 @@
+{
+  "id": "A733-SDMMC-H050",
+  "timestamp_utc": "2026-06-11T06:35:00Z",
+  "title": "Vendor A733 SDMMC node comparison audit",
+  "scope": [
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/sun60iw2p1.dtsi",
+    "/srv/projects/a733-diag-rtc-extosc-orphan/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi",
+    "/srv/projects/a733-diag-rtc-extosc-orphan/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts"
+  ],
+  "trigger": "Compare vendor SDMMC0/1/2/3 nodes for a controller-property clue not covered by the SDMMC0 focused audits.",
+  "findings": [
+    "Vendor sdc0 and sdc1 are v5p3x 4-bit nodes with mmc_store, mmc_mbus, mmc_msi_lite, max-frequency 50 MHz, cap-sd-highspeed, and ctl-spec-caps=<0x428>.",
+    "Vendor sdc0 has cap-wait-while-busy, commented card-detect options, and no SDIO keep-power properties.",
+    "Vendor sdc1 adds SDIO-oriented cap-sdio-irq, ignore-pm-notify, keep-power-in-suspend, execute_tuning_in_kernel, and an active 208M delay override; these are not SDMMC0 SD-card normal-IDMAC descriptor-fetch properties.",
+    "Vendor sdc2/sdc3 are 8-bit non-removable eMMC-style nodes with cap-cmd23, mmc-cache-ctrl, no-sdio/no-sd, and ctl-spec-caps=<0x328>.",
+    "The local diagnostic SDMMC0 DTS already carries the storage fabric clocks and SD card bus constraints needed for the current proof."
+  ],
+  "public_search": {
+    "exact_email_archive_hit": false,
+    "answer_visible": false,
+    "notes": "Search still did not reveal a public archive hit or answer for the manually sent A733 SDMMC0 descriptor-fetch question."
+  },
+  "decision": "No behavior patch.",
+  "reason": "The vendor SDMMC node differences separate SD-card, SDIO, and eMMC policy. They do not name a new SDMMC0 normal-IDMAC descriptor-fetch precondition.",
+  "next": [
+    "Do not import vendor-only SDIO/eMMC policy into the SDMMC0 upstream slice.",
+    "Keep waiting for maintainer/list feedback or a source-backed SDMMC0 firewall/security/master-permission bit."
+  ]
+}

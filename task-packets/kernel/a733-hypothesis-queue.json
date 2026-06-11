@@ -1216,6 +1216,25 @@
       }
     },
     {
+      "id": "A733-SDMMC-H050",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "Vendor A733 SDMMC node comparison audit",
+      "question": "Do differences between vendor sdc0/sdc1/sdc2/sdc3 nodes identify a missing SDMMC0 normal-IDMAC descriptor-fetch precondition?",
+      "test_cost": "low; source audit only, no kernel build and no board reboot",
+      "procedure": [
+        "Compare vendor SDMMC0, SDMMC1, SDMMC2, and SDMMC3 node properties.",
+        "Separate SD-card, SDIO, and eMMC policy from normal-IDMAC descriptor-fetch requirements.",
+        "Only patch if SDMMC0 is missing a source-backed property that plausibly changes descriptor fetch."
+      ],
+      "pass_criteria": "A concrete SDMMC0 descriptor-fetch property is promoted or the vendor-node diff is closed as policy-only.",
+      "fail_criteria": "The next session imports vendor SDIO/eMMC policy into SDMMC0 without a descriptor-fetch link.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h050-vendor-sdmmc-node-diff-20260611T0635Z.json",
+        "summary": "Completed with no behavior patch. Vendor sdc0/sdc1 share v5p3x, storage fabric clocks, 4-bit bus, 50 MHz, and ctl-spec-caps=<0x428>. sdc1 adds SDIO/keep-power/tuning policy; sdc2/sdc3 are 8-bit eMMC-style nodes with ctl-spec-caps=<0x328>. No new SDMMC0 normal-IDMAC descriptor-fetch property appeared."
+      }
+    },
+    {
       "id": "A733-SDMMC-H004",
       "priority": 4,
       "status": "do_not_repeat_without_new_evidence",
