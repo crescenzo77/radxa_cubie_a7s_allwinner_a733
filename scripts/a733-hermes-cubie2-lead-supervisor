@@ -21,6 +21,10 @@ STATE_PATH = pathlib.Path(os.environ.get(
     "A733_CUBIE2_LEAD_STATE",
     str(REPO / "task-packets/kernel/a733-cubie2-lead-state.json"),
 ))
+HANDOFF_PATH = pathlib.Path(os.environ.get(
+    "A733_CUBIE3_HANDOFF",
+    str(REPO / "task-packets/kernel/a733-cubie3-to-cubie2-handoff.json"),
+))
 STRIX = os.environ.get("A733_HERMES_STRIX", "strix")
 GATEWAY = os.environ.get("A733_HERMES_GATEWAY", "http://192.168.50.225:4011/v1")
 TOKEN = os.environ.get("A733_HERMES_GATEWAY_TOKEN", "local-open-webui-gateway")
@@ -71,6 +75,15 @@ def save_state(state):
     tmp.replace(STATE_PATH)
 
 
+def load_handoff():
+    if not HANDOFF_PATH.exists():
+        return {}
+    try:
+        return json.loads(HANDOFF_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+
 def extract_json(text):
     match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.S)
     if match:
@@ -117,6 +130,61 @@ def normalize_lead(doc):
     }
 
 
+def handoff_targeted_leads(handoff):
+    candidate = handoff.get("candidate") or {}
+    kind = str(candidate.get("kind") or "").lower()
+    addr = str(candidate.get("addr") or "").lower()
+    try:
+        bit = int(candidate.get("bit"))
+    except (TypeError, ValueError):
+        return []
+    if kind not in SAFE_RANGES or not re.fullmatch(r"0x[0-9a-f]+", addr):
+        return []
+
+    base = {"kind": kind, "addr": addr, "source": f"cubie3 handoff {handoff.get('stamp', '')}"}
+    raw = [
+        {
+            **base,
+            "id": f"cubie2-replicate-{kind}-{addr.replace('0x', '')}-bit{bit}",
+            "title": "Replicate Cubie3 viable avenue on Cubie2",
+            "why": "Cubie3 reported this exact register bit as the current viable avenue; Cubie2 should confirm whether it reproduces on a second board.",
+            "bit": bit,
+        },
+        {
+            **base,
+            "id": f"cubie2-strobe-{kind}-{addr.replace('0x', '')}-bit{bit}",
+            "title": "Check whether the Cubie3 bit behaves like a strobe",
+            "why": "The Cubie3 clue appeared self-clearing/non-sticky. Restoring the original value tests whether the write event, not the held bit, is what matters.",
+            "bit": bit,
+            "restore": True,
+        },
+    ]
+    if bit > 0:
+        raw.append({
+            **base,
+            "id": f"cubie2-control-{kind}-{addr.replace('0x', '')}-bit{bit - 1}",
+            "title": "Neighbor-bit control below Cubie3 viable bit",
+            "why": "A nearby failing bit helps separate a real signal from accidental progress.",
+            "bit": bit - 1,
+        })
+    if bit < 31:
+        raw.append({
+            **base,
+            "id": f"cubie2-control-{kind}-{addr.replace('0x', '')}-bit{bit + 1}",
+            "title": "Neighbor-bit control above Cubie3 viable bit",
+            "why": "A second nearby control helps bound the viable bit.",
+            "bit": bit + 1,
+        })
+
+    leads = []
+    for doc in raw:
+        try:
+            leads.append(normalize_lead(doc))
+        except ValueError:
+            continue
+    return leads
+
+
 def latest_local_reports():
     snippets = []
     for name in ("latest-a733-hermes-hourly.md", "latest-a733-cubie2-lead.md"):
@@ -127,6 +195,17 @@ def latest_local_reports():
 
 
 def propose_lead(state, context):
+    handoff = load_handoff()
+    for lead in handoff_targeted_leads(handoff):
+        prior = state.get("completed", {}).get(lead["id"], {})
+        if not prior or prior.get("result") in ("no_uart_log", "proposed_only"):
+            lead["proposal_raw"] = json.dumps({
+                "source": "cubie3-to-cubie2-handoff",
+                "handoff": handoff,
+                "selected": lead,
+            }, indent=2, ensure_ascii=False)
+            return lead
+
     prompt = textwrap.dedent(f"""
     Read the latest A733 SDMMC0 reports and choose the single next lead.
 
@@ -163,6 +242,9 @@ def propose_lead(state, context):
     Completed leads:
     {json.dumps(state.get("completed", {}), indent=2, ensure_ascii=False)}
 
+    Cubie3-to-Cubie2 handoff:
+    {json.dumps(handoff, indent=2, ensure_ascii=False)}
+
     Latest report snippets:
     {latest_local_reports()}
 
@@ -174,7 +256,8 @@ def propose_lead(state, context):
         try:
             raw = gateway_chat(model, prompt)
             lead = normalize_lead(extract_json(raw))
-            if lead["id"] in state.get("completed", {}) and state["completed"][lead["id"]].get("result") != "no_uart_log":
+            prior = state.get("completed", {}).get(lead["id"], {})
+            if prior and prior.get("result") not in ("no_uart_log", "proposed_only"):
                 raise ValueError(f"model repeated completed lead: {lead['id']}")
             lead["proposal_raw"] = raw
             return lead
@@ -227,7 +310,23 @@ ssh -o BatchMode=yes -o ConnectTimeout=5 codex@192.168.50.85 'hostname; uname -r
 echo '--- cubie2_uart ---'
 ls -l /dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.2:1.0-port0 2>&1 || true
 echo '--- latest_cubie3_result ---'
-ls -t task-packets/kernel/results/a733-idmac-bruteforce-*.json 2>/dev/null | head -1 | xargs -r cat
+python3 - <<'PY' || true
+import glob, json, os
+paths = sorted(glob.glob("task-packets/kernel/results/a733-idmac-bruteforce-*.json"), key=os.path.getmtime, reverse=True)
+chosen = None
+for path in paths:
+    try:
+        doc = json.load(open(path))
+    except Exception:
+        continue
+    if doc.get("status") == "pass" and doc.get("winning_candidate"):
+        chosen = path
+        break
+if chosen is None and paths:
+    chosen = paths[0]
+if chosen:
+    print(open(chosen).read())
+PY
 echo '--- latest_cubie2_uart ---'
 ls -t /srv/projects/cubie-uart/logs/*a733-idmac-bf-cubie2*.uart.log 2>/dev/null | head -1 || true
 ''',

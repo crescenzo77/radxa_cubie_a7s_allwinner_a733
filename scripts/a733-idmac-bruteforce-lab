@@ -37,6 +37,8 @@ Environment:
   A733_BF_KIND=ccu|nsi|mbus|smhc  log label only
   A733_BF_SECONDS=150              UART capture duration per candidate
   A733_BF_MAX_CANDIDATES=          optional cap for smoke testing
+  A733_BF_SKIP_CANDIDATES=         comma list kind:addr:bit to skip known passes
+  A733_BF_REUSE_ARTIFACT=1         skip patch/build/stage, use installed /boot/cthu
 
 The pass signal is any UART line containing:
   diag a733-bf result ... progressed=1
@@ -270,6 +272,17 @@ boot_one() {
     /srv/projects/homelab/scripts/cubie-direct-uboot-load-session "$label"
 }
 
+skip_candidate() {
+  local kind="$1" addr="$2" bit="$3" entry
+  IFS=',' read -r -a entries <<<"${A733_BF_SKIP_CANDIDATES:-}"
+  for entry in "${entries[@]}"; do
+    if [ "$entry" = "${kind}:${addr}:${bit}" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 sweep_candidates() {
   local kind="$1"; shift
   local base="$1"; shift
@@ -285,6 +298,25 @@ sweep_candidates() {
         return 124
       fi
       addr="$(printf '0x%08x' $((base + off)))"
+      if skip_candidate "$kind" "$addr" "$bit"; then
+        echo "SKIP known passing candidate kind=${kind} addr=${addr} bit=${bit}"
+        if [ -n "$result_json" ]; then
+          python3 - "$result_json" "$kind" "$addr" "$bit" <<'PY'
+import json, os, sys, time
+path, kind, addr, bit = sys.argv[1:]
+doc = json.load(open(path)) if os.path.exists(path) else {"tests": []}
+doc.setdefault("tests", []).append({
+    "kind": kind, "addr": addr, "bit": int(bit), "status": "skip-known-pass",
+    "log": "", "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+})
+doc["status"] = "running"
+doc["updated_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+json.dump(doc, open(path, "w"), indent=2)
+print()
+PY
+        fi
+        continue
+      fi
       echo "== a733-bf ${kind} addr=${addr} bit=${bit} =="
       set +e
       A733_BF_KIND="$kind" A733_BF_ADDR="$addr" A733_BF_BIT="$bit" boot_one
@@ -354,17 +386,23 @@ json.dump({
     "guardrails": [
         "lab-only diagnostic",
         "one candidate per clean boot",
+        "skip known passing candidates when A733_BF_SKIP_CANDIDATES is set",
         "do not port raw register pokes upstream",
         "Cubie1 excluded",
     ],
+    "skip_candidates": [x for x in __import__("os").environ.get("A733_BF_SKIP_CANDIDATES", "").split(",") if x],
 }, open(path, "w"), indent=2)
 print()
 PY
 
   trap 'restore_cubie3_vendor; echo "result_json='"$result_json"'"' EXIT
-  patch_kernel
-  build_kernel
-  stage_artifact
+  if [ "${A733_BF_REUSE_ARTIFACT:-0}" = "1" ]; then
+    echo "reuse existing installed /boot/cthu artifact"
+  else
+    patch_kernel
+    build_kernel
+    stage_artifact
+  fi
 
   set +e
   sweep_candidates ccu 0x02002000 0x580 0x584 0x588 0x58c 0x594 0x59c 0x5a4 0x5b4 0x5c0 0x5dc 0x5e0 0x5e4 0xd00 0xd0c

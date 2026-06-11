@@ -16,6 +16,10 @@ OUT_DIR = pathlib.Path(os.environ.get(
     "A733_HERMES_OUT_DIR",
     str(REPO / "task-packets/kernel/hermes-hourly"),
 ))
+HANDOFF_PATH = pathlib.Path(os.environ.get(
+    "A733_CUBIE3_HANDOFF",
+    str(REPO / "task-packets/kernel/a733-cubie3-to-cubie2-handoff.json"),
+))
 STRIX = os.environ.get("A733_HERMES_STRIX", "strix")
 GATEWAY = os.environ.get("A733_HERMES_GATEWAY", "http://192.168.50.225:4011/v1")
 TOKEN = os.environ.get("A733_HERMES_GATEWAY_TOKEN", "local-open-webui-gateway")
@@ -153,9 +157,30 @@ def supervise_bruteforce(state):
 cd /srv/projects/homelab
 mkdir -p logs
 log=logs/a733-idmac-bruteforce-$(date -u +%Y%m%dT%H%M%SZ).log
+skip=$(
+python3 - <<'PY'
+import glob, json
+items = []
+seen = set()
+for path in glob.glob("task-packets/kernel/results/a733-idmac-bruteforce-*.json"):
+    try:
+        doc = json.load(open(path))
+    except Exception:
+        continue
+    cand = doc.get("winning_candidate") or {}
+    if doc.get("status") != "pass" or not cand:
+        continue
+    key = f"{cand.get('kind')}:{cand.get('addr')}:{cand.get('bit')}"
+    if key not in seen:
+        seen.add(key)
+        items.append(key)
+print(",".join(items))
+PY
+)
+export A733_BF_SKIP_CANDIDATES="$skip"
 nohup scripts/a733-idmac-bruteforce-lab full-auto > "$log" 2>&1 < /dev/null &
 pid=$!
-printf 'started pid=%s log=%s\n' "$pid" "$log"
+printf 'started pid=%s log=%s skip=%s\n' "$pid" "$log" "$skip"
 ''',
         timeout=30,
     )
@@ -254,6 +279,33 @@ def write_reports(stamp, state, action, reviews):
 
     candidate = state["result"].get("winning_candidate") or {}
     tests = len(state["result"].get("tests", []))
+    if candidate:
+        handoff = {
+            "stamp": stamp,
+            "producer": "cubie3-hermes-hourly",
+            "consumer": "cubie2-hermes-lead",
+            "status": "viable-avenue",
+            "action": action,
+            "candidate": candidate,
+            "tests_before_pass": tests,
+            "result_path": state["sections"].get("latest_result_path"),
+            "uart_path": candidate.get("log") or state["sections"].get("latest_uart_path"),
+            "plain_english": (
+                "Cubie3 found a register/bit that lets SDMMC0 IDMAC make progress. "
+                "Cubie2 should adapt this into targeted replication and neighbor/strobe tests, "
+                "not a broad blind scan."
+            ),
+            "guardrails": [
+                "lab-only diagnostic evidence",
+                "do not upstream raw register pokes",
+                "use Cubie2 only for targeted follow-up",
+                "keep reports in JSON, Markdown, and HTML",
+            ],
+        }
+        HANDOFF_PATH.parent.mkdir(parents=True, exist_ok=True)
+        tmp = HANDOFF_PATH.with_suffix(".tmp")
+        tmp.write_text(json.dumps(handoff, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        tmp.replace(HANDOFF_PATH)
     md = [
         f"# A733 Hermes Hourly Report - {stamp}",
         "",
