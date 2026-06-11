@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo=${A733_HERMES_REPO:-/srv/projects/homelab}
+outdir="$repo/task-packets/kernel/hermes-hourly"
+state="$outdir/a733-public-source-monitor-state.json"
+json="$outdir/a733-public-source-latest.json"
+md="$outdir/a733-public-source-latest.md"
+html="$outdir/a733-public-source-latest.html"
+searx=${A733_SEARXNG_URL:-http://192.168.50.225:8080/search}
+telegram_env=${A733_TELEGRAM_ENV:-/etc/telegram-tasks-bot/bot.env}
+report_url=${A733_PUBLIC_SOURCE_REPORT_URL:-http://192.168.50.225:9181/hermes-hourly/a733-public-source-latest.html}
+mkdir -p "$outdir"
+
+python3 - "$searx" "$state" "$json" "$md" "$html" "$telegram_env" "$report_url" <<'PY'
+import datetime as dt
+import hashlib
+import html
+import json
+import pathlib
+import sys
+import urllib.parse
+import urllib.request
+
+searx, state_path, json_path, md_path, html_path, telegram_env, report_url = sys.argv[1:]
+queries = [
+    "Radxa Cubie A7S kernel source A733",
+    "Radxa A733 5.15.147-21-a733 source",
+    "sunxi-mmc A733 IDMAC DESC_READ",
+    "Allwinner A733 SDMMC0 IDMAC",
+    "site:lore.kernel.org A733 sunxi-mmc IDMAC",
+]
+
+def fetch(q):
+    url = searx + "?" + urllib.parse.urlencode({"q": q, "format": "json"})
+    try:
+        with urllib.request.urlopen(url, timeout=25) as resp:
+            data = json.loads(resp.read().decode("utf-8", "replace"))
+    except Exception as exc:
+        return {"query": q, "error": str(exc), "results": []}
+    rows = []
+    for r in data.get("results", [])[:8]:
+        rows.append({
+            "title": r.get("title", ""),
+            "url": r.get("url", ""),
+            "content": r.get("content", ""),
+            "engine": r.get("engine", ""),
+        })
+    return {"query": q, "results": rows}
+
+def read_env(path):
+    d = {}
+    p = pathlib.Path(path)
+    if not p.exists():
+        return d
+    for line in p.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        d[k.strip()] = v.strip().strip('"').strip("'")
+    return d
+
+def telegram(text):
+    cfg = read_env(telegram_env)
+    token = cfg.get("TELEGRAM_BOT_TOKEN")
+    chat = cfg.get("TASK_NOTIFY_USER_ID") or cfg.get("CLEAN_TASK_USER_ID")
+    if not token or not chat:
+        return
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=json.dumps({"chat_id": chat, "text": text, "disable_web_page_preview": False}).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    urllib.request.urlopen(req, timeout=15).read()
+
+now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+doc = {"generated_at": now, "backend": searx, "queries": [fetch(q) for q in queries]}
+sig_src = json.dumps(doc["queries"], sort_keys=True)
+doc["result_hash"] = hashlib.sha256(sig_src.encode()).hexdigest()
+pathlib.Path(json_path).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+
+lines = [f"# A733 Public Source Monitor", "", f"Generated: `{now}`", "", f"Result hash: `{doc['result_hash']}`", ""]
+for block in doc["queries"]:
+    lines += [f"## {block['query']}", ""]
+    if block.get("error"):
+        lines += [f"Error: `{block['error']}`", ""]
+        continue
+    for r in block["results"]:
+        lines += [f"- [{r['title']}]({r['url']})", f"  - {r.get('content','')[:240]}", ""]
+pathlib.Path(md_path).write_text("\n".join(lines) + "\n", encoding="utf-8")
+body = html.escape(pathlib.Path(md_path).read_text(encoding="utf-8"))
+pathlib.Path(html_path).write_text(
+    "<!doctype html><meta charset='utf-8'><title>A733 Public Source Monitor</title>"
+    "<style>body{font-family:system-ui,sans-serif;max-width:1100px;margin:2rem auto;line-height:1.45}"
+    "pre{white-space:pre-wrap;background:#f6f8fa;padding:1rem;border:1px solid #ddd}</style>"
+    f"<pre>{body}</pre>\n",
+    encoding="utf-8",
+)
+
+state_file = pathlib.Path(state_path)
+old = {}
+if state_file.exists():
+    try:
+        old = json.loads(state_file.read_text(encoding="utf-8"))
+    except Exception:
+        old = {}
+state_file.write_text(json.dumps({"last_hash": doc["result_hash"], "updated_at": now}, indent=2) + "\n", encoding="utf-8")
+
+if old and old.get("last_hash") != doc["result_hash"]:
+    telegram(
+        "A733 public-source monitor changed\n"
+        "New/changed search results may need review.\n"
+        f"Report: {report_url}"
+    )
+
+print(f"wrote {md_path}")
+PY

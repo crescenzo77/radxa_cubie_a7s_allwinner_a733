@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo=${A733_HERMES_REPO:-/srv/projects/homelab}
+outdir="$repo/task-packets/kernel/hermes-hourly"
+json="$outdir/a733-workflow-status-latest.json"
+md="$outdir/a733-workflow-status-latest.md"
+html="$outdir/a733-workflow-status-latest.html"
+mkdir -p "$outdir"
+
+cd "$repo"
+
+ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+queue_head=$(python3 - <<'PY'
+import json
+import os
+p="task-packets/kernel/a733-hypothesis-queue.json"
+if not os.path.exists(p):
+    print(f"missing queue file: {p}")
+    raise SystemExit
+d=json.load(open(p))
+items=d.get("items") or d.get("hypotheses") or []
+items=sorted(items, key=lambda x: x.get("priority", 0), reverse=True)
+if items:
+    i=items[0]
+    print(f'{i.get("id")} | {i.get("status")} | {i.get("title")}')
+else:
+    print("no queue items found")
+PY
+)
+
+git_status=$(git status --short --branch 2>&1 || true)
+blockers=$(scripts/kernel-workflow-status --maintainer-ready-blockers 2>&1 || true)
+waiting=$(scripts/kernel-workflow-status --dispatcher-waiting-actions 2>&1 || true)
+offload=$(scripts/kernel-token-offload status 2>&1 || true)
+
+python3 - "$json" "$ts" "$queue_head" "$git_status" "$blockers" "$waiting" "$offload" <<'PY'
+import json, sys
+path, ts, queue_head, git_status, blockers, waiting, offload = sys.argv[1:]
+doc = {
+    "generated_at": ts,
+    "queue_head": queue_head,
+    "git_status": git_status,
+    "maintainer_ready_blockers": blockers,
+    "dispatcher_waiting_actions": waiting,
+    "token_offload_status": offload,
+}
+open(path, "w", encoding="utf-8").write(json.dumps(doc, indent=2) + "\n")
+PY
+
+{
+  printf '# A733 Workflow Status\n\n'
+  printf 'Generated: `%s`\n\n' "$ts"
+  printf '## Queue Head\n\n`%s`\n\n' "$queue_head"
+  printf '## Git Status\n\n```text\n%s\n```\n\n' "$git_status"
+  printf '## Maintainer Blockers\n\n```text\n%s\n```\n\n' "$blockers"
+  printf '## Waiting Actions\n\n```text\n%s\n```\n\n' "$waiting"
+  printf '## Token Offload\n\n```text\n%s\n```\n' "$offload"
+} > "$md"
+
+python3 - "$md" "$html" <<'PY'
+import html, sys
+md, out = sys.argv[1:]
+text = open(md, encoding="utf-8").read()
+open(out, "w", encoding="utf-8").write(
+    "<!doctype html><meta charset='utf-8'><title>A733 Workflow Status</title>"
+    "<style>body{font-family:system-ui,sans-serif;max-width:1100px;margin:2rem auto;line-height:1.45}"
+    "pre{white-space:pre-wrap;background:#f6f8fa;padding:1rem;border:1px solid #ddd}</style>"
+    f"<pre>{html.escape(text)}</pre>\n"
+)
+PY
+
+printf 'wrote %s\n' "$md"

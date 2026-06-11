@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+exec python3 /srv/projects/homelab/scripts/a733-source-diff-heartbeat "$@"
