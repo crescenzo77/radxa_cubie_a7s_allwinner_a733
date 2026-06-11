@@ -1,0 +1,19 @@
+{
+  "id": "A733-SDMMC-H062",
+  "status": "completed_no_patch",
+  "title": "BSP PM and bus-clock enable audit",
+  "timestamp_utc": "2026-06-11T10:50:00Z",
+  "scope": [
+    "Strix BSP source: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "Strix diagnostic source: /srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "observations": [
+    "BSP probe/resume enables reset, AHB, store, MBUS, MSI-lite, and MMC clocks before host initialization.",
+    "The local diagnostic branch enables reset, AHB, mmc_store, mmc_mbus, mmc_msi_lite, and MMC clocks before host initialization.",
+    "The local runtime-resume path re-enables the same clock/reset set, initializes the host, restores bus width and clock, then enables IRQ.",
+    "No extra BSP PM-only fabric, firewall, or security step was found."
+  ],
+  "decision": "no_behavior_patch",
+  "reason": "The BSP PM/bus-clock sequencing is already represented locally and does not reveal a new SDMMC0 IDMAC descriptor-fetch precondition.",
+  "next": "Do not reopen PM/bus-clock enable ordering without new evidence for a specific missing SDMMC0 fabric bit."
+}
