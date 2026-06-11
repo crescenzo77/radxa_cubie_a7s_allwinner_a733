@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T14:15:00Z",
+  "updated_utc": "2026-06-11T14:45:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H071 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, BSP IRQ wait-dma finalize logic, public A733 U-Boot/SPL handoff source audit, BOOT0/BL31 provenance/package audit, existing register/UART artifact audit, four-route model speculation/access-control source cross-check, and public archive monitoring after the plain-text maintainer question. The remaining blocker still requires a maintainer/list/vendor reply or source-backed SDMMC0 master/firewall/security bit.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H072 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, BSP IRQ wait-dma finalize logic, public A733 U-Boot/SPL handoff source audit, BOOT0/BL31 provenance/package audit, existing register/UART artifact audit, four-route model speculation/access-control source cross-check, public archive monitoring, and public datasheet SPC/TZMA audit. The remaining blocker still requires a maintainer/list/vendor reply or source-backed SDMMC0 master/firewall/security bit.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,11 +37,11 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H071",
+    "id": "A733-SDMMC-H072",
     "status": "completed_no_behavior_patch",
-    "title": "Public archive monitor for A733 SDMMC0 maintainer question",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h071-public-archive-monitor-20260611T1415Z.json",
-    "result": "No public archive copy or reply found for the plain-text A733 SDMMC0 IDMAC question. No patch."
+    "title": "Public A733 datasheet security-fabric audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h072-public-datasheet-security-fabric-audit-20260611T1445Z.json",
+    "result": "Public A733 datasheet confirms SPC/TZMA exist but gives no SDMMC0 register-level or firmware handoff detail. No patch."
   },
   "hypotheses": [
     {
@@ -1654,6 +1654,26 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h071-public-archive-monitor-20260611T1415Z.json",
         "summary": "Completed with no behavior patch. Searches did not find a public archive copy or reply for the plain-text resend, so no new technical clue exists yet."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H072",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "Public A733 datasheet security-fabric audit",
+      "question": "Does the public A733 datasheet expose a patchable SDMMC0 security/fabric control clue for IDMAC descriptor access?",
+      "test_cost": "low; public datasheet/search/source grep only, no kernel build and no board reboot",
+      "procedure": [
+        "Download/cache the public A733 datasheet from Radxa and convert to text.",
+        "Search for SMHC, DMA, SPC, TZMA, TrustZone, IOMMU, MBUS, NSI, master, and firewall terms.",
+        "Cross-check local source trees for A733 SPC/TZMA/security-fabric driver or DT property.",
+        "Only patch if register-level SDMMC0 access-control evidence appears."
+      ],
+      "pass_criteria": "A register-level SDMMC0 security/fabric clue is promoted or the datasheet is closed as non-patchable feature-level evidence.",
+      "fail_criteria": "A future session writes speculative SPC/TZMA registers without register-level evidence.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h072-public-datasheet-security-fabric-audit-20260611T1445Z.json",
+        "summary": "Completed with no behavior patch. The datasheet confirms SMHC0 and secure peripherals via SPC/TZMA, but contains no offsets, bitfields, SMHC mapping, or non-secure kernel programming path."
       }
     }
   ]

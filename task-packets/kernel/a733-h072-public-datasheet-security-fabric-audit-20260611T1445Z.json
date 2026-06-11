@@ -1,0 +1,33 @@
+{
+  "id": "A733-SDMMC-H072",
+  "created_utc": "2026-06-11T14:45:00Z",
+  "title": "Public A733 datasheet security-fabric audit",
+  "source": {
+    "url": "https://dl.radxa.com/cubie/a7a/docs/hw/datasheet/A733_Datasheet_V0.93.pdf",
+    "local_pdf": "/Users/enzo/backups/kernel-a733-source-cache/A733_Datasheet_V0.93.pdf",
+    "local_text": "/Users/enzo/backups/kernel-a733-source-cache/A733_Datasheet_V0.93.txt",
+    "pdf_sha256": "ebbdf6a9a46ea1fcdc5eac48a584f70a5ea240cd5cc54a3f80f6d6e00adf25ce",
+    "text_sha256": "fdc79b163666435811bfe54756f7d86e259e7d9b663dd23b82fe51f1a53a4860"
+  },
+  "question": "Does the public A733 datasheet expose a patchable SDMMC0 security/fabric control clue for IDMAC descriptor access?",
+  "findings": [
+    {
+      "topic": "SMHC",
+      "evidence": "Datasheet says A733 has four SMHC interfaces; SMHC0 is SD3.0, SMHC1 is SDIO3.0, SMHC2/3 are eMMC5.1.",
+      "impact": "Confirms SDMMC0 role but provides no IDMAC descriptor-fetch register, compatible difference, or bus-master setup."
+    },
+    {
+      "topic": "SPC/TZMA",
+      "evidence": "Datasheet says SPC sets secure DRAM and peripheral areas, and TZMA sets secure SRAM areas; both are secure-CPU-only.",
+      "impact": "Supports the broad security-fabric suspicion, but gives no offsets, bitfields, SMHC mapping, Linux API, or safe non-secure patch path."
+    },
+    {
+      "topic": "public TRM search",
+      "evidence": "Web searches for A733/SUN60IW2 TRM plus SPC/TZMA/SMHC did not find a register-level manual; local source grep found no A733 SPC/TZMA driver or SDMMC property.",
+      "impact": "No source-backed behavior patch can be made from the datasheet alone."
+    }
+  ],
+  "result": "completed_no_behavior_patch",
+  "decision": "Do not patch. Treat SPC as a named class to ask maintainers/vendor about, not as an implementable kernel delta until register-level source or firmware handoff details appear.",
+  "next_responsible_step": "If a reply mentions SPC/TZMA or an address range, build a read-only diagnostic first; otherwise continue waiting/source acquisition."
+}
