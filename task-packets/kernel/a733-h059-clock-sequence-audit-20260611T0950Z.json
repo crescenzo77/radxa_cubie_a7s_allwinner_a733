@@ -1,0 +1,19 @@
+{
+  "id": "A733-SDMMC-H059",
+  "status": "completed_no_patch",
+  "title": "BSP v5p3x clock output sequencing audit",
+  "timestamp_utc": "2026-06-11T09:50:00Z",
+  "scope": [
+    "Strix BSP source: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc-v5p3x.c",
+    "Strix diagnostic source: /srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "observations": [
+    "BSP and local code both gate the card clock, issue update-clock commands, and re-enable the card clock before transfers.",
+    "BSP v5p3x temporarily disables and re-enables clk_mmc while changing the module clock rate.",
+    "The local diagnostic branch uses mainline clock-rate programming plus timing mode/divider setup and then re-enables the card clock.",
+    "PIO reads, partition discovery, and read-only root mount already prove the card clock/signaling path is functional when IDMAC is bypassed."
+  ],
+  "decision": "no_behavior_patch",
+  "reason": "The BSP clock sequencing difference is card-signaling/rate policy, not a source-backed IDMAC descriptor memory access precondition.",
+  "next": "Do not retest clock output sequencing as a descriptor-fetch fix without new evidence tying it to the SDMMC0 memory master."
+}

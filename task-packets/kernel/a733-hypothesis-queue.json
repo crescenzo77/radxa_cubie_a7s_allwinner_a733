@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T09:30:00Z",
+  "updated_utc": "2026-06-11T09:50:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H058 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, model-suggested IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, and BSP v5p3x CSDC/threshold policy. The remaining blocker still requires a maintainer/list reply or source-backed SDMMC0 master/firewall/security bit.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H059 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, model-suggested IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, and BSP v5p3x clock output sequencing. The remaining blocker still requires a maintainer/list reply or source-backed SDMMC0 master/firewall/security bit.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,32 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H058",
+    "id": "A733-SDMMC-H059",
     "status": "completed_no_patch",
-    "title": "BSP v5p3x CSDC and threshold audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h058-csdc-threshold-audit-20260611T0930Z.json",
-    "result": "BSP CSDC writes tune CRC detection; threshold policy is already covered by the local proof. No patch."
+    "title": "BSP v5p3x clock output sequencing audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h059-clock-sequence-audit-20260611T0950Z.json",
+    "result": "BSP/local card-clock sequencing does not expose an IDMAC descriptor-fetch fix. No patch."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H059",
+      "priority": 58,
+      "status": "completed_no_patch",
+      "title": "BSP v5p3x clock output sequencing audit",
+      "question": "Does BSP v5p3x card-clock/module-clock sequencing reveal a missing SDMMC0 IDMAC descriptor-fetch precondition?",
+      "test_cost": "low; source audit only",
+      "procedure": [
+        "Compare BSP v5p3x oclk_onoff and clk_set_rate sequencing against the local diagnostic branch.",
+        "Check whether any difference is specific to IDMAC descriptor memory reachability rather than card signaling/timing.",
+        "Promote a patch only if a missing pre-IDMAC clock/fabric transition is found."
+      ],
+      "pass_criteria": "A concrete missing pre-IDMAC clock/fabric transition is found.",
+      "fail_criteria": "Differences are card-clock/timing policy and existing PIO/root proof shows the card path works.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h059-clock-sequence-audit-20260611T0950Z.json",
+        "summary": "BSP and local both gate card clock with update-clock commands and enable it before transfers. BSP temporarily disables clk_mmc during rate programming, but local PIO reads and read-only root prove card clock/signaling works; this is not a descriptor-fetch memory-access fix. No patch."
+      }
+    },
     {
       "id": "A733-SDMMC-H058",
       "priority": 57,
