@@ -1,0 +1,23 @@
+{
+  "id": "A733-SDMMC-H077",
+  "timestamp_utc": "2026-06-11T16:40:00Z",
+  "title": "A733 user manual SPC/TZMA deep audit",
+  "question": "Does the public A733 user manual expose an SMHC0 security/firewall/SPC/TZMA bit that can explain the SDMMC0 IDMAC descriptor-read stall?",
+  "test_cost": "low; manual text and local source audit only, no kernel build and no board reboot",
+  "inputs": {
+    "manual_text": "/Users/enzo/backups/kernel-a733-source-index/extracted/A733_User_Manual_V0.92.txt",
+    "manual_pdf_sha256": "e3f907b32843aa860204f21da89922939f860ee1ecf0cf9b6ad4c0bf899d78eb",
+    "manual_text_sha256": "6725f238ca2e78ce13eaa8e1a7e46a07c957015d48c0f898db40c32c3250698f"
+  },
+  "observations": [
+    "The memory map names SPC at 0x02054000, S_SPC at 0x07002000, and S_TZMA at 0x07003000.",
+    "The manual documents CCMU_SEC_SWITCH_REG and PRCM_SEC_SWITCH_REG security switches, but those govern clock-controller register accessibility, not SMHC0 IDMAC master memory access.",
+    "Searches found SMHC0 in clock/reset, boot-source, interrupt-vector, and SMHC register sections, but no SMHC0 SPC/TZMA permission bitfield or Linux-programmable firewall register.",
+    "The manual documents DMA controller channel security at DMA_SEC_REG, but SDMMC0 IDMAC is internal to SMHC0 and does not use the standalone DMA controller channel path."
+  ],
+  "decision": {
+    "status": "completed_no_behavior_patch",
+    "summary": "The user manual supports the security/fabric suspicion only at a class level. It does not expose a source-backed SMHC0 SPC/TZMA/firewall bit or safe non-secure Linux programming path.",
+    "next_step": "Do not write SPC/TZMA registers. Keep the maintainer/vendor question focused on whether an undocumented secure-world handoff or SMHC0 master permission exists."
+  }
+}

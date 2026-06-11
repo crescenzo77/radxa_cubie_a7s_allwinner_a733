@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T16:30:00Z",
+  "updated_utc": "2026-06-11T16:40:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H076 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, BSP IRQ wait-dma finalize logic, public A733 U-Boot/SPL handoff source audit, BOOT0/BL31 provenance/package audit, existing register/UART artifact audit, four-route model speculation/access-control source cross-check, public archive monitoring, public datasheet SPC/TZMA audit, A733 user manual SMHC/MBUS register audit, vendor runtime CCU/SMHC0 register reads, current-binding MMC0 reset-cell test, and BSP Andes DMA adapter applicability. The remaining blocker still requires a maintainer/list/vendor reply or source-backed secure-world/CCMU/SPC handoff detail that explains why SMHC0 IDMAC cannot fetch descriptors.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H077 now close descriptor geometry, descriptor fields, visible SDMMC setup, DMA mask, IOMMU attachment, vendor IOMMU/NSI master metadata, data-buffer placement, descriptor allocation class, safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, public-U-Boot IRQ-40 clue, descriptor end-of-ring bit, IDMAC reset/clock-offset concerns, current public Linux dependency status, IDMAC write-readback, vendor NSI/public-U-Boot clock audit, public community Armbian repo audit, A733 MMC clock-rate math, Orange Pi full-driver audit, BSP store/ECC/ctl-spec/node/timing/power/save-restore audits, BSP DMA mapping/cookie lifecycle, BSP GCTRL access-mode bits, BSP data/DMA/command launch ordering, BSP CMD23/autostop policy, BSP v5p3x CSDC/threshold policy, BSP v5p3x clock output sequencing, BSP EMCE hook scaffolding, BSP IDMAC completion cleanup, BSP PM/bus-clock enable sequencing, BSP SDMMC0 DT property parsing, BSP IRQ wait-dma finalize logic, public A733 U-Boot/SPL handoff source audit, BOOT0/BL31 provenance/package audit, existing register/UART artifact audit, four-route model speculation/access-control source cross-check, public archive monitoring, public datasheet SPC/TZMA audit, A733 user manual SMHC/MBUS register audit, vendor runtime CCU/SMHC0 register reads, current-binding MMC0 reset-cell test, BSP Andes DMA adapter applicability, and A733 user manual SPC/TZMA deep audit. The remaining blocker still requires a maintainer/list/vendor reply or source-backed secure-world/SPC handoff detail that explains why SMHC0 IDMAC cannot fetch descriptors.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -1755,6 +1755,25 @@
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h076-andes-dma-adapter-audit-20260611T1630Z.json",
         "summary": "Completed with no behavior patch. Vendor Cubie3 reports CONFIG_AW_ANDES_DMA_ADAPT is not set, and source search found no SDMMC0/ARM64 path assigning aw_andes_dma_ops. The adapter is not a credible descriptor-fetch explanation."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H077",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "A733 user manual SPC/TZMA deep audit",
+      "question": "Does the public A733 user manual expose an SMHC0 security/firewall/SPC/TZMA bit?",
+      "test_cost": "low; manual text and local source audit only, no kernel build and no board reboot",
+      "procedure": [
+        "Search the extracted A733 user manual for SPC, S_SPC, TZMA, TrustZone, secure, firewall, permission, master, and SMHC terms.",
+        "Check whether SMHC0 appears in SPC/TZMA permission tables or only in unrelated clock/reset/interrupt/SMHC sections.",
+        "Only promote a patch if the manual names an SMHC0-accessible non-secure programming bit."
+      ],
+      "pass_criteria": "A concrete SMHC0 security bit is promoted or the manual is closed as non-actionable.",
+      "fail_criteria": "A future session writes speculative SPC/TZMA registers without a named SMHC0 permission bit.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h077-user-manual-spc-tzma-deep-audit-20260611T1640Z.json",
+        "summary": "Completed with no behavior patch. The manual names SPC, S_SPC, and S_TZMA base addresses and clock security switches, but exposes no SMHC0 SPC/TZMA/firewall bit or safe non-secure Linux programming path."
       }
     }
   ]
