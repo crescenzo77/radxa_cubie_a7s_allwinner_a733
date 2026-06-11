@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T02:25:00Z",
+  "updated_utc": "2026-06-11T02:45:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H039 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, the public-U-Boot IRQ-40 clue, the descriptor end-of-ring bit, basic model-suggested IDMAC reset/clock-offset concerns, and the current public Linux dependency status. H039 confirmed the active Linux dependencies remain Junhui Liu's A733 CCU/PRCM RFC and Andre Przywara's A733 pinctrl RFC; newer public hits are U-Boot-side, not Linux replacements. No source-backed runtime patch emerged.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H040 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, the public-U-Boot IRQ-40 clue, the descriptor end-of-ring bit, basic model-suggested IDMAC reset/clock-offset concerns, the current public Linux dependency status, and the plain IDMAC enable write-readback idea. H040 confirms existing H036 evidence already shows GCTRL/DMAC/IDIE/DLBA writes stick before CMD18; the controller still stalls at DESC_READ.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,33 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H039",
+    "id": "A733-SDMMC-H040",
     "status": "completed_no_patch",
-    "title": "Public Linux A733 dependency and clock-source audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h039-rfc-dependency-audit-20260611T0225Z.json",
-    "result": "Public search still points to Junhui Liu's 20260310 A733 CCU/PRCM RFC and Andre Przywara's 20250821 A733 pinctrl RFC as the active Linux dependencies. Newer A733 v2 hits are U-Boot-side. The local diagnostic tree already includes and has tested the vendor-visible SDMMC0 store/MBUS/MSI-lite clock consumers, and MMC0 CCU offsets match the public U-Boot/Linux evidence. No behavior patch is justified."
+    "title": "Partial model squeeze and IDMAC write-readback triage",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h040-partial-model-readback-triage-20260611T0245Z.json",
+    "result": "Stopped a slow four-lane model batch after two Strix outputs. The outputs repeated closed descriptor/coherency ideas and included wrong SDHCI paths. Existing H036 evidence already proves GCTRL/DMAC/IDIE/DLBA write-readback before CMD18, so a simple post-enable delay/readback patch is not promoted."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H040",
+      "priority": 39,
+      "status": "completed_no_patch",
+      "title": "Partial model squeeze and IDMAC write-readback triage",
+      "question": "Do the fresh model outputs or existing H036 logs justify a cheap IDMAC enable/write-posting delay or readback patch?",
+      "test_cost": "low; model triage and existing log inspection only",
+      "procedure": [
+        "Run bounded model prompts for driver-diff and runtime-probes angles.",
+        "Reject suggestions that repeat H009-H039, name the wrong driver family, or lack source evidence.",
+        "Inspect H036 UART log for GCTRL, DMAC, IDIE, and DLBA values immediately after IDMAC enable.",
+        "Promote a patch only if the register writes fail to stick or a new source-backed ordering delta appears."
+      ],
+      "pass_criteria": "A new source-backed ordering delta appears, or existing logs show IDMAC enable writes do not stick.",
+      "fail_criteria": "Existing logs show the writes stick and model output is duplicate/wrong-driver/non-source-backed.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h040-partial-model-readback-triage-20260611T0245Z.json",
+        "summary": "H036 already shows dma-exit GCTRL=0x20000030, DMAC=0x00000282, IDIE=0x00000002, DLBA=0x3f840000 before CMD18. No patch."
+      }
+    },
     {
       "id": "A733-SDMMC-H039",
       "priority": 38,

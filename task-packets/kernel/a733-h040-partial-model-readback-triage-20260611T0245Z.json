@@ -1,0 +1,33 @@
+{
+  "id": "A733-SDMMC-H040",
+  "timestamp_utc": "2026-06-11T02:45:00Z",
+  "status": "completed_no_patch",
+  "title": "Partial model squeeze and IDMAC write-readback triage",
+  "inputs": {
+    "model_output_dir": "/Users/enzo/projects/homelab/task-packets/kernel/model-squeeze/20260611T001353Z",
+    "completed_outputs": [
+      "strix-driver-diff.json",
+      "strix-runtime-probes.json"
+    ],
+    "reference_log": "/Users/enzo/projects/homelab/tools/hardware-logs/cubie-uart/20260610T233925Z-cubie3-a733-h036-desc-er-86785e682c32-ttyUSB0.uart.log",
+    "reference_kernel_commit": "86785e682c32"
+  },
+  "findings": [
+    {
+      "area": "model batch quality",
+      "finding": "The long four-lane batch was stopped after Strix produced two outputs. The completed outputs repeated closed descriptor alignment/coherency/ring-shape hypotheses and suggested SDHCI paths that do not apply to the sunxi-mmc driver.",
+      "decision": "Do not promote these suggestions to a kernel patch."
+    },
+    {
+      "area": "IDMAC enable/write-posting readback",
+      "finding": "Existing H036 UART evidence already shows the IDMAC enable writes stick before the command: dma-exit has GCTRL=0x20000030, DMAC=0x00000282, IDIE=0x00000002, and DLBA=0x3f840000. The later stall still reaches IDST=0x00004000 DESC_READ with CHDA=DLBA, CBDA=0, and descriptor ownership unchanged.",
+      "decision": "A simple register write-readback or delay after DMAC enable is not a strong next behavior patch by itself."
+    },
+    {
+      "area": "next work",
+      "finding": "No public archive reply was visible for the maintainer/list question during this pass.",
+      "decision": "Keep monitoring. Next model work should use one model lane per command with shorter timeouts to avoid long session stalls."
+    }
+  ],
+  "conclusion": "No patch was made. H040 reduces the current speculative queue by closing the plain IDMAC write-readback idea against existing evidence."
+}

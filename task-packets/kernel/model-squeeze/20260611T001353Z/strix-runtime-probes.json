@@ -1,0 +1,38 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the constraints (A733 SDMMC0, IDMAC stall at first descriptor fetch, PIO works, no vendor-DTS pollution, no Ethernet/USB/etc.), here are three runtime probe angles. Each targets a specific hardware state that causes IDMAC to hang on the first descriptor fetch.\n\n### Angle 1: The \"Descriptor Address Alignment & Cache Coherency\" Probe\n**Hypothesis:** The IDMAC engine requires descriptors to be 64-byte aligned (or 128-byte) and strictly coherent. If the kernel allocates descriptors in a non-coherent region or with insufficient alignment, the IDMAC fetches stale data or faults silently. PIO works because it bypasses the DMA engine.\n\n**Evidence to Inspect:**\n1.  Check the physical address of the first descriptor ring buffer.\n2.  Check if the descriptor content is visible to the hardware *before* the command is issued.\n\n**Minimal Test (Runtime Probe):**\nAdd a temporary `printk` in `sdhci_send_command()` or `sdhci_setup_cmd()` *after* the descriptor ring is populated but *before* `SDHCI_CMD` is written to start the transfer.\n\n```c\n// In sdhci_setup_cmd() or equivalent IDMAC setup path\nstruct sdhci_host *host = ...;\nstruct mmc_data *data = ...;\n// Assume 'desc' is the first descriptor in the ring\nprintk(KERN_ERR \"SDMMC0 IDMAC Probe: Desc Phys Addr: 0x%llx\\n\", \n       (unsigned long long)virt_to_phys(desc));\nprintk(KERN_ERR \"SDMMC0 IDMAC Probe: Desc Content: 0x%08x 0x%08x 0x%08x 0x%08x\\n\",\n       desc->ctrl, desc->addr, desc->next, desc->status);\n```\n\n**Falsifier:**\n- If the physical address is **not** 64-byte aligned (i.e., `phys_addr & 0x3F != 0`), the hypothesis is confirmed.\n- If the descriptor content shows `0x00000000` or stale data when it should contain valid buffer addresses, the cache coherency is broken.\n\n**Action if True:**\n- Ensure the descriptor ring is allocated with `dma_alloc_coherent()` or `kmalloc` with `__GFP_DMA` and proper alignment.\n- Add `dma_sync_single_for_device()` before starting the command.\n\n---\n\n### Angle 2: The \"IDMAC Enable Bit & Clock Gating\" Probe\n**Hypothesis:** The IDMAC engine is not enabled or its clock is gated off. The SDHCI controller may be configured to use ADMA2 or IDMAC, but the specific `IDMAC_ENABLE` bit in the `SDHCI_CAPABILITIES_1` or a vendor-specific register is not set. PIO works because it uses the internal FIFO, not the DMA engine.\n\n**Evidence to Inspect:**\n1.  Read the `SDHCI_CAPABILITIES_1` register to see if IDMAC is advertised.\n2.  Read the vendor-specific `SDMMC0` control register to check if IDMAC is enabled.\n\n**Minimal Test (Runtime Probe):**\nAdd a `printk` to dump the relevant registers *before* the first IDMAC command.\n\n```c\n// In sdhci_setup_cmd() or sdhci_start_command()\nu32 cap1 = sdhci_readl(host, SDHCI_CAPABILITIES_1);\nu32 ctrl = sdhci_readl(host, SDHCI_HOST_CONTROL2);\nprintk(KERN_ERR \"SDMMC0 IDMAC Probe: CAP1: 0x%08x, CTRL2: 0x%08x\\n\", cap1, ctrl);\n// Check for IDMAC enable bit in CAP1 (bit 15 for ADMA2, but A733 may use different bits)\n// Also check if the host driver is forcing ADMA2 instead of IDMAC\n```\n\n**Falsifier:**\n- If `CAP1` does not indicate IDMAC support, or if the driver is using ADMA2 descriptors instead of IDMAC, the hypothesis is confirmed.\n- If the `IDMAC_ENABLE` bit (if present in a vendor register) is 0, the hypothesis is confirmed.\n\n**Action if True:**\n- Ensure the driver is using `SDHCI_USE_IDMAC` flag.\n- Check if the clock for `SDMMC0_DMA` is enabled in the clock tree.\n\n---\n\n### Angle 3: The \"Descriptor Ring End-of-Ring & Next Pointer\" Probe\n**Hypothesis:** The IDMAC engine expects the last descriptor to have the \"End of Ring\" (EOR) bit set, and the \"Next Descriptor\" pointer to be valid. If the EOR bit is not set, or the next pointer is invalid, the IDMAC may hang waiting for the next descriptor. You mentioned \"descriptor end-of-ring bit H036\" is closed, but this probe checks if the *first* descriptor is incorrectly marked as EOR or if the next pointer is zero.\n\n**Evidence to Inspect:**\n1.  Check the \"Next Descriptor\" pointer of the first descriptor.\n2.  Check if the \"End of Ring\" bit is set on the first descriptor (it should not be, unless it's a single-descriptor ring).\n\n**Minimal Test (Runtime Probe):**\nAdd a `printk` to dump the first descriptor's \"Next\" pointer and \"EOR\" bit.\n\n```c\n// In sdhci_setup_cmd()\nprintk(KERN_ERR \"SDMMC0 IDMAC Probe: First Desc Next Ptr: 0x%08x, EOR Bit: %d\\n\",\n       desc->next, (desc->ctrl & 0x80000000) ? 1 : 0); // Assuming EOR is bit 31\n```\n\n**Falsifier:**\n- If the \"Next\" pointer is `0x00000000` and the ring has more than one descriptor, the hypothesis is confirmed.\n- If the \"EOR\" bit is set on the first descriptor and the ring has more than one descriptor, the hypothesis is confirmed.\n\n**Action if True:**\n- Ensure the descriptor ring is correctly linked.\n- Ensure the EOR bit is only set on the last descriptor.\n\n---\n\n### Summary of Probes\n\n| Probe | Question | Evidence | Falsifier |\n|-------|----------|----------|-----------|\n| 1 | Is the descriptor address aligned and coherent? | Phys addr not 64-byte aligned, or stale data. | Phys addr is aligned, data is fresh. |\n| 2 | Is IDMAC enabled and clocked? | CAP1/CTRL2 registers show IDMAC disabled. | CAP1/CTRL2 show IDMAC enabled. |\n| 3 | Is the descriptor ring correctly linked? | Next ptr is 0 or EOR is set on first desc. | Next ptr is valid, EOR is not set on first desc. |\n\n### Next Steps\n1.  Apply the **Angle 1** probe first, as cache coherency and alignment are the most common causes of IDMAC stalls on ARM SoCs.\n2.  If Angle 1 is clean, apply **Angle 2** to check for clock/enable issues.\n3.  If Angle 2 is clean, apply **Angle 3** to check for descriptor ring corruption.\n\n**Note:** All probes must be removed after testing to avoid performance degradation and log spam. Use `dmesg` to capture the output.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1781136980,
+  "id": "chatcmpl-xfMfkUvx6WMpFVjyabhDHwgkPNf4aEP1",
+  "model": "qwen3.6-27b-rocmfp4-mtp-headq6-noreason",
+  "object": "chat.completion",
+  "system_fingerprint": "b9220-c5bfb0d8d",
+  "timings": {
+    "cache_n": 0,
+    "draft_n": 1728,
+    "draft_n_accepted": 1066,
+    "predicted_ms": 68774.276,
+    "predicted_n": 1640,
+    "predicted_per_second": 23.846125257647206,
+    "predicted_per_token_ms": 41.93553414634146,
+    "prompt_ms": 1011.461,
+    "prompt_n": 217,
+    "prompt_per_second": 214.54114394919822,
+    "prompt_per_token_ms": 4.6611105990783415
+  },
+  "usage": {
+    "completion_tokens": 1640,
+    "prompt_tokens": 217,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1857
+  }
+}
