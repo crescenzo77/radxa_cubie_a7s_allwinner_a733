@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo=${A733_HERMES_REPO:-/srv/projects/homelab}
+outdir="$repo/task-packets/kernel/hermes-hourly"
+drift="$outdir/a733-repo-drift-latest.json"
+readiness="$outdir/a733-public-patch-readiness-latest.json"
+json="$outdir/a733-repo-sync-approval-brief-latest.json"
+md="$outdir/a733-repo-sync-approval-brief-latest.md"
+html="$outdir/a733-repo-sync-approval-brief-latest.html"
+mkdir -p "$outdir"
+
+python3 - "$drift" "$readiness" "$json" "$md" "$html" <<'PY'
+import datetime as dt
+import html
+import json
+import pathlib
+import sys
+
+drift_path, readiness_path, json_path, md_path, html_path = sys.argv[1:]
+
+def load(path):
+    p = pathlib.Path(path)
+    if not p.exists():
+        return {}
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return {"load_error": str(exc), "path": str(path)}
+
+now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+drift = load(drift_path)
+readiness = load(readiness_path)
+
+expected = drift.get("expected", {})
+status = drift.get("status", {})
+public_repo = readiness.get("public_repo", "/home/enzo/projects/radxa_cubie_a7s_allwinner_a733")
+expected_head = status.get("expected_head") or expected.get("head") or "unknown"
+thinkcentre_head = status.get("thinkcentre_public_head") or "unknown"
+public_ahead_behind = expected.get("public_ahead_behind", "unknown")
+ahead_text = "unknown"
+try:
+    behind, ahead = str(public_ahead_behind).split()
+    ahead_text = f"{ahead} commits ahead and {behind} commits behind public/main"
+except Exception:
+    ahead_text = f"ahead/behind state is {public_ahead_behind}"
+
+options = [
+    {
+        "id": "A",
+        "label": "Monitor only",
+        "recommended": True,
+        "summary": "Keep Hermes reporting drift and patch blockers without syncing any repos.",
+        "risk": "Lowest. Patch-readiness reports may remain stale until a human chooses a sync path.",
+        "operator_text": "Keep monitoring only. Do not sync the ThinkCentre public clone yet.",
+    },
+    {
+        "id": "B",
+        "label": "Refresh ThinkCentre public clone from GitHub",
+        "recommended": False,
+        "summary": "Run a normal fetch/fast-forward of ThinkCentre's public clone from GitHub only.",
+        "risk": f"Does not include the Mac public repo state ({ahead_text}). It may preserve the stale-vs-Mac drift.",
+        "command_block": f"cd {public_repo}\ngit fetch --prune origin\ngit pull --ff-only origin main\ngit status --short --branch",
+        "operator_text": "I approve refreshing the ThinkCentre public clone from GitHub with fast-forward only.",
+    },
+    {
+        "id": "C",
+        "label": "Sync Mac public work to ThinkCentre mirror",
+        "recommended": False,
+        "summary": "Push the Mac public repo state to its configured ThinkCentre mirror, then refresh ThinkCentre consumers from that mirror.",
+        "risk": f"Higher. The Mac public repo state is {ahead_text}; this changes which patch-work state ThinkCentre monitors treat as current.",
+        "command_block": "Run from the Mac public repo only after human review:\ncd '/Users/enzo/projects/Home Lab/cubie-a7s-armbian'\ngit status --short --branch\ngit push origin main\n# then on ThinkCentre, update the intended clone from the mirror with fast-forward only",
+        "operator_text": "I approve syncing the Mac public repo state to the ThinkCentre mirror after reviewing the ahead commits.",
+    },
+]
+
+doc = {
+    "generated_at": now,
+    "drift_report": drift_path,
+    "readiness_report": readiness_path,
+    "expected_head": expected_head,
+    "thinkcentre_public_head": thinkcentre_head,
+    "public_ahead_behind": public_ahead_behind,
+    "public_repo": public_repo,
+    "options": options,
+    "recommended_option": "A",
+    "approval_required": True,
+    "not_authorized": [
+        "git pull, push, reset, or checkout in public repos",
+        "patch regeneration",
+        "b4 send or b4 send --reflect",
+        "kernel branch promotion",
+    ],
+}
+pathlib.Path(json_path).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+
+lines = [
+    "# A733 Repo Sync Approval Brief",
+    "",
+    f"Generated: `{now}`",
+    "",
+    "## Current Drift",
+    "",
+    f"- Mac expected public head: `{expected_head}`",
+    f"- ThinkCentre public clone head: `{thinkcentre_head}`",
+    f"- Mac ahead/behind public/main: `{public_ahead_behind}`",
+    f"- ThinkCentre public repo: `{public_repo}`",
+    "",
+    "## Recommendation",
+    "",
+    "Recommended default: **Option A, monitor only**. This keeps Hermes useful without silently changing which patch state is authoritative.",
+    "",
+    "## Options",
+    "",
+]
+for option in options:
+    rec = " recommended" if option["recommended"] else ""
+    lines += [
+        f"### Option {option['id']}: {option['label']}{rec}",
+        "",
+        option["summary"],
+        "",
+        f"Risk: {option['risk']}",
+        "",
+        "Approval text:",
+        "",
+        "```text",
+        option["operator_text"],
+        "```",
+        "",
+    ]
+    if "command_block" in option:
+        lines += ["Command block after approval:", "", "```sh", option["command_block"], "```", ""]
+lines += [
+    "## Not Authorized By This Brief",
+    "",
+]
+lines += [f"- {x}" for x in doc["not_authorized"]]
+lines += ["", "This brief is read-only. Hermes must not sync repos without explicit operator approval.", ""]
+pathlib.Path(md_path).write_text("\n".join(lines), encoding="utf-8")
+body = html.escape(pathlib.Path(md_path).read_text(encoding="utf-8"))
+pathlib.Path(html_path).write_text(
+    "<!doctype html><meta charset='utf-8'><title>A733 Repo Sync Approval Brief</title>"
+    "<style>body{font-family:system-ui,sans-serif;max-width:1000px;margin:2rem auto;line-height:1.45}"
+    "pre{white-space:pre-wrap;background:#f6f8fa;padding:1rem;border:1px solid #ddd}</style>"
+    f"<pre>{body}</pre>\n",
+    encoding="utf-8",
+)
+print(f"wrote {md_path}")
+PY

@@ -24,6 +24,7 @@ Live ThinkCentre Hermes jobs after setup:
 | A733 public patch readiness | `b4a75d6a1c83` | `37 * * * *` | `no-agent` | Checks the public review repo, patch snapshot, and private final-send checklist without regenerating, validating, sending, or editing branches. |
 | A733 patch blocker brief | `c4333a70d47c` | `39 * * * *` | `no-agent` | Converts readiness/model/queue findings into a human approval brief. It does not authorize or perform the action. |
 | A733 repo drift monitor | `46c0255f59a9` | `41 * * * *` | `no-agent` | Compares the ThinkCentre public clone against the Mac-recorded expected public head. It reports drift only; it does not sync repos. |
+| A733 repo sync approval brief | `9636aa1980e7` | `43 * * * *` | `no-agent` | Turns repo drift into explicit human choices. The default recommendation is monitor-only; sync/pull/push/reset still require approval. |
 
 ## Report URLs
 
@@ -35,6 +36,7 @@ http://192.168.50.225:9181/hermes-hourly/a733-h149-approval-brief-latest.md
 http://192.168.50.225:9181/hermes-hourly/a733-public-patch-readiness-latest.md
 http://192.168.50.225:9181/hermes-hourly/a733-patch-blocker-brief-latest.md
 http://192.168.50.225:9181/hermes-hourly/a733-repo-drift-latest.md
+http://192.168.50.225:9181/hermes-hourly/a733-repo-sync-approval-brief-latest.md
 http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest.md
 ```
 
@@ -64,6 +66,11 @@ http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest
   ThinkCentre is monitoring a clean GitHub clone, but it is not the latest Mac
   patch-work state. Hermes must report the drift rather than pulling, pushing,
   resetting, or treating either side as silently authoritative.
+- The repo sync approval brief records three explicit paths: keep monitoring
+  only, refresh the ThinkCentre clone from GitHub, or perform a reviewed Mac to
+  ThinkCentre sync. It recommends monitor-only by default because the Mac public
+  repo is ahead of its public remote by 214 commits and no sync approval has
+  been given.
 - One false Telegram stall alert was sent during smoke testing because the
   heartbeat matched the Hermes gateway process as an active audit. The matcher
   was narrowed and the state file was cleared; a subsequent Hermes-triggered
@@ -81,6 +88,7 @@ scripts/a733-hermes-h149-approval-brief
 scripts/a733-hermes-public-patch-readiness-monitor
 scripts/a733-hermes-patch-blocker-brief
 scripts/a733-hermes-repo-drift-monitor
+scripts/a733-hermes-repo-sync-approval-brief
 ```
 
 ## Validation
