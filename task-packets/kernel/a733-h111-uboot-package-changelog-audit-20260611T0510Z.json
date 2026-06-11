@@ -1,0 +1,14 @@
+{
+  "id": "A733-SDMMC-H111",
+  "title": "U-Boot package changelog and source metadata audit",
+  "timestamp_utc": "2026-06-11T05:10:00Z",
+  "status": "completed_no_patch",
+  "findings": [
+    "Installed u-boot-aw2501/u-boot-radxa-a733 changelog records 2018.07-12 through 2018.07-17 mostly as chore: update submodules.",
+    "No changelog entry names MMC, SDMMC, SMHC, IDMAC, NSI, MBUS, firewall, or A733 storage fabric changes after the active on-card 2018.07-12 firmware.",
+    "Package source metadata points to https://github.com/radxa-pkg/u-boot-aw2501.",
+    "Installed documentation does not provide submodule SHAs or a specific explanation for the Jan 2026 to Apr 2026 U-Boot payload difference."
+  ],
+  "decision": "No kernel patch and no bootloader experiment justified from changelog text alone. The newer installed payload remains a possible controlled bootloader A/B test, but it is not evidence of an SDMMC0 IDMAC fix.",
+  "next": "If pursuing this path, inspect the radxa-pkg/u-boot-aw2501 repository tags/submodules for 2018.07-12 vs 2018.07-17, or test the newer bootloader as an explicitly separate bootloader experiment."
+}

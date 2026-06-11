@@ -2358,6 +2358,25 @@
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h110-installed-uboot-payload-audit-20260611T0505Z.json",
         "summary": "Completed with no behavior patch. Installed u-boot-aw2501/u-boot-radxa-a733 are 2018.07-17 and contain A7A/A7Z boot payloads, but active card firmware is older U-Boot 2018.07-12 from Jan 2026. Hash comparisons show installed A7A boot0_sdcard.bin and boot_package.fex do not match likely on-card segments. Installed payloads contain similar SDMMC/MBUS/BL31/ARISC strings but no SMHC or IDMAC clue."
       }
+    },
+    {
+      "id": "A733-SDMMC-H111",
+      "priority": 1,
+      "status": "completed_no_patch",
+      "title": "Audit U-Boot package changelog for storage clues",
+      "question": "Does the installed U-Boot package changelog explain the active-vs-installed firmware delta or name an SDMMC/IDMAC fix?",
+      "test_cost": "low; package metadata only",
+      "procedure": [
+        "Read installed u-boot-aw2501/u-boot-radxa-a733 changelogs and copyright source metadata.",
+        "Search installed docs for MMC, SDMMC, SMHC, IDMAC, NSI, MBUS, and A733 clues.",
+        "Do not restage bootloader payloads."
+      ],
+      "pass_criteria": "A concrete storage fix is promoted or the metadata path is closed.",
+      "fail_criteria": "Future sessions infer an IDMAC fix from generic 'update submodules' changelog entries.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h111-uboot-package-changelog-audit-20260611T0510Z.json",
+        "summary": "Completed with no behavior patch. The changelog from 2018.07-12 to 2018.07-17 mostly says chore: update submodules and does not name MMC, SDMMC, SMHC, IDMAC, NSI, MBUS, firewall, or storage-fabric changes. Source metadata points to radxa-pkg/u-boot-aw2501, but installed docs do not expose submodule SHAs or a concrete reason to expect an IDMAC fix."
+      }
     }
   ],
   "model_routes": [
