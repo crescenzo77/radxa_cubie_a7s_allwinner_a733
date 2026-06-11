@@ -1159,6 +1159,25 @@
       }
     },
     {
+      "id": "A733-SDMMC-H047",
+      "priority": 1,
+      "status": "completed_no_behavior_patch",
+      "title": "BSP A733 store-clock completion comment audit",
+      "question": "Does the BSP A733-specific clk_store comment reveal a missing storage-fabric clock or ordering delta for SDMMC0 IDMAC descriptor-fetch reachability?",
+      "test_cost": "low; source audit only, no kernel build and no board reboot",
+      "procedure": [
+        "Inspect BSP host struct, clock acquisition, clock enable order, and A733 SDMMC0 DTS clock names for clk_store/mmc_store and MBUS.",
+        "Compare against the local diagnostic driver and DTS.",
+        "Only patch if the local tree is missing a named store/MBUS/MSI-lite clock or uses a source-backed wrong ID."
+      ],
+      "pass_criteria": "The store-clock delta is either promoted to one narrow runtime proof or closed as already implemented.",
+      "fail_criteria": "The next session repeats mmc_store/mmc_mbus/mmc_msi_lite as a standalone guess without new CCU evidence.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h047-bsp-store-clock-audit-20260611T0535Z.json",
+        "summary": "Completed with no behavior patch. The BSP comment is real: A733 clk_store is intended to help SDMMC complete work together with MBUS. The local diagnostic tree already gets and enables mmc_store, mmc_mbus, and mmc_msi_lite in the same order before the MMC module clock, and the local DTS wires mmc_store/mmc_mbus. Prior runtime evidence still stalls at IDMAC DESC_READ, so the store-clock requirement is covered unless future CCU evidence proves the IDs are wrong."
+      }
+    },
+    {
       "id": "A733-SDMMC-H004",
       "priority": 4,
       "status": "do_not_repeat_without_new_evidence",

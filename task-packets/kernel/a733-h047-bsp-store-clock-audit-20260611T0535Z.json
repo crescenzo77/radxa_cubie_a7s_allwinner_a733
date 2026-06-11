@@ -1,0 +1,37 @@
+{
+  "id": "A733-SDMMC-H047",
+  "timestamp_utc": "2026-06-11T05:35:00Z",
+  "title": "BSP A733 store-clock completion comment audit",
+  "scope": [
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.h",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "/srv/projects/kernel-work/tmp/orangepi-a733-mmc/sun60iw2p1.dtsi",
+    "/srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c",
+    "/srv/projects/a733-diag-rtc-extosc-orphan/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi"
+  ],
+  "trigger": "The BSP host struct has an A733-specific comment that clk_store ensures SDMMC successfully completes work together with MBUS matching.",
+  "bsp_evidence": [
+    "BSP sunxi-mmc.h defines clk_store with the comment: on A733, ensure sdmmc successfully completed the work, applicable together with mbus matching.",
+    "BSP probe obtains mmc_store, mmc_mbus, and mmc_msi_lite clocks.",
+    "BSP enable path enables ahb, then clk_store, then clk_mbus, then clk_msi_lite, then the mmc module clock.",
+    "BSP A733 SDMMC0 DTS names mmc_store as CLK_STORE_AHB_GATE and mmc_mbus as CLK_MBUS_STORE_GATE."
+  ],
+  "local_evidence": [
+    "The local diagnostic driver already has clk_mmc_store, clk_mmc_mbus, and clk_mmc_msi_lite members.",
+    "The local diagnostic probe gets optional mmc_store, mmc_mbus, and mmc_msi_lite clocks.",
+    "The local diagnostic enable path enables ahb, then mmc_store, then mmc_mbus, then mmc_msi_lite, then mmc.",
+    "The local A733 DTS wires mmc_store to CLK_AHB_STORE and mmc_mbus to CLK_MBUS_STORE.",
+    "Prior runtime evidence with these storage fabric clocks still reached IDMAC DESC_READ with CHDA=DLBA, CBDA=0, and descriptor OWN unchanged."
+  ],
+  "public_search": {
+    "exact_email_archive_hit": false,
+    "answer_visible": false,
+    "notes": "Search still did not reveal a public archive hit or answer for the A733 SDMMC0 descriptor-fetch question."
+  },
+  "decision": "No behavior patch.",
+  "reason": "The A733-specific BSP store-clock comment identifies an important requirement, but the current diagnostic tree already implements that clock path and the stall persists. Retesting it would duplicate closed H013/H041/H046 storage-fabric evidence.",
+  "next": [
+    "Do not reopen mmc_store/mmc_mbus/mmc_msi_lite as a standalone fix without new evidence that the CCU IDs or gates are wrong.",
+    "Continue waiting for a maintainer/list reply or a source-backed SDMMC0 firewall/security/master-permission bit."
+  ]
+}
