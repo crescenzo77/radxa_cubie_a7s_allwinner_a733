@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T03:50:00Z",
+  "updated_utc": "2026-06-11T04:10:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H043 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, the public-U-Boot IRQ-40 clue, the descriptor end-of-ring bit, basic model-suggested IDMAC reset/clock-offset concerns, the current public Linux dependency status, the plain IDMAC enable write-readback idea, a vendor NSI/public-U-Boot clock audit, a public community Armbian repo audit, and the A733 MMC clock-rate math clue. H043 found the U-Boot hidden-divider clue already represented in Linux's CCU parent/postdiv model.",
+  "active_blocker": "A733 SDMMC0 proves card init, pre-mmcblk CMD17, small PIO CMD18 reads, partition discovery, CMD49 cache-enable via scoped PIO write, and read-only EXT4 root mount when IDMA is bypassed. H009-H044 now close descriptor geometry, visible SDMMC setup, DMA mask, IOMMU attachment, data-buffer placement, descriptor allocation class, the safe MSI/IOMMU fabric subset, CPU NSI IAG reads, minimum NSI CCU 0x580/0x584 bits, no-build source/sysfs/public-U-Boot audits, vendor-style normal IDMAC 64-bit DMA/coherent descriptor allocation, local firmware/security/storage-master inventory, maintainer/vendor question preparation, public-clean routing/send prep, public archive/Gmail monitor checks, the public-U-Boot IRQ-40 clue, the descriptor end-of-ring bit, basic model-suggested IDMAC reset/clock-offset concerns, the current public Linux dependency status, the plain IDMAC enable write-readback idea, a vendor NSI/public-U-Boot clock audit, a public community Armbian repo audit, the A733 MMC clock-rate math clue, and an Orange Pi full-driver audit. H044 found no new A733-specific normal-IDMAC code.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -37,13 +37,33 @@
     "stop_conditions": "Use the public PR template checklist before human review or any b4 send --reflect step."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H043",
+    "id": "A733-SDMMC-H044",
     "status": "completed_no_patch",
-    "title": "A733 MMC clock math audit",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h043-mmc-clock-math-audit-20260611T0350Z.json",
-    "result": "Public U-Boot's A733 pll_hz/=3 clue is already represented in the Linux CCU parent/postdiv model for MMC0/MMC1. No clock-rate behavior patch."
+    "title": "Orange Pi full sunxi-mmc driver audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h044-orangepi-full-driver-audit-20260611T0410Z.json",
+    "result": "The Orange Pi full tree has no new A733-specific normal-IDMAC code. Its diff is lifecycle/API churn, and the last-descriptor next=0 shape is already covered by prior descriptor evidence. No patch."
   },
   "hypotheses": [
+    {
+      "id": "A733-SDMMC-H044",
+      "priority": 43,
+      "status": "completed_no_patch",
+      "title": "Orange Pi full sunxi-mmc driver audit",
+      "question": "Does the Orange Pi full kernel tree contain a sunxi-mmc IDMAC delta not present in the current diagnostic branch?",
+      "test_cost": "low; source diff only",
+      "procedure": [
+        "Locate Orange Pi full sunxi-mmc driver source.",
+        "Search it for A733, v5p3x, IDMAC, descriptor, and fabric-specific code.",
+        "Diff it against the local mainline baseline.",
+        "Promote a patch only if a concrete untested IDMAC delta is found."
+      ],
+      "pass_criteria": "A new A733/v5p3x IDMAC runtime delta is found.",
+      "fail_criteria": "The tree contains only ordinary mainline IDMAC logic or non-runtime API churn.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h044-orangepi-full-driver-audit-20260611T0410Z.json",
+        "summary": "No new delta. No patch."
+      }
+    },
     {
       "id": "A733-SDMMC-H043",
       "priority": 42,

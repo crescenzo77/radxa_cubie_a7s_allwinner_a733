@@ -1,0 +1,29 @@
+{
+  "id": "A733-SDMMC-H044",
+  "timestamp_utc": "2026-06-11T04:10:00Z",
+  "status": "completed_no_patch",
+  "title": "Orange Pi full sunxi-mmc driver audit",
+  "inputs": {
+    "orangepi_tree": "/srv/projects/kernel-work/tmp/linux-orangepi-full",
+    "current_diag_tree": "/srv/projects/a733-diag-rtc-extosc-orphan",
+    "baseline_tree": "/srv/projects/cubie-a7s-armbian/sources/mainline-linux"
+  },
+  "findings": [
+    {
+      "area": "A733-specific code",
+      "finding": "The Orange Pi full tree's sunxi-mmc driver does not add A733-specific normal-IDMAC logic. It contains the ordinary mainline-style descriptor setup and DMA start sequence.",
+      "decision": "No A733 behavior patch is justified from this tree."
+    },
+    {
+      "area": "driver diff",
+      "finding": "Compared against the local mainline baseline, the visible diff is mostly host allocation/removal/runtime-PM API churn. It does not name a new register, reset, fabric bit, or descriptor format requirement.",
+      "decision": "Do not port lifecycle/API churn into the diagnostic branch."
+    },
+    {
+      "area": "descriptor next pointer",
+      "finding": "The Orange Pi full tree zeros the last descriptor next pointer. Prior local evidence already covered practical vendor/mainline descriptor shapes, including single-descriptor and chain cases with terminal next=0 in the chain dump. The controller still failed before descriptor consumption.",
+      "decision": "Do not retest last-descriptor next=0 without new evidence."
+    }
+  ],
+  "conclusion": "No kernel patch was made. The Orange Pi full driver audit adds no source-backed IDMAC descriptor-fetch delta."
+}
