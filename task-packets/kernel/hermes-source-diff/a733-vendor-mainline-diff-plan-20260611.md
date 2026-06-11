@@ -64,6 +64,34 @@ Record for each tree:
 
 If vendor history is not connected to upstream, use `git diff --no-index` on targeted subtrees.
 
+### 1a. Get the matching upstream base
+
+Before interpreting targeted subsystem diffs, locate or fetch the exact upstream release that matches the patched vendor tree version.
+
+For the known working Cubie vendor kernel:
+
+```text
+vendor runtime: Linux 5.15.147-21-a733
+matching upstream target: v5.15.147
+```
+
+If the Orange Pi 6.6 vendor tree is the source being compared, determine the exact closest upstream `v6.6.y` base from git history, tags, or vendor metadata before diffing.
+
+Required behavior:
+
+- Prefer an existing local upstream Linux clone if present.
+- Otherwise fetch only the needed upstream tag/branch into a temporary Strix worktree/cache.
+- Record the command used to identify the base.
+- Produce one broad plain diff summary first:
+
+```text
+vendor patched tree vs matching upstream release
+```
+
+Then produce the narrower A733 SDMMC0/CCU/reset/fabric candidate list from that diff.
+
+Do not skip this step just because targeted audits already exist.
+
 ### 2. Diff MMC driver paths
 
 Compare vendor and mainline for:

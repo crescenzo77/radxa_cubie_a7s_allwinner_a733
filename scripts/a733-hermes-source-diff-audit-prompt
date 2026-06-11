@@ -25,6 +25,10 @@ Primary task:
 
 Create a source-backed diff audit comparing the working A733 vendor kernel/source evidence with the closest upstream/mainline kernel source. Focus on the A733 SDMMC0 IDMAC descriptor-read stall and the known clue that CCU register 0x02002580 bit 27 changes behavior.
 
+Mandatory first move:
+
+Find or fetch the same upstream kernel version as the patched vendor tree and do a plain vendor-vs-upstream diff before narrowing the analysis. For the working Cubie vendor runtime, compare against upstream `v5.15.147`. If analyzing the Orange Pi 6.6 tree, identify the exact closest `v6.6.y` upstream base from history or metadata and record how you identified it.
+
 Expected output directory:
 
 /srv/projects/homelab/task-packets/kernel/hermes-source-diff/
