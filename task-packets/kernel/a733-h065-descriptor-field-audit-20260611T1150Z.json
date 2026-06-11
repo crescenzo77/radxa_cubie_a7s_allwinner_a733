@@ -1,0 +1,19 @@
+{
+  "id": "A733-SDMMC-H065",
+  "status": "completed_no_patch",
+  "title": "BSP IDMAC descriptor field audit",
+  "timestamp_utc": "2026-06-11T11:50:00Z",
+  "scope": [
+    "Strix BSP source: /srv/projects/kernel-work/tmp/orangepi-a733-mmc/bsp/sunxi-mmc.c",
+    "Strix diagnostic source: /srv/projects/a733-diag-rtc-extosc-orphan/drivers/mmc/host/sunxi-mmc.c"
+  ],
+  "observations": [
+    "BSP descriptor setup writes CH, OWN, DIC, buffer size, shifted buffer address, shifted next-descriptor pointer, FD, LD, and wmb().",
+    "The local diagnostic branch writes the same relevant fields for the failing single-SG CMD18 transfer.",
+    "Prior runtime tests already covered shifted/unshifted DLBA and descriptor end-of-ring variants.",
+    "No untested descriptor field or address-format delta remains for the observed first-descriptor-fetch stall."
+  ],
+  "decision": "no_behavior_patch",
+  "reason": "The controller never consumes descriptor word 0, and the descriptor fields already match the BSP shape for this transfer.",
+  "next": "Do not retest descriptor fields without new evidence; focus remains on SDMMC0 memory-master/fabric access."
+}
