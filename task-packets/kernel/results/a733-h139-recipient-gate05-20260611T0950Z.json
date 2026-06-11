@@ -1,0 +1,39 @@
+{
+  "id": "A733-UPSTREAM-H139",
+  "status": "completed_gate_05_recipients",
+  "checked_utc": "2026-06-11T09:50:00Z",
+  "gate_closed": "gate-05-recipients",
+  "branch": "codex/final/a733-dts-v1",
+  "worktree": "/srv/projects/kernel-work/final/a733-dts-v1",
+  "head": "1d2642221795d611d607b153c119218e496856a8",
+  "b4_show_info": {
+    "needs_recipients": false,
+    "needs_auto_to_cc": false,
+    "preflight_checks_failing": false,
+    "has_prerequisites": true,
+    "needs_editing": false
+  },
+  "b4_recipients": {
+    "to": [
+      "Rob Herring <robh@kernel.org>",
+      "Krzysztof Kozlowski <krzk+dt@kernel.org>",
+      "Conor Dooley <conor+dt@kernel.org>",
+      "Chen-Yu Tsai <wens@kernel.org>",
+      "Jernej Skrabec <jernej.skrabec@gmail.com>",
+      "Samuel Holland <samuel@sholland.org>",
+      "Maxime Ripard <mripard@kernel.org>",
+      "Ulf Hansson <ulfh@kernel.org>"
+    ],
+    "cc": [
+      "devicetree@vger.kernel.org",
+      "linux-arm-kernel@lists.infradead.org",
+      "linux-sunxi@lists.linux.dev",
+      "linux-kernel@vger.kernel.org",
+      "linux-mmc@vger.kernel.org"
+    ]
+  },
+  "get_maintainer_comparison": "b4 auto-to-cc covers the core DT, sunxi, ARM, MMC, and LKML maintainers/lists. Raw get_maintainer output also includes noisy historical/non-role names, which were not added blindly.",
+  "validation_floor": "passed on final worktree after recipient rewrite",
+  "send_status": "not_send_ready",
+  "next_action": "Proceed to gate-06 validation-floor checklist evidence, then gate-07 b4 final gate."
+}
