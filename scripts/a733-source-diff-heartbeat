@@ -96,7 +96,7 @@ def file_fingerprint(path):
 
 def snapshot():
     proc = run(
-        "pgrep -af 'A733 vendor-mainline diff audit|a733-hermes-source-diff-audit-prompt|hermes.*cron|hermes.*agent' | grep -v pgrep || true",
+        "pgrep -af 'A733 vendor-mainline diff audit|a733-hermes-source-diff-audit-prompt|a733-vendor-mainline-diff' | grep -v pgrep || true",
         timeout=10,
     ).stdout.strip()
     cron = run("/home/enzo/.local/bin/hermes cron list 2>/dev/null || true", timeout=20).stdout
@@ -126,7 +126,7 @@ def is_suspect(snap, prev):
     if snap["complete"]:
         return False, "complete"
     if not snap["active_job"] and not snap["active_proc"]:
-        return True, "audit is incomplete and no Hermes job/process appears active"
+        return False, "idle; no active source-diff audit"
     if prev and prev.get("signature") == snap["signature"]:
         return True, "audit is active but outputs/process state did not move"
     return False, "moving or newly started"

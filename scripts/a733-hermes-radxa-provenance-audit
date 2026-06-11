@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo=${A733_HERMES_REPO:-/srv/projects/homelab}
+outdir="$repo/task-packets/kernel/hermes-source-diff"
+cache=${A733_RADXA_AUDIT_CACHE:-/srv/projects/kernel-work/tmp/a733-radxa-provenance-audit}
+json="$outdir/a733-radxa-provenance-audit-latest.json"
+md="$outdir/a733-radxa-provenance-audit-latest.md"
+html="$outdir/a733-radxa-provenance-audit-latest.html"
+telegram_env=${A733_TELEGRAM_ENV:-/etc/telegram-tasks-bot/bot.env}
+report_url=${A733_RADXA_PROVENANCE_REPORT_URL:-http://192.168.50.225:9181/hermes-source-diff/a733-radxa-provenance-audit-latest.html}
+
+mkdir -p "$outdir" "$cache"
+
+python3 - "$cache" "$json" "$md" "$html" "$telegram_env" "$report_url" <<'PY'
+import datetime as dt
+import html
+import json
+import os
+import pathlib
+import subprocess
+import sys
+import urllib.request
+
+cache, json_path, md_path, html_path, telegram_env, report_url = sys.argv[1:]
+cache = pathlib.Path(cache)
+
+def run(cmd, cwd=None, timeout=120):
+    p = subprocess.run(cmd, shell=True, cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
+    return {"cmd": cmd, "cwd": str(cwd or ""), "returncode": p.returncode, "output": p.stdout[-12000:]}
+
+def clone_or_update(url, dest):
+    dest = pathlib.Path(dest)
+    if (dest / ".git").exists():
+        return run("git fetch --depth=1 origin main || git fetch --depth=1 origin", cwd=dest)
+    return run(f"git clone --depth=1 {url} {dest}")
+
+def read_env(path):
+    d = {}
+    p = pathlib.Path(path)
+    if not p.exists():
+        return d
+    for line in p.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        d[k.strip()] = v.strip().strip('"').strip("'")
+    return d
+
+def telegram(text):
+    cfg = read_env(telegram_env)
+    token = cfg.get("TELEGRAM_BOT_TOKEN")
+    chat = cfg.get("TASK_NOTIFY_USER_ID") or cfg.get("CLEAN_TASK_USER_ID")
+    if not token or not chat:
+        return
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=json.dumps({"chat_id": chat, "text": text, "disable_web_page_preview": False}).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    urllib.request.urlopen(req, timeout=15).read()
+
+now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+radxa = cache / "radxa-a733"
+rsdk = cache / "rsdk"
+commands = []
+commands.append(clone_or_update("https://github.com/radxa-build/radxa-a733.git", radxa))
+commands.append(run("git rev-parse --short=12 HEAD && git remote -v && sed -n '1,220p' .github/workflows/build.yaml && sed -n '1,80p' README.md", cwd=radxa))
+commands.append(clone_or_update("https://github.com/RadxaOS-SDK/rsdk.git", rsdk))
+commands.append(run("git rev-parse --short=12 HEAD && git remote -v", cwd=rsdk))
+commands.append(run("rg -n 'radxa-a733|a733|linux-image|kernel|linux|source|repo|package' . | head -260", cwd=rsdk))
+
+package_probe = run(
+    "ssh -o BatchMode=yes -o ConnectTimeout=8 codex@192.168.50.95 "
+    "'uname -r; dpkg-query -W \"linux*\" \"radxa*\" \"u-boot*\" 2>/dev/null | "
+    "grep -E \"a733|radxa|u-boot|linux-image|linux-headers\" | head -120; "
+    "apt-cache show linux-image-5.15.147-21-a733 2>/dev/null | sed -n \"1,120p\"' ",
+    timeout=40,
+)
+commands.append(package_probe)
+
+hits = []
+for c in commands:
+    out = c["output"]
+    for line in out.splitlines():
+        low = line.lower()
+        if any(term in low for term in ("linux-image-5.15.147-21-a733", "source:", "github.com", "kernel", "radxa-a733")):
+            hits.append(line[:500])
+
+found_exact_source = any("source:" in h.lower() and ("linux" in h.lower() or "kernel" in h.lower()) for h in hits)
+doc = {
+    "generated_at": now,
+    "question": "Can local public/package provenance identify the Radxa kernel source for 5.15.147-21-a733?",
+    "found_exact_radxa_kernel_source": found_exact_source,
+    "cache": str(cache),
+    "commands": commands,
+    "notable_hits": hits[:120],
+    "recommendation": (
+        "Use the identified Radxa kernel source for v5.15.147 diffing."
+        if found_exact_source else
+        "No exact Radxa kernel source was proven by this read-only audit yet; keep Orange Pi 6.6 labeled secondary BSP reference only."
+    ),
+}
+pathlib.Path(json_path).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+
+lines = [
+    "# A733 Radxa Provenance Audit",
+    "",
+    f"Generated: `{now}`",
+    "",
+    f"Exact Radxa kernel source found: `{found_exact_source}`",
+    "",
+    f"Recommendation: {doc['recommendation']}",
+    "",
+    "## Notable Hits",
+    "",
+]
+lines += [f"- `{h}`" for h in hits[:80]]
+lines += ["", "## Command Results", ""]
+for c in commands:
+    lines += [f"### `{c['cmd']}`", "", f"Return code: `{c['returncode']}`", "", "```text", c["output"], "```", ""]
+pathlib.Path(md_path).write_text("\n".join(lines) + "\n", encoding="utf-8")
+body = html.escape(pathlib.Path(md_path).read_text(encoding="utf-8"))
+pathlib.Path(html_path).write_text(
+    "<!doctype html><meta charset='utf-8'><title>A733 Radxa Provenance Audit</title>"
+    "<style>body{font-family:system-ui,sans-serif;max-width:1100px;margin:2rem auto;line-height:1.45}"
+    "pre{white-space:pre-wrap;background:#f6f8fa;padding:1rem;border:1px solid #ddd}</style>"
+    f"<pre>{body}</pre>\n",
+    encoding="utf-8",
+)
+
+telegram(
+    "A733 Radxa provenance audit complete\n"
+    f"Exact Radxa kernel source found: {found_exact_source}\n"
+    f"Report: {report_url}"
+)
+print(f"wrote {md_path}")
+PY
