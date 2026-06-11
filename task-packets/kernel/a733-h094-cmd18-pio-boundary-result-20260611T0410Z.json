@@ -1,0 +1,23 @@
+{
+  "id": "A733-SDMMC-H094",
+  "status": "completed_boundary_refined",
+  "date_utc": "2026-06-11T04:10:00Z",
+  "artifact": "/srv/projects/kernel-work/outgoing/a733-h094-cmd18-pio-boundary-2905877b1d82-20260611T035931Z",
+  "commit": "2905877b1d827d2d606b87744f18861e0cac939a",
+  "uart_log": "/srv/projects/cubie-uart/logs/20260611T035945Z-a733-h094-cmd18-pio-boundary-2905877b1d82-rw-sh-ttyUSB0.uart.log",
+  "uart_sha256": "34461cbca5ea60869ec424b9f6db732b9d3da98ee6b55a2b37da5bafa0015db9",
+  "finding": "Repeated 8-block CMD18 reads completed through the lab-only PIO path with wait_dma=0, pio=1, 4096/4096 bytes copied, and err=0.",
+  "evidence": [
+    "CMD18 poll reaches rint=0x0000402c and mista=0x00004000.",
+    "FIFO copy records copied=4096/4096.",
+    "IDST remains 0 and no normal IDMAC descriptor-read stall appears in the CMD18 path."
+  ],
+  "interpretation": "The H093 silence was not a hard CMD18 wedge. PIO reads continue, but they are too slow/noisy to be a practical root-rw proof path. This strengthens the conclusion that PIO is diagnostic infrastructure only.",
+  "next_best_step": "Return focus to the real upstream blocker: why normal A733 SDMMC0 IDMAC cannot fetch descriptor word 0. Use any maintainer/vendor reply or newly found source-backed firmware/security/fabric evidence to form the next behavior patch.",
+  "guardrails": [
+    "Do not treat PIO as an upstream fix.",
+    "Do not submit or rewrite patches from this diagnostic branch.",
+    "Do not expand scope into unrelated peripherals.",
+    "Cubie3 restored to vendor 5.15.147-21-a733 after testing."
+  ]
+}

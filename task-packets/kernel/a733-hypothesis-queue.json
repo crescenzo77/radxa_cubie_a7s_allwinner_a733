@@ -2010,6 +2010,46 @@
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h089-pio-write32-runtime-result-20260611T0320Z.json",
         "summary": "Passed as lab-only evidence. Artifact commit 31e0a9d5df71 expanded CMD25 PIO writes to 32 blocks. Cubie3 rw boot log shows the former failing 24-block CMD25 used wait_dma=0 pio=1 and copied 12288/12288 bytes, then finalized with IDST=0 and no IDMAC stall. Many later 8/16-block CMD25 writes also finalized through PIO until capture timeout. This is not an upstream fix; it proves the card/data path works when avoiding A733 IDMAC."
       }
+    },
+    {
+      "id": "A733-SDMMC-H090-H093",
+      "priority": 1,
+      "status": "completed_boundary_refined",
+      "title": "Quiet lab-only PIO rw shell proof",
+      "question": "Does reducing diagnostic logging allow the lab-only PIO read/write runtime to reach a writable /bin/sh shell?",
+      "test_cost": "medium; logging-only diagnostic builds and Cubie3 UART boot",
+      "procedure": [
+        "Quiet routine PIO write/read and old clock diagnostics without changing MMC behavior.",
+        "Boot Cubie3 with root rw init=/bin/sh using direct U-Boot load.",
+        "Capture whether partition discovery, root mount, or shell appears.",
+        "Restore Cubie3 to vendor 5.15.147-21-a733."
+      ],
+      "pass_criteria": "Cubie3 reaches /bin/sh with root rw while using lab-only PIO read/write paths.",
+      "fail_criteria": "The boot still fails before root mount, falls back to normal IDMAC, or hides the original IDMAC blocker.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h090-h093-pio-rw-shell-result-20260611T0405Z.json",
+        "summary": "H090-H093 reduced logging and proved the next boundary. H093 reaches SD card discovery quickly, with mmcblk0 at ~3.03s, but a 10-minute quiet capture did not reach partition/root mount. No IDMAC fallback appeared; the next question became whether CMD18 PIO reads were stuck or merely slow."
+      }
+    },
+    {
+      "id": "A733-SDMMC-H094",
+      "priority": 1,
+      "status": "completed_boundary_refined",
+      "title": "CMD18 PIO boundary trace",
+      "question": "Is the first CMD18 PIO read after SD card discovery stuck, or is the lab-only PIO path just slow?",
+      "test_cost": "low; logging-only diagnostic build and Cubie3 UART boot",
+      "procedure": [
+        "Start from H093.",
+        "Re-enable targeted CMD18 request/poll/FIFO-copy diagnostics only.",
+        "Boot Cubie3 with root rw init=/bin/sh for a short capture.",
+        "Restore Cubie3 to vendor 5.15.147-21-a733."
+      ],
+      "pass_criteria": "CMD18 shows RX/FIFO progress and complete 4096-byte PIO copies without IDMAC use.",
+      "fail_criteria": "CMD18 receives no RX data request, reports errors, or falls back to IDMAC.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h094-cmd18-pio-boundary-result-20260611T0410Z.json",
+        "summary": "Passed as boundary evidence. H094 showed repeated 8-block CMD18 reads through PIO with wait_dma=0 pio=1, RX/DATA_OVER status, 4096/4096 copied, and err=0. The lab-only PIO path is progressing but too slow/noisy for a practical rw shell proof. The upstream blocker remains unchanged: normal IDMAC still cannot fetch descriptor word 0."
+      }
     }
   ],
   "model_routes": [

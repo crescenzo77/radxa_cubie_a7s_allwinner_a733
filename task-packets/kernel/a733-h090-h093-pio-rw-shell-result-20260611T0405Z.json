@@ -1,0 +1,21 @@
+{
+  "id": "A733-SDMMC-H090-H093",
+  "status": "completed_boundary_refined",
+  "date_utc": "2026-06-11T04:05:00Z",
+  "artifacts": [
+    "/srv/projects/kernel-work/outgoing/a733-h090-pio-rw-shell-quiet-22851e8aee15-20260611T032035Z",
+    "/srv/projects/kernel-work/outgoing/a733-h091-pio-rw-shell-minlog-50e29171c71a-20260611T032809Z",
+    "/srv/projects/kernel-work/outgoing/a733-h092-pio-rw-shell-ultraminlog-685989335812-20260611T033520Z",
+    "/srv/projects/kernel-work/outgoing/a733-h093-pio-rw-shell-silent-b6ca8ed0b93b-20260611T034614Z"
+  ],
+  "h093_uart_log": "/srv/projects/cubie-uart/logs/20260611T034701Z-a733-h093-pio-rw-shell-silent-b6ca8ed0b93b-rw-sh-ttyUSB0.uart.log",
+  "h093_uart_sha256": "27b58e7db9c2433919ced141d9290a1611a37d6cba5aff3651ce9b0e9bb7334e",
+  "finding": "Logging reductions moved SD card discovery to about 3 seconds, but H093 did not reach partition discovery, root mount, or /bin/sh in a 600 second capture.",
+  "interpretation": "The quiet run narrowed the next question to CMD18 PIO progress after mmcblk0 discovery. It did not produce evidence of an IDMAC fallback or a new controller error.",
+  "guardrails": [
+    "Lab-only diagnostic only; not upstreamable.",
+    "No DTS pollution for vendor U-Boot.",
+    "No Ethernet/VPU/display/USB-C/PCIe/wireless expansion.",
+    "Cubie3 restored to vendor 5.15.147-21-a733 after testing."
+  ]
+}
