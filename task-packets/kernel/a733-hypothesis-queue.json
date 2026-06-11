@@ -2282,6 +2282,25 @@
         "result_file": null,
         "summary": "Completed with no behavior patch. Preserved baseline metadata names u-boot-aw2501/u-boot-radxa-a733 and radxa-firmware, and vendor DTB dumps include BL31, ARISC config, boot_devices, secure_status, and SDMMC nodes. However, the preserved baseline explicitly says no BOOT0, BL31, U-Boot, DTB, kernel, initrd, firmware, or other binary payloads were copied, and package queries found no boot0/bl31/trusted packages. This closes metadata-only searches; the next useful firmware step requires extracting actual boot media sectors or package payloads, not another grep of the current artifacts."
       }
+    },
+    {
+      "id": "A733-SDMMC-H107",
+      "priority": 1,
+      "status": "completed_artifact_captured_no_patch",
+      "title": "Capture and audit Cubie boot-sector firmware strings",
+      "question": "Do the actual boot media sectors expose an SMHC0 IDMAC handoff clue?",
+      "test_cost": "low; read-only dd of boot sectors from Cubie2/Cubie3",
+      "procedure": [
+        "Read the first 16 MiB of /dev/mmcblk0 and small boot partitions from Cubie2/Cubie3 into Strix artifacts.",
+        "Generate SHA-256 sums and strings.",
+        "Search for BOOT0, BL31, U-Boot, ARISC, SMHC, SDMMC, IDMAC, MBUS, NSI, firewall, TZMA, SPC, and security state terms."
+      ],
+      "pass_criteria": "A concrete boot firmware handoff clue is promoted, or the binary evidence is preserved and closed without a patch.",
+      "fail_criteria": "Future sessions keep treating firmware blobs as unavailable or infer a kernel patch from generic bootloader strings.",
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h107-boot-sector-firmware-strings-20260611T0450Z.json",
+        "summary": "Completed with no behavior patch. Read-only captures on Strix found real BOOT0/U-Boot/BL31/ARISC strings in the pre-partition 16 MiB from Cubie2 and Cubie3. Strings include sdmmc0_mod, sdmmc0_bus, sdmmc0_rst, sdc_mbus, nsi clk update failures, and security_state <= NON_SECURE. No SMHC, IDMAC, firewall, TZMA, or SPC string was found. This corrects H106's artifact gap but still does not expose a Linux-programmable SMHC0 IDMAC descriptor-fetch permission bit."
+      }
     }
   ],
   "model_routes": [

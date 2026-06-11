@@ -1,0 +1,34 @@
+{
+  "id": "A733-SDMMC-H107",
+  "title": "Read-only Cubie2/Cubie3 boot-sector firmware string audit",
+  "timestamp_utc": "2026-06-11T04:50:00Z",
+  "status": "completed_artifact_captured_no_patch",
+  "capture_host": "strix",
+  "capture_path": "/srv/projects/homelab/task-packets/kernel/boot-firmware-captures/20260611T0450Z",
+  "targets": {
+    "cubie2": "192.168.50.85",
+    "cubie3": "192.168.50.95"
+  },
+  "method": [
+    "Read-only sudo dd from /dev/mmcblk0 first 16 MiB, /dev/mmcblk0p1 first 16 MiB, and /dev/mmcblk0p2 first 64 MiB.",
+    "Generated sha256 sums and strings -a -n 6 on Strix.",
+    "No board writes, no reboot, no extlinux changes."
+  ],
+  "sha256": {
+    "cubie2_mmcblk0_prep1_16MiB": "12f152335f724b84b3a51cbe43b99cf8594d621e6d98d712fc2d28a8a41c14c9",
+    "cubie3_mmcblk0_prep1_16MiB": "60fd5edb6d9b92a08ac3866b360f77581623258c35f79995cec06036a765129e",
+    "cubie2_mmcblk0p1_config": "56b68cc3155a7cfd8b4b28e0b2d919c3219489a10f11fa740ec7aa32e480c9f4",
+    "cubie3_mmcblk0p1_config": "7b0ceaa3563e11171aa7124119e063a463bb7442ee6c4627f770f52f529911f5",
+    "cubie2_mmcblk0p2_first64MiB": "8c8baf073dc254bcf7b728537db621028cfc9d5b3710d1333d00fa45421e817d",
+    "cubie3_mmcblk0p2_first64MiB": "8c8baf073dc254bcf7b728537db621028cfc9d5b3710d1333d00fa45421e817d"
+  },
+  "findings": [
+    "The first 16 MiB of each SD card contains real boot-stage firmware strings, correcting H106's metadata-only artifact gap.",
+    "Cubie2 and Cubie3 pre-partition captures differ by hash, while their p2 first-64MiB captures match.",
+    "Strings include BOOT0, U-Boot, BL31, ARISC/SCP, sdmmc0_mod, sdmmc0_bus, sdmmc0_rst, sdc_mbus, nsi clk update failures, and security_state <= NON_SECURE.",
+    "No string hit was found for SMHC, IDMAC, firewall, TZMA, or SPC.",
+    "The captured strings confirm vendor boot firmware knows SDMMC/MBUS/NSI names, but do not expose a concrete Linux-programmable SMHC0 IDMAC descriptor-fetch permission bit."
+  ],
+  "decision": "No kernel patch. Preserve the boot-sector captures on Strix and use them for future binary offset/string analysis. Do not infer a DTS or driver change from the generic SDMMC/MBUS/NSI strings alone.",
+  "next": "If continuing firmware analysis, locate offsets for sdmmc0_mod/sdc_mbus/nsi strings in the pre-partition binary and compare nearby code/data against public U-Boot or vendor symbols before proposing any runtime test."
+}
