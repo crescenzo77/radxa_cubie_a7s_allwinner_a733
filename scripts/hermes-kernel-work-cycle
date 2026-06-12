@@ -11,11 +11,13 @@ cubie_access_tier="${HERMES_CUBIE_ACCESS_TIER:-partial}"
 toolsets="${HERMES_KERNEL_TOOLSETS:-terminal,file,code_execution,messaging}"
 provider="${HERMES_KERNEL_PROVIDER:-openwebui-hub}"
 model="${HERMES_KERNEL_MODEL:-Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding}"
+engine="${HERMES_KERNEL_ENGINE:-deterministic}"
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 work_dir="${HERMES_KERNEL_WORK_DIR:-${repo_root}/task-packets/kernel/hermes-work}"
 log_file="${work_dir}/${stamp}-hermes-kernel-work.log"
 report_file="${work_dir}/${stamp}-hermes-kernel-work.md"
 prompt_snapshot="${work_dir}/${stamp}-hermes-kernel-work.prompt.md"
+transcript_file="${work_dir}/${stamp}-hermes-kernel-work.transcript.log"
 
 usage() {
   cat <<USAGE
@@ -38,6 +40,7 @@ Environment:
   HERMES_KERNEL_TOOLSETS=${toolsets}
   HERMES_KERNEL_PROVIDER=${provider}
   HERMES_KERNEL_MODEL=${model}
+  HERMES_KERNEL_ENGINE=${engine}
 USAGE
 }
 
@@ -60,6 +63,13 @@ case "${cubie_access_tier}" in
   strict|partial|total) ;;
   *)
     echo "HERMES_CUBIE_ACCESS_TIER must be strict, partial, or total" >&2
+    exit 2
+    ;;
+esac
+case "${engine}" in
+  deterministic|agent) ;;
+  *)
+    echo "HERMES_KERNEL_ENGINE must be deterministic or agent" >&2
     exit 2
     ;;
 esac
@@ -115,6 +125,123 @@ prompt="$(cat "${prompt_file}")
 
 ${cubie_access_policy}"
 printf '%s\n' "${prompt}" >"${prompt_snapshot}"
+
+run_transcript_cmd() {
+  local command="$1"
+  {
+    printf '$ %s\n' "${command}"
+    set +e
+    bash -lc "${command}"
+    local command_rc=$?
+    set -e
+    printf '[exit %s]\n\n' "${command_rc}"
+    return "${command_rc}"
+  } 2>&1 | tee -a "${transcript_file}"
+}
+
+if [ "${engine}" = "deterministic" ]; then
+  : >"${transcript_file}"
+  status_json="${work_dir}/${stamp}-kernel-workflow-status.json"
+  patch_json="${work_dir}/${stamp}-kernel-patch-export-status.json"
+  post_status_json="${work_dir}/${stamp}-kernel-workflow-status-after.json"
+
+  run_transcript_cmd "pwd" >/dev/null || true
+  run_transcript_cmd "scripts/kernel-workflow-env" >/dev/null || true
+  run_transcript_cmd "scripts/kernel-workflow-status --json | tee '${status_json}'" >/dev/null || true
+  run_transcript_cmd "scripts/kernel-patch-export-status --json | tee '${patch_json}'" >/dev/null || true
+
+  action_label="none"
+  action_command=""
+  if [ -s "${status_json}" ] && command -v jq >/dev/null 2>&1; then
+    runtime_status="$(jq -r '.cubie_runtime_gate.status // ""' "${status_json}" 2>/dev/null || true)"
+    runtime_next="$(jq -r '.cubie_runtime_gate.next_command // ""' "${status_json}" 2>/dev/null || true)"
+    stack_status="$(jq -r '.a733_prereq_stack.status // ""' "${status_json}" 2>/dev/null || true)"
+    stack_findings="$(jq -r '(.a733_prereq_stack.finding_kinds // []) | join(",")' "${status_json}" 2>/dev/null || true)"
+    if [ "${runtime_status}" = "boot-artifact-staging-required" ] && [ "${cubie_access_tier}" != "strict" ] && [[ "${runtime_next}" == scripts/cubie-stage-boot-artifacts* ]]; then
+      action_label="cubie-runtime-gate-next-command"
+      action_command="${runtime_next}"
+    elif [ "${stack_status}" = "FAIL" ] && [[ ",${stack_findings}," == *",tree-missing,"* ]]; then
+      action_label="sync-missing-prereq-stack"
+      action_command="mkdir -p /srv/projects/a733-prereq-stack-current && rsync -a strix:/srv/projects/cubie-a7s-armbian/sources/mainline-linux/ /srv/projects/a733-prereq-stack-current/"
+    fi
+  fi
+
+  action_rc=0
+  if [ -n "${action_command}" ]; then
+    run_transcript_cmd "${action_command}" >/dev/null || action_rc=$?
+    run_transcript_cmd "scripts/kernel-workflow-status --json | tee '${post_status_json}'" >/dev/null || true
+  fi
+
+  status="completed"
+  if [ "${action_rc}" -ne 0 ]; then
+    status="action-failed"
+  fi
+
+  {
+    echo "# Hermes Kernel Work Cycle"
+    echo
+    echo "Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "Status: \`${status}\`"
+    echo "Return code: \`0\`"
+    echo "Engine: \`${engine}\`"
+    echo "Prompt: \`${prompt_file}\`"
+    echo "Prompt snapshot: \`${prompt_snapshot}\`"
+    echo "Cubie access tier: \`${cubie_access_tier}\`"
+    echo "Transcript: \`${transcript_file}\`"
+    echo
+    echo "## Current Status"
+    echo
+    if [ -s "${status_json}" ] && command -v jq >/dev/null 2>&1; then
+      jq -r '"- cubie_runtime_gate: " + (.cubie_runtime_gate.status // "unknown"),
+             "- a733_prereq_stack: " + (.a733_prereq_stack.status // "unknown"),
+             "- local_offload: " + ((.local_offload.ok // false) | tostring)' "${status_json}" 2>/dev/null || true
+    else
+      echo "- status JSON unavailable"
+    fi
+    echo
+    echo "## Actions Taken"
+    echo
+    echo "- Selected action: \`${action_label}\`"
+    if [ -n "${action_command}" ]; then
+      echo "- Executed: \`${action_command}\`"
+    else
+      echo "- No state-changing action selected."
+    fi
+    echo
+    echo "## Command Transcript"
+    echo
+    echo '```text'
+    sed -n '1,260p' "${transcript_file}"
+    echo '```'
+    echo
+    echo "## Evidence Observed"
+    echo
+    echo "- Evidence is limited to the command transcript above and JSON files in \`${work_dir}\`."
+    echo
+    echo "## Remaining Blockers"
+    echo
+    if [ "${action_rc}" -ne 0 ]; then
+      echo "- Selected action exited nonzero: \`${action_rc}\`."
+    else
+      echo "- Rerun the continuous cycle for the next status-derived action."
+    fi
+    echo
+    echo "## Recommended Next Action"
+    echo
+    echo "\`safe-now\`: run the next bounded Hermes kernel work cycle."
+  } >"${report_file}"
+
+  cp "${transcript_file}" "${log_file}"
+  if [ "${notify_enabled}" = "1" ]; then
+    notify_message="Hermes kernel work cycle ${status}; rc=0; report=${report_file}; log=${log_file}"
+    if ! notify_output="$("${hermes_bin}" send --to "${notify_target}" "${notify_message}" 2>&1)"; then
+      echo "warning: Hermes kernel work notification failed: ${notify_output}" >&2
+    fi
+  fi
+  echo "report=${report_file}"
+  echo "log=${log_file}"
+  exit 0
+fi
 
 set +e
 if command -v timeout >/dev/null 2>&1; then
