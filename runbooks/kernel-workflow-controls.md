@@ -101,6 +101,10 @@ This runner calls `scripts/hermes-kernel-work-cycle` repeatedly, defaults to
 three cycles, and stops early on roadblock, delay, timeout, or failure. It sends
 notifications through the existing Hermes messaging route when those conditions
 occur, and sends a final completion notification after the bounded run finishes.
+Roadblock detection intentionally keys off Hermes' explicit `ROADBLOCK:` marker
+instead of old status JSON fields like `human_required`, because Cubie runtime
+proof, Cubie reboot, and Cubie boot-artifact staging are now operator-approved
+autonomous work.
 
 Useful environment controls:
 
@@ -125,14 +129,16 @@ configured Telegram home channel.
 
 ## Runtime Proof Approval
 
-Before Cubie2 runtime proof work, generate an approval packet:
+Historic approval packet flow:
 
 ```sh
 scripts/cubie-runtime-proof-approval-packet --board cubie2
 ```
 
 The packet records board, UART, artifact path, exact first command, and stop
-conditions. It does not stage artifacts or touch hardware.
+conditions. As of 2026-06-12, the operator has approved Hermes to proceed with
+Cubie runtime proof work autonomously when the workflow identifies the board,
+artifact source, destination, and stop conditions.
 
 ## Resource Flexibility
 
@@ -143,9 +149,11 @@ Current examples:
 
 - Required: `amd-research`, `strix-review`, Qdrant, Cubie2 UART, patch export
 - Optional: `amd-fast`, OpenRouter free fallback, Framework client
-- Forbidden without approval: Cubie1 kernel proof, power cycling, `/boot`
-  writes, bootloader changes, service/cron changes, kernel source commits,
-  pushes
+- Approved Cubie autonomy: Cubie1/2/3 kernel proof, Cubie reboots, workflow
+  `/boot` writes, and boot-artifact staging
+- Still forbidden without approval: external power cycling, persistent
+  bootloader default changes outside the proof workflow, service/cron changes,
+  model-routing changes, kernel source commits, pushes, mail submission
 
 ## Generated State
 

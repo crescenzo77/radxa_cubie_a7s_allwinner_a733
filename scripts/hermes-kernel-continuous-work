@@ -127,7 +127,7 @@ classify_cycle() {
       echo "delay"
       return 0
     fi
-    if contains_pattern '(^|[^[:alpha:]])ROADBLOCK:|needs-approval|human approval required|human_required|approval required|(^|[^[:alpha:]])blocked([^[:alpha:]]|$)|no safe-now|tree-missing|boot-artifact-staging-required' "${candidate}"; then
+    if contains_pattern '(^|[^[:alpha:]])ROADBLOCK:' "${candidate}"; then
       echo "roadblock"
       return 0
     fi
