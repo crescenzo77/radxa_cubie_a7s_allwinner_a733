@@ -19,10 +19,24 @@ scripts/kernel-workflow-status --json
 scripts/kernel-patch-export-status --json
 ```
 
-Then choose and execute at most one safe next action inside the injected Cubie
-access tier. If a status field says `human_required` for Cubie staging or Cubie
-runtime proof, treat that as already approved when the injected tier allows the
-action.
+Then execute at most one action using this priority order:
+
+1. If `cubie_runtime_gate.status` is `boot-artifact-staging-required`, the tier
+   is `partial` or `total`, and `cubie_runtime_gate.next_command` is present,
+   run exactly that command from the homelab repo. Do not improvise another
+   command.
+2. Else if `a733_prereq_stack.status` is `FAIL` with `tree-missing` and
+   `kernel_tree_remote` is present, run:
+
+```sh
+mkdir -p /srv/projects/a733-prereq-stack-current
+rsync -a strix:/srv/projects/cubie-a7s-armbian/sources/mainline-linux/ /srv/projects/a733-prereq-stack-current/
+```
+
+3. Else run the single most relevant read-only status/proof check.
+
+If a status field says `human_required` for Cubie staging or Cubie runtime
+proof, treat that as already approved when the injected tier allows the action.
 
 Cubie access tiers:
 
