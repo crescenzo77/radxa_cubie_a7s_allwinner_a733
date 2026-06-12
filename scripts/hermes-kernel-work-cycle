@@ -7,6 +7,7 @@ prompt_file="${HERMES_KERNEL_PROMPT:-${repo_root}/runbooks/hermes-kernel-work-pr
 timeout_seconds="${HERMES_KERNEL_TIMEOUT:-900}"
 notify_enabled="${HERMES_KERNEL_NOTIFY:-0}"
 notify_target="${HERMES_KERNEL_NOTIFY_TARGET:-telegram}"
+cubie_access_tier="${HERMES_CUBIE_ACCESS_TIER:-partial}"
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 work_dir="${HERMES_KERNEL_WORK_DIR:-${repo_root}/task-packets/kernel/hermes-work}"
 log_file="${work_dir}/${stamp}-hermes-kernel-work.log"
@@ -17,8 +18,10 @@ usage() {
 Usage: scripts/hermes-kernel-work-cycle
 
 Runs one supervised Hermes kernel-work cycle with a timeout and writes both a
-raw log and a status report. This wrapper does not grant Hermes approval to
-touch hardware, services, cron, boot files, or kernel source.
+raw log and a status report. Cubie hardware access is governed by
+HERMES_CUBIE_ACCESS_TIER. The wrapper does not grant Hermes approval to change
+services, cron, model routing, remotes, mail submission, or kernel source
+commits.
 
 Environment:
   HERMES_BIN=${hermes_bin}
@@ -27,6 +30,7 @@ Environment:
   HERMES_KERNEL_WORK_DIR=${work_dir}
   HERMES_KERNEL_NOTIFY=${notify_enabled}
   HERMES_KERNEL_NOTIFY_TARGET=${notify_target}
+  HERMES_CUBIE_ACCESS_TIER=${cubie_access_tier}
 USAGE
 }
 
@@ -45,9 +49,63 @@ test -x "${hermes_bin}" || {
   echo "missing executable Hermes binary: ${hermes_bin}" >&2
   exit 2
 }
+case "${cubie_access_tier}" in
+  strict|partial|total) ;;
+  *)
+    echo "HERMES_CUBIE_ACCESS_TIER must be strict, partial, or total" >&2
+    exit 2
+    ;;
+esac
 
 mkdir -p "${work_dir}"
-prompt="$(cat "${prompt_file}")"
+case "${cubie_access_tier}" in
+  strict)
+    cubie_access_policy="Cubie access tier: strict
+
+Allowed Cubie actions:
+- read-only inventory, SSH reachability checks, UART mapping, UART capture, log pull, and status summaries
+- dry-run proof commands and approval/status packet generation
+
+Not allowed in strict tier:
+- writing to /boot or staging artifacts
+- rebooting, power cycling, changing boot selection, or running live proof that changes board state
+- using cubie1 for runtime proof"
+    ;;
+  partial)
+    cubie_access_policy="Cubie access tier: partial
+
+Allowed Cubie actions:
+- everything in strict tier
+- stage workflow-identified kernel/boot artifacts to the selected Cubie board
+- run live UART/runtime proof on cubie2 and cubie3
+- reboot cubie2 or cubie3 through documented workflow commands when required for proof
+- collect logs, proof packets, and board comparison summaries
+
+Not allowed in partial tier:
+- external power cycling
+- persistent bootloader default changes outside the proof workflow
+- repartitioning, formatting, dd/raw block writes, firmware/SPI/eMMC bootloader writes, or destructive cleanup
+- using cubie1 for state-changing proof unless the run is explicitly upgraded to total"
+    ;;
+  total)
+    cubie_access_policy="Cubie access tier: total
+
+Allowed Cubie actions:
+- everything in partial tier
+- use cubie1, cubie2, and cubie3 for live runtime proof and reproduction
+- reboot Cubies as needed through documented workflow commands
+- use documented cubie*-power helpers for recovery power cycles if a board is wedged
+- stage workflow-identified kernel/boot artifacts and run recovery/vendor-restore steps documented in the homelab repo
+
+Still not allowed in total tier:
+- repartitioning, formatting, dd/raw block writes, firmware/SPI/eMMC bootloader writes, or destructive cleanup
+- persistent bootloader default changes outside documented proof/recovery steps
+- changing services, cron, model routing, Hermes gateway, Telegram setup, git remotes, pushes, or mail submission"
+    ;;
+esac
+prompt="$(cat "${prompt_file}")
+
+${cubie_access_policy}"
 
 set +e
 if command -v timeout >/dev/null 2>&1; then
@@ -91,6 +149,7 @@ fi
   echo "Status: \`${status}\`"
   echo "Return code: \`${rc}\`"
   echo "Prompt: \`${prompt_file}\`"
+  echo "Cubie access tier: \`${cubie_access_tier}\`"
   echo "Log: \`${log_file}\`"
   echo
   echo "## Output"

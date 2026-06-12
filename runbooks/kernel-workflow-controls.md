@@ -114,6 +114,7 @@ HERMES_KERNEL_SLEEP_SECONDS=300
 HERMES_KERNEL_NOTIFY=1
 HERMES_KERNEL_NOTIFY_TARGET=telegram
 HERMES_KERNEL_NOTIFY_ON_COMPLETION=1
+HERMES_CUBIE_ACCESS_TIER=partial
 ```
 
 The continuous runner does not add Telegram-specific code. It calls:
@@ -136,9 +137,41 @@ scripts/cubie-runtime-proof-approval-packet --board cubie2
 ```
 
 The packet records board, UART, artifact path, exact first command, and stop
-conditions. As of 2026-06-12, the operator has approved Hermes to proceed with
-Cubie runtime proof work autonomously when the workflow identifies the board,
-artifact source, destination, and stop conditions.
+conditions. As of 2026-06-12, Cubie runtime proof work is controlled by
+`HERMES_CUBIE_ACCESS_TIER`.
+
+## Cubie Access Tiers
+
+The default tier is `partial`.
+
+`strict`:
+
+- read-only inventory, SSH checks, UART mapping/capture, log pull, dry-runs,
+  status packets, and approval/status briefs
+- no `/boot` writes, artifact staging, reboot, power cycle, boot selection, or
+  live state-changing proof
+- no cubie1 state-changing proof
+
+`partial`:
+
+- everything in `strict`
+- stage workflow-identified kernel/boot artifacts to the selected Cubie
+- run live UART/runtime proof on cubie2 and cubie3
+- reboot cubie2 or cubie3 through documented workflow commands
+- no external power cycling, cubie1 state-changing proof, destructive storage
+  operations, firmware/SPI/eMMC bootloader writes, or persistent bootloader
+  default changes outside the proof workflow
+
+`total`:
+
+- everything in `partial`
+- use cubie1, cubie2, and cubie3 for live proof and reproduction
+- use documented Cubie power helpers for recovery power cycles if a board is
+  wedged
+- run documented recovery/vendor-restore steps from the homelab repo
+- still no repartitioning, formatting, `dd`/raw block writes, firmware/SPI/eMMC
+  bootloader writes, destructive cleanup, service/cron/model-routing changes,
+  pushes, or mail submission
 
 ## Resource Flexibility
 
@@ -149,8 +182,7 @@ Current examples:
 
 - Required: `amd-research`, `strix-review`, Qdrant, Cubie2 UART, patch export
 - Optional: `amd-fast`, OpenRouter free fallback, Framework client
-- Approved Cubie autonomy: Cubie1/2/3 kernel proof, Cubie reboots, workflow
-  `/boot` writes, and boot-artifact staging
+- Approved Cubie autonomy: controlled by `HERMES_CUBIE_ACCESS_TIER`
 - Still forbidden without approval: external power cycling, persistent
   bootloader default changes outside the proof workflow, service/cron changes,
   model-routing changes, kernel source commits, pushes, mail submission

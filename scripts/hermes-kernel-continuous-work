@@ -10,6 +10,7 @@ notify_target="${HERMES_KERNEL_NOTIFY_TARGET:-telegram}"
 notify_on_completion="${HERMES_KERNEL_NOTIFY_ON_COMPLETION:-1}"
 stop_on_roadblock="${HERMES_KERNEL_STOP_ON_ROADBLOCK:-1}"
 stop_on_delay="${HERMES_KERNEL_STOP_ON_DELAY:-1}"
+cubie_access_tier="${HERMES_CUBIE_ACCESS_TIER:-partial}"
 
 if [ -n "${HERMES_BIN:-}" ]; then
   hermes_bin="${HERMES_BIN}"
@@ -35,6 +36,7 @@ Environment:
   HERMES_KERNEL_NOTIFY_ON_COMPLETION=${notify_on_completion}
   HERMES_KERNEL_STOP_ON_ROADBLOCK=${stop_on_roadblock}
   HERMES_KERNEL_STOP_ON_DELAY=${stop_on_delay}
+  HERMES_CUBIE_ACCESS_TIER=${cubie_access_tier}
 USAGE
 }
 
@@ -61,6 +63,13 @@ if [ "${max_cycles}" -lt 1 ]; then
   echo "HERMES_KERNEL_MAX_CYCLES must be at least 1" >&2
   exit 2
 fi
+case "${cubie_access_tier}" in
+  strict|partial|total) ;;
+  *)
+    echo "HERMES_CUBIE_ACCESS_TIER must be strict, partial, or total" >&2
+    exit 2
+    ;;
+esac
 
 test -x "${cycle_script}" || {
   echo "missing executable Hermes kernel cycle script: ${cycle_script}" >&2
@@ -148,7 +157,7 @@ while [ "${cycle}" -le "${max_cycles}" ]; do
   echo "== Hermes kernel work cycle ${cycle}/${max_cycles} =="
 
   set +e
-  cycle_output="$(HERMES_KERNEL_NOTIFY=0 "${cycle_script}" 2>&1)"
+  cycle_output="$(HERMES_KERNEL_NOTIFY=0 HERMES_CUBIE_ACCESS_TIER="${cubie_access_tier}" "${cycle_script}" 2>&1)"
   last_rc=$?
   set -e
 
