@@ -14,7 +14,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_TARGETS = ["192.168.50.85", "192.168.50.95"]
 DEFAULT_EXCLUDED_TARGETS = ["192.168.50.65"]
-DEFAULT_STAGE = "kernel-boot-artifacts/a733-v4-corrected-root-proof-20260609"
+DEFAULT_STAGE = "kernel-boot-artifacts/a733-v4-abc8d07b0a63-20260606T152409Z"
 DEFAULT_USER = os.environ.get("CUBIE_SSH_USER", "codex")
 DEFAULT_IDENTITY = "~/.ssh/id_ed25519"
 DEFAULT_TIMEOUT = 8

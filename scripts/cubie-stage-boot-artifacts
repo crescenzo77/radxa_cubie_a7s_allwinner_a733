@@ -115,7 +115,16 @@ target_ssh=(
 )
 
 echo "Checking source artifacts on ${amd_host}"
-ssh -o BatchMode=yes -o ConnectTimeout=8 "${amd_host}" bash -s -- "${artifact_dir}" <<'REMOTE_CHECK'
+if [ -d "${artifact_dir}" ]; then
+  for file in "${required_files[@]}"; do
+    test -r "${artifact_dir}/${file}" || {
+      echo "missing local source artifact: ${artifact_dir}/${file}" >&2
+      exit 1
+    }
+  done
+  source_mode="local"
+else
+  ssh -o BatchMode=yes -o ConnectTimeout=8 "${amd_host}" bash -s -- "${artifact_dir}" <<'REMOTE_CHECK'
 set -euo pipefail
 artifact_dir="$1"
 for file in Image sun60i-a733-cubie-a7s.dtb config manifest.txt; do
@@ -125,6 +134,8 @@ for file in Image sun60i-a733-cubie-a7s.dtb config manifest.txt; do
   }
 done
 REMOTE_CHECK
+  source_mode="ssh"
+fi
 
 echo "Checking target ${target_host}"
 "${target_ssh[@]}" \
@@ -135,8 +146,12 @@ echo "Creating remote staging directory: ${remote_stage}"
   "mkdir -p '${remote_stage}'"
 
 echo "Copying artifacts from ${amd_host}:${artifact_dir}"
-ssh -o BatchMode=yes -o ConnectTimeout=8 "${amd_host}" \
-  "cd '${artifact_dir}' && tar -cf - ${required_files[*]}" |
+if [ "${source_mode}" = "local" ]; then
+  tar -C "${artifact_dir}" -cf - "${required_files[@]}"
+else
+  ssh -o BatchMode=yes -o ConnectTimeout=8 "${amd_host}" \
+    "cd '${artifact_dir}' && tar -cf - ${required_files[*]}"
+fi |
   "${target_ssh[@]}" \
     "tar -C '${remote_stage}' -xf -"
 

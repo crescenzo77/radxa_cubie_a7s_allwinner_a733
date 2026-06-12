@@ -346,6 +346,7 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
         "next_shell": strix_dispatch_shell(next_command, tty=human_required) if next_command else "",
         "next_reboot_command": next_reboot_command,
         "next_reboot_shell": strix_dispatch_shell(next_reboot_command) if next_reboot_command else "",
+        "staging": staging,
     }
 
 

@@ -7,6 +7,8 @@ import argparse
 import datetime as dt
 import json
 import os
+import shlex
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -128,7 +130,50 @@ def staging_summary(args: argparse.Namespace) -> dict[str, Any]:
         identity=getattr(args, "staging_identity", cubie_boot_staging_status.DEFAULT_IDENTITY),
         timeout=getattr(args, "staging_timeout", cubie_boot_staging_status.DEFAULT_TIMEOUT),
     )
-    return cubie_boot_staging_status.build_status(staging_args)
+    local_status = cubie_boot_staging_status.build_status(staging_args)
+    if int(local_status.get("ready_count") or 0) > 0 or int(local_status.get("installed_count") or 0) > 0:
+        return local_status
+    proxy_host = os.environ.get("CUBIE_STAGING_STATUS_PROXY_HOST", "strix")
+    if not proxy_host or proxy_host == "none" or "strix" in os.uname().nodename.lower():
+        return local_status
+    proxy_repo = os.environ.get("CUBIE_STAGING_STATUS_PROXY_REPO", "/srv/projects/homelab")
+    proxy_cmd = (
+        f"cd {shlex.quote(proxy_repo)} && "
+        "scripts/cubie-boot-staging-status --json "
+        f"--targets {shlex.quote(staging_args.targets)} "
+        f"--stage {shlex.quote(staging_args.stage)} "
+        f"--user {shlex.quote(staging_args.user)} "
+        f"--identity {shlex.quote(staging_args.identity)} "
+        f"--timeout {int(staging_args.timeout)}"
+    )
+    try:
+        proc = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=8", proxy_host, proxy_cmd],
+            check=False,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=max(12, int(staging_args.timeout) + 12),
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        local_status["proxy_status"] = "error"
+        local_status["proxy_error"] = str(exc)
+        return local_status
+    if proc.returncode != 0:
+        local_status["proxy_status"] = "failed"
+        local_status["proxy_error"] = proc.stderr.strip()
+        return local_status
+    try:
+        proxy_status = json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        local_status["proxy_status"] = "invalid-json"
+        local_status["proxy_error"] = str(exc)
+        return local_status
+    if isinstance(proxy_status, dict):
+        proxy_status["proxy_status"] = "used"
+        proxy_status["proxy_host"] = proxy_host
+        return proxy_status
+    return local_status
 
 
 def installed_capture_labels(staging: dict[str, Any]) -> set[str]:

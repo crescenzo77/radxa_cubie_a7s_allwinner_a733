@@ -158,8 +158,32 @@ if [ "${engine}" = "deterministic" ]; then
     stack_status="$(jq -r '.a733_prereq_stack.status // ""' "${status_json}" 2>/dev/null || true)"
     stack_findings="$(jq -r '(.a733_prereq_stack.finding_kinds // []) | join(",")' "${status_json}" 2>/dev/null || true)"
     if [ "${runtime_status}" = "boot-artifact-staging-required" ] && [ "${cubie_access_tier}" != "strict" ] && [[ "${runtime_next}" == scripts/cubie-stage-boot-artifacts* ]]; then
-      action_label="cubie-runtime-gate-next-command"
-      action_command="${runtime_next}"
+      action_label="cubie-runtime-gate-no-reachable-target"
+      board_candidates="192.168.50.85 192.168.50.95"
+      if [ "${cubie_access_tier}" = "total" ]; then
+        board_candidates="192.168.50.85 192.168.50.95"
+      fi
+      for board_ip in ${board_candidates}; do
+        if ssh -o BatchMode=yes -o ConnectTimeout=5 strix \
+          "ssh -o BatchMode=yes -o ConnectTimeout=5 -i ~/.ssh/id_ed25519 codex@${board_ip} 'hostname' >/dev/null" \
+          >/dev/null 2>&1; then
+          action_label="cubie-runtime-gate-strix-reachable-board"
+          action_command="ssh strix 'cd /srv/projects/homelab && scripts/cubie-stage-boot-artifacts ${board_ip}'"
+          break
+        fi
+      done
+    elif [ "${runtime_status}" = "root-install-required" ] && [ "${cubie_access_tier}" = "total" ]; then
+      ready_ip="$(jq -r '.cubie_runtime_gate.staging.rows[]? | select(.ready_for_root_install == true and .sudo_status == "noninteractive-ok") | .ip' "${status_json}" 2>/dev/null | head -1 || true)"
+      ready_stage="$(jq -r '.cubie_runtime_gate.staging.rows[]? | select(.ready_for_root_install == true and .sudo_status == "noninteractive-ok") | .stage' "${status_json}" 2>/dev/null | head -1 || true)"
+      if [ -n "${ready_ip}" ] && [ -n "${ready_stage}" ]; then
+        action_label="cubie-runtime-gate-total-root-install"
+        action_command="ssh strix \"ssh -o BatchMode=yes -o ConnectTimeout=8 -i ~/.ssh/id_ed25519 codex@${ready_ip} 'cd ${ready_stage} && sudo -n ./install-extlinux-entry.sh'\""
+      else
+        action_label="cubie-runtime-gate-root-install-no-noninteractive-target"
+      fi
+    elif [ "${runtime_status}" = "boot-selection-required" ]; then
+      action_label="cubie-runtime-gate-boot-selection-wait-preflight"
+      action_command="scripts/kernel-workflow-status --stopping-point-audit"
     elif [ "${stack_status}" = "FAIL" ] && [[ ",${stack_findings}," == *",tree-missing,"* ]]; then
       action_label="sync-missing-prereq-stack"
       action_command="mkdir -p /srv/projects/a733-prereq-stack-current && rsync -a strix:/srv/projects/cubie-a7s-armbian/sources/mainline-linux/ /srv/projects/a733-prereq-stack-current/"
