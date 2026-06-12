@@ -131,6 +131,11 @@ classify_cycle() {
     return 0
   fi
 
+  if ! contains_pattern 'Command transcript' "${report_file}" && ! contains_pattern 'Command transcript' "${log_file}"; then
+    echo "delay"
+    return 0
+  fi
+
   for candidate in "${report_file}" "${log_file}"; do
     if contains_pattern '(^|[^[:alpha:]])DELAY:' "${candidate}"; then
       echo "delay"

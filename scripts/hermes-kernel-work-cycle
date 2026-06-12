@@ -8,10 +8,12 @@ timeout_seconds="${HERMES_KERNEL_TIMEOUT:-900}"
 notify_enabled="${HERMES_KERNEL_NOTIFY:-0}"
 notify_target="${HERMES_KERNEL_NOTIFY_TARGET:-telegram}"
 cubie_access_tier="${HERMES_CUBIE_ACCESS_TIER:-partial}"
+toolsets="${HERMES_KERNEL_TOOLSETS:-terminal,file,code_execution,messaging}"
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 work_dir="${HERMES_KERNEL_WORK_DIR:-${repo_root}/task-packets/kernel/hermes-work}"
 log_file="${work_dir}/${stamp}-hermes-kernel-work.log"
 report_file="${work_dir}/${stamp}-hermes-kernel-work.md"
+prompt_snapshot="${work_dir}/${stamp}-hermes-kernel-work.prompt.md"
 
 usage() {
   cat <<USAGE
@@ -31,6 +33,7 @@ Environment:
   HERMES_KERNEL_NOTIFY=${notify_enabled}
   HERMES_KERNEL_NOTIFY_TARGET=${notify_target}
   HERMES_CUBIE_ACCESS_TIER=${cubie_access_tier}
+  HERMES_KERNEL_TOOLSETS=${toolsets}
 USAGE
 }
 
@@ -107,13 +110,14 @@ esac
 prompt="$(cat "${prompt_file}")
 
 ${cubie_access_policy}"
+printf '%s\n' "${prompt}" >"${prompt_snapshot}"
 
 set +e
 if command -v timeout >/dev/null 2>&1; then
-  timeout "${timeout_seconds}" "${hermes_bin}" -z "${prompt}" >"${log_file}" 2>&1
+  timeout "${timeout_seconds}" "${hermes_bin}" --toolsets "${toolsets}" -z "${prompt}" >"${log_file}" 2>&1
   rc=$?
 else
-  python3 - "${hermes_bin}" "${timeout_seconds}" "${log_file}" "${prompt_file}" <<'PY'
+  python3 - "${hermes_bin}" "${timeout_seconds}" "${log_file}" "${prompt_snapshot}" "${toolsets}" <<'PY'
 from __future__ import annotations
 
 import subprocess
@@ -124,9 +128,10 @@ hermes = sys.argv[1]
 timeout = int(sys.argv[2])
 log = Path(sys.argv[3])
 prompt = Path(sys.argv[4]).read_text(encoding="utf-8")
+toolsets = sys.argv[5]
 with log.open("w", encoding="utf-8") as handle:
     try:
-        proc = subprocess.run([hermes, "-z", prompt], stdout=handle, stderr=subprocess.STDOUT, timeout=timeout, check=False)
+        proc = subprocess.run([hermes, "--toolsets", toolsets, "-z", prompt], stdout=handle, stderr=subprocess.STDOUT, timeout=timeout, check=False)
         raise SystemExit(proc.returncode)
     except subprocess.TimeoutExpired:
         handle.write("\nTIMEOUT\n")
@@ -150,7 +155,9 @@ fi
   echo "Status: \`${status}\`"
   echo "Return code: \`${rc}\`"
   echo "Prompt: \`${prompt_file}\`"
+  echo "Prompt snapshot: \`${prompt_snapshot}\`"
   echo "Cubie access tier: \`${cubie_access_tier}\`"
+  echo "Toolsets: \`${toolsets}\`"
   echo "Log: \`${log_file}\`"
   echo
   echo "## Output"

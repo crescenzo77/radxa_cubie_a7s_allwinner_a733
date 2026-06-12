@@ -18,6 +18,10 @@ scripts/kernel-workflow-status --json
 scripts/kernel-patch-export-status --json
 ```
 
+Do not answer from memory. Use the terminal/file tools for the status commands
+and any action you claim. If tools are unavailable, output `DELAY:` and say
+which tool was unavailable.
+
 Classify the result into:
 - safe-now work
 - missing evidence
@@ -37,6 +41,8 @@ Allowed autonomous work:
 - execute the next safe-now workflow action instead of merely recommending it
 - when a check reports a blocker but also provides an exact safe command, run
   the command if it is inside the current access tier
+- use only real commands and scripts that exist in the homelab repo or on the
+  named remote host; do not invent command syntaxes
 
 Approval required before:
 - changing cron jobs, systemd services, model routing, Telegram integration, or Hermes gateway behavior
@@ -66,9 +72,20 @@ Work loop:
 - repeat until the cycle timeout, a true roadblock, or no further safe work
   remains
 
+Evidence rules:
+- every claimed action must include the exact command that was run and a short
+  observed output excerpt
+- never claim a board state, artifact state, firmware version, log path, commit,
+  or test result unless it came from command output in this cycle
+- if a command fails, record the failure and choose the next safe action; do not
+  fabricate success
+- if you propose a next command, it must be a command that exists or a standard
+  shell command with real paths observed in this cycle
+
 Output format:
 - Current status
 - Actions taken
+- Command transcript
 - Evidence observed
 - Remaining blockers
 - Exactly one recommended next action, labeled safe-now or needs-approval
