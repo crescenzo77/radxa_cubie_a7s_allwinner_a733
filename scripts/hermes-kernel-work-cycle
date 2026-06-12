@@ -5,6 +5,8 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 hermes_bin="${HERMES_BIN:-/home/enzo/.local/bin/hermes}"
 prompt_file="${HERMES_KERNEL_PROMPT:-${repo_root}/runbooks/hermes-kernel-work-prompt.md}"
 timeout_seconds="${HERMES_KERNEL_TIMEOUT:-900}"
+notify_enabled="${HERMES_KERNEL_NOTIFY:-0}"
+notify_target="${HERMES_KERNEL_NOTIFY_TARGET:-telegram}"
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 work_dir="${HERMES_KERNEL_WORK_DIR:-${repo_root}/task-packets/kernel/hermes-work}"
 log_file="${work_dir}/${stamp}-hermes-kernel-work.log"
@@ -23,6 +25,8 @@ Environment:
   HERMES_KERNEL_PROMPT=${prompt_file}
   HERMES_KERNEL_TIMEOUT=${timeout_seconds}
   HERMES_KERNEL_WORK_DIR=${work_dir}
+  HERMES_KERNEL_NOTIFY=${notify_enabled}
+  HERMES_KERNEL_NOTIFY_TARGET=${notify_target}
 USAGE
 }
 
@@ -95,6 +99,13 @@ fi
   sed -n '1,240p' "${log_file}"
   echo '```'
 } >"${report_file}"
+
+if [ "${notify_enabled}" = "1" ]; then
+  notify_message="Hermes kernel work cycle ${status}; rc=${rc}; report=${report_file}; log=${log_file}"
+  if ! notify_output="$("${hermes_bin}" send --to "${notify_target}" "${notify_message}" 2>&1)"; then
+    echo "warning: Hermes kernel work notification failed: ${notify_output}" >&2
+  fi
+fi
 
 echo "report=${report_file}"
 echo "log=${log_file}"

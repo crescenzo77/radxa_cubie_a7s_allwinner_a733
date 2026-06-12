@@ -71,6 +71,23 @@ task-packets/kernel/hermes-work/*-hermes-kernel-work.log
 task-packets/kernel/hermes-work/*-hermes-kernel-work.md
 ```
 
+Optional completion notification is disabled by default. Enable it per run with:
+
+```sh
+HERMES_KERNEL_NOTIFY=1 scripts/hermes-kernel-work-cycle
+```
+
+The target defaults to `telegram` and can be changed with
+`HERMES_KERNEL_NOTIFY_TARGET`. The wrapper sends one concise completion,
+timeout, or failure message through:
+
+```sh
+"${HERMES_BIN}" send --to "${HERMES_KERNEL_NOTIFY_TARGET}" ...
+```
+
+Notification failure is reported as a warning and does not change the work
+cycle return code.
+
 It does not grant permission for hardware, boot, service, cron, push, or kernel
 source changes.
 

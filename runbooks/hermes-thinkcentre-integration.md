@@ -156,6 +156,12 @@ Longer Hermes kernel-work cycles should use `scripts/hermes-kernel-work-cycle`
 so timeout state, logs, and final output are captured under
 `task-packets/kernel/hermes-work/`.
 
+Normal completion notifications for that wrapper are opt-in. Set
+`HERMES_KERNEL_NOTIFY=1` to send one concise completion, timeout, or failure
+message through the existing Hermes messaging route. The target defaults to
+`telegram` and can be overridden with `HERMES_KERNEL_NOTIFY_TARGET`. Do not add
+project-local Telegram bot code or direct Telegram API calls for this path.
+
 ## Cron Jobs
 
 Useful cron jobs for ThinkCentre Hermes:
