@@ -286,7 +286,19 @@ def cubie_summary(data: dict[str, Any]) -> dict[str, Any]:
     evidence_gate = ""
     staging = gate.get("staging") if isinstance(gate.get("staging"), dict) else {}
     rows = staging.get("rows") if isinstance(staging.get("rows"), list) else []
-    if status == "root-install-required":
+    if status == "boot-artifact-staging-required":
+        next_command = "scripts/cubie-stage-boot-artifacts 192.168.50.85"
+        human_required = True
+        human_gate = (
+            "Board artifact staging changes Cubie2 state. Generate or review "
+            "`scripts/cubie-runtime-proof-approval-packet --board cubie2` and get "
+            "operator approval before staging."
+        )
+        evidence_gate = (
+            "After staging, rerun `scripts/cubie-runtime-gate --json`; do not write "
+            "`/boot`, reboot, or claim proof until the later gates are approved."
+        )
+    elif status == "root-install-required":
         ready = [row for row in rows if row.get("ready_for_root_install")]
         if ready and ready[0].get("ip"):
             next_command = (
