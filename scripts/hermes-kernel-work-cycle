@@ -4,7 +4,7 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 hermes_bin="${HERMES_BIN:-/home/enzo/.local/bin/hermes}"
 prompt_file="${HERMES_KERNEL_PROMPT:-${repo_root}/runbooks/hermes-kernel-work-prompt.md}"
-timeout_seconds="${HERMES_KERNEL_TIMEOUT:-900}"
+timeout_seconds="${HERMES_KERNEL_TIMEOUT:-300}"
 notify_enabled="${HERMES_KERNEL_NOTIFY:-0}"
 notify_target="${HERMES_KERNEL_NOTIFY_TARGET:-telegram}"
 cubie_access_tier="${HERMES_CUBIE_ACCESS_TIER:-partial}"

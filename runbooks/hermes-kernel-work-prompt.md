@@ -65,12 +65,23 @@ Guardrails:
 - prefer reversible board actions and capture logs before and after reboot
 - never repartition, format, dd/raw-write block devices, flash SPI/eMMC boot firmware, or do destructive cleanup unless a future prompt explicitly authorizes that exact recovery action
 
-Work loop:
+One-cycle work loop:
 - inspect status and choose one concrete safe-now action
-- execute that safe-now action when it is inside the current access tier
-- capture evidence and rerun the relevant status check
-- repeat until the cycle timeout, a true roadblock, or no further safe work
-  remains
+- execute at most one concrete safe-now action when it is inside the current
+  access tier
+- capture evidence and rerun the one most relevant status check
+- return a report; the outer continuous runner is responsible for starting the
+  next cycle
+
+Per-cycle limits:
+- run no more than 8 terminal commands unless one command is a documented
+  workflow script that internally performs the proof step
+- perform no more than one state-changing Cubie action
+- if the next action would take longer than this one-shot cycle, start the
+  documented background/supervisor command if one exists, record its pid/log,
+  and return
+- do not keep iterating inside this one-shot; finish the report promptly after
+  the status recheck
 
 Evidence rules:
 - every claimed action must include the exact command that was run and a short
