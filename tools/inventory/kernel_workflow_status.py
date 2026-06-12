@@ -54,7 +54,6 @@ OPERATOR_BRIEF = "scripts/cubie-corrected-root-operator-brief"
 PATCH_PREP_CHECKLIST = "scripts/a733-patch-prep-checklist"
 BACKUP_APPROVAL_BRIEF = "scripts/kernel-backup-approval-brief"
 PROOF_GATE_SELFTEST = "scripts/cubie-corrected-root-proof-gate-selftest"
-REQUIRED_OFFLOAD_TARGETS = {"amd-fast", "amd-research", "strix-review"}
 RFC_RECHECK_GLOB = "a733-rfc-recheck-*.md"
 RFC_RECHECK_DIR = REPO_ROOT / "task-packets/kernel/research"
 
@@ -143,12 +142,18 @@ def command_json(
     ok_codes: tuple[int, ...] = (0,),
 ) -> dict[str, Any]:
     proc = run(argv, cwd=REPO_ROOT, timeout=timeout, ok_codes=ok_codes)
-    if not proc["ok"]:
-        return {"ok": False, "error": proc["stderr"] or proc["stdout"], "returncode": proc["returncode"]}
     try:
-        return {"ok": True, "data": json.loads(proc["stdout"])}
+        data = json.loads(proc["stdout"])
     except json.JSONDecodeError as exc:
         return {"ok": False, "error": f"json decode: {exc}", "stdout": proc["stdout"]}
+    if not proc["ok"]:
+        return {
+            "ok": False,
+            "data": data,
+            "error": proc["stderr"] or proc["stdout"],
+            "returncode": proc["returncode"],
+        }
+    return {"ok": True, "data": data}
 
 
 def command_text(argv: list[str], timeout: int = DEFAULT_TIMEOUT) -> dict[str, Any]:
@@ -195,29 +200,38 @@ def machine_summary(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def offload_summary(data: dict[str, Any]) -> dict[str, Any]:
-    if not data.get("ok"):
+    if not data.get("ok") and "data" not in data:
         return {"ok": False, "error": data.get("error", "offload status failed"), "targets": [], "cortex": []}
     status = data["data"]
     target_lines = []
     failures = []
+    optional_unavailable = []
     seen_targets = set()
+    required_targets = set()
     for target in status.get("targets", []):
         name = str(target.get("name") or "")
         if name:
             seen_targets.add(name)
+        required = bool(target.get("required", True))
+        if required and name:
+            required_targets.add(name)
+        note = f" note={target.get('note')}" if target.get("note") else ""
         if target.get("ok"):
             target_lines.append(
                 f"{target.get('name')}: ok host={target.get('host')} "
-                f"base={target.get('base_url')} models={target.get('models', [])}"
+                f"base={target.get('base_url')} models={target.get('models', [])}{note}"
             )
         else:
             line = (
                 f"{target.get('name')}: unavailable host={target.get('host')} "
-                f"base={target.get('base_url')} error={target.get('error')}"
+                f"base={target.get('base_url')} required={required} error={target.get('error')}{note}"
             )
             target_lines.append(line)
-            failures.append(line)
-    missing_targets = sorted(REQUIRED_OFFLOAD_TARGETS.difference(seen_targets))
+            if required:
+                failures.append(line)
+            else:
+                optional_unavailable.append(line)
+    missing_targets = sorted(required_targets.difference(seen_targets))
     for name in missing_targets:
         failures.append(f"{name}: missing required dispatcher offload target")
     cortex_data = status.get("cortex", {})
@@ -234,8 +248,10 @@ def offload_summary(data: dict[str, Any]) -> dict[str, Any]:
         "targets": target_lines,
         "cortex": cortex_lines,
         "failures": failures,
-        "required_targets": sorted(REQUIRED_OFFLOAD_TARGETS),
+        "optional_unavailable": optional_unavailable,
+        "required_targets": sorted(required_targets),
         "missing_targets": missing_targets,
+        "mode": "ready" if not failures else "blocked",
     }
 
 
