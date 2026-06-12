@@ -137,6 +137,10 @@ classify_cycle() {
       return 0
     fi
     if contains_pattern '(^|[^[:alpha:]])ROADBLOCK:' "${candidate}"; then
+      if contains_pattern '(^|[^[:alpha:]])safe-now([^[:alpha:]]|$)' "${candidate}"; then
+        echo "completed"
+        return 0
+      fi
       echo "roadblock"
       return 0
     fi
