@@ -115,6 +115,8 @@ HERMES_KERNEL_NOTIFY=1
 HERMES_KERNEL_NOTIFY_TARGET=telegram
 HERMES_KERNEL_NOTIFY_ON_COMPLETION=1
 HERMES_CUBIE_ACCESS_TIER=partial
+HERMES_KERNEL_PROVIDER=openwebui-hub
+HERMES_KERNEL_MODEL="Strix Qwen3.6 27B Dense ROCmFP4-MTP headQ6 GGUF rocmfp4-llama ROCm+Vulkan ctx256k self-spec reasoning-off coding"
 ```
 
 The continuous runner does not add Telegram-specific code. It calls:
@@ -127,6 +129,11 @@ Before running cycles, it performs a non-sending `hermes send --list` check and
 warns if the channel directory has no discovered target. That warning does not
 prove delivery failure because `hermes send --to telegram` may still use the
 configured Telegram home channel.
+
+Kernel work cycles default to the local Strix model instead of the OpenRouter
+free router because the Strix lane has been verified to use the terminal tool
+for simple command execution. Override with `HERMES_KERNEL_PROVIDER` and
+`HERMES_KERNEL_MODEL` only when the replacement model is known to use tools.
 
 ## Runtime Proof Approval
 
