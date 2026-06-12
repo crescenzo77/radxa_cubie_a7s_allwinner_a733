@@ -44,6 +44,11 @@ Guardrails:
 - cubie2 is the primary runtime proof board
 - cubie3 is the baseline/control board
 - cubie1 access depends on the injected Cubie access tier
+- when the injected tier allows multiple Cubies, read-only checks, UART
+  captures, and independent proof lanes may run concurrently across boards
+- serialize state-changing actions such as artifact staging, reboot,
+  power-cycle, boot selection, recovery, or restore; record board, command,
+  start time, and result for each one
 - RTX 3090 / amd-fast is optional and may be reserved for ComfyUI
 - CCU 0x02002580 bit 27 is a correlation label only, not a proven root cause or upstreamable fix
 - prefer reversible board actions and capture logs before and after reboot

@@ -92,7 +92,7 @@ Not allowed in partial tier:
 
 Allowed Cubie actions:
 - everything in partial tier
-- use cubie1, cubie2, and cubie3 for live runtime proof and reproduction
+- use cubie1, cubie2, and cubie3 for live runtime proof and reproduction, including concurrent per-board read/capture/proof lanes when useful
 - reboot Cubies as needed through documented workflow commands
 - use documented cubie*-power helpers for recovery power cycles if a board is wedged
 - stage workflow-identified kernel/boot artifacts and run recovery/vendor-restore steps documented in the homelab repo
@@ -100,6 +100,7 @@ Allowed Cubie actions:
 Still not allowed in total tier:
 - repartitioning, formatting, dd/raw block writes, firmware/SPI/eMMC bootloader writes, or destructive cleanup
 - persistent bootloader default changes outside documented proof/recovery steps
+- simultaneous reboot, power-cycle, artifact-staging, or recovery actions on more than one Cubie; serialize state-changing actions and log the board, command, start time, and result
 - changing services, cron, model routing, Hermes gateway, Telegram setup, git remotes, pushes, or mail submission"
     ;;
 esac

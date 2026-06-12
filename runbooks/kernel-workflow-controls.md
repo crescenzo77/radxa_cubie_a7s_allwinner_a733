@@ -166,12 +166,17 @@ The default tier is `partial`.
 
 - everything in `partial`
 - use cubie1, cubie2, and cubie3 for live proof and reproduction
+- run read-only checks, UART captures, and independent proof lanes concurrently
+  across multiple Cubies when useful
 - use documented Cubie power helpers for recovery power cycles if a board is
   wedged
 - run documented recovery/vendor-restore steps from the homelab repo
 - still no repartitioning, formatting, `dd`/raw block writes, firmware/SPI/eMMC
   bootloader writes, destructive cleanup, service/cron/model-routing changes,
   pushes, or mail submission
+- serialize state-changing actions such as artifact staging, reboot,
+  power-cycle, boot selection, recovery, or restore; do not change the state of
+  multiple Cubies at the same time
 
 ## Resource Flexibility
 
