@@ -52,3 +52,22 @@ Output format:
 - Evidence observed
 - Remaining blockers
 - Exactly one recommended next action, labeled safe-now or needs-approval
+
+If missing approval, missing required resources, missing evidence, or an unsafe
+operation prevents useful safe-now work, include a line beginning with:
+
+```text
+ROADBLOCK:
+```
+
+If the work is delayed by a timeout, long-running prerequisite, unavailable
+host, unavailable model lane, or other temporary resource issue, include a line
+beginning with:
+
+```text
+DELAY:
+```
+
+Do not label board artifact staging, `/boot` writes, reboot/power actions,
+service or cron changes, model-routing changes, pushes, email submission, or
+kernel source edits as safe-now.

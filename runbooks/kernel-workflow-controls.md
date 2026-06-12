@@ -91,6 +91,38 @@ cycle return code.
 It does not grant permission for hardware, boot, service, cron, push, or kernel
 source changes.
 
+For bounded continuous work, use:
+
+```sh
+scripts/hermes-kernel-continuous-work
+```
+
+This runner calls `scripts/hermes-kernel-work-cycle` repeatedly, defaults to
+three cycles, and stops early on roadblock, delay, timeout, or failure. It sends
+notifications through the existing Hermes messaging route when those conditions
+occur, and sends a final completion notification after the bounded run finishes.
+
+Useful environment controls:
+
+```sh
+HERMES_KERNEL_MAX_CYCLES=3
+HERMES_KERNEL_SLEEP_SECONDS=300
+HERMES_KERNEL_NOTIFY=1
+HERMES_KERNEL_NOTIFY_TARGET=telegram
+HERMES_KERNEL_NOTIFY_ON_COMPLETION=1
+```
+
+The continuous runner does not add Telegram-specific code. It calls:
+
+```sh
+"${HERMES_BIN}" send --to "${HERMES_KERNEL_NOTIFY_TARGET}" ...
+```
+
+Before running cycles, it performs a non-sending `hermes send --list` check and
+warns if the channel directory has no discovered target. That warning does not
+prove delivery failure because `hermes send --to telegram` may still use the
+configured Telegram home channel.
+
 ## Runtime Proof Approval
 
 Before Cubie2 runtime proof work, generate an approval packet:

@@ -1,0 +1,187 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cycle_script="${HERMES_KERNEL_CYCLE_SCRIPT:-${repo_root}/scripts/hermes-kernel-work-cycle}"
+max_cycles="${HERMES_KERNEL_MAX_CYCLES:-3}"
+sleep_seconds="${HERMES_KERNEL_SLEEP_SECONDS:-300}"
+notify_enabled="${HERMES_KERNEL_NOTIFY:-1}"
+notify_target="${HERMES_KERNEL_NOTIFY_TARGET:-telegram}"
+notify_on_completion="${HERMES_KERNEL_NOTIFY_ON_COMPLETION:-1}"
+stop_on_roadblock="${HERMES_KERNEL_STOP_ON_ROADBLOCK:-1}"
+stop_on_delay="${HERMES_KERNEL_STOP_ON_DELAY:-1}"
+
+if [ -n "${HERMES_BIN:-}" ]; then
+  hermes_bin="${HERMES_BIN}"
+elif [ -x /home/enzo/.local/bin/hermes ]; then
+  hermes_bin="/home/enzo/.local/bin/hermes"
+else
+  hermes_bin="$(command -v hermes 2>/dev/null || true)"
+fi
+
+usage() {
+  cat <<USAGE
+Usage: scripts/hermes-kernel-continuous-work
+
+Runs bounded supervised Hermes kernel-work cycles until the maximum cycle count
+is reached or a roadblock, delay, timeout, or failure is detected.
+
+Environment:
+  HERMES_KERNEL_CYCLE_SCRIPT=${cycle_script}
+  HERMES_KERNEL_MAX_CYCLES=${max_cycles}
+  HERMES_KERNEL_SLEEP_SECONDS=${sleep_seconds}
+  HERMES_KERNEL_NOTIFY=${notify_enabled}
+  HERMES_KERNEL_NOTIFY_TARGET=${notify_target}
+  HERMES_KERNEL_NOTIFY_ON_COMPLETION=${notify_on_completion}
+  HERMES_KERNEL_STOP_ON_ROADBLOCK=${stop_on_roadblock}
+  HERMES_KERNEL_STOP_ON_DELAY=${stop_on_delay}
+USAGE
+}
+
+case "${1:-}" in
+  -h|--help)
+    usage
+    exit 0
+    ;;
+esac
+
+case "${max_cycles}" in
+  ''|*[!0-9]*)
+    echo "HERMES_KERNEL_MAX_CYCLES must be a positive integer" >&2
+    exit 2
+    ;;
+esac
+case "${sleep_seconds}" in
+  ''|*[!0-9]*)
+    echo "HERMES_KERNEL_SLEEP_SECONDS must be a non-negative integer" >&2
+    exit 2
+    ;;
+esac
+if [ "${max_cycles}" -lt 1 ]; then
+  echo "HERMES_KERNEL_MAX_CYCLES must be at least 1" >&2
+  exit 2
+fi
+
+test -x "${cycle_script}" || {
+  echo "missing executable Hermes kernel cycle script: ${cycle_script}" >&2
+  exit 2
+}
+
+notify() {
+  message="$1"
+  [ "${notify_enabled}" = "1" ] || return 0
+  if [ -z "${hermes_bin}" ] || [ ! -x "${hermes_bin}" ]; then
+    echo "warning: Hermes notification requested but no executable Hermes binary was found" >&2
+    return 0
+  fi
+  if ! notify_output="$("${hermes_bin}" send --to "${notify_target}" "${message}" 2>&1)"; then
+    echo "warning: Hermes kernel work notification failed: ${notify_output}" >&2
+  fi
+}
+
+notify_route_preflight() {
+  [ "${notify_enabled}" = "1" ] || return 0
+  if [ -z "${hermes_bin}" ] || [ ! -x "${hermes_bin}" ]; then
+    echo "warning: Hermes notification requested but no executable Hermes binary was found" >&2
+    return 0
+  fi
+
+  platform="${notify_target%%:*}"
+  set +e
+  list_output="$("${hermes_bin}" send --list "${platform}" 2>&1)"
+  list_rc=$?
+  set -e
+  if [ "${list_rc}" -ne 0 ]; then
+    echo "warning: Hermes notification target list check failed: ${list_output}" >&2
+    return 0
+  fi
+  if printf '%s\n' "${list_output}" | grep -Eiq 'No messaging platforms|no channels discovered'; then
+    echo "warning: Hermes channel directory has no discovered ${platform} targets; ${notify_target} may still use a configured home channel, but delivery is not preflight-proven" >&2
+  fi
+}
+
+contains_pattern() {
+  pattern="$1"
+  file="$2"
+  [ -n "${file}" ] || return 1
+  [ -r "${file}" ] || return 1
+  grep -Eiq "${pattern}" "${file}"
+}
+
+classify_cycle() {
+  rc="$1"
+  report_file="$2"
+  log_file="$3"
+
+  if [ "${rc}" -eq 124 ]; then
+    echo "delay"
+    return 0
+  fi
+  if [ "${rc}" -ne 0 ]; then
+    echo "failed"
+    return 0
+  fi
+
+  for candidate in "${report_file}" "${log_file}"; do
+    if contains_pattern '(^|[^[:alpha:]])DELAY:' "${candidate}"; then
+      echo "delay"
+      return 0
+    fi
+    if contains_pattern '(^|[^[:alpha:]])ROADBLOCK:|needs-approval|human approval required|human_required|approval required|(^|[^[:alpha:]])blocked([^[:alpha:]]|$)|no safe-now|tree-missing|boot-artifact-staging-required' "${candidate}"; then
+      echo "roadblock"
+      return 0
+    fi
+  done
+
+  echo "completed"
+}
+
+cycle=1
+last_report=""
+last_log=""
+last_rc=0
+last_classification="completed"
+
+notify_route_preflight
+
+while [ "${cycle}" -le "${max_cycles}" ]; do
+  echo "== Hermes kernel work cycle ${cycle}/${max_cycles} =="
+
+  set +e
+  cycle_output="$(HERMES_KERNEL_NOTIFY=0 "${cycle_script}" 2>&1)"
+  last_rc=$?
+  set -e
+
+  printf '%s\n' "${cycle_output}"
+  last_report="$(printf '%s\n' "${cycle_output}" | awk -F= '$1 == "report" {print substr($0, 8)}' | tail -n 1)"
+  last_log="$(printf '%s\n' "${cycle_output}" | awk -F= '$1 == "log" {print substr($0, 5)}' | tail -n 1)"
+  last_classification="$(classify_cycle "${last_rc}" "${last_report}" "${last_log}")"
+
+  echo "classification=${last_classification}"
+
+  case "${last_classification}" in
+    roadblock)
+      notify "[Hermes A733] roadblock after cycle ${cycle}/${max_cycles}; rc=${last_rc}; report=${last_report:-unknown}; log=${last_log:-unknown}"
+      [ "${stop_on_roadblock}" = "1" ] && exit "${last_rc}"
+      ;;
+    delay)
+      notify "[Hermes A733] delay/timeout after cycle ${cycle}/${max_cycles}; rc=${last_rc}; report=${last_report:-unknown}; log=${last_log:-unknown}"
+      [ "${stop_on_delay}" = "1" ] && exit "${last_rc}"
+      ;;
+    failed)
+      notify "[Hermes A733] failed after cycle ${cycle}/${max_cycles}; rc=${last_rc}; report=${last_report:-unknown}; log=${last_log:-unknown}"
+      exit "${last_rc}"
+      ;;
+  esac
+
+  if [ "${cycle}" -lt "${max_cycles}" ]; then
+    sleep "${sleep_seconds}"
+  fi
+  cycle=$((cycle + 1))
+done
+
+if [ "${notify_on_completion}" = "1" ]; then
+  notify "[Hermes A733] completed ${max_cycles} supervised cycle(s); rc=${last_rc}; report=${last_report:-unknown}; log=${last_log:-unknown}"
+fi
+
+exit "${last_rc}"

@@ -127,6 +127,7 @@ scripts/a733-breakthrough-watch
 scripts/a733-rfc-recheck-packet
 scripts/cubie-runtime-proof-approval-packet
 scripts/hermes-kernel-work-cycle
+scripts/hermes-kernel-continuous-work
 scripts/a733-hermes-hourly-supervisor
 scripts/a733-hermes-source-diff-audit-prompt
 task-packets/kernel/a733-hypothesis-queue.json
@@ -161,6 +162,15 @@ Normal completion notifications for that wrapper are opt-in. Set
 message through the existing Hermes messaging route. The target defaults to
 `telegram` and can be overridden with `HERMES_KERNEL_NOTIFY_TARGET`. Do not add
 project-local Telegram bot code or direct Telegram API calls for this path.
+
+For supervised ongoing work, use `scripts/hermes-kernel-continuous-work`. It
+runs bounded one-shot cycles, stops early on roadblock, delay, timeout, or
+failure, and notifies through the same `hermes send --to telegram` route. This
+is the preferred command when the operator wants Hermes to keep making safe-now
+progress without turning cron, services, boot files, or kernel source changes
+over to automation. The runner does a non-sending target-list preflight and
+warns when channel discovery is empty; Telegram home-channel delivery may still
+work in that state, but the warning keeps that uncertainty visible.
 
 ## Cron Jobs
 
