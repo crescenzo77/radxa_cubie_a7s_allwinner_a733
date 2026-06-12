@@ -13,31 +13,13 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+import kernel_workflow_env
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PUBLIC_REPO_CANDIDATES = [
-    "/srv/projects/cubie-a7s-armbian-public",
-    "/Users/enzo/projects/Home Lab/cubie-a7s-armbian",
-]
-if os.environ.get("KERNEL_PUBLIC_REPO"):
-    PUBLIC_REPO = Path(os.environ["KERNEL_PUBLIC_REPO"])
-else:
-    PUBLIC_REPO = next(
-        (Path(candidate) for candidate in DEFAULT_PUBLIC_REPO_CANDIDATES if Path(candidate).exists()),
-        Path(DEFAULT_PUBLIC_REPO_CANDIDATES[-1]),
-    )
-DEFAULT_LINUX_TREE_CANDIDATES = [
-    "/srv/projects/a733-prereq-stack-current",
-    "/srv/projects/cubie-a7s-armbian/sources/mainline-linux",
-    "/srv/projects/kernel-work/scratch/strix-mainline-linux",
-    "/Users/enzo/projects/linux-a733",
-]
-if os.environ.get("KERNEL_TREE_PATH"):
-    LINUX_TREE = Path(os.environ["KERNEL_TREE_PATH"])
-else:
-    LINUX_TREE = next(
-        (Path(candidate) for candidate in DEFAULT_LINUX_TREE_CANDIDATES if Path(candidate).exists()),
-        Path(DEFAULT_LINUX_TREE_CANDIDATES[-1]),
-    )
+WORKFLOW_ENV = kernel_workflow_env.build_env()
+PUBLIC_REPO = Path(WORKFLOW_ENV["paths"]["public_repo"]["selected"])
+PATCH_EXPORT = Path(WORKFLOW_ENV["paths"]["patch_export"]["selected"])
+LINUX_TREE = Path(WORKFLOW_ENV["paths"]["kernel_tree"]["selected"])
 DEFAULT_TIMEOUT = 30
 STRIX_HOST = os.environ.get("KERNEL_STRIX_HOST", "192.168.50.11")
 STRIX_SSH_TARGET = os.environ.get("KERNEL_STRIX_SSH_TARGET", f"enzo@{STRIX_HOST}")
@@ -55,7 +37,7 @@ PATCH_PREP_CHECKLIST = "scripts/a733-patch-prep-checklist"
 BACKUP_APPROVAL_BRIEF = "scripts/kernel-backup-approval-brief"
 PROOF_GATE_SELFTEST = "scripts/cubie-corrected-root-proof-gate-selftest"
 RFC_RECHECK_GLOB = "a733-rfc-recheck-*.md"
-RFC_RECHECK_DIR = REPO_ROOT / "task-packets/kernel/research"
+RFC_RECHECK_DIR = Path(WORKFLOW_ENV["paths"]["rfc_recheck_dir"]["selected"])
 
 
 def run(
@@ -938,7 +920,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         command_json(
             [
                 str(REPO_ROOT / "scripts" / "a733-series-shape-gate"),
-                str(PUBLIC_REPO / "patches"),
+                str(PATCH_EXPORT),
                 "--json",
             ],
             timeout=args.timeout,
@@ -960,7 +942,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
         command_json(
             [
                 str(REPO_ROOT / "scripts" / "a733-prereq-api-audit"),
-                str(PUBLIC_REPO / "patches"),
+                str(PATCH_EXPORT),
                 "--json",
             ],
             timeout=args.timeout,
@@ -984,6 +966,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     data = {
         "homelab": git_status_any(REPO_ROOT, PRIVATE_ORIGIN_REMOTES),
         "homelab_github": git_status(REPO_ROOT, PRIVATE_GITHUB_REMOTE),
+        "path_registry": WORKFLOW_ENV,
         "public_repo": git_status(PUBLIC_REPO, "public")
         if PUBLIC_REPO.exists()
         else missing_git_status(PUBLIC_REPO, "public"),

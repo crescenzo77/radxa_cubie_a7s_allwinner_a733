@@ -81,3 +81,21 @@ scripts/kernel-review-matrix --file task-packets/kernel/reviews/PAYLOAD.md
 
 The 3090, 7900XT, and Strix lanes are advisory. Proof logs and human approval
 remain authoritative.
+
+## Workflow Controls
+
+Use `inventory/kernel-workflow-paths.json` and `scripts/kernel-workflow-env`
+before assuming host-specific paths. The current patch export location should
+come from `scripts/kernel-patch-export-status`, not from thread memory.
+
+Before Cubie runtime proof work, write an approval packet:
+
+```sh
+scripts/cubie-runtime-proof-approval-packet --board cubie2
+```
+
+Before patch prep, refresh the A733 RFC overlap packet:
+
+```sh
+scripts/a733-rfc-recheck-packet
+```

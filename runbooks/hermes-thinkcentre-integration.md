@@ -112,7 +112,9 @@ Hermes summaries are never authoritative above proof logs or human approval.
 Existing kernel surfaces to use:
 
 ```text
+scripts/kernel-workflow-env
 scripts/kernel-workflow-status
+scripts/kernel-patch-export-status
 scripts/kernel-proof
 scripts/kernel-token-offload
 scripts/kernel-research-query
@@ -122,6 +124,9 @@ scripts/kernel-idle-review-sweep
 scripts/a733-source-diff-heartbeat
 scripts/a733-heartbeat-watch
 scripts/a733-breakthrough-watch
+scripts/a733-rfc-recheck-packet
+scripts/cubie-runtime-proof-approval-packet
+scripts/hermes-kernel-work-cycle
 scripts/a733-hermes-hourly-supervisor
 scripts/a733-hermes-source-diff-audit-prompt
 task-packets/kernel/a733-hypothesis-queue.json
@@ -139,9 +144,17 @@ Hermes should initially run only read-only checks and report:
 - whether any local model lane is down
 - whether a human-only gate is waiting
 
+Hermes should read `inventory/kernel-workflow-paths.json` before assuming any
+kernel tree, patch export, or report path. Do not use a Mac-only path on
+ThinkCentre just because it appears in older thread context.
+
 Hermes must not run the queued H149 unattended runtime sweep unless the human
 operator explicitly approves that live hardware action. It may summarize H149
 status and produce an approval brief.
+
+Longer Hermes kernel-work cycles should use `scripts/hermes-kernel-work-cycle`
+so timeout state, logs, and final output are captured under
+`task-packets/kernel/hermes-work/`.
 
 ## Cron Jobs
 

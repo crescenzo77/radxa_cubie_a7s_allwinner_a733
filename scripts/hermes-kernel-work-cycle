@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+hermes_bin="${HERMES_BIN:-/home/enzo/.local/bin/hermes}"
+prompt_file="${HERMES_KERNEL_PROMPT:-${repo_root}/runbooks/hermes-kernel-work-prompt.md}"
+timeout_seconds="${HERMES_KERNEL_TIMEOUT:-900}"
+stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+work_dir="${HERMES_KERNEL_WORK_DIR:-${repo_root}/task-packets/kernel/hermes-work}"
+log_file="${work_dir}/${stamp}-hermes-kernel-work.log"
+report_file="${work_dir}/${stamp}-hermes-kernel-work.md"
+
+usage() {
+  cat <<USAGE
+Usage: scripts/hermes-kernel-work-cycle
+
+Runs one supervised Hermes kernel-work cycle with a timeout and writes both a
+raw log and a status report. This wrapper does not grant Hermes approval to
+touch hardware, services, cron, boot files, or kernel source.
+
+Environment:
+  HERMES_BIN=${hermes_bin}
+  HERMES_KERNEL_PROMPT=${prompt_file}
+  HERMES_KERNEL_TIMEOUT=${timeout_seconds}
+  HERMES_KERNEL_WORK_DIR=${work_dir}
+USAGE
+}
+
+case "${1:-}" in
+  -h|--help)
+    usage
+    exit 0
+    ;;
+esac
+
+test -r "${prompt_file}" || {
+  echo "missing prompt file: ${prompt_file}" >&2
+  exit 2
+}
+test -x "${hermes_bin}" || {
+  echo "missing executable Hermes binary: ${hermes_bin}" >&2
+  exit 2
+}
+
+mkdir -p "${work_dir}"
+prompt="$(cat "${prompt_file}")"
+
+set +e
+if command -v timeout >/dev/null 2>&1; then
+  timeout "${timeout_seconds}" "${hermes_bin}" -z "${prompt}" >"${log_file}" 2>&1
+  rc=$?
+else
+  python3 - "${hermes_bin}" "${timeout_seconds}" "${log_file}" "${prompt_file}" <<'PY'
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+hermes = sys.argv[1]
+timeout = int(sys.argv[2])
+log = Path(sys.argv[3])
+prompt = Path(sys.argv[4]).read_text(encoding="utf-8")
+with log.open("w", encoding="utf-8") as handle:
+    try:
+        proc = subprocess.run([hermes, "-z", prompt], stdout=handle, stderr=subprocess.STDOUT, timeout=timeout, check=False)
+        raise SystemExit(proc.returncode)
+    except subprocess.TimeoutExpired:
+        handle.write("\nTIMEOUT\n")
+        raise SystemExit(124)
+PY
+  rc=$?
+fi
+set -e
+
+status="completed"
+if [ "${rc}" -eq 124 ]; then
+  status="timeout"
+elif [ "${rc}" -ne 0 ]; then
+  status="failed"
+fi
+
+{
+  echo "# Hermes Kernel Work Cycle"
+  echo
+  echo "Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  echo "Status: \`${status}\`"
+  echo "Return code: \`${rc}\`"
+  echo "Prompt: \`${prompt_file}\`"
+  echo "Log: \`${log_file}\`"
+  echo
+  echo "## Output"
+  echo
+  echo '```text'
+  sed -n '1,240p' "${log_file}"
+  echo '```'
+} >"${report_file}"
+
+echo "report=${report_file}"
+echo "log=${log_file}"
+exit "${rc}"

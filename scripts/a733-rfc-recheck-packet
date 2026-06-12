@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+json_out="${A733_RFC_RECHECK_JSON:-${repo_root}/task-packets/kernel/results/a733-rfc-dependency-recheck-latest.json}"
+from_json=""
+stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+md_out="${A733_RFC_RECHECK_PACKET:-${repo_root}/task-packets/kernel/research/a733-rfc-recheck-${stamp}.md}"
+
+usage() {
+  cat <<USAGE
+Usage: scripts/a733-rfc-recheck-packet [--from-json FILE] [--json-out FILE] [--md-out FILE]
+
+Runs the existing A733 public RFC dependency checker, then writes the markdown
+packet expected by scripts/kernel-workflow-status. This does not edit kernel
+source, hardware state, services, or cron.
+USAGE
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --from-json)
+      from_json="$2"
+      shift 2
+      ;;
+    --json-out)
+      json_out="$2"
+      shift 2
+      ;;
+    --md-out)
+      md_out="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "unknown argument: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+mkdir -p "$(dirname "${json_out}")" "$(dirname "${md_out}")"
+
+checker_rc=0
+if [ -n "${from_json}" ]; then
+  json_out="${from_json}"
+else
+  set +e
+  "${repo_root}/scripts/kernel-a733-rfc-dependency-recheck" "${json_out}"
+  checker_rc=$?
+  set -e
+fi
+
+python3 - "${json_out}" "${md_out}" <<'PY'
+from __future__ import annotations
+
+import datetime as dt
+import json
+import sys
+from pathlib import Path
+
+json_path = Path(sys.argv[1])
+md_path = Path(sys.argv[2])
+payload = json.loads(json_path.read_text(encoding="utf-8"))
+generated = dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
+date = generated.date().isoformat()
+
+lines = [
+    "# A733 RFC Overlap Recheck",
+    "",
+    f"Date: {date}",
+    f"Generated: {generated.isoformat().replace('+00:00', 'Z')}",
+    f"Source JSON: `{json_path}`",
+    f"Status: `{payload.get('status', 'unknown')}`",
+    "",
+    "## Dependencies",
+    "",
+    "| Dependency | Reachable | Observed State | Manual Review | Source |",
+    "|---|---:|---|---:|---|",
+]
+
+for item in payload.get("dependencies", []):
+    lines.append(
+        "| {name} | {reachable} | {state} | {review} | {source} |".format(
+            name=str(item.get("name", "")).replace("|", "\\|"),
+            reachable="yes" if item.get("reachable") else "no",
+            state=str(item.get("observed_state", "")).replace("|", "\\|"),
+            review="yes" if item.get("needs_manual_review") else "no",
+            source=str(item.get("source", "")).replace("|", "\\|"),
+        )
+    )
+
+lines.extend(
+    [
+        "",
+        "## Result",
+        "",
+        str(payload.get("result", "No result recorded.")),
+        "",
+        "## Workflow Rule",
+        "",
+        "Use this packet as freshness evidence only. It does not authorize sending patches, changing hardware state, or treating in-flight RFC dependencies as resolved.",
+        "",
+    ]
+)
+
+md_path.write_text("\n".join(lines), encoding="utf-8")
+print(f"packet={md_path}")
+PY
+
+exit "${checker_rc}"

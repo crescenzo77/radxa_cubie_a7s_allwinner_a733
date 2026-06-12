@@ -8,7 +8,8 @@ Operator surface: Codex Desktop only
 - `192.168.50.252`: build/proof host and fast RTX 3090 model lane
 - `192.168.50.11`: Strix review model lane and Cubie UART host
 - `192.168.50.225`: lightweight services/gateway and kernel-cortex storage host
-- `192.168.50.248`: Framework laptop, physical client only
+- Framework laptop: physical client only; current observed LAN IP
+  `192.168.50.140`, Tailscale `100.64.0.5`; not guaranteed always on
 
 ## Remote Paths
 
@@ -83,7 +84,9 @@ unless a human explicitly approves broader exposure.
 scripts/kernel-layout init
 scripts/kernel-layout status
 scripts/kernel-layout scan
+scripts/kernel-workflow-env
 scripts/kernel-workflow-status
+scripts/kernel-patch-export-status
 scripts/kernel-machine-readiness
 scripts/kernel-sync-strix-to-amd status
 scripts/kernel-sync-strix-to-amd dry-run
@@ -100,6 +103,9 @@ scripts/kernel-review-matrix --file task-packets/kernel/reviews/PAYLOAD.md
 scripts/kernel-idle-review-sweep --limit 1 --run --allow-unavailable
 scripts/kernel-idle-review-sweep --loop --max-runs 3 --run --allow-unavailable
 scripts/kernel-idle-ledger status
+scripts/a733-rfc-recheck-packet
+scripts/cubie-runtime-proof-approval-packet --board cubie2
+scripts/hermes-kernel-work-cycle
 ```
 
 ## Kernel Knowledge Cortex
@@ -109,6 +115,9 @@ The companion evidence-retrieval workflow is documented in
 
 The local hardware token-offload workflow is documented in
 `runbooks/kernel-token-offload.md`.
+
+The host-aware path, patch export, approval, and supervised Hermes controls are
+documented in `runbooks/kernel-workflow-controls.md`.
 
 The host install and readiness checklist is documented in
 `runbooks/kernel-machine-install-checklist.md`.

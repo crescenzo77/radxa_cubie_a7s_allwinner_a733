@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "updated": "2026-06-12",
+  "purpose": "Host-aware paths for the A733 kernel patch workflow. These paths prevent Hermes and Codex from using Mac-only defaults on remote hosts.",
+  "hosts": {
+    "mac-mini": {
+      "aliases": [
+        "mac-mini",
+        "Mac-mini",
+        "enzo-mac-mini",
+        "enzos-Mac-mini"
+      ],
+      "homelab_repo": "/Users/enzo/projects/homelab",
+      "public_repo": "/Users/enzo/projects/Home Lab/cubie-a7s-armbian",
+      "patch_export": "/Users/enzo/projects/Home Lab/cubie-a7s-armbian/patches",
+      "kernel_tree": "/Users/enzo/projects/linux-a733",
+      "kernel_tree_candidates": [
+        "/Users/enzo/projects/linux-a733",
+        "/Users/enzo/projects/linux-a733-sparse"
+      ],
+      "rfc_recheck_dir": "/Users/enzo/projects/homelab/task-packets/kernel/research",
+      "hermes_work_dir": "/Users/enzo/projects/homelab/task-packets/kernel/hermes-work",
+      "runtime_approval_dir": "/Users/enzo/projects/homelab/task-packets/kernel/approvals"
+    },
+    "thinkcentre": {
+      "aliases": [
+        "thinkcentre",
+        "192.168.50.225"
+      ],
+      "homelab_repo": "/srv/projects/homelab",
+      "public_repo": "/home/enzo/projects/radxa_cubie_a7s_allwinner_a733",
+      "patch_export": "/home/enzo/projects/radxa_cubie_a7s_allwinner_a733/patches",
+      "kernel_tree": "/srv/projects/a733-prereq-stack-current",
+      "kernel_tree_candidates": [
+        "/srv/projects/a733-prereq-stack-current",
+        "/srv/projects/kernel-work/scratch/strix-mainline-linux",
+        "/srv/projects/cubie-a7s-armbian/sources/mainline-linux"
+      ],
+      "kernel_tree_remote": "strix:/srv/projects/cubie-a7s-armbian/sources/mainline-linux",
+      "rfc_recheck_dir": "/srv/projects/homelab/task-packets/kernel/research",
+      "hermes_work_dir": "/srv/projects/homelab/task-packets/kernel/hermes-work",
+      "runtime_approval_dir": "/srv/projects/homelab/task-packets/kernel/approvals",
+      "notes": [
+        "ThinkCentre currently has the public patch repo locally, but the live kernel tree may need to be synced from Strix before prereq-stack gates can pass."
+      ]
+    },
+    "strix": {
+      "aliases": [
+        "strix",
+        "192.168.50.11"
+      ],
+      "homelab_repo": "/srv/projects/homelab",
+      "public_repo": "/srv/projects/cubie-a7s-armbian-public",
+      "patch_export": "/srv/projects/cubie-a7s-armbian-public/patches",
+      "kernel_tree": "/srv/projects/cubie-a7s-armbian/sources/mainline-linux",
+      "kernel_tree_candidates": [
+        "/srv/projects/cubie-a7s-armbian/sources/mainline-linux"
+      ],
+      "artifact_outgoing": "/srv/projects/kernel-work/outgoing",
+      "uart_log_dir": "/srv/projects/cubie-uart/logs",
+      "rfc_recheck_dir": "/srv/projects/homelab/task-packets/kernel/research",
+      "hermes_work_dir": "/srv/projects/homelab/task-packets/kernel/hermes-work",
+      "runtime_approval_dir": "/srv/projects/homelab/task-packets/kernel/approvals"
+    }
+  },
+  "resource_policy": {
+    "required": [
+      "strix-review",
+      "amd-research",
+      "qdrant",
+      "cubie2-uart",
+      "patch-export"
+    ],
+    "optional": [
+      "amd-fast",
+      "openrouter-free",
+      "framework-client"
+    ],
+    "forbidden_without_approval": [
+      "cubie1-kernel-proof",
+      "board-power-cycle",
+      "bootloader-default-change",
+      "write-/boot",
+      "kernel-source-commit",
+      "service-or-cron-change",
+      "git-push"
+    ]
+  },
+  "generated_state_policy": {
+    "commit": [
+      "intentional summaries",
+      "decision records",
+      "approval packets",
+      "evidence packets"
+    ],
+    "tolerate_dirty_until_stopping_point": [
+      "task-packets/kernel/hermes-hourly/*-latest.*",
+      "task-packets/kernel/hermes-hourly/*-state.json",
+      "task-packets/kernel/hermes-hourly/index.html"
+    ],
+    "do_not_commit": [
+      "__pycache__",
+      "*.pyc",
+      "temporary logs without evidence value"
+    ]
+  }
+}
