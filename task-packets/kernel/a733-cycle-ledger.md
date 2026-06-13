@@ -4728,6 +4728,143 @@ untracked A733 prerequisite files. A plain detached worktree at
 
 Stop confirmation: Stop after final validation, GitHub backup, and summary.
 
+### A733-CYCLE-061
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Prepare a no-run isolated-copy static proof packet for DTS v2.
+
+Selection rationale: A733-CYCLE-059 proved that the Strix A733 prerequisite
+DTS/DTSI files are still untracked, so a plain detached worktree is blocked.
+A no-run isolated-copy packet makes the next allowed static proof method
+explicit and auditable while preserving local-only/no-hardware/no-kernel-tree
+mutation in this cycle.
+
+Scope contract: Create a local-only no-run isolated-copy command packet, link
+it from the evidence index, static proof plan, command packet, and validator,
+and complete this ledger entry. Do not execute the packet, copy a kernel tree,
+create or delete worktrees, apply patches, run builds, mutate hardware, send
+kernel communications, or push public branches.
+
+Files in scope:
+
+- `task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `task-packets/kernel/a733-dts-v2-static-proof-plan.md`
+- `task-packets/kernel/a733-dts-v2-static-proof-command-packet.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- executing the isolated-copy packet
+- creating, copying, or deleting kernel worktrees
+- applying patches to kernel trees
+- DTB builds, dt-schema checks, checkpatch, or get-maintainer execution
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime DTS proof
+- b4 send, git send-email, Gmail replies, list replies, GitHub issue, PR, or
+  comment
+
+Classification gate: Green local documentation/prep work. The cycle writes
+coordination files only and does not touch kernel trees, boards, claims, or
+public kernel communication paths.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource is claimed.
+
+Claimed resources: documentation and validator files listed in scope only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `git status --short --branch`
+- `python3 tools/validate/a733_authority_check.py`
+- `git log --oneline -5`
+- `sed -n '1,260p' runbooks/kernel-a733-mainline-enablement-workflow.md`
+- `sed -n '1,240p' task-packets/kernel/a733-current-evidence-index.md`
+- `sed -n '1,220p' task-packets/kernel/a733-dts-v2-static-proof-preflight.md`
+- `sed -n '1,220p' task-packets/kernel/a733-dts-v2-static-proof-command-packet.md`
+- `sed -n '40,70p' tools/validate/a733_authority_check.py`
+- `sed -n '220,255p' tools/validate/a733_authority_check.py`
+- `sed -n '800,960p' tools/validate/a733_authority_check.py`
+- `sed -n '1130,1188p' tools/validate/a733_authority_check.py`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md task-packets/kernel/a733-current-evidence-index.md task-packets/kernel/a733-dts-v2-static-proof-plan.md task-packets/kernel/a733-dts-v2-static-proof-command-packet.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md task-packets/kernel/a733-current-evidence-index.md task-packets/kernel/a733-dts-v2-static-proof-plan.md task-packets/kernel/a733-dts-v2-static-proof-command-packet.md tools/validate/a733_authority_check.py`
+- pending backup commands: `git add`, `git commit`, and `git push github-backup main:homelab-backup-main`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md`
+  `22b3011ce4103a3dbdc499c0ef2b738df386cda41db6368d5329cad7e6080f7b`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `59ed6196e97274c18cc94a5edbedf4d64f29e75b4dfed488087b3023eae36b54`
+- `task-packets/kernel/a733-dts-v2-static-proof-plan.md`
+  `7ab088526211f01102bb26581a690b260c1e1f92d319fb21334c7434443a12fc`
+- `task-packets/kernel/a733-dts-v2-static-proof-command-packet.md`
+  `3eeef9512ee1b1c412b36e23befd286b6dece71f7a35c93812dc6910d5549a03`
+- `tools/validate/a733_authority_check.py`
+  `06471b649acae9b0f31772cb6d52e099799de759c6deb44d26015f023135e13f`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Isolated-copy packet exists and is marked local-only,
+no-run, and no-send. It describes a future contracted method to preserve the
+untracked A733 prerequisite files, verify hashes before and after isolation,
+then run static proof commands only from the isolated copy. Authority validation
+and diff whitespace checks pass; backup push succeeds if files changed.
+
+Proof result: Passed. The isolated-copy packet exists, is marked local-only,
+no-run, and no-send, and records the future method for preserving the untracked
+A733 prerequisite files before static proof. Authority validator, Python
+compile check, inventory JSON parse, workflow-path JSON parse, and diff
+whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: Coordination files remain dirty until the backup commit is
+completed. No kernel tree was edited. No worktree was created. No kernel tree
+was copied. No build output, hardware mutation, or kernel public communication
+was performed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: A733-BATCH-002 remains queue-only.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim exists.
+
+Next-selection pointer: A future local-only static proof may use the
+isolated-copy packet only after writing a fresh cycle contract and confirming
+the current authority files still permit it. Hardware runtime work remains
+blocked until board roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after final validation, GitHub backup, and summary.
+
 ### A733-CYCLE-016
 
 Timestamp: 2026-06-13 local

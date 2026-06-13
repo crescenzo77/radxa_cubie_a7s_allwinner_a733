@@ -26,6 +26,7 @@ Proof planning files:
 - `task-packets/kernel/a733-dts-v2-static-proof-plan.md`
 - `task-packets/kernel/a733-dts-v2-static-validation-hosts.md`
 - `task-packets/kernel/a733-dts-v2-static-proof-preflight.md`
+- `task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md`
 - `task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch`
 
 Observed best host:
@@ -48,6 +49,9 @@ Latest preflight result: the A733 DTS/DTSI prerequisite files are still
 untracked on Strix, so a future static proof must not use a plain detached
 worktree unless those files are first committed or otherwise preserved in the
 isolated proof tree.
+
+If the files remain untracked, use the no-run isolated-copy packet as the
+starting point for a future contracted proof cycle.
 
 ## Preflight Checks
 

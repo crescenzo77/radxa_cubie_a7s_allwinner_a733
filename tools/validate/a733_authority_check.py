@@ -57,6 +57,9 @@ DTS_V2_STATIC_PROOF_COMMAND_PACKET = Path(
 DTS_V2_STATIC_PROOF_PREFLIGHT = Path(
     "task-packets/kernel/a733-dts-v2-static-proof-preflight.md"
 )
+DTS_V2_STATIC_PROOF_ISOLATED_COPY = Path(
+    "task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md"
+)
 DTS_V2_UART_PINCTRL_PREVIEW = Path(
     "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch"
 )
@@ -245,6 +248,7 @@ def check_evidence_index(root: Path, failures: list[str]) -> None:
         "task-packets/kernel/a733-dts-v2-static-validation-hosts.md",
         "task-packets/kernel/a733-dts-v2-static-proof-command-packet.md",
         "task-packets/kernel/a733-dts-v2-static-proof-preflight.md",
+        "task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md",
         "Strix's observed A733 DTS/DTSI prerequisite files were",
         "committed prerequisite branch",
         "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch",
@@ -828,6 +832,7 @@ def check_dts_v2_static_proof_plan(root: Path, failures: list[str]) -> None:
         "task-packets/kernel/a733-dts-v2-static-validation-hosts.md",
         "task-packets/kernel/a733-dts-v2-static-proof-command-packet.md",
         "task-packets/kernel/a733-dts-v2-static-proof-preflight.md",
+        "task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md",
         "Strix is the best observed future static-validation host",
         "temporary clean worktree",
         "Known prerequisite caveat",
@@ -902,6 +907,7 @@ def check_dts_v2_static_proof_command_packet(root: Path, failures: list[str]) ->
         "Do not execute this packet",
         "task-packets/kernel/a733-dts-v2-static-validation-hosts.md",
         "task-packets/kernel/a733-dts-v2-static-proof-preflight.md",
+        "task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md",
         "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch",
         "strix",
         "/srv/projects/cubie-a7s-armbian/sources/mainline-linux",
@@ -924,6 +930,41 @@ def check_dts_v2_static_proof_command_packet(root: Path, failures: list[str]) ->
     ]
     for needle in required:
         require_contains("dts-v2-static-proof-command-packet", text, needle, failures)
+
+
+def check_dts_v2_static_proof_isolated_copy(root: Path, failures: list[str]) -> None:
+    path = root / DTS_V2_STATIC_PROOF_ISOLATED_COPY
+    if not path.exists():
+        failures.append(
+            f"dts-v2-static-proof-isolated-copy: missing {DTS_V2_STATIC_PROOF_ISOLATED_COPY}"
+        )
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("dts-v2-static-proof-isolated-copy", text, failures)
+    required = [
+        "Status: local-only; no-run; no-send",
+        "not a build log",
+        "not static proof",
+        "not permission to mutate kernel trees or hardware",
+        "Do not execute this packet",
+        "task-packets/kernel/a733-dts-v2-static-proof-preflight.md",
+        "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch",
+        "8fde5d1d47f69db6082dfa34500c27f8485389a5",
+        "sun60i-a733.dtsi",
+        "sun60i-a733-cubie-a7s.dts",
+        "untracked",
+        "rsync -a --delete",
+        "source-prereq-sha256.txt",
+        "proof-prereq-sha256.txt",
+        "diff -u",
+        "Stop before any patch or build command",
+        "task-packets/kernel/a733-dts-v2-static-proof-command-packet.md",
+        "no boot, no install, no UART capture, no power action",
+        "rsync is unavailable",
+        "prerequisite hashes do not match",
+    ]
+    for needle in required:
+        require_contains("dts-v2-static-proof-isolated-copy", text, needle, failures)
 
 
 def check_dts_v2_static_proof_preflight(root: Path, failures: list[str]) -> None:
@@ -1191,6 +1232,7 @@ def run(root: Path) -> dict[str, Any]:
     check_dts_v2_static_proof_plan(root, failures)
     check_dts_v2_static_validation_hosts(root, failures)
     check_dts_v2_static_proof_command_packet(root, failures)
+    check_dts_v2_static_proof_isolated_copy(root, failures)
     check_dts_v2_static_proof_preflight(root, failures)
     check_dts_v2_uart_pinctrl_preview(root, failures)
     check_dts_v2_held_cover_changelog_draft(root, failures)
@@ -1223,6 +1265,7 @@ def run(root: Path) -> dict[str, Any]:
         "dts_v2_static_proof_plan": str(DTS_V2_STATIC_PROOF_PLAN),
         "dts_v2_static_validation_hosts": str(DTS_V2_STATIC_VALIDATION_HOSTS),
         "dts_v2_static_proof_command_packet": str(DTS_V2_STATIC_PROOF_COMMAND_PACKET),
+        "dts_v2_static_proof_isolated_copy": str(DTS_V2_STATIC_PROOF_ISOLATED_COPY),
         "dts_v2_static_proof_preflight": str(DTS_V2_STATIC_PROOF_PREFLIGHT),
         "dts_v2_uart_pinctrl_preview": str(DTS_V2_UART_PINCTRL_PREVIEW),
         "dts_v2_held_cover_changelog_draft": str(DTS_V2_HELD_COVER_CHANGELOG_DRAFT),

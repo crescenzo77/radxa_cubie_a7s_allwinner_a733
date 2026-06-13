@@ -59,6 +59,13 @@ The latest read-only Strix preflight is recorded in:
 task-packets/kernel/a733-dts-v2-static-proof-preflight.md
 ```
 
+The no-run isolated-copy recipe for preserving untracked prerequisite files is
+recorded in:
+
+```text
+task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md
+```
+
 Current conclusion: Strix is the best observed future static-validation host
 because it has a complete Linux source tree, `aarch64-linux-gnu-gcc`, `make`,
 `dtc`, `scripts/checkpatch.pl`, and `scripts/get_maintainer.pl`. It must still
