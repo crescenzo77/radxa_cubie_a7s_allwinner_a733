@@ -4602,6 +4602,132 @@ untracked A733 prerequisite files. A plain detached worktree at
 
 Stop confirmation: Stop after final validation, GitHub backup, and summary.
 
+### A733-CYCLE-060
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Refresh the local prep checkpoint after the DTS v2 static-proof
+preflight backup.
+
+Selection rationale: The checkpoint still recorded older repository and
+GitHub backup heads, while the latest backed-up coordination commit is
+`8f94b8d2c4cf6a5e664c95521e340f301789a499`. Refreshing this checkpoint keeps
+resumption state truthful and durable without touching kernel trees, hardware,
+or public kernel communication.
+
+Scope contract: Update the local prep checkpoint and validator anchors to
+record the current commit, backup branch head, preflight packet, and hashes.
+Complete this ledger entry, validate, commit, and push the coordination backup
+branch. Do not run builds, create or copy kernel worktrees, edit kernel source,
+mutate hardware, or send kernel communications.
+
+Files in scope:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- creating, copying, or deleting kernel worktrees
+- applying patches to kernel trees
+- DTB builds, dt-schema checks, checkpatch, or get-maintainer execution
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime DTS proof
+- b4 send, git send-email, Gmail replies, list replies, GitHub issue, PR, or
+  comment
+
+Classification gate: Green local checkpoint update plus
+operator-goal-authorized GitHub backup to the backup branch.
+
+Permission envelope: Green for local docs; GitHub backup permitted by the
+active goal's periodic-backup requirement.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource is claimed.
+
+Claimed resources: checkpoint, validator, and cycle ledger documentation files
+only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `git rev-parse HEAD`
+- `git log -1 --oneline`
+- `git status --short --branch`
+- `git ls-remote github-backup refs/heads/homelab-backup-main`
+- `shasum -a 256 task-packets/kernel/a733-dts-v2-static-proof-preflight.md task-packets/kernel/a733-current-evidence-index.md task-packets/kernel/a733-dts-v2-static-proof-plan.md task-packets/kernel/a733-dts-v2-static-proof-command-packet.md tools/validate/a733_authority_check.py task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `sed -n '1,120p' task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `sed -n '660,705p' tools/validate/a733_authority_check.py`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py`
+- pending backup commands: `git add`, `git commit`, and `git push github-backup main:homelab-backup-main`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+  `52631dc86e3ab0a73f3bdc61486cdbb494200248aec10bcba211dde4553ab06c`
+- `tools/validate/a733_authority_check.py`
+  `67d6e4f8cc3be1a5f3a37ea2fa911a9f1dd848beb4f79c26514d15b9bef579bc`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Checkpoint records current local HEAD and backup branch head,
+substantive prep coverage through A733-CYCLE-059, the DTS v2 static-proof
+preflight packet, current hashes, and no-public/no-hardware/no-kernel-mutation
+boundaries. Authority validation and diff whitespace checks pass; GitHub
+backup push succeeds.
+
+Proof result: Passed. The checkpoint now records current local HEAD and
+GitHub backup branch head `8f94b8d2c4cf6a5e664c95521e340f301789a499`,
+substantive prep coverage through A733-CYCLE-059, the DTS v2 static-proof
+preflight packet, and current hashes. Authority validator, Python compile
+check, inventory JSON parse, workflow-path JSON parse, and diff whitespace
+check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: Coordination files remain dirty until the backup commit is
+completed. No kernel tree was edited. No worktree was created. No kernel tree
+was copied. No build output, hardware mutation, or kernel public communication
+was performed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: A733-BATCH-002 remains queue-only.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim exists.
+
+Next-selection pointer: Future local-only static proof must use either a
+committed prerequisite branch or a contracted isolated copy that preserves the
+untracked A733 prerequisite files. A plain detached worktree at
+`8fde5d1d47f69db6082dfa34500c27f8485389a5` remains blocked for proof.
+
+Stop confirmation: Stop after final validation, GitHub backup, and summary.
+
 ### A733-CYCLE-016
 
 Timestamp: 2026-06-13 local
