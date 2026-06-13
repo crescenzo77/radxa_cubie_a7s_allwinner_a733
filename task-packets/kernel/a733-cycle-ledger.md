@@ -3797,6 +3797,143 @@ permit it. Public communication and public pushes remain closed.
 
 Stop confirmation: Stop after this bounded held DTS v2 draft item.
 
+### A733-CYCLE-054
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Record DTS v2 static-validation host suitability from read-only
+local and remote inventory.
+
+Selection rationale: The DTS v2 static proof plan is blocked on a complete,
+clean, tool-capable kernel validation tree. Recording host suitability is
+durable Green coordination work that narrows the next proof step without
+editing kernel trees, building kernels, mutating hardware, or communicating
+publicly.
+
+Scope contract: Inspect already-known local authority files and run only
+read-only host inventory commands on candidate validation hosts. Create a
+local-only validation-host note, link it from the DTS v2 static proof plan and
+evidence index, add validator coverage, and complete this cycle record. Do not
+build, install, boot, reboot, power-cycle, capture UART, edit kernel trees,
+stage kernel patches, change services, change claims, send communications,
+open GitHub work items, or public-push as part of this cycle.
+
+Files in scope:
+
+- `task-packets/kernel/a733-dts-v2-static-validation-hosts.md`
+- `task-packets/kernel/a733-dts-v2-static-proof-plan.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits, generated kernel patches, or kernel commits
+- DTB builds, dt-schema checks, checkpatch runs against a generated patch, or
+  maintainer routing refresh
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime DTS proof
+- b4 send, git send-email, Gmail replies, list replies, GitHub issue, PR,
+  comment, or paid third-party call
+- claim-service implementation
+
+Classification gate: Green read-only documentation/status work. The claim
+service is planned-not-active; Cubie boards remain role-unassigned and
+recovery-undrilled. This cycle touches no board, no kernel tree state, and no
+public communication path.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource is claimed.
+
+Claimed resources: documentation and validator files listed in scope only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `git status --short --branch`
+- `python3 tools/validate/a733_authority_check.py`
+- `sed -n '1,220p' runbooks/kernel-a733-mainline-enablement-workflow.md`
+- `sed -n '1,220p' inventory/hardware/cubie-a7s-lab.json`
+- `sed -n '1,220p' task-packets/kernel/a733-supervised-batch-queue.md`
+- `sed -n '1,220p' task-packets/kernel/a733-cycle-ledger.md`
+- `sed -n '1,180p' task-packets/kernel/a733-dts-v2-static-proof-plan.md`
+- `sed -n '1,180p' task-packets/kernel/a733-current-evidence-index.md`
+- `ssh -o BatchMode=yes -o ConnectTimeout=8 strix '<read-only host/tree/tool inventory>'`
+- `ssh -o BatchMode=yes -o ConnectTimeout=8 thinkcentre '<read-only host/tree/tool inventory>'`
+- local Mac-mini read-only host/tree/tool inventory
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-dts-v2-static-validation-hosts.md task-packets/kernel/a733-dts-v2-static-proof-plan.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-dts-v2-static-validation-hosts.md task-packets/kernel/a733-dts-v2-static-proof-plan.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-dts-v2-static-validation-hosts.md`
+  `32f4cb756358b2c0e4a16d16ee952d5377dab8ffea27af5845a04ba1a5d53d96`
+- `task-packets/kernel/a733-dts-v2-static-proof-plan.md`
+  `204c49ca7a5805100b52eedc8387f30b8ed0129c5a169e8790a37269a102b33c`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `057cc936775e7443fcbf9bc3d496095d45a303d757ebb3741cd59aaba57831c6`
+- `tools/validate/a733_authority_check.py`
+  `51c50a7f9b8c0fa8ff85081135731611e908041e86d3b7e72bd9a53444292029`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Validation-host note exists, records Mac-mini, Strix, and
+ThinkCentre suitability without granting build permission, and is linked from
+the static proof plan, evidence index, validator, and this ledger. Authority
+validator, Python compile, JSON parses, and diff whitespace checks pass.
+
+Proof result: Passed. Authority validator, Python compile check, inventory
+JSON parse, workflow-path JSON parse, and diff whitespace check all completed
+successfully. The host-suitability note records Mac-mini, Strix, and
+ThinkCentre status without granting build, hardware, kernel-tree, or send
+permission.
+
+Promotion state: not applicable.
+
+Tree state: This cycle leaves its coordination files dirty for operator review.
+No kernel tree was edited. No build output, kernel commit, kernel staging,
+hardware mutation, public communication, or public-push was performed as part
+of this cycle.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: A733-BATCH-002 remains queue-only.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim exists.
+
+Next-selection pointer: Future DTS v2 work should create or identify an
+isolated clean full Linux worktree on Strix before running static proof.
+Hardware runtime work remains blocked until board roles, drilled recovery, and
+claim service permit it. Public communication remains closed.
+
+Stop confirmation: Continue only after rereading authority files and selecting
+another safe local item.
+
 ### A733-CYCLE-016
 
 Timestamp: 2026-06-13 local

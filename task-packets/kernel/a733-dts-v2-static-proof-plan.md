@@ -41,6 +41,18 @@ This preview only proves that the intended delta can be represented and checked
 with `git apply --check` against the current clean sparse tree. It does not
 prove DTB build, dt-schema, checkpatch, maintainer routing, or runtime behavior.
 
+Host suitability for a future static proof is recorded in:
+
+```text
+task-packets/kernel/a733-dts-v2-static-validation-hosts.md
+```
+
+Current conclusion: Strix is the best observed future static-validation host
+because it has a complete Linux source tree, `aarch64-linux-gnu-gcc`, `make`,
+`dtc`, `scripts/checkpatch.pl`, and `scripts/get_maintainer.pl`. It must still
+use a temporary clean worktree or another intentionally isolated tree because
+the observed Strix mainline tree is dirty and detached.
+
 Use a temporary full kernel worktree or a verified remote build tree for static
 proof. Do not write build outputs into the source tree. Prefer an out-of-tree
 build directory:

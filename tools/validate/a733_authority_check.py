@@ -48,6 +48,9 @@ DTS_V2_LOCAL_DELTA_PLAN = Path("task-packets/kernel/a733-dts-v2-local-delta-plan
 DTS_V2_STATIC_PROOF_PLAN = Path(
     "task-packets/kernel/a733-dts-v2-static-proof-plan.md"
 )
+DTS_V2_STATIC_VALIDATION_HOSTS = Path(
+    "task-packets/kernel/a733-dts-v2-static-validation-hosts.md"
+)
 DTS_V2_UART_PINCTRL_PREVIEW = Path(
     "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch"
 )
@@ -233,6 +236,7 @@ def check_evidence_index(root: Path, failures: list[str]) -> None:
         "task-packets/kernel/a733-dts-v2-local-readiness-checklist.md",
         "task-packets/kernel/a733-dts-v2-local-delta-plan.md",
         "task-packets/kernel/a733-dts-v2-static-proof-plan.md",
+        "task-packets/kernel/a733-dts-v2-static-validation-hosts.md",
         "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch",
         "task-packets/kernel/a733-dts-v2-held-cover-changelog-draft.md",
         "task-packets/kernel/a733-audio-i2s-evidence-sheet.md",
@@ -804,6 +808,9 @@ def check_dts_v2_static_proof_plan(root: Path, failures: list[str]) -> None:
         "aarch64-linux-gnu-gcc",
         "O=/tmp/a733-dts-v2-static-proof",
         "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch",
+        "task-packets/kernel/a733-dts-v2-static-validation-hosts.md",
+        "Strix is the best observed future static-validation host",
+        "temporary clean worktree",
         "git apply --check",
         "make O=\"$O\" ARCH=arm64",
         "CHECK_DTBS=y",
@@ -815,6 +822,43 @@ def check_dts_v2_static_proof_plan(root: Path, failures: list[str]) -> None:
     ]
     for needle in required:
         require_contains("dts-v2-static-proof-plan", text, needle, failures)
+
+
+def check_dts_v2_static_validation_hosts(root: Path, failures: list[str]) -> None:
+    path = root / DTS_V2_STATIC_VALIDATION_HOSTS
+    if not path.exists():
+        failures.append(
+            f"dts-v2-static-validation-hosts: missing {DTS_V2_STATIC_VALIDATION_HOSTS}"
+        )
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("dts-v2-static-validation-hosts", text, failures)
+    required = [
+        "Status: local-only host suitability note",
+        "not a build log",
+        "not permission to mutate hardware or kernel trees",
+        "no kernel tree edits",
+        "no build commands",
+        "enzos-Mac-mini.local",
+        "/Users/enzo/projects/linux-a733-sparse",
+        "abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e",
+        "/Users/enzo/projects/linux-a733",
+        "b1f20d455a600d33999cf893fdf0df8fb2ace538",
+        "no `aarch64-linux-gnu-gcc` on PATH",
+        "strix",
+        "/srv/projects/cubie-a7s-armbian/sources/mainline-linux",
+        "8fde5d1d47f69db6082dfa34500c27f8485389a5",
+        "/usr/bin/aarch64-linux-gnu-gcc",
+        "Strix is the best observed future static-validation host",
+        "dirty and detached",
+        "thinkcentre",
+        "/srv/projects/a733-prereq-stack-current",
+        "no `dtc` on PATH",
+        "temporary full Linux worktree",
+        "no boot, no install, no UART capture, no power action",
+    ]
+    for needle in required:
+        require_contains("dts-v2-static-validation-hosts", text, needle, failures)
 
 
 def check_dts_v2_uart_pinctrl_preview(root: Path, failures: list[str]) -> None:
@@ -1043,6 +1087,7 @@ def run(root: Path) -> dict[str, Any]:
     check_dts_v2_readiness_checklist(root, failures)
     check_dts_v2_local_delta_plan(root, failures)
     check_dts_v2_static_proof_plan(root, failures)
+    check_dts_v2_static_validation_hosts(root, failures)
     check_dts_v2_uart_pinctrl_preview(root, failures)
     check_dts_v2_held_cover_changelog_draft(root, failures)
     check_audio_i2s_evidence(root, failures)
@@ -1072,6 +1117,7 @@ def run(root: Path) -> dict[str, Any]:
         "dts_v2_readiness_checklist": str(DTS_V2_READINESS_CHECKLIST),
         "dts_v2_local_delta_plan": str(DTS_V2_LOCAL_DELTA_PLAN),
         "dts_v2_static_proof_plan": str(DTS_V2_STATIC_PROOF_PLAN),
+        "dts_v2_static_validation_hosts": str(DTS_V2_STATIC_VALIDATION_HOSTS),
         "dts_v2_uart_pinctrl_preview": str(DTS_V2_UART_PINCTRL_PREVIEW),
         "dts_v2_held_cover_changelog_draft": str(DTS_V2_HELD_COVER_CHANGELOG_DRAFT),
         "audio_i2s_evidence": str(AUDIO_I2S_EVIDENCE),

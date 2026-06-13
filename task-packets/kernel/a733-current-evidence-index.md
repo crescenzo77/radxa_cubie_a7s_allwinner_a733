@@ -171,6 +171,10 @@ any future public action.
   static validation. It records that the clean sparse tree is not a complete
   build/checkpatch tree, the full Mac-mini tree remains quarantined for patch
   export, and this host currently lacks `aarch64-linux-gnu-gcc` on PATH.
+- Use `task-packets/kernel/a733-dts-v2-static-validation-hosts.md` before
+  choosing where to run a future DTS v2 static proof. It records that Strix is
+  the best observed proof host only after an isolated clean worktree is created,
+  while Mac mini and ThinkCentre currently have tool/tree gaps.
 - Use `task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch` only
   as a no-send local preview of the UART0 pinctrl move. It may be checked with
   `git apply --check` against the clean sparse tree, but it is not DTB proof,
