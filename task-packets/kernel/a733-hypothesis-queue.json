@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T09:17:07Z",
+  "updated_utc": "2026-06-12T00:35:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 normal IDMAC still stalls before descriptor word 0 is consumed. H143 freshly reproduced the stall on Cubie3 from a clean H020-derived measurement branch: IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, descriptor checksum unchanged, OWN still set after CPU sync. PIO remains diagnostic/lab infrastructure only.",
+  "active_blocker": "A733 SDMMC0 normal IDMAC descriptor-fetch/root-cause remains unresolved. H143 freshly reproduced the clean descriptor-read stall: IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, descriptor checksum unchanged, OWN still set after CPU sync. H149 later produced two Strix UART logs where the controller repeatedly progressed under a lab diagnostic condition labeled CCU 0x02002580 bit 27: CBDA nonzero, BBCR=0x1000, CBCR=0x1000, IDST=0x2, CHDA=0x3f840000, progressed=1. However the attempted bit write read back unchanged (before=0xc3000005 write=0xcb000005 after=0xc3000005), so H149 is evidence captured / interpretation pending, not an upstreamable fix or raw-register patch authorization. PIO remains diagnostic/lab infrastructure only.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -47,11 +47,11 @@
     "summary": "Added task-packets/kernel/a733-h142-reflect-only-handoff-20260611T1020Z.md with the exact Strix b4 send --reflect command and review checklist. Machine gates 01-07 are closed; gate 08 remains open for human reflect review only."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H147",
-    "status": "completed_monitor_no_new_input",
-    "title": "Repeat monitor or process human reflect result",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h147-monitor-20260611T0740Z.json",
-    "result": "No new public/dependency/reflect input. Search found known A733 U-Boot/forum/wiki/RTC material but no Linux MMC reply or source-backed IDMAC descriptor-fetch fix. No runtime patch or send action."
+    "id": "A733-SDMMC-H149",
+    "status": "evidence_captured_interpretation_pending",
+    "title": "IDMAC bus-fabric brute-force evidence consolidation",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h149-idmac-evidence-consolidation-20260612T0016Z.md",
+    "result": "Strix H149 artifacts were preserved in commit 9f317d0. Two passing result JSONs and UART logs show repeated IDMAC progress under the diagnostic condition labeled CCU 0x02002580 bit 27, but raw apply lines read back unchanged. Treat as a real runtime lead requiring register/provenance interpretation, not a kernel patch or DTS/CCU fix."
   },
   "hypotheses": [
     {
@@ -1977,7 +1977,7 @@
       "fail_criteria": "Writes still fall into normal IDMAC before any PIO write proof, or the board fails before root mount.",
       "result": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h087-pio-write-runtime-result-20260611T0300Z.json",
-        "summary": "Completed partial pass. Corrected H087 fed CMD49 through PIO and reached read-only root/userspace. A later rw H088 run showed the real 24-block CMD25 boundary exceeded H087’s <=16-block guard and fell back to IDMAC, reproducing IDST=0x4000 descriptor-read stall."
+        "summary": "Completed partial pass. Corrected H087 fed CMD49 through PIO and reached read-only root/userspace. A later rw H088 run showed the real 24-block CMD25 boundary exceeded H087\u2019s <=16-block guard and fell back to IDMAC, reproducing IDST=0x4000 descriptor-read stall."
       }
     },
     {
@@ -2757,31 +2757,43 @@
     {
       "id": "A733-SDMMC-H149",
       "priority": 149,
-      "status": "queued_unattended_runtime",
-      "title": "Automated one-candidate-per-boot IDMAC bus-fabric brute-force sweep",
-      "question": "Can a clean-boot register candidate make A733 SDMMC0 IDMAC progress beyond CBDA=0/BBCR=0 during the forced CMD18 proof?",
-      "test_cost": "high; unattended Cubie3 UART/power loop, one reboot per candidate",
+      "status": "evidence_captured_interpretation_pending",
+      "title": "IDMAC bus-fabric brute-force sweep evidence captured",
+      "question": "What does the H149 diagnostic condition labeled CCU 0x02002580 bit 27 actually represent, and why does it correlate with A733 SDMMC0 IDMAC descriptor progress despite unchanged readback?",
+      "test_cost": "completed high-cost live hardware run; further reproduction remains high-cost and requires explicit approval",
       "procedure": [
-        "Run on Strix: cd /srv/projects/homelab && scripts/a733-idmac-bruteforce-lab full-auto",
-        "The script patches only the diagnostic kernel tree at /srv/projects/a733-diag-rtc-extosc-orphan, builds Image/DTB, stages to Cubie3 /boot/cthu, and direct-boots candidates over UART.",
-        "Each candidate is applied by kernel cmdline module parameters before the forced A733 CMD18 IDMAC transfer; the UART log is parsed automatically for diag a733-bf result ... progressed=1.",
-        "On pass, stop immediately and record the winning kind/address/bit/log in task-packets/kernel/results/a733-idmac-bruteforce-*.json.",
-        "On failure or interruption, restore/power-cycle Cubie3 and preserve the JSON/log trail."
+        "Do not rerun automatically. First inspect preserved H149 JSON and UART logs in the canonical Mac homelab repo.",
+        "Compare the H143 clean failure against the H149 pass logs around first descriptor-backed request, descriptor ownership, CBDA, BBCR, CBCR, IDST, CHDA, and checksum state.",
+        "Identify A733 register 0x02002580 from public/vendor CCU, clock, security, or fabric material before proposing any behavior patch.",
+        "If a reproduction is explicitly approved later, reproduce only the H149 pass condition and capture before/apply/after readback plus descriptor and IDMAC state.",
+        "Do not port raw register pokes upstream."
       ],
-      "pass_criteria": "A candidate produces cbda != 0 or bbcr > 0 and the result JSON records progressed=1 with UART evidence.",
-      "fail_criteria": "The configured CCU and SMHC candidate ranges complete with no progressed=1 result.",
+      "pass_criteria": "A source-backed explanation identifies what 0x02002580 represents and why H149 progressed, or a narrow approved reproduction confirms the condition with full readback and descriptor evidence.",
+      "fail_criteria": "The evidence remains a correlation without register/source explanation, or future work treats the unchanged-readback bit label as an upstreamable fix.",
       "guardrails": [
+        "H149 artifacts are preserved; do not repeat the broad unattended runtime sweep without explicit approval.",
         "Lab-only diagnostic; do not port raw register pokes upstream.",
+        "Do not convert the H149 label into DTS, CCU, reset, clock, or raw-register changes without source-backed register meaning.",
         "Do not use Cubie1.",
         "Do not touch final DTS/b4 branch.",
-        "One candidate per reboot to keep evidence clean."
+        "One candidate per reboot if a future approved reproduction is run."
       ],
       "artifacts": {
         "script_mac": "/Users/enzo/projects/homelab/scripts/a733-idmac-bruteforce-lab",
         "script_strix": "/srv/projects/homelab/scripts/a733-idmac-bruteforce-lab",
         "diagnostic_branch": "codex/a733-idmac-bruteforce-lab",
         "built_artifact_strix": "/srv/projects/kernel-work/outgoing/a733-idmac-bf-0cf70fb087ca-20260611T091700Z",
-        "diagnostic_commit": "0cf70fb087ca"
+        "diagnostic_commit": "0cf70fb087ca",
+        "canonical_consolidation_note": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h149-idmac-evidence-consolidation-20260612T0016Z.md",
+        "canonical_result_jsons": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-idmac-bruteforce-20260611T*.json",
+        "canonical_uart_logs": "/Users/enzo/projects/homelab/task-packets/kernel/results/h149-uart-logs/*.log",
+        "evidence_commit": "9f317d0",
+        "handoff_commit": "09f50f8"
+      },
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h149-idmac-evidence-consolidation-20260612T0016Z.md",
+        "commit": "9f317d0",
+        "summary": "H149 produced two pass records with winning candidate kind=ccu addr=0x02002580 bit=27 and UART logs showing repeated progressed=1 with nonzero CBDA, BBCR=0x1000, CBCR=0x1000, IDST=0x2, and CHDA=0x3f840000. The same logs show before=0xc3000005 write=0xcb000005 after=0xc3000005, so the bit label is correlation, not a proven writable root cause. No patch, public send, Hermes service change, or further hardware run is authorized by this result."
       }
     }
   ],
