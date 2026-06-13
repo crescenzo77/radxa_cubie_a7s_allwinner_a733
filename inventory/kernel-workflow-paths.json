@@ -13,7 +13,7 @@
       "homelab_repo": "/Users/enzo/projects/homelab",
       "public_repo": "/Users/enzo/projects/Home Lab/cubie-a7s-armbian",
       "patch_export": "/Users/enzo/projects/Home Lab/cubie-a7s-armbian/patches",
-      "kernel_tree": "/Users/enzo/projects/linux-a733",
+      "kernel_tree": "/Users/enzo/projects/linux-a733-sparse",
       "kernel_tree_candidates": [
         "/Users/enzo/projects/linux-a733",
         "/Users/enzo/projects/linux-a733-sparse"

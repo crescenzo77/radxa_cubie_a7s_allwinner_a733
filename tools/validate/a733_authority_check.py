@@ -63,6 +63,9 @@ DTS_V2_STATIC_PROOF_ISOLATED_COPY = Path(
 CLAIM_SERVICE_ACTIVATION_CHECKLIST = Path(
     "task-packets/kernel/a733-claim-service-activation-checklist.md"
 )
+PREREQ_STACK_SELECTION_NOTE = Path(
+    "task-packets/kernel/a733-prereq-stack-selection-note.md"
+)
 DTS_V2_UART_PINCTRL_PREVIEW = Path(
     "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch"
 )
@@ -261,6 +264,7 @@ def check_evidence_index(root: Path, failures: list[str]) -> None:
         "task-packets/kernel/a733-pwm-backlight-fan-evidence-sheet.md",
         "inventory/kernel-checkout-quarantine-20260606.md",
         "inventory/kernel-workflow-paths.json",
+        "task-packets/kernel/a733-prereq-stack-selection-note.md",
     ]
     for needle in required:
         require_contains("evidence-index", text, needle, failures)
@@ -1014,6 +1018,45 @@ def check_claim_service_activation_checklist(root: Path, failures: list[str]) ->
         require_contains("claim-service-activation-checklist", text, needle, failures)
 
 
+def check_prereq_stack_selection_note(root: Path, failures: list[str]) -> None:
+    path = root / PREREQ_STACK_SELECTION_NOTE
+    if not path.exists():
+        failures.append(f"prereq-stack-selection-note: missing {PREREQ_STACK_SELECTION_NOTE}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("prereq-stack-selection-note", text, failures)
+    required = [
+        "Status: local-only read-only selection note",
+        "not a patch",
+        "not a build log",
+        "not proof that the prerequisite stack is complete",
+        "not permission to edit kernel trees",
+        "/Users/enzo/projects/linux-a733-sparse",
+        "/Users/enzo/projects/linux-a733",
+        "inventory/kernel-workflow-paths.json",
+        "candidate/a733-platform-clean-v6",
+        "b1f20d455a60",
+        "status: dirty",
+        "candidate/a733-platform-clean-v4",
+        "abc8d07b0a63",
+        "status: clean",
+        "rtc-binding-missing",
+        "rtc-clock-header-missing",
+        "rtc-ccu-driver-missing",
+        "ccu-binding-clock-inputs-mismatch",
+        "r-ccu-clock-header-missing",
+        "r-ccu-reset-header-missing",
+        "r-ccu-driver-missing",
+        "dtsi-ccu-clock-names-missing-losc-fanout",
+        "dtsi-ccu-clock-input-count",
+        "choose or build a clean A733 prerequisite stack",
+        "Do not stage, stash, reset, clean, commit, or push",
+        "scripts/a733-prereq-stack-audit /Users/enzo/projects/linux-a733-sparse --json",
+    ]
+    for needle in required:
+        require_contains("prereq-stack-selection-note", text, needle, failures)
+
+
 def check_dts_v2_static_proof_preflight(root: Path, failures: list[str]) -> None:
     path = root / DTS_V2_STATIC_PROOF_PREFLIGHT
     if not path.exists():
@@ -1281,6 +1324,7 @@ def run(root: Path) -> dict[str, Any]:
     check_dts_v2_static_proof_command_packet(root, failures)
     check_dts_v2_static_proof_isolated_copy(root, failures)
     check_claim_service_activation_checklist(root, failures)
+    check_prereq_stack_selection_note(root, failures)
     check_dts_v2_static_proof_preflight(root, failures)
     check_dts_v2_uart_pinctrl_preview(root, failures)
     check_dts_v2_held_cover_changelog_draft(root, failures)
@@ -1315,6 +1359,7 @@ def run(root: Path) -> dict[str, Any]:
         "dts_v2_static_proof_command_packet": str(DTS_V2_STATIC_PROOF_COMMAND_PACKET),
         "dts_v2_static_proof_isolated_copy": str(DTS_V2_STATIC_PROOF_ISOLATED_COPY),
         "claim_service_activation_checklist": str(CLAIM_SERVICE_ACTIVATION_CHECKLIST),
+        "prereq_stack_selection_note": str(PREREQ_STACK_SELECTION_NOTE),
         "dts_v2_static_proof_preflight": str(DTS_V2_STATIC_PROOF_PREFLIGHT),
         "dts_v2_uart_pinctrl_preview": str(DTS_V2_UART_PINCTRL_PREVIEW),
         "dts_v2_held_cover_changelog_draft": str(DTS_V2_HELD_COVER_CHANGELOG_DRAFT),

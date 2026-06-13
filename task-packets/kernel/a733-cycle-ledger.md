@@ -397,6 +397,137 @@ validation passes and authority files reveal another clear inconsistency.
 Stop confirmation: Continue to validation, then next safe item if disk state
 permits.
 
+### A733-CYCLE-067
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Align Mac-mini prerequisite-stack selection with the clean sparse
+checkout and record read-only audit evidence.
+
+Selection rationale: Workflow status names the prerequisite stack as the next
+safe action. Read-only inspection shows `/Users/enzo/projects/linux-a733` is
+still dirty with quarantined non-A733 files, while
+`/Users/enzo/projects/linux-a733-sparse` is clean but still lacks the required
+RTC/R-CCU/losc-fanout prerequisite stack pieces. The path registry already says
+to prefer the sparse tree in notes, but its selected `kernel_tree` still points
+at the quarantined full checkout. Aligning that registry removes a false dirty
+tree signal without pretending the prerequisite stack passes.
+
+Scope contract: Update the Mac-mini path registry to select the clean sparse
+checkout; add a local-only prerequisite-stack selection note with read-only
+audit results for both local trees; link it from the evidence index. Do not edit
+kernel trees, stage or clean dirty files, build prerequisite branches, run
+runtime proof, touch hardware, change services, or communicate publicly.
+
+Files in scope:
+
+- `inventory/kernel-workflow-paths.json`
+- `task-packets/kernel/a733-prereq-stack-selection-note.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- modifying `/Users/enzo/projects/linux-a733`
+- modifying `/Users/enzo/projects/linux-a733-sparse`
+- staging, stashing, resetting, cleaning, committing, or pushing kernel trees
+- syncing Strix/ThinkCentre kernel trees
+- static-proof execution, builds, or patch application
+- board role assignment, recovery drill, UART, power, boot, or runtime proof
+- public communication or public kernel pushes
+
+Classification gate: Green coordination and read-only evidence documentation.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource is claimed.
+
+Claimed resources: coordination repo files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `git -C /Users/enzo/projects/linux-a733 status --short --branch`
+- `git -C /Users/enzo/projects/linux-a733 rev-parse --short=12 HEAD`
+- `git -C /Users/enzo/projects/linux-a733 branch --show-current`
+- `git -C /Users/enzo/projects/linux-a733-sparse status --short --branch`
+- `git -C /Users/enzo/projects/linux-a733-sparse rev-parse --short=12 HEAD`
+- `git -C /Users/enzo/projects/linux-a733-sparse branch --show-current`
+- `scripts/a733-prereq-stack-audit /Users/enzo/projects/linux-a733 --json`
+- `scripts/a733-prereq-stack-audit /Users/enzo/projects/linux-a733-sparse --json`
+- `sed -n '1,220p' inventory/kernel-workflow-paths.json`
+- `sed -n '1,220p' inventory/kernel-checkout-quarantine-20260606.md`
+- `sed -n '1,220p' tools/validate/a733_prereq_stack_audit.py`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `scripts/kernel-workflow-status --a733-prereq-stack-status`
+- `scripts/kernel-workflow-status --json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(json.dumps(d["a733_prereq_stack"], indent=2)); print(d["path_registry"]["paths"]["kernel_tree"]["selected"])'`
+- `rg -n "kernel-workflow-paths|linux-a733|linux-a733-sparse|a733-current-evidence|kernel_checkout_quarantine|def check_kernel_workflow_paths|def check_evidence_index" tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `git diff --check -- inventory/kernel-workflow-paths.json task-packets/kernel/a733-prereq-stack-selection-note.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 inventory/kernel-workflow-paths.json task-packets/kernel/a733-prereq-stack-selection-note.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+
+Artifacts and hashes:
+
+```text
+8b565f40f49304754ee0dde448d563ffd22769db9fe39e95bf2f303b8ff29a56  inventory/kernel-workflow-paths.json
+90c416bf0de860ce4ccaa0c4c7f9be323be03309b23fe23c1a2d7d568b2a7d43  task-packets/kernel/a733-prereq-stack-selection-note.md
+ea7a09e3236f9fdc28e310f024a3a587b42369e0afa70baf2e9b65bffd2c594e  task-packets/kernel/a733-current-evidence-index.md
+bede99eeed28b483ba6acc4f4d58f5609e7e1c70a3c12ebec624720e00a5f547  tools/validate/a733_authority_check.py
+```
+
+Proof definition: JSON validates; authority validation passes; workflow status
+audits the sparse tree as selected on Mac mini; sparse tree is clean but
+prerequisite stack still fails for recorded missing RTC/R-CCU/losc-fanout
+pieces.
+
+Proof result: Passed. Authority validation passed. The Mac-mini path registry
+now selects `/Users/enzo/projects/linux-a733-sparse`; workflow status audits
+that sparse tree. The sparse tree is clean at branch
+`candidate/a733-platform-clean-v4`, head `abc8d07b0a63`, and still correctly
+fails the prerequisite-stack audit for the recorded missing
+RTC/R-CCU/losc-fanout pieces. The full tree remains dirty/quarantined at branch
+`candidate/a733-platform-clean-v6`, head `b1f20d455a60`.
+
+Promotion state: not applicable.
+
+Tree state: Coordination files are dirty until this cycle is committed and
+backed up. No kernel tree, hardware, service, Hermes, Telegram, runtime board,
+or public communication state was changed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none for this coordination cycle. A complete clean A733
+prerequisite stack is still missing.
+
+Release result: not applicable; no central claim exists.
+
+Next-selection pointer: Continue with either a fresh RFC overlap recheck or a
+separate approved clean-prerequisite-stack construction/sync plan. Do not
+regenerate candidate DTS export until the prerequisite-stack audit passes.
+
+Stop confirmation: Stop this cycle after final validation, local origin backup,
+GitHub backup, and summary.
+
 ### A733-CYCLE-066
 
 Timestamp: 2026-06-13 local

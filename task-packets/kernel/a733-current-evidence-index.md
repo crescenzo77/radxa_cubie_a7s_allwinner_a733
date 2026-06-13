@@ -214,6 +214,10 @@ any future public action.
   `/Users/enzo/projects/linux-a733` checkout has known non-A733 dirty files;
   prefer `/Users/enzo/projects/linux-a733-sparse` for clean validation/review
   while that quarantine remains active.
+- Use `task-packets/kernel/a733-prereq-stack-selection-note.md` before
+  interpreting Mac-mini prerequisite-stack status. It records that the sparse
+  checkout is clean and selected for local read-only work, but still fails the
+  prerequisite-stack audit for missing RTC/R-CCU/losc-fanout pieces.
 - If patch text is regenerated locally, record the exact base, head, patch
   directory, validation commands, and source-equivalence target.
 - If a hardware item looks necessary, queue it in
