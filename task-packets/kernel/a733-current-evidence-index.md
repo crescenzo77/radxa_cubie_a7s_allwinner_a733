@@ -181,6 +181,9 @@ any future public action.
   records that Strix's observed A733 DTS/DTSI prerequisite files were
   untracked, so a future proof must preserve those files in the isolated tree
   or use a committed prerequisite branch before recording a pass.
+- Use `task-packets/kernel/a733-dts-v2-static-proof-preflight.md` before
+  choosing the DTS v2 static proof isolation method. It confirms the required
+  Strix A733 DTS/DTSI files are still untracked and records their hashes.
 - Use `task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch` only
   as a no-send local preview of the UART0 pinctrl move. It may be checked with
   `git apply --check` against the clean sparse tree, but it is not DTB proof,

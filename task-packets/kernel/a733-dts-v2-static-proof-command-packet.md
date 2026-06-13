@@ -25,6 +25,7 @@ Proof planning files:
 - `task-packets/kernel/a733-dts-v2-local-delta-plan.md`
 - `task-packets/kernel/a733-dts-v2-static-proof-plan.md`
 - `task-packets/kernel/a733-dts-v2-static-validation-hosts.md`
+- `task-packets/kernel/a733-dts-v2-static-proof-preflight.md`
 - `task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch`
 
 Observed best host:
@@ -41,6 +42,11 @@ Known prerequisite caveat: read-only inventory observed
 in the Strix source tree. A detached worktree at
 `8fde5d1d47f69db6082dfa34500c27f8485389a5` is therefore not sufficient unless
 a future preflight proves those files are committed or otherwise present in the
+isolated proof tree.
+
+Latest preflight result: the A733 DTS/DTSI prerequisite files are still
+untracked on Strix, so a future static proof must not use a plain detached
+worktree unless those files are first committed or otherwise preserved in the
 isolated proof tree.
 
 ## Preflight Checks

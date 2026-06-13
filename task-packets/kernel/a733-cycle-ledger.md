@@ -4466,6 +4466,142 @@ blocked until board roles, drilled recovery, and claim service permit it.
 
 Stop confirmation: Stop after final validation, GitHub backup, and summary.
 
+### A733-CYCLE-059
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Run read-only Strix DTS v2 static-proof preflight.
+
+Selection rationale: The current next proof blocker is whether Strix's A733
+prerequisite DTS/DTSI files are committed or only present as untracked files.
+Read-only preflight is durable Green work because it determines which future
+isolated proof method is valid without creating worktrees, copying kernel
+trees, running builds, touching hardware, or communicating publicly.
+
+Scope contract: Run read-only Strix commands that inspect source tree status,
+required prerequisite file presence, tool paths, and helper-script presence.
+Create a local preflight note, link it from the evidence index, proof plan,
+command packet, and validator, complete this ledger entry, validate, then
+commit and push the coordination backup branch. Do not create worktrees, copy
+kernel trees, apply patches, run builds, mutate hardware, or send kernel
+communications.
+
+Files in scope:
+
+- `task-packets/kernel/a733-dts-v2-static-proof-preflight.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `task-packets/kernel/a733-dts-v2-static-proof-plan.md`
+- `task-packets/kernel/a733-dts-v2-static-proof-command-packet.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- creating, copying, or deleting kernel worktrees
+- applying patches to kernel trees
+- DTB builds, dt-schema checks, checkpatch, or get-maintainer execution
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime DTS proof
+- b4 send, git send-email, Gmail replies, list replies, GitHub issue, PR, or
+  comment
+
+Classification gate: Green read-only preflight plus
+operator-goal-authorized GitHub backup to the backup branch.
+
+Permission envelope: Green for local docs and read-only remote inspection;
+GitHub backup permitted by the active goal's periodic-backup requirement.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource is claimed.
+
+Claimed resources: documentation and validator files listed in scope only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `git status --short --branch`
+- `python3 tools/validate/a733_authority_check.py`
+- `git log --oneline -5`
+- `sed -n '1,260p' runbooks/kernel-a733-mainline-enablement-workflow.md`
+- `sed -n '1,240p' task-packets/kernel/a733-current-evidence-index.md`
+- `sed -n '1,220p' task-packets/kernel/a733-dts-v2-static-proof-command-packet.md`
+- `ssh -o BatchMode=yes -o ConnectTimeout=8 strix '<read-only source tree, file, and tool preflight>'`
+- `sed -n '780,925p' tools/validate/a733_authority_check.py`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-dts-v2-static-proof-preflight.md task-packets/kernel/a733-current-evidence-index.md task-packets/kernel/a733-dts-v2-static-proof-plan.md task-packets/kernel/a733-dts-v2-static-proof-command-packet.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-dts-v2-static-proof-preflight.md task-packets/kernel/a733-current-evidence-index.md task-packets/kernel/a733-dts-v2-static-proof-plan.md task-packets/kernel/a733-dts-v2-static-proof-command-packet.md tools/validate/a733_authority_check.py`
+- pending backup commands: `git add`, `git commit`, and `git push github-backup main:homelab-backup-main`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-dts-v2-static-proof-preflight.md`
+  `c673c6548c337578cdac6a772a4cd65b50a3e38fb0a4008a4075e2e78b202f2a`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `af819b128c0dd98c51177dfe99b9bd528b530f1535c939779de89501e6697e54`
+- `task-packets/kernel/a733-dts-v2-static-proof-plan.md`
+  `5956ffe521647991649ea82b55b200bdd1c873d7c096ec30b80c4357fcde4dcc`
+- `task-packets/kernel/a733-dts-v2-static-proof-command-packet.md`
+  `d208e8736e4676b502842e49696f220c01f57fc93668732a966d76105c4e0c1f`
+- `tools/validate/a733_authority_check.py`
+  `ecb10fc05151123898a15438b83922e04625f86dba265dc54f995bb3c5a6399f`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Preflight note records Strix host, source tree status,
+required file status, tool paths, and whether future proof should use a
+committed worktree or an isolated copy preserving untracked A733 prerequisite
+files. Authority validation and diff whitespace checks pass; backup push
+succeeds.
+
+Proof result: Passed. Read-only Strix preflight confirmed that
+`sun60i-a733.dtsi` and `sun60i-a733-cubie-a7s.dts` are still untracked in the
+observed Strix source tree, while required tool paths and helper scripts are
+present. Authority validator, Python compile check, inventory JSON parse,
+workflow-path JSON parse, and diff whitespace check all completed
+successfully.
+
+Promotion state: not applicable.
+
+Tree state: Coordination files remain dirty until the backup commit is
+completed. No kernel tree was edited. No worktree was created. No kernel tree
+was copied. No build output, hardware mutation, or kernel public communication
+was performed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: A733-BATCH-002 remains queue-only.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim exists.
+
+Next-selection pointer: Future local-only static proof must use either a
+committed prerequisite branch or a contracted isolated copy that preserves the
+untracked A733 prerequisite files. A plain detached worktree at
+`8fde5d1d47f69db6082dfa34500c27f8485389a5` remains blocked for proof.
+
+Stop confirmation: Stop after final validation, GitHub backup, and summary.
+
 ### A733-CYCLE-016
 
 Timestamp: 2026-06-13 local
