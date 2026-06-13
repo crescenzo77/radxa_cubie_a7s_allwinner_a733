@@ -3,18 +3,26 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-"${repo_root}/scripts/kernel-token-offload" status --json | python3 -c '
+# The status command exits non-zero when any lane (including optional ones)
+# is down; capture its JSON and let the policy below decide pass/fail.
+status_json="$("${repo_root}/scripts/kernel-token-offload" status --json || true)"
+
+printf '%s' "${status_json}" | python3 -c '
 import json
 import sys
 
 data = json.load(sys.stdin)
-required = {"amd-fast", "amd-research", "strix-review"}
+required = {"amd-research", "strix-review"}
+# amd-fast is a triage lane documented as "if endpoint is running"; report it
+# informationally but do not fail the gate when it is down.
+optional = {"amd-fast"}
 targets = {item.get("name"): item for item in data.get("targets", [])}
 missing = sorted(required.difference(targets))
 unhealthy = sorted(name for name in required.intersection(targets) if not targets[name].get("ok"))
+optional_down = sorted(name for name in optional.intersection(targets) if not targets[name].get("ok"))
 cortex = data.get("cortex", {})
 
-if missing or unhealthy or not cortex.get("ok") or not data.get("ok"):
+if missing or unhealthy or not cortex.get("ok"):
     print("ok=no")
     if missing:
         print("missing_targets=" + ",".join(missing))
@@ -26,5 +34,7 @@ if missing or unhealthy or not cortex.get("ok") or not data.get("ok"):
 
 print("ok=yes")
 print("targets=" + ",".join(sorted(required)))
+if optional_down:
+    print("optional_down=" + ",".join(optional_down))
 print("cortex=qdrant")
 '

@@ -411,7 +411,7 @@ def command_status(args: argparse.Namespace) -> int:
             data = remote_models(name)
             item["models"] = [model.get("id") for model in data.get("data", []) if model.get("id")]
             item["ok"] = True
-        except Exception as exc:
+        except (Exception, SystemExit) as exc:
             item["error"] = str(exc)
             ok = False
         targets.append(item)
@@ -433,7 +433,7 @@ def command_status(args: argparse.Namespace) -> int:
             "count": count,
             "error": "",
         }
-    except Exception as exc:
+    except (Exception, SystemExit) as exc:
         cortex = {
             "name": "qdrant",
             "host": THINKCENTRE_HOST,

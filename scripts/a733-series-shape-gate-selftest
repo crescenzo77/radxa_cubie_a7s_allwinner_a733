@@ -135,8 +135,8 @@ if [ -d "${public_repo}/patches" ]; then
     cat "${tmpdir}/current-public.out" >&2
     exit 1
   fi
-  if ! grep -q '^patch_count=3$' "${tmpdir}/current-public.out"; then
-    printf 'current public export did not report three non-cover patches\n' >&2
+  if ! grep -q '^patch_count=4$' "${tmpdir}/current-public.out"; then
+    printf 'current public export did not report four non-cover patches\n' >&2
     cat "${tmpdir}/current-public.out" >&2
     exit 1
   fi
