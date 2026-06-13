@@ -31,6 +31,10 @@ PRIVATE_ORIGIN_REMOTES = [
     for item in os.environ.get("KERNEL_PRIVATE_ORIGIN_REMOTES", "origin,mac-mini").split(",")
     if item.strip()
 ]
+PRIVATE_GITHUB_REMOTE_SPECS_RAW = os.environ.get(
+    "KERNEL_PRIVATE_GITHUB_REMOTE_SPECS",
+    "github:main,github-backup:homelab-backup-main",
+)
 PRIVATE_GITHUB_REMOTE = os.environ.get("KERNEL_PRIVATE_GITHUB_REMOTE", "github")
 OPERATOR_BRIEF = "scripts/cubie-corrected-root-operator-brief"
 PATCH_PREP_CHECKLIST = "scripts/a733-patch-prep-checklist"
@@ -66,12 +70,30 @@ def run(
     }
 
 
-def git_status(repo: Path, remote: str) -> dict[str, Any]:
+def parse_remote_specs(raw: str, default_branch: str = "main") -> list[tuple[str, str]]:
+    specs: list[tuple[str, str]] = []
+    for item in raw.split(","):
+        item = item.strip()
+        if not item:
+            continue
+        if ":" in item:
+            remote, branch = item.split(":", 1)
+            specs.append((remote.strip(), branch.strip() or default_branch))
+        else:
+            specs.append((item, default_branch))
+    return specs
+
+
+PRIVATE_GITHUB_REMOTE_SPECS = parse_remote_specs(PRIVATE_GITHUB_REMOTE_SPECS_RAW)
+
+
+def git_status(repo: Path, remote: str, branch: str = "main") -> dict[str, Any]:
     status = run(["git", "status", "--short"], cwd=repo)
     head = run(["git", "rev-parse", "--short", "HEAD"], cwd=repo)
     full_head = run(["git", "rev-parse", "HEAD"], cwd=repo)
     remote_url = run(["git", "remote", "get-url", remote], cwd=repo)
-    remote_head = run(["git", "ls-remote", remote, "refs/heads/main"], cwd=repo, timeout=20)
+    remote_ref = f"refs/heads/{branch}"
+    remote_head = run(["git", "ls-remote", remote, remote_ref], cwd=repo, timeout=20)
     remote_sha = ""
     if remote_head["ok"] and remote_head["stdout"]:
         remote_sha = remote_head["stdout"].split()[0]
@@ -83,6 +105,8 @@ def git_status(repo: Path, remote: str) -> dict[str, Any]:
         "head_short": head["stdout"] if head["ok"] else "",
         "head": full_head["stdout"] if full_head["ok"] else "",
         "remote": remote,
+        "remote_branch": branch,
+        "remote_ref": remote_ref,
         "remote_url": url,
         "remote_is_github": "github.com" in url.lower(),
         "remote_head": remote_sha,
@@ -99,6 +123,8 @@ def missing_git_status(repo: Path, remote: str) -> dict[str, Any]:
         "head_short": "",
         "head": "",
         "remote": remote,
+        "remote_branch": "main",
+        "remote_ref": "refs/heads/main",
         "remote_url": "",
         "remote_is_github": False,
         "remote_head": "",
@@ -116,6 +142,22 @@ def git_status_any(repo: Path, remotes: list[str]) -> dict[str, Any]:
         if status.get("remote_url"):
             return status
     return fallback or missing_git_status(repo, ",".join(remotes) or "origin")
+
+
+def git_status_any_spec(repo: Path, specs: list[tuple[str, str]]) -> dict[str, Any]:
+    fallback: dict[str, Any] | None = None
+    for remote, branch in specs:
+        status = git_status(repo, remote, branch)
+        if fallback is None:
+            fallback = status
+        if status.get("remote_matches") and status.get("remote_is_github"):
+            return status
+        if status.get("remote_url") and fallback is not None and not fallback.get("remote_url"):
+            fallback = status
+    return fallback or missing_git_status(
+        repo,
+        ",".join(f"{remote}:{branch}" for remote, branch in specs) or "github:main",
+    )
 
 
 def command_json(
@@ -624,7 +666,8 @@ def workflow_backup_summary(data: dict[str, Any]) -> dict[str, Any]:
         "private_origin_backed": bool(homelab.get("remote_matches")),
         "private_github_backed": private_github_backed,
         "private_remote_url": homelab.get("remote_url") or "",
-        "private_github_remote": PRIVATE_GITHUB_REMOTE,
+        "private_github_remote": homelab_github.get("remote") or PRIVATE_GITHUB_REMOTE,
+        "private_github_branch": homelab_github.get("remote_branch") or "main",
         "private_github_remote_url": homelab_github.get("remote_url") or "",
         "public_github_backed": bool(public_repo.get("remote_matches") and public_repo.get("remote_is_github")),
         "public_remote_url": public_repo.get("remote_url") or "",
@@ -978,7 +1021,7 @@ def build_status(args: argparse.Namespace) -> dict[str, Any]:
     )
     data = {
         "homelab": git_status_any(REPO_ROOT, PRIVATE_ORIGIN_REMOTES),
-        "homelab_github": git_status(REPO_ROOT, PRIVATE_GITHUB_REMOTE),
+        "homelab_github": git_status_any_spec(REPO_ROOT, PRIVATE_GITHUB_REMOTE_SPECS),
         "path_registry": WORKFLOW_ENV,
         "public_repo": git_status(PUBLIC_REPO, "public")
         if PUBLIC_REPO.exists()

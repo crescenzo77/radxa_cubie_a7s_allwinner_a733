@@ -397,6 +397,132 @@ validation passes and authority files reveal another clear inconsistency.
 Stop confirmation: Continue to validation, then next safe item if disk state
 permits.
 
+### A733-CYCLE-065
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Teach workflow status to recognize the configured GitHub backup
+remote and branch.
+
+Selection rationale: The post-backup status script reports
+`private_github_backed=no` because it only checks a remote named `github` on
+branch `main`, while the active backup path for this project is
+`github-backup` branch `homelab-backup-main`. Fixing this false blocker makes
+future workflow status and dispatcher waiting actions match the current backup
+practice without touching kernel trees, hardware, services, or public kernel
+communication.
+
+Scope contract: Update `tools/inventory/kernel_workflow_status.py` so private
+GitHub backup status can check configured remote/branch specs, including
+`github-backup:homelab-backup-main`. Validate with the status script, authority
+validator, py_compile, and diff checks. Do not add remotes, change remotes,
+push public kernel branches, touch hardware, edit kernel trees, change services,
+or change Hermes behavior.
+
+Files in scope:
+
+- `tools/inventory/kernel_workflow_status.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- git remote changes
+- public kernel repository pushes
+- public communication
+- service, cron, model routing, Hermes, or Telegram changes
+- board role assignment, recovery drill, UART, power, boot, or runtime proof
+- kernel tree edits or static-proof execution
+
+Classification gate: Green workflow tooling fix.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource is touched.
+
+Claimed resources: coordination repo tooling and cycle ledger only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `ls -la scripts | sed -n '1,200p'`
+- `rg -n "kernel-workflow-status|kernel-patch-export-status|kernel-workflow-env|cubie_runtime_gate|a733_prereq_stack" scripts tools runbooks task-packets/kernel | sed -n '1,220p'`
+- `scripts/kernel-workflow-env`
+- `scripts/kernel-workflow-status --json`
+- `scripts/kernel-patch-export-status --json`
+- `sed -n '600,720p' tools/inventory/kernel_workflow_status.py`
+- `sed -n '900,1040p' tools/inventory/kernel_workflow_status.py`
+- `sed -n '1,220p' scripts/kernel-workflow-status`
+- `git remote -v`
+- `scripts/kernel-workflow-status --workflow-backup-status`
+- `scripts/kernel-workflow-status --json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(json.dumps(d["workflow_backup"], indent=2))'`
+- `sed -n '1,90p' tools/inventory/kernel_workflow_status.py`
+- `rg -n "PRIVATE_GITHUB_REMOTE|PRIVATE_ORIGIN_REMOTES|git_status_any|def git_status" tools/inventory/kernel_workflow_status.py`
+- `sed -n '90,130p' tools/inventory/kernel_workflow_status.py`
+- `python3 -m py_compile tools/inventory/kernel_workflow_status.py && scripts/kernel-workflow-status --workflow-backup-status && scripts/kernel-workflow-status --json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(json.dumps(d["workflow_backup"], indent=2)); print(json.dumps(d["homelab_github"], indent=2))'`
+- `python3 tools/validate/a733_authority_check.py && git diff --check -- tools/inventory/kernel_workflow_status.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 tools/inventory/kernel_workflow_status.py task-packets/kernel/a733-cycle-ledger.md`
+- `git diff -- tools/inventory/kernel_workflow_status.py task-packets/kernel/a733-cycle-ledger.md | sed -n '1,320p'`
+
+Artifacts and hashes:
+
+```text
+78e50558a9dfd8849e4142221e1433ce33c0be079a85fef849274719243f4818  tools/inventory/kernel_workflow_status.py
+```
+
+Proof definition: `scripts/kernel-workflow-status --workflow-backup-status`
+recognizes `github-backup` and reports the current GitHub backup branch when it
+matches HEAD; authority validation and Python compile pass.
+
+Proof result: Passed. Before the change,
+`scripts/kernel-workflow-status --workflow-backup-status` reported
+`private_github_backed=no` and `private_github_remote=github` even though
+`github-backup` existed. After the change, the status script reported
+`private_github_backed=yes`, `private_github_remote=github-backup`,
+`private_github_branch=homelab-backup-main`, and remote head
+`03fc0291086bf4e67daf2e1d9f00d46d60767219`, matching local HEAD at the time of
+the proof. `python3 -m py_compile tools/inventory/kernel_workflow_status.py`,
+authority validation, and `git diff --check` passed.
+
+Promotion state: not applicable.
+
+Tree state: Coordination files are dirty until this cycle is committed and
+backed up. No kernel tree, hardware, service, Hermes, Telegram, runtime board,
+or public communication state was changed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none for this tooling cycle. The status script still
+correctly reports the local `origin` mirror and public kernel GitHub backup as
+separate backup concerns.
+
+Release result: not applicable; no central claim exists.
+
+Next-selection pointer: Commit and push this tooling fix to the GitHub backup
+branch, then re-run workflow backup status. If it still asks for the private
+local `origin` backup, treat that as a separate local-mirror backup item.
+
+Stop confirmation: Stop this cycle after final validation, GitHub backup, and
+summary.
+
 ### A733-CYCLE-064
 
 Timestamp: 2026-06-13 local
