@@ -128,6 +128,9 @@ any future public action.
 - Use `task-packets/kernel/a733-ethernet-gmac-evidence-sheet.md` before any
   Ethernet/GMAC source inventory, validation planning, or runtime-proof queue
   refinement.
+- Use `task-packets/kernel/a733-usb-otg-fel-evidence-sheet.md` before any
+  USB, USB-C, OTG, or FEL source inventory, validation planning, or
+  runtime/recovery-proof queue refinement.
 - If patch text is regenerated locally, record the exact base, head, patch
   directory, validation commands, and source-equivalence target.
 - If a hardware item looks necessary, queue it in
@@ -140,6 +143,6 @@ any future public action.
 - sending or resending any public communication
 - asserting a fresh public archive state
 - assigning burn/proving/reference board roles
-- proving Ethernet, PCIe, USB, Wi-Fi, Bluetooth, display, media, NPU, RISC-V,
-  eMMC, thermal, cpufreq, fan, or other peripheral support
+- proving Ethernet, PCIe, USB, USB-C, OTG, FEL, Wi-Fi, Bluetooth, display,
+  media, NPU, RISC-V, eMMC, thermal, cpufreq, fan, or other peripheral support
 - bypassing the communication ledger, hardware queue, or workflow

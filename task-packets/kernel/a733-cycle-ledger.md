@@ -397,6 +397,127 @@ validation passes and authority files reveal another clear inconsistency.
 Stop confirmation: Continue to validation, then next safe item if disk state
 permits.
 
+### A733-CYCLE-027
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Wire the USB/OTG/FEL evidence sheet into the evidence index and
+authority validator.
+
+Selection rationale: This is the next Green consistency item after creating
+the USB/OTG/FEL evidence sheet. It improves local reviewability and prevents
+the new sheet from becoming loose documentation outside the authority-check
+loop.
+
+Scope contract: Update only
+`task-packets/kernel/a733-current-evidence-index.md`,
+`tools/validate/a733_authority_check.py`, and this ledger record. Do not edit
+kernel trees, run hardware probes, assign board roles, enter FEL, send public
+communication, or push public changes.
+
+Files in scope:
+
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- board DTS USB enablement
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, USB
+  device probe, FEL entry, or SSH probe
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication, public pushes, or paid third-party calls
+
+Classification gate: Green local documentation/validation consistency work.
+Claim service is planned-not-active, all boards remain unassigned, recovery is
+not drilled for burn autonomy, and no contended hardware or kernel-tree
+resource is touched.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: evidence index, authority validator, and cycle ledger
+documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `1d3278c85f7e7417c5286bd7c9898eb2180080d1f040ae7092c0a277741fd0d6`
+- `tools/validate/a733_authority_check.py`
+  `156e3ec1bd20de2d9a009293fc27a012af06d766b3fe5bda42e9290a9d9a825a`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Evidence index points to
+`task-packets/kernel/a733-usb-otg-fel-evidence-sheet.md`; authority validator
+requires that sheet and checks USB2, USB3, USB-C, OTG, Type-C, role switch,
+VBUS, PHY, FEL, BootROM, `sunxi-fel`, `xfel`, A733-BATCH-009,
+A733-BATCH-012, A733-COMM-009, no-USB-enable, no-FEL-entry, and read-only
+anchors. Validator passes, inventory JSON parses, Python compiles, and touched
+files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: Evidence index, authority validator, and cycle ledger are dirty
+after this resumed local-only cycle. The previous A733 authority/evidence set
+was committed and pushed to the configured `origin` remote before this cycle.
+Kernel trees were not touched. Broader unrelated dirty/untracked files remain
+ignored.
+
+Communication ledger IDs: A733-COMM-009 as held future USB/USB-C communication
+context.
+
+Hardware lane queue IDs: A733-BATCH-009 and A733-BATCH-012 as role-gated
+future runtime/recovery-proof context.
+
+Blocked/aborted reason: none. Note: this cycle was selected and executed after
+the required post-commit authority recheck, then recorded here; no hardware or
+public side effect occurred.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with source-only USB topology checklist or
+eMMC/SDMMC evidence sheet. Hardware runtime work remains blocked until board
+roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded validator/index consistency item.
+
 ### A733-CYCLE-016
 
 Timestamp: 2026-06-13 local

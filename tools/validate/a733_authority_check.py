@@ -23,6 +23,7 @@ EVIDENCE_INDEX = Path("task-packets/kernel/a733-current-evidence-index.md")
 REGENERATION_CHECKLIST = Path("task-packets/kernel/a733-local-regeneration-checklist.md")
 PERIPHERAL_EVIDENCE_MAP = Path("task-packets/kernel/a733-peripheral-evidence-map.md")
 ETHERNET_GMAC_EVIDENCE = Path("task-packets/kernel/a733-ethernet-gmac-evidence-sheet.md")
+USB_OTG_FEL_EVIDENCE = Path("task-packets/kernel/a733-usb-otg-fel-evidence-sheet.md")
 
 REQUIRED_COMM_IDS = [f"A733-COMM-{number:03d}" for number in range(1, 17)]
 REQUIRED_BATCH_IDS = [f"A733-BATCH-{number:03d}" for number in range(0, 13)]
@@ -171,6 +172,7 @@ def check_evidence_index(root: Path, failures: list[str]) -> None:
         "task-packets/kernel/a733-local-regeneration-checklist.md",
         "task-packets/kernel/a733-peripheral-evidence-map.md",
         "task-packets/kernel/a733-ethernet-gmac-evidence-sheet.md",
+        "task-packets/kernel/a733-usb-otg-fel-evidence-sheet.md",
     ]
     for needle in required:
         require_contains("evidence-index", text, needle, failures)
@@ -269,6 +271,38 @@ def check_ethernet_gmac_evidence(root: Path, failures: list[str]) -> None:
         require_contains("ethernet-gmac-evidence", text, needle, failures)
 
 
+def check_usb_otg_fel_evidence(root: Path, failures: list[str]) -> None:
+    path = root / USB_OTG_FEL_EVIDENCE
+    if not path.exists():
+        failures.append(f"usb-otg-fel-evidence: missing {USB_OTG_FEL_EVIDENCE}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("usb-otg-fel-evidence", text, failures)
+    required = [
+        "Status: local-only source-backed evidence sheet",
+        "Do not enable USB",
+        "Do not enter FEL",
+        "USB2",
+        "USB3",
+        "USB-C",
+        "OTG",
+        "Type-C",
+        "role switch",
+        "VBUS",
+        "PHY",
+        "FEL",
+        "BootROM",
+        "sunxi-fel",
+        "xfel",
+        "A733-BATCH-009",
+        "A733-BATCH-012",
+        "A733-COMM-009",
+        "read only",
+    ]
+    for needle in required:
+        require_contains("usb-otg-fel-evidence", text, needle, failures)
+
+
 def run(root: Path) -> dict[str, Any]:
     failures: list[str] = []
     texts: dict[str, str] = {}
@@ -297,6 +331,7 @@ def run(root: Path) -> dict[str, Any]:
     check_regeneration_checklist(root, failures)
     check_peripheral_evidence_map(root, failures)
     check_ethernet_gmac_evidence(root, failures)
+    check_usb_otg_fel_evidence(root, failures)
 
     status = "PASS" if not failures else "FAIL"
     return {
@@ -307,6 +342,7 @@ def run(root: Path) -> dict[str, Any]:
         "regeneration_checklist": str(REGENERATION_CHECKLIST),
         "peripheral_evidence_map": str(PERIPHERAL_EVIDENCE_MAP),
         "ethernet_gmac_evidence": str(ETHERNET_GMAC_EVIDENCE),
+        "usb_otg_fel_evidence": str(USB_OTG_FEL_EVIDENCE),
         "board_count": len(inventory.get("boards", [])) if isinstance(inventory, dict) else None,
         "failures": failures,
         "failure_count": len(failures),
