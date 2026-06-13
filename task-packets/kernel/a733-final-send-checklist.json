@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-11T10:10:00Z",
+  "updated_utc": "2026-06-13T09:50:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "status": "not_send_ready",
+  "status": "v1_public_sent_indexed",
   "purpose": "Executable checklist for turning the A733/Cubie A7S review snapshot into a human-approved b4 reflect candidate.",
   "hard_guardrails": [
     "Do not send from patches/ directly.",
@@ -27,10 +27,10 @@
       "pass": "Branch is named, non-detached, contains exactly the final four A733 commits, and has no unrelated dirty files.",
       "evidence": {
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h135-final-branch-gate01-20260611T0910Z.json",
-        "branch": "codex/final/a733-dts-v1",
+        "branch": "a733-dts-v1-public-ready",
         "worktree": "/srv/projects/kernel-work/final/a733-dts-v1",
         "base": "1626ce5bc85bd3faaa92877d1b65c924d86a9546",
-        "head": "1d2642221795d611d607b153c119218e496856a8",
+        "head": "0356b43f505bbb3ec6a7679a49748750b37fe099",
         "commits_above_base_including_b4_cover": 5,
         "patch_commits": 4
       }
@@ -96,20 +96,71 @@
       "id": "gate-07-b4-final-gate",
       "status": "closed",
       "command": "Run scripts/kernel-b4-final-gate --repo FINAL_BRANCH_WORKTREE.",
-      "pass": "Gate passes with no open b4 metadata/preflight blockers.",
+      "pass": "Gate passes with no open b4 metadata/preflight blockers and can render send-preview messages with b4 send -o.",
       "evidence": {
-        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/results/a733-h141-b4-final-gate-20260611T1010Z.json",
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h262-dts-public-ready-branch-send-preview-pass-20260613T0931Z.md",
         "worktree": "/srv/projects/kernel-work/final/a733-dts-v1",
-        "head": "1d2642221795d611d607b153c119218e496856a8",
-        "b4_final_gate": "PASS"
+        "head": "0356b43f505bbb3ec6a7679a49748750b37fe099",
+        "b4_final_gate": "PASS",
+        "send_preview_render": "PASS",
+        "send_preview_hygiene": "PASS"
       }
     },
     {
       "id": "gate-08-reflect-only",
-      "status": "open",
-      "command": "Human runs b4 send --reflect only after gates 01-07 pass.",
-      "pass": "Reflect copy is received and reviewed by the human; no real list send before this."
+      "status": "closed",
+      "command": "b4 send --reflect was run after gates 01-07 passed; reflected mailbox copies were received and reviewed.",
+      "pass": "Reflect copy is received and reviewed; no real list send happened before review.",
+      "evidence": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h264-dts-reflect-received-reviewed-pass-20260613T0945Z.md",
+        "worktree": "/srv/projects/kernel-work/final/a733-dts-v1",
+        "branch": "a733-dts-v1-public-ready",
+        "head": "0356b43f505bbb3ec6a7679a49748750b37fe099",
+        "endpoint_auth": "PASS",
+        "reflect_submit": "PASS",
+        "reflected_messages": 5,
+        "gmail_message_ids": [
+          "19ec057053b5153e",
+          "19ec05708d82620d",
+          "19ec0571123c76ab",
+          "19ec0571449f79a0",
+          "19ec05712d827089"
+        ],
+        "mailbox_delivery_review": "PASS",
+        "labels_observed": [
+          "UNREAD",
+          "CATEGORY_UPDATES",
+          "SPAM"
+        ],
+        "raw_mime_cover_headers": "PASS",
+        "targeted_private_marker_search": "PASS_NO_MATCHES",
+        "public_list_send_before_review": "NOT_RUN"
+      }
     }
   ],
-  "current_known_blockers": []
+  "current_known_blockers": [],
+  "public_send": {
+    "status": "sent_and_lore_indexed",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h265-dts-v1-public-sent-indexed-20260613T0950Z.md",
+    "sent_utc": "2026-06-13T09:42:16Z",
+    "messages_sent": 5,
+    "cover_message_id": "20260613-a733-dts-v1-public-ready-v1-0-7787c94681db@gmail.com",
+    "lore_link": "https://patch.msgid.link/20260613-a733-dts-v1-public-ready-v1-0-7787c94681db@gmail.com",
+    "sent_tag": "sent/20260613-a733-dts-v1-public-ready-8cbb37133b64-v1",
+    "tag_object": "8af32e58b12801adaed298b9b16a134d1b814c0b",
+    "tag_commit": "5f84f0959a6446ad5c07e79e0ee8abb333ea7612",
+    "base_commit": "1626ce5bc85bd3faaa92877d1b65c924d86a9546",
+    "post_send_branch": "a733-dts-v1-public-ready",
+    "post_send_head": "a2186558675d1a38f3c8cfe3a9356638b2262d11",
+    "post_send_revision": "2",
+    "post_send_gate_state": "b4 prep branch rerolled to v2 with needs-editing/preflight open, as expected after v1 send",
+    "gmail_cover_copy": "19ec05c51035fafb",
+    "gmail_cover_labels": [
+      "UNREAD",
+      "CATEGORY_PERSONAL",
+      "SPAM"
+    ],
+    "b4_am_lore_fetch": "PASS_5_MESSAGES",
+    "b4_am_attestation_note": "DKIM/kernel.org signed; local b4 attestation check reports no ed25519 key available for enzo.adriano.code@gmail.com."
+  }
 }

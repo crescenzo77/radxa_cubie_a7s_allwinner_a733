@@ -1,0 +1,30 @@
+diff --git a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+index 0159f7c849a4..fff961ded0f5 100644
+--- a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
++++ b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+@@ -480,7 +480,10 @@ static const struct clk_parent_data nsi_parents[] = {
+ 	{ .hw = &pll_periph0_480M_clk.common.hw },
+ 	{ .hw = &pll_de_3x_clk.common.hw },
+ };
+-static SUNXI_CCU_MP_DATA_WITH_MUX_GATE_FEAT(nsi_clk, "nsi", nsi_parents, 0x580,
++
++#define SUN60I_A733_NSI_REG		0x580
++static SUNXI_CCU_MP_DATA_WITH_MUX_GATE_FEAT(nsi_clk, "nsi", nsi_parents,
++					    SUN60I_A733_NSI_REG,
+ 					    0, 5,	/* M */
+ 					    0, 0,	/* no P */
+ 					    24, 3,	/* mux */
+@@ -2345,6 +2348,13 @@ static int sun60i_a733_ccu_probe(struct platform_device *pdev)
+ 		writel(val, reg + pll_regs[i]);
+ 	}
+ 
++	/*
++	 * Boot firmware can leave the NSI mux/divider configuration pending;
++	 * commit it before fabric consumers start probing.
++	 */
++	val = readl(reg + SUN60I_A733_NSI_REG);
++	writel(val | CCU_SUNXI_UPDATE_BIT, reg + SUN60I_A733_NSI_REG);
++
+ 	/* Enforce m1 = 0 for PLL_AUDIO0 */
+ 	val = readl(reg + SUN60I_A733_PLL_AUDIO0_REG);
+ 	val &= ~BIT(1);

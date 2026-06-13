@@ -1,0 +1,45 @@
+From ab8070fb85ca336e60c7b825eeb59fd9642f3153 Mon Sep 17 00:00:00 2001
+From: Enzo Adriano <enzo.adriano.code@gmail.com>
+Date: Sat, 13 Jun 2026 02:02:24 -0400
+Subject: [PATCH 1/4] clk: sunxi-ng: a733: keep the CPUS AHB bridge clock
+ critical
+
+The A733 main CCU exposes an AHB gate for the bridge into the CPUS/R
+domain. Linux has no regular device consumer for that bridge, but the CPU
+still needs it in order to access the R-CCU and RTC register windows.
+
+If clk_disable_unused() gates ahb-cpus, later R-domain register accesses
+can stall the bus. Keep the bridge clock enabled for the lifetime of the
+kernel, matching the hardware access path rather than a per-device
+consumer.
+
+On Radxa Cubie A7S testing, keeping this gate enabled let the unused-clock
+walk complete and kept later R-CCU/RTC register accesses live.
+
+Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
+---
+ drivers/clk/sunxi-ng/ccu-sun60i-a733.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+index 7d1ee9235436..4718161920b7 100644
+--- a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
++++ b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+@@ -541,8 +541,13 @@ static SUNXI_CCU_GATE_HWS(ahb_msi_lite0_clk, "ahb-msi-lite0", ahb_hws,
+ 			  0x5c0, BIT(16), 0);
+ static SUNXI_CCU_GATE_HWS(ahb_store_clk, "ahb-store", ahb_hws,
+ 			  0x5c0, BIT(24), 0);
++/*
++ * The CPU reaches the R-CCU and RTC register windows through this bridge
++ * into the CPUS/R domain. Keep it enabled so later R-domain register
++ * accesses do not stall after clk_disable_unused().
++ */
+ static SUNXI_CCU_GATE_HWS(ahb_cpus_clk, "ahb-cpus", ahb_hws,
+-			  0x5c0, BIT(28), 0);
++			  0x5c0, BIT(28), CLK_IS_CRITICAL);
+ 
+ static SUNXI_CCU_GATE_HWS(mbus_iommu0_clk, "mbus-iommu0", mbus_hws,
+ 			  0x5e0, BIT(0), 0);
+-- 
+2.53.0
+

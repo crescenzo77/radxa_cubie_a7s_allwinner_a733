@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-12T00:35:00Z",
+  "updated_utc": "2026-06-13T09:50:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
-  "active_blocker": "A733 SDMMC0 normal IDMAC descriptor-fetch/root-cause remains unresolved. H143 freshly reproduced the clean descriptor-read stall: IDST=0x4000, CHDA=DLBA, CBDA=0, CBCR=0x400, BBCR=0, descriptor checksum unchanged, OWN still set after CPU sync. H149 later produced two Strix UART logs where the controller repeatedly progressed under a lab diagnostic condition labeled CCU 0x02002580 bit 27: CBDA nonzero, BBCR=0x1000, CBCR=0x1000, IDST=0x2, CHDA=0x3f840000, progressed=1. However the attempted bit write read back unchanged (before=0xc3000005 write=0xcb000005 after=0xc3000005), so H149 is evidence captured / interpretation pending, not an upstreamable fix or raw-register patch authorization. PIO remains diagnostic/lab infrastructure only.",
+  "active_blocker": "Current A733 SDMMC0/CCU posture: H215 is the submitted narrow RFC/RFT series on the existing A733 CCU thread, with local git-send-email Result: OK for all five messages but no public archive visibility in checked views. H219 still controls: do not resend or open an alternate public thread unless sender-mailbox evidence, confirmed delivery failure, maintainer request, or another H219-approved trigger appears, followed by refreshed recipient, hygiene, apply, source, and validation gates. The exact H200/H215 source state remains hardware-proven by H201 through clk_disable_unused, genpd cleanup, SDMMC0 init, mmcblk0 partition enumeration, read-only root mount, and /bin/sh. H247 now also hardware-proves the H245 maintainer-directed common CCU_FEATURE_UPDATE_BIT v2 option through the same success boundary; H253 records the regenerated, gated no-send fallback bundle for that common-helper shape from the H252 branch anchor. H254 found no checked upstream-prereq drift and no H215 markers in reachable Patchew or bounded public-inbox Git views; direct public-inbox web searches were HTTP 403 from this environment and remain inconclusive. Best next actions: wait for maintainer/public-mail evidence, continue bounded archive refreshes, or use H245/H247/H253 only if maintainers request common update-bit handling.",
   "operator_model": {
     "control_host": "Mac Codex Desktop",
     "runtime_host": "strix",
@@ -47,11 +47,151 @@
     "summary": "Added task-packets/kernel/a733-h142-reflect-only-handoff-20260611T1020Z.md with the exact Strix b4 send --reflect command and review checklist. Machine gates 01-07 are closed; gate 08 remains open for human reflect review only."
   },
   "latest_completed_test": {
-    "id": "A733-SDMMC-H149",
-    "status": "evidence_captured_interpretation_pending",
-    "title": "IDMAC bus-fabric brute-force evidence consolidation",
-    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h149-idmac-evidence-consolidation-20260612T0016Z.md",
-    "result": "Strix H149 artifacts were preserved in commit 9f317d0. Two passing result JSONs and UART logs show repeated IDMAC progress under the diagnostic condition labeled CCU 0x02002580 bit 27, but raw apply lines read back unchanged. Treat as a real runtime lead requiring register/provenance interpretation, not a kernel patch or DTS/CCU fix."
+    "id": "A733-SDMMC-H201",
+    "status": "h200_exact_hash_hardware_passed",
+    "title": "H200 maintainer-polished series direct Cubie3 proof pass",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h201-h200-exact-hardware-proof-20260613T0610Z.md",
+    "result": "Built H200 Image and Cubie A7S DTB from de486cb24c361a86cba26738f24332df780872b0, staged hashes to Cubie3 /boot/cthu, and ran scripts/cubie-direct-uboot-load-session with current Cubie3 UART path. Boot reached clk_disable_unused, PM genpd disable, SDMMC0 init, mmcblk0 partition discovery, read-only ext4 root mount, and /bin/sh. No panic or bad image marker. Cubie3 restored to vendor after proof."
+  },
+  "latest_maintainer_polish": {
+    "id": "A733-SDMMC-H200",
+    "status": "patch_hygiene_passed_and_exact_hash_hardware_passed",
+    "title": "H200 maintainer-polished source-equivalent H199 series",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h200-h199-maintainer-polish-readiness-20260613T0604Z.md",
+    "result": "Created H200 at de486cb24c361a86cba26738f24332df780872b0 in /srv/projects/kernel-work/final/a733-ccu-nsi-v4-h199-maintainer-polish. H200 is source-equivalent to H199 for drivers/clk/sunxi-ng/ccu-sun60i-a733.c, but its generated patches use standard Signed-off-by trailers only. diff --check, per-patch checkpatch --strict, trailer_gate.py, and patch-only public_hygiene_gate.py passed. H201 then booted H200's exact hash on Cubie3 through SDMMC0 enumeration, read-only root mount, and /bin/sh. H200 is now the clean exact-hash hardware-proven maintainer-review expression."
+  },
+  "latest_recordkeeping": {
+    "id": "A733-SDMMC-H178",
+    "status": "completed_transcript_summary_intake",
+    "title": "Claude long-form transcript summary intake",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h178-claude-longform-summary-intake-20260613T0405Z.md",
+    "result": "Recorded the durable project value from the transcript-only long-form Claude summary: narrow upstream scope, series evolution, runtime-proof story, CCU/PRCM investigation framing, and reinforced guardrails. The transcript remains supporting provenance only; the homelab queue and H176/H177 send-candidate records remain authoritative."
+  },
+  "latest_approval_request": {
+    "id": "A733-SDMMC-H157",
+    "status": "needs_approval",
+    "title": "One bounded Cubie3 proof for H154 no-mbus-msi-lite0 comparison",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/approvals/a733-h154-no-mbus-msi-lite0-cubie3-proof-approval-20260613T025505Z.md",
+    "result": "Prepared an approval packet for exactly one Cubie3 proof run of the H154 package, including manifest recheck, /boot/cthu staging commands, UART proof command, pass/fail criteria, stop conditions, and required follow-up. No hardware action is approved by the packet itself."
+  },
+  "latest_source_review": {
+    "id": "A733-SDMMC-H158",
+    "status": "completed_source_review",
+    "title": "H153/H154 source comparison and decision rule",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h158-h153-h154-source-review-20260613T0257Z.md",
+    "result": "Confirmed H154 differs from H153 only by removing the mbus-msi-lite0 CLK_IS_CRITICAL marker from patch 2. Patch 1 is byte-identical; patch 3 has source-identical hunks with different git index metadata due to the patch 2 parent. H153 remains default unless H154 passes the approval-gated Cubie3 proof."
+  },
+  "latest_static_validation": {
+    "id": "A733-SDMMC-H159",
+    "status": "completed_static_refresh",
+    "title": "H153/H154 static validation refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h159-h153-h154-static-refresh-20260613T0259Z.md",
+    "result": "Re-verified the H154 boot package hashes on Strix. Refreshed static validation for H153 and H154 candidate worktrees: diff hygiene passed, checkpatch --strict passed, and focused arm64 object builds of ccu-sun60i-a733.o passed. No hardware proof was run."
+  },
+  "latest_maintainer_draft": {
+    "id": "A733-SDMMC-H203",
+    "status": "sent_as_h204",
+    "title": "CCU RFC follow-up draft after H200 exact proof",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h203-ccu-rfc-follow-up-draft-after-h200-proof-20260613T0622Z.txt",
+    "result": "Prepared a shorter follow-up draft for the existing A733 CCU RFC patch-7 thread. It references H200 exact proof, summarizes the four-patch clean stack and narrowing tests, asks whether maintainers prefer an RFC/RFT reply or folding into the next A733 CCU revision, passes a one-file public-hygiene scan, parses with git send-email --dry-run, and was sent in H204."
+  },
+  "latest_thread_recheck": {
+    "id": "A733-SDMMC-H189",
+    "status": "completed_b4_lore_refresh_h189_aligned",
+    "title": "H189 b4/lore freshness recheck",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h189-ccu-rfc-feedback-send-candidate-after-h154-20260613T0630Z.txt",
+    "result": "Refreshed the patch-7 thread before sending H189. b4 reported 15 messages, matching patch-7 subject and message-id, 15 To recipients, and 7 Cc recipients. The only patch-7 reply remained Andre Przywara's April 16 review."
+  },
+  "latest_post_send_lore_refresh": {
+    "id": "A733-SDMMC-H234",
+    "status": "h215_sent_still_not_indexed_public_refresh_no_response_visible",
+    "title": "H215 public index refresh after H233",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h234-h215-public-index-refresh-20260613T0745Z.md",
+    "result": "Refreshed H215 visibility by exact cover Message-ID, exact cover subject, mbus-msi-lite0/Cubie A7S/RFC-RFT markers, and public patch-tracker page/mbox for the original A733 CCU patch-7 thread. General search and patch-tracker checks still showed no H215 index hit and no visible maintainer response. This does not prove delivery failure; H219 still blocks duplicate resend without stronger evidence."
+  },
+  "latest_technical_claim_audit": {
+    "id": "A733-SDMMC-H182",
+    "status": "completed_claim_audit_h176_text_still_valid",
+    "title": "H176 technical claim audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h182-h176-technical-claim-audit-20260613T0450Z.md",
+    "result": "Audited H176's public technical claims against H151, H158, H169, H170, H171, H177, and H180. The ahb-cpus, storage/NSI fabric, NSI update-bit, mbus-msi-lite0 caveat, no-mbus proof status, and maintainer-guidance framing are supported by the current evidence packets. No H176 technical text change is required. H176 remains unsent and still requires explicit approval."
+  },
+  "latest_send_readiness": {
+    "id": "A733-SDMMC-H215",
+    "status": "rfc_rft_series_sent_ok",
+    "title": "H210 RFC/RFT series sent",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h215-h210-rfc-rft-series-sent-20260613T0651Z.md",
+    "result": "Sent the H210 normalized RFC/RFT five-message series on the existing A733 CCU RFC patch-7 thread after final freshness and validation checks. Final gates passed: public hygiene, trailer hygiene, queue JSON, strict checkpatch, git-am apply from d9aa2e15caae, source diff against H200, diff --check, and git send-email --dry-run with H214-adjusted recipients including Brian Masney. Actual git send-email returned five Result: OK messages. Message IDs: <20260613065059.12041-1-enzo.adriano.code@gmail.com> through <20260613065059.12041-5-enzo.adriano.code@gmail.com>. Next action is wait for public indexing/review; do not send another follow-up immediately."
+  },
+  "latest_send_timing_decision": {
+    "id": "A733-SDMMC-H175",
+    "status": "needs_operator_decision",
+    "title": "H176 send timing decision packet",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h175-send-now-vs-h154-proof-decision-20260613T0350Z.md",
+    "result": "Prepared a decision packet separating the two remaining approval paths: send H176 now with its existing mbus-msi-lite0 caveat, or run the H157 one-shot H154 proof first to try to narrow the patch-2 story. H175 recommends sending H176 before H154 proof only if the operator wants maintainer guidance now; otherwise run H154 first. It does not approve either action."
+  },
+  "latest_decision_handoff": {
+    "id": "A733-SDMMC-H185",
+    "status": "decision_ready_two_paths_approval_required",
+    "title": "Decision-ready handoff for H176 send versus H154 proof",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h185-decision-ready-handoff-20260613T0525Z.md",
+    "result": "Consolidated the current decision point after H182, H183, and H184. Path A is to send H176 as maintainer feedback after explicit approval and last-moment checks. Path B is to run the H157 one-shot Cubie3 H154 proof after explicit approval. Without one of those approvals, continue only with local review, documentation, static validation, or materialization planning."
+  },
+  "latest_patch_readiness": {
+    "id": "A733-SDMMC-H169",
+    "status": "raw_diffs_validated_not_mail_ready",
+    "title": "H153/H154 split patch readiness review",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h169-split-patch-readiness-review-20260613T0324Z.md",
+    "result": "Reviewed the H153 evidence-preserving split and H154 no-mbus-msi-lite0 narrowing variant. The source deltas are small, focused, and already statically validated, but the artifacts are raw diffs without Subject headers, commit messages, Signed-off-by trailers, cover letter, version notes, recipients, base-commit, or dependency notes. Future maintainer work should create real commits in a dedicated Strix worktree, then use git format-patch; do not send the raw diff files as-is."
+  },
+  "latest_materialization_preflight": {
+    "id": "A733-SDMMC-H186",
+    "status": "completed_artifact_preflight_commit_approval_still_required",
+    "title": "H153/H154 materialization preflight review",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h186-materialization-preflight-review-20260613T0535Z.md",
+    "result": "Reviewed the H153/H154 raw diff artifacts before any maintainer materialization pass. Both variants contain exactly three raw diffs, all touch only drivers/clk/sunxi-ng/ccu-sun60i-a733.c, none contains Subject headers or Signed-off-by trailers, H153 and H154 patch 1 are byte-identical, patch 3 has the same source hunk with only index metadata difference, and patch 2 is the only policy difference. Existing build-host runtime trees remain dirty, so future commits must be created in a fresh dedicated worktree after explicit approval."
+  },
+  "latest_materialized_series": {
+    "id": "A733-SDMMC-H199",
+    "status": "static_validation_and_hardware_passed",
+    "title": "H195-proven CCU/NSI clean materialization",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h199-h195-proven-clean-series-20260613T0548Z.md",
+    "result": "H199 supersedes H191 as the clean materialized CCU/NSI source artifact. It is a four-patch series based on d9aa2e15caae and ending at c5b942c818a3, source-equivalent to the H195 hardware-passing final ccu-sun60i-a733.c. Generated patches were copied into task-packets/kernel/a733-h199-h195-proven-clean-series/ and preserved on Strix under /srv/projects/kernel-work/outgoing/a733-h199-h195-proven-clean-series-c5b942c818a3-20260613T054759Z. The H199 boot package is /srv/projects/kernel-work/outgoing/a733-h199-h195-proven-clean-c5b942c818a3-20260613T055115Z."
+  },
+  "latest_hardware_proven_series": {
+    "id": "A733-SDMMC-H201",
+    "status": "h200_hardware_passed_current_best_clean_series",
+    "title": "H200 maintainer-polished CCU/NSI series passed exact Cubie3 proof",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h201-h200-exact-hardware-proof-20260613T0610Z.md",
+    "result": "H200 is now the current best clean hardware-proven candidate. It keeps gic and cpu-peri critical, removes ahb-iommu0-sys, ahb-iommu1-sys, and pll-periph0-480M from the earlier H193 diagnostic critical set, fixes H199's patch-message/trailer hygiene, and passed direct Cubie3 proof through SDMMC0 enumeration, read-only root mount, and /bin/sh at exact hash de486cb24c361a86cba26738f24332df780872b0. UART log: /srv/projects/cubie-uart/logs/20260613T061008Z-a733-h200-h199-maintainer-polish-ttyUSB0.uart.log, sha256 6f856491c5acd7652e9fcdad1a282819f47482f0a36fc73b046486ffe07c5914. Cubie3 was restored to vendor kernel 5.15.147-21-a733."
+  },
+  "latest_source_shape_review": {
+    "id": "A733-SDMMC-H187",
+    "status": "completed_source_comment_shape_review",
+    "title": "CCU/NSI source-shape comment review",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h187-source-shape-comment-review-20260613T0545Z.md",
+    "result": "Reviewed the source context around the H153/H154 changes. Future materialization should consider a short ahb-cpus comment explaining the CPUS/R-domain bridge access path, avoid over-commenting every storage/NSI gate, keep patch 2 uncertainty in commit text, and keep the NSI probe-time update comment concise while preserving the H171 nuance in the commit message."
+  },
+  "latest_commit_message_draft": {
+    "id": "A733-SDMMC-H170",
+    "status": "draft_public_hygiene_clean_not_committed",
+    "title": "CCU/NSI cover letter and commit-message draft",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h170-ccu-nsi-commit-message-draft-20260613T0329Z.md",
+    "result": "Prepared a local drafting packet with a cover-letter draft, commit-message bodies for the three H153 CCU/NSI patches, and an alternate H154 patch-2 message to use only if the no-mbus-msi-lite0 proof passes. The note passes the public hygiene gate and contains no private/local/model-routing terms from the focused grep. No kernel-source commits or generated sendable patches were created."
+  },
+  "latest_nsi_update_design_review": {
+    "id": "A733-SDMMC-H235",
+    "status": "a733_specific_probe_pulse_remains_default_common_handling_is_maintainer_directed_option",
+    "title": "NSI update-bit common design refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h235-nsi-update-bit-common-design-refresh-20260613T0747Z.md",
+    "result": "Read the exact H200 sunxi-ng source around update-bit handling. Gate, mux, and div helpers OR CCU_SUNXI_UPDATE_BIT for CCU_FEATURE_UPDATE_BIT clocks, MP parent changes delegate to mux, MP rate changes do not OR the update bit, and common registration does not pulse boot-programmed update-bit state. A733 has update-bit clocks beyond NSI (mbus, gpu, dram), and A523 has update-bit MP clocks too, so common registration-time handling is plausible but broader than the hardware-proven A733 NSI fix. Keep H215 patch 3 as the default narrow expression unless maintainers request a common treatment."
+  },
+  "latest_source_crosscheck": {
+    "id": "A733-SDMMC-H165",
+    "status": "completed_source_crosscheck",
+    "title": "RFC patch 7 and sunxi-ng update-bit source cross-check",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h165-rfc-source-crosscheck-20260613T0309Z.md",
+    "result": "Cross-checked archived patch 7 and local sunxi-ng update-bit code. Patch 7 has the exact discussed clocks and registers with flags 0 or CCU_FEATURE_UPDATE_BIT. Local code shows mux/gate/div helper paths OR CCU_SUNXI_UPDATE_BIT, while ccu_mp_set_rate does not. H166 updates the draft wording accordingly."
   },
   "hypotheses": [
     {
@@ -2757,7 +2897,7 @@
     {
       "id": "A733-SDMMC-H149",
       "priority": 149,
-      "status": "evidence_captured_interpretation_pending",
+      "status": "root_caused_clean_fix_verified",
       "title": "IDMAC bus-fabric brute-force sweep evidence captured",
       "question": "What does the H149 diagnostic condition labeled CCU 0x02002580 bit 27 actually represent, and why does it correlate with A733 SDMMC0 IDMAC descriptor progress despite unchanged readback?",
       "test_cost": "completed high-cost live hardware run; further reproduction remains high-cost and requires explicit approval",
@@ -2794,6 +2934,99 @@
         "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h149-idmac-evidence-consolidation-20260612T0016Z.md",
         "commit": "9f317d0",
         "summary": "H149 produced two pass records with winning candidate kind=ccu addr=0x02002580 bit=27 and UART logs showing repeated progressed=1 with nonzero CBDA, BBCR=0x1000, CBCR=0x1000, IDST=0x2, and CHDA=0x3f840000. The same logs show before=0xc3000005 write=0xcb000005 after=0xc3000005, so the bit label is correlation, not a proven writable root cause. No patch, public send, Hermes service change, or further hardware run is authorized by this result."
+      },
+      "interpretation": {
+        "identified_at_utc": "2026-06-13T02:05:00Z",
+        "register": "0x02002580 is the A733 CCU NSI clock register (offset 0x580), per the in-flight RFC driver itself: SUNXI_CCU_MP_DATA_WITH_MUX_GATE_FEAT(nsi_clk, \"nsi\", nsi_parents, 0x580, ...) with CCU_FEATURE_UPDATE_BIT",
+        "bit": "bit 27 is CCU_SUNXI_UPDATE_BIT (drivers/clk/sunxi-ng/ccu_common.h), the self-clearing commit/update bit for MP clocks with CCU_FEATURE_UPDATE_BIT \u2014 explains the unchanged readback (before=0xc3000005 write=0xcb000005 after=0xc3000005)",
+        "mechanism": "the boot chain writes NSI mux=pll-periph0-600M M=/6 gate=1 into the register but never pulses the update bit; sunxi-ng only writes CCU_SUNXI_UPDATE_BIT inside set_parent/set_rate and NSI has no Linux consumer, so the config is never committed; the DMA fabric serves bus-master reads (SMHC IDMAC descriptor fetch) on stale settings and stalls; CPU/PIO paths bypass NSI which is why PIO always worked",
+        "clean_fix_under_test": "commit b1facfb3e0ea in /srv/projects/a733-diag-ahbcpuscrit: pulse CCU_SUNXI_UPDATE_BIT for the NSI register once in sun60i_a733_ccu_probe (no raw pokes, no clk.c hacks); verification boot label a733-nsifix-b1facfb3e0ea",
+        "upstream_question": "per-SoC probe fixup vs framework-level commit of CCU_FEATURE_UPDATE_BIT clocks at registration \u2014 to raise in the A733 CCU RFC thread",
+        "verified": {
+          "verified_at_utc": "2026-06-13T02:00:00Z",
+          "pass_kernel": "8af7499f18e6 (a733-diag-ahbcpuscrit): ahb-cpus critical + storage fabric criticals + NSI probe-time update pulse + nsi/bus-nsi CLK_IS_CRITICAL; no clk_ignore_unused, no clk.c hacks, no raw pokes",
+          "pass_evidence": "log 20260613T015456Z-a733-nsicrit-8af7499f18e6-ttyUSB0.uart.log: mmc0 new high speed SDXC card, mmcblk0 p1 p2 p3 via normal IDMA, EXT4 root mounted ro, /bin/sh reached",
+          "failed_variant": "b1facfb3e0ea probe-time pulse alone (nsi not critical) still stalled \u2014 criticality of the NSI lane is necessary",
+          "pulse_necessity_ab": "in flight: 2a9b55b6a42f reverts the pulse, criticals only"
+        }
+      }
+    },
+    {
+      "id": "A733-DTS-H263",
+      "priority": 263,
+      "status": "reflect_submitted_delivery_pending",
+      "title": "Verify reflected DTS series delivery and review output",
+      "question": "Did the b4-reflected A733/Cubie A7S DTS series arrive in the sender mailbox, and does the received copy preserve clean public headers/content?",
+      "test_cost": "low; mailbox search/read only, no hardware and no public send",
+      "procedure": [
+        "Search enzo.adriano.code@gmail.com for the reflected cover and patch subjects.",
+        "Read the reflected messages once visible.",
+        "Confirm the series has 5 messages and remains reflect-only evidence, not public list delivery.",
+        "Check received headers/body for public identity, expected subjects, and absence of private lab/provider markers.",
+        "Close gate 08 only after reflected copies are received and reviewed."
+      ],
+      "pass_criteria": "All 5 reflected messages are visible in the mailbox and reviewed cleanly.",
+      "fail_criteria": "Messages do not arrive after a reasonable delay, are incomplete, show wrong sender identity, or contain private lab/provider markers.",
+      "guardrails": [
+        "Do not run public b4 send while reflect mailbox review is pending.",
+        "Do not resend H215 or alternate public CCU/SDMMC mail unless the H219 conditions are met.",
+        "No Cubie hardware action is needed for this delivery check.",
+        "No local or OpenRouter model use."
+      ],
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h263-dts-b4-reflect-submitted-delivery-pending-20260613T0937Z.md",
+        "summary": "b4 endpoint auth passed and reflect submit reported Reflected 5 messages; mailbox delivery/review pending."
+      }
+    },
+    {
+      "id": "A733-DTS-H264",
+      "priority": 264,
+      "status": "completed_reflect_review_passed",
+      "title": "Reflect-delivered DTS series review",
+      "question": "Did the reflected A733/Cubie A7S DTS series arrive and review cleanly enough to permit public send?",
+      "test_cost": "low; mailbox search/read only",
+      "procedure": [
+        "Find all five reflected messages with Gmail in:anywhere search.",
+        "Confirm expected cover and patch subjects.",
+        "Inspect raw MIME for cover headers and b4/developer signature/key.",
+        "Search for local lab/provider markers.",
+        "Close gate 08 if clean."
+      ],
+      "pass_criteria": "Five reflected messages present, expected subjects/headers, and no targeted private/provider marker hits.",
+      "fail_criteria": "Missing reflected messages, wrong identity/headers, or private/provider markers.",
+      "guardrails": [
+        "No public send until this review passes.",
+        "No H215 resend or alternate CCU public action from this DTS gate."
+      ],
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h264-dts-reflect-received-reviewed-pass-20260613T0945Z.md",
+        "summary": "PASS: five reflected messages received and reviewed; Gmail placed them in Spam/Updates; gate 08 closed."
+      }
+    },
+    {
+      "id": "A733-DTS-H265",
+      "priority": 265,
+      "status": "completed_public_v1_sent_indexed",
+      "title": "Public v1 DTS send and initial archive check",
+      "question": "Was the A733/Cubie A7S DTS v1 series publicly sent and visible on lore?",
+      "test_cost": "medium; public b4 send plus archive check",
+      "procedure": [
+        "Run final gate after reflect review is closed.",
+        "Run b4 send without reflect.",
+        "Record sent tag and cover Message-ID.",
+        "Check lore with b4 am by cover Message-ID.",
+        "Record post-send prep branch reroll state."
+      ],
+      "pass_criteria": "b4 sends 5 messages and lore returns a 5-message thread by the cover Message-ID.",
+      "fail_criteria": "b4 send fails, wrong recipients, no sent tag/message-id, or lore cannot fetch the thread after a reasonable delay.",
+      "guardrails": [
+        "Do not send v2 unless maintainer feedback or a concrete correction requires it.",
+        "Do not treat H215 CCU/SDMMC resend gates as affected by this DTS send.",
+        "Continue monitoring public responses and dependency state."
+      ],
+      "result": {
+        "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h265-dts-v1-public-sent-indexed-20260613T0950Z.md",
+        "summary": "PASS: b4 sent 5 public DTS v1 messages and lore b4 am fetched the 5-message thread."
       }
     }
   ],
@@ -2801,5 +3034,374 @@
     "ThinkCentre Hermes Agent: http://192.168.50.225:9120, task t_f3666e9c created for A733 SDMMC0 roadblock triage.",
     "Framework Hermes Desktop: old LAN route http://192.168.50.248:9120 is stale; current observed Framework LAN IP is 192.168.50.140 and Tailscale IP is 100.64.0.5, but Framework is not guaranteed always on. Do not depend on it without live reachability and API verification.",
     "RTX 3090 route remains disabled until the user explicitly re-enables it."
-  ]
+  ],
+  "latest_materialization_handoff": {
+    "id": "A733-SDMMC-H179",
+    "status": "handoff_ready_needs_approval_for_commits",
+    "title": "CCU/NSI real-commit materialization handoff",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h179-ccu-nsi-materialization-handoff-20260613T0415Z.md",
+    "result": "Prepared the exact future workflow for turning H153/H154 raw diffs and H170 commit-message text into real commits and git format-patch output in a fresh dedicated Strix worktree. H179 preserves H153 as the default, switches patch 2 to H154 only if the H157 proof passes, and warns not to reuse dirty runtime or diagnostic trees. It does not approve kernel commits, hardware runs, or sending."
+  },
+  "latest_operator_send_handoff": {
+    "id": "A733-SDMMC-H181",
+    "status": "handoff_ready_send_not_approved",
+    "title": "H176 operator send handoff",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h181-h176-operator-send-handoff-20260613T0435Z.md",
+    "result": "Collected the H176 payload identity, readiness evidence, decision fork, exact approval phrases, and last-moment parser/hygiene/thread checks into one operator-facing handoff. H176 remains unsent and still requires explicit operator approval."
+  },
+  "latest_clean_series": {
+    "id": "A733-SDMMC-H199",
+    "status": "clean_h195_source_shape_hardware_passed",
+    "title": "H195-proven CCU/NSI clean review series passed hardware proof",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h199-h195-proven-clean-series-20260613T0548Z.md",
+    "result": "Created Strix worktree /srv/projects/kernel-work/final/a733-ccu-nsi-v3-h195-proven on branch codex/a733-ccu-nsi-v3-h195-proven at c5b942c818a3. The four-patch series keeps the final source state equivalent to H195 for ccu-sun60i-a733.c while removing experimental narrowing commits from the review story. diff --check passed, per-patch checkpatch --strict passed with 0 errors and 0 warnings, focused arm64 ccu-sun60i-a733.o build passed, and full arm64 Image plus Cubie A7S DTB build passed. Direct Cubie3 proof passed through SDMMC0 enumeration, read-only root mount, and /bin/sh; Cubie3 was restored to vendor kernel 5.15.147-21-a733."
+  },
+  "latest_patch_share_bundle": {
+    "id": "A733-SDMMC-H205",
+    "status": "patches_only_bundle_validated",
+    "title": "H200 patches-only share bundle",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h205-h200-patches-only-share-bundle-20260613T0625Z.md",
+    "result": "Created /Users/enzo/projects/homelab/task-packets/kernel/a733-h200-h199-maintainer-polish-patches-only/ with only the four public H200 git-format-patch files, excluding local metadata. Synced the bundle to /srv/projects/homelab/task-packets/kernel/a733-h200-h199-maintainer-polish-patches-only/ on Strix. public_hygiene_gate.py and trailer_gate.py passed locally. Strix git-am apply-check from d9aa2e15caae passed, diff --check passed, and the recreated source matched H200 de486cb24c361a86cba26738f24332df780872b0 for drivers/clk/sunxi-ng/ccu-sun60i-a733.c."
+  },
+  "latest_public_thread_refresh": {
+    "id": "A733-SDMMC-H217",
+    "status": "h215_sent_still_not_indexed_public_refresh",
+    "title": "H215 public index refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h217-h215-public-index-refresh-20260613T0701Z.md",
+    "result": "Refreshed exact H215 message IDs, H215 subject markers, Patchew patch page, and Patchew patch mbox after the initial H216 not-indexed-yet check. General search and Patchew still did not show H215/RFC-RFT/Enzo/gde486cb24c36/Cubie A7S SDMMC0 markers. Treat as continued not-indexed-yet monitoring state unless a maintainer response, public archive hit, bounce, or delivery failure appears. Do not send another immediate follow-up."
+  },
+  "latest_maintainer_response_prep": {
+    "id": "A733-SDMMC-H233",
+    "status": "response_matrix_updated_for_failed_no_mbus_msi_lite0_comparison",
+    "title": "H215 response matrix mbus refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h233-h215-response-matrix-mbus-refresh-20260613T0743Z.md",
+    "result": "Updated H218 so maintainer replies about mbus-msi-lite0 cite the H188 no-mbus-msi-lite0 Cubie A7S failure: removing the gate from the tested bundle regressed before SDMMC0 initialization. H218 now keeps the limitation that mbus-msi-lite0 is not proven minimal across every possible fabric model, but no longer suggests H154 as a narrower v2 option. Default remains the full H200/H215 storage/NSI fabric bundle unless maintainers request a different fabric model or new proof replaces H188."
+  },
+  "latest_rfc_rft_candidate": {
+    "id": "A733-SDMMC-H215",
+    "status": "rfc_rft_series_sent_ok",
+    "title": "H210 RFC/RFT series sent",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h215-h210-rfc-rft-series-sent-20260613T0651Z.md",
+    "result": "Sent the H210 normalized RFC/RFT five-message series on the existing A733 CCU RFC patch-7 thread after final freshness and validation checks. Final gates passed: public hygiene, trailer hygiene, queue JSON, strict checkpatch, git-am apply from d9aa2e15caae, source diff against H200, diff --check, and git send-email --dry-run with H214-adjusted recipients including Brian Masney. Actual git send-email returned five Result: OK messages. Message IDs: <20260613065059.12041-1-enzo.adriano.code@gmail.com> through <20260613065059.12041-5-enzo.adriano.code@gmail.com>. Next action is wait for public indexing/review; do not send another follow-up immediately."
+  },
+  "latest_sendemail_dryrun": {
+    "id": "A733-SDMMC-H210",
+    "status": "normalized_rfc_rft_send_candidate_prepared_not_sent",
+    "title": "Normalized RFC/RFT send candidate, not sent",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h210-rfc-rft-normalized-sendemail-candidate-20260613T0638Z.md",
+    "result": "Prepared /Users/enzo/projects/homelab/task-packets/kernel/a733-h210-rfc-rft-normalized-sendemail-candidate/ with cover plus four patches all using RFC/RFT subject prefixes. public_hygiene_gate.py passed over all five files; trailer_gate.py passed over patches 1-4; git send-email --dry-run with explicit --to/--cc recipients returned Result: OK for cover plus four patches; Strix git-am apply-check from d9aa2e15caae passed, diff --check passed, and the recreated source matched H200 de486cb24c361a86cba26738f24332df780872b0 for drivers/clk/sunxi-ng/ccu-sun60i-a733.c. Not sent."
+  },
+  "latest_public_safe_proof_excerpt": {
+    "id": "A733-SDMMC-H211",
+    "status": "public_safe_uart_excerpt_prepared",
+    "title": "H200 public-safe UART proof excerpt",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h211-h200-public-safe-uart-proof-excerpt-20260613T0640Z.md",
+    "result": "Prepared a short public-safe UART excerpt for H200 exact commit de486cb24c361a86cba26738f24332df780872b0. The excerpt shows Linux version 7.1.0-rc5-00181-gde486cb24c36, clk_disable_unused, genpd unused-domain disable, SDMMC0 initialization, mmcblk0 card and partition discovery, read-only ext4 root mount, and /bin/sh init. The local builder identity is replaced with builder. public_hygiene_gate.py passed on the one-file excerpt packet. Full UART log SHA256 remains 6f856491c5acd7652e9fcdad1a282819f47482f0a36fc73b046486ffe07c5914; excerpt SHA256 is fe618e48813763fd0fa197c6ae00d6a7c17e03f957c82cb48ba6d19fd578bc2d."
+  },
+  "latest_strict_checkpatch": {
+    "id": "A733-SDMMC-H213",
+    "status": "strict_checkpatch_passed_not_sent",
+    "title": "H210 strict checkpatch",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h213-h210-strict-checkpatch-20260613T0645Z.md",
+    "result": "Ran kernel scripts/checkpatch.pl --strict --no-tree --show-types on H210 source patches 0001-0004 from the clean H200 kernel worktree. All four patches passed with 0 errors, 0 warnings, and 0 checks. H213 itself passed public hygiene after removing host labels. H210 remains not sent; send posture is unchanged while H204 indexing remains unconfirmed."
+  },
+  "latest_recipient_audit": {
+    "id": "A733-SDMMC-H214",
+    "status": "recipient_audit_passed_adjust_brian_not_sent",
+    "title": "H210 recipient audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h214-h210-recipient-audit-20260613T0648Z.md",
+    "result": "Ran scripts/get_maintainer.pl on H210 patches 1-4. It returned Brian Masney, Chen-Yu Tsai, Jernej Skrabec, Michael Turquette, Samuel Holland, Stephen Boyd, linux-arm-kernel, linux-clk, linux-kernel, and linux-sunxi. The prior H210 dry-run command already included the clock/sunxi maintainers and lists plus broader RFC-thread recipients, but missed Brian Masney. A corrected git send-email --dry-run adding Brian as --to returned Result: OK for cover plus patches 1-4, and Brian appeared on all five messages. H214 passed public hygiene. Not sent."
+  },
+  "latest_sent_series": {
+    "id": "A733-SDMMC-H215",
+    "status": "rfc_rft_series_sent_ok",
+    "title": "H210 RFC/RFT series sent",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h215-h210-rfc-rft-series-sent-20260613T0651Z.md",
+    "result": "Sent the H210 normalized RFC/RFT five-message series on the existing A733 CCU RFC patch-7 thread after final freshness and validation checks. Final gates passed: public hygiene, trailer hygiene, queue JSON, strict checkpatch, git-am apply from d9aa2e15caae, source diff against H200, diff --check, and git send-email --dry-run with H214-adjusted recipients including Brian Masney. Actual git send-email returned five Result: OK messages. Message IDs: <20260613065059.12041-1-enzo.adriano.code@gmail.com> through <20260613065059.12041-5-enzo.adriano.code@gmail.com>. Next action is wait for public indexing/review; do not send another follow-up immediately."
+  },
+  "latest_post_send_decision_gate": {
+    "id": "A733-SDMMC-H219",
+    "status": "resend_alternate_action_gate_ready_no_resend_authorized",
+    "title": "H215 resend / alternate action gate",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h219-h215-resend-alternate-action-gate-20260613T0708Z.md",
+    "result": "Defined when to keep waiting, when to investigate delivery, and the evidence required before any H215 resend or alternate public action. H215 remains locally sent with git-send-email OK but not publicly indexed in checked views. H219 explicitly does not authorize resend, new thread, hardware run, service change, external AI-routing changes; it requires confirmed failure or maintainer request plus full hygiene/apply/source/recipient checks before any resend."
+  },
+  "latest_post_send_delivery_evidence": {
+    "id": "A733-SDMMC-H232",
+    "status": "bounded_local_delivery_boundary_no_bounce_marker_sender_mailbox_unconfirmed",
+    "title": "H215 local delivery boundary refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h232-h215-local-delivery-boundary-refresh-20260613T0741Z.md",
+    "result": "Checked standard local mail/log/config surfaces on the control host and build host for exact H215 Message-IDs, sender address, cover subject, delivery-status, undelivered-mail, and mail-delivery-failure markers. No standard Maildir or msmtp log was present in checked locations, and no exact local bounce/rejection marker was found. This does not prove successful delivery or absence of a bounce in the sender mailbox. Sender-mailbox access remains the authoritative missing evidence; H219 still blocks resend."
+  },
+  "latest_upstream_drift_refresh": {
+    "id": "A733-SDMMC-H229",
+    "status": "no_checked_upstream_drift_requiring_rebase",
+    "title": "Upstream prerequisite drift refresh after H228",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h229-upstream-prereq-drift-refresh-20260613T0734Z.md",
+    "result": "Checked mainline master 062871f1371b2e02a272ff5279c6479aff0a37ef, clock clk-next 5f7092aabf492fbc95a4cba1cc6c0d64c62a9abb, sunxi for-next 4a481339d33a7a7f401ad59fc04481f946d8965a, and SoC for-next f9c349592b74e96cecadd7d427f0b3dd6320d489. Raw file checks still showed no ccu-sun60i-a733.c or A733 CCU Kconfig marker, and no A733 pinctrl file in checked refs. Public patch-tracker views for the original A733 CCU patch-7 thread still lacked H215 markers. No checked upstream baseline currently supersedes H215 or forces a rebase."
+  },
+  "latest_post_send_reproducibility": {
+    "id": "A733-SDMMC-H223",
+    "status": "post_send_reproducibility_refresh_passed",
+    "title": "H210/H215 post-send reproducibility refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h223-h210-post-send-reproducibility-refresh-20260613T0719Z.md",
+    "result": "Re-ran a build-host temporary-worktree apply check for the H210/H215 source patches from base d9aa2e15caae. git am --3way applied patches 1-4, recreated head b1f28861fa29e774ffa29f8bfe75aa77de0cf584, left a clean temp worktree, passed diff --check, and matched H200 de486cb24c361a86cba26738f24332df780872b0 for drivers/clk/sunxi-ng/ccu-sun60i-a733.c. Temp worktree cleanup passed."
+  },
+  "latest_maintainer_delta_map": {
+    "id": "A733-SDMMC-H224",
+    "status": "maintainer_delta_map_ready_public_safe",
+    "title": "H215 maintainer delta map",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h224-h215-maintainer-delta-map-20260613T0721Z.md",
+    "result": "Prepared a public-safe technical delta map for the H215 series against the visible A733 CCU RFC baseline: patch 1 ahb-cpus CPUS/R-domain bridge criticality; patch 2 storage/NSI fabric criticals with mbus-msi-lite0 caveat; patch 3 NSI update-bit commit in probe; patch 4 GIC and CPU peripheral clocks. Includes review framing, caveats, and non-claims for maintainer discussion."
+  },
+  "latest_compiler_warning_refresh": {
+    "id": "A733-SDMMC-H225",
+    "status": "focused_w1_object_build_passed",
+    "title": "H200 focused W=1 build refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h225-h200-focused-w1-build-refresh-20260613T0726Z.md",
+    "result": "On the build host, a temporary detached worktree from exact H200 commit de486cb24c361a86cba26738f24332df780872b0 copied the recorded H200 build configuration, ran olddefconfig, and built drivers/clk/sunxi-ng/ccu-sun60i-a733.o with ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- W=1. Build returned 0 with no warning: or error: lines. The H200 source worktree stayed clean."
+  },
+  "latest_static_analysis_refresh": {
+    "id": "A733-SDMMC-H227",
+    "status": "focused_sparse_check_passed",
+    "title": "H200 focused sparse refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h227-h200-focused-sparse-refresh-20260613T0730Z.md",
+    "result": "On the build host, a temporary detached worktree from exact H200 commit de486cb24c361a86cba26738f24332df780872b0 copied the recorded H200 build configuration, ran olddefconfig, and checked drivers/clk/sunxi-ng/ccu-sun60i-a733.o with ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- C=1 CHECK=sparse. Sparse version was 0.6.4. Build returned 0 with no warning:, error:, or sparse: diagnostic lines. The H200 source worktree stayed clean."
+  },
+  "latest_alternate_toolchain_refresh": {
+    "id": "A733-SDMMC-H228",
+    "status": "focused_clang_w1_object_build_passed",
+    "title": "H200 focused Clang build refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h228-h200-focused-clang-build-refresh-20260613T0732Z.md",
+    "result": "On the build host, a temporary detached worktree from exact H200 commit de486cb24c361a86cba26738f24332df780872b0 copied the recorded H200 build configuration, ran olddefconfig with LLVM=1, and built drivers/clk/sunxi-ng/ccu-sun60i-a733.o with ARCH=arm64 LLVM=1 W=1. Clang version was Ubuntu clang version 21.1.8. Build returned 0 with no warning: or error: lines. The H200 source worktree stayed clean."
+  },
+  "latest_artifact_integrity_refresh": {
+    "id": "A733-SDMMC-H230",
+    "status": "h215_artifacts_hash_gate_apply_source_equivalence_passed",
+    "title": "H215 artifact integrity refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h230-h215-artifact-integrity-refresh-20260613T0737Z.md",
+    "result": "Recomputed SHA256 for the H210 patch bundle sent as H215 and confirmed hashes match the recorded H210 values. Public hygiene and trailer gates passed. On the build host, a temporary detached worktree from base d9aa2e15caae applied H210 patches 1-4 with git am --3way, recreated head 3b73eb78e3f8773bd0a4cec2d74bcfc46701a091, passed git diff --check, and matched exact H200 de486cb24c361a86cba26738f24332df780872b0 for drivers/clk/sunxi-ng/ccu-sun60i-a733.c."
+  },
+  "latest_recipient_freshness_refresh": {
+    "id": "A733-SDMMC-H231",
+    "status": "recipient_set_matches_h214_brian_masney_correction_still_current",
+    "title": "H215 recipient freshness refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h231-h215-recipient-freshness-refresh-20260613T0739Z.md",
+    "result": "Ran kernel-native scripts/get_maintainer.pl from the exact H200 source tree against H210 source patches 0001-0004. The normalized unique set matches H214: Brian Masney, Chen-Yu Tsai, Jernej Skrabec, Michael Turquette, Samuel Holland, Stephen Boyd, linux-arm-kernel, linux-clk, linux-kernel, and linux-sunxi. Normalized set SHA256 c15e6c78b7a1c586864a1fe65598088a793422632ec82d5ee71b21d51194cc90. No additional kernel-native recipient appeared."
+  },
+  "latest_subtree_build_refresh": {
+    "id": "A733-SDMMC-H236",
+    "status": "sunxi_ng_subtree_w1_gcc_build_passed",
+    "title": "H200 sunxi-ng subtree build refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h236-h200-sunxi-ng-subtree-build-refresh-20260613T0749Z.md",
+    "result": "On the build host, a temporary detached worktree from exact H200 commit de486cb24c361a86cba26738f24332df780872b0 copied the recorded H200 build configuration, ran olddefconfig, and built drivers/clk/sunxi-ng/ with ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- W=1. Build returned 0 with no warning: or error: lines, built ccu-sun60i-a733.o, and produced drivers/clk/sunxi-ng/built-in.a. The H200 source worktree stayed clean."
+  },
+  "latest_direct_archive_lookup": {
+    "id": "A733-SDMMC-H237",
+    "status": "h215_not_found_in_checked_direct_lore_views_resend_gate_still_closed",
+    "title": "H215 direct lore lookup refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h237-h215-direct-lore-lookup-refresh-20260613T0751Z.md",
+    "result": "Checked all five H215 Message-IDs against direct lore/public-inbox URL families: /r/, /all/, /linux-clk/, /linux-arm-kernel/, and /linux-sunxi/. All returned HTTP 300 pages whose title text identified the Message-ID as not found. Web search for direct lore URLs also returned no H215 result. This strengthens public-archive absence evidence but does not prove SMTP delivery failure or moderation rejection. H219 still blocks resend without stronger evidence."
+  },
+  "latest_boot_artifact_build_refresh": {
+    "id": "A733-SDMMC-H238",
+    "status": "image_and_cubie_a7s_dtb_build_passed_dtb_matches_h201",
+    "title": "H200 Image/DTB build refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h238-h200-image-dtb-build-refresh-20260613T0755Z.md",
+    "result": "On the build host, a temporary detached worktree from exact H200 commit de486cb24c361a86cba26738f24332df780872b0 copied the recorded H200 build configuration, ran olddefconfig, and built Image plus allwinner/sun60i-a733-cubie-a7s.dtb with ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j32. Build returned 0 with no warning: or error: lines. Rebuilt DTB SHA256 6edbb3790de674f7011c8accd0e02d94ea5bcafa11dc127238c8a54da71c622a matches H201. Rebuilt Image SHA256 05c6fd1ac3aa9311be1e6b4bcb48ad05ab14189c7dea574410d3b4d2151efc70 is nonzero/buildable but not claimed bit-identical to H201 because build timestamps/version metadata were not controlled."
+  },
+  "latest_public_inbox_archive_refresh": {
+    "id": "A733-SDMMC-H239",
+    "status": "h215_absent_from_checked_current_public_inbox_heads_resend_gate_still_closed",
+    "title": "H215 public-inbox refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h239-h215-public-inbox-refresh-20260613T0758Z.md",
+    "result": "Refreshed H215 public archive evidence. Patchew A733 CCU RFC thread and mbox returned HTTP 200 but did not contain H215 Message-ID, subject, source-head, or patch-title markers. Direct Lore HTML checks returned HTTP 403 from this environment and are treated as blocked, not absence evidence. Public-inbox Git endpoints were reachable; bounded current-epoch shallow mirrors for linux-clk/0, linux-sunxi/0, linux-arm-kernel/3, and lkml/19 had heads dated 2026-06-13T05:20:40Z through 2026-06-13T07:54:25Z and did not contain H215 markers. This strengthens public-archive absence evidence but still does not prove SMTP failure, list moderation rejection, or sender-mailbox bounce. H219 remains controlling: no resend or new public thread from archive absence alone."
+  },
+  "latest_image_reproducibility_refresh": {
+    "id": "A733-SDMMC-H240",
+    "status": "controlled_rebuild_clean_dtb_reproducible_image_not_bit_identical",
+    "title": "H200 controlled Image reproducibility",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h240-h200-controlled-image-reproducibility-20260613T0810Z.md",
+    "result": "Checked the available Gmail connector first: it is not the H215 sender mailbox, and a narrow read-only search for H215 markers in that connected mailbox returned no results, so sender-mailbox evidence remains unavailable and H219 is unchanged. Then rebuilt exact H200/H215 source commit de486cb24c361a86cba26738f24332df780872b0 in a temporary Strix worktree using the H201 proof config and controlled KBUILD_BUILD_USER=enzo, KBUILD_BUILD_HOST=strix, KBUILD_BUILD_VERSION=1, and KBUILD_BUILD_TIMESTAMP='Sat Jun 13 02:09:01 EDT 2026'. Build returned 0 with no warning or error lines. Config SHA256 and DTB SHA256 matched H201 exactly; rebuilt Image had the same size and visible Linux version string as H201 but SHA256 72fd8ef1ea70b2e7badab2dec84a38d9f84f2f67e013a5ba29fc954e2aec9f1e, not H201's 8a159596dbfcd4e430aab6120e6860b0a25b617cefb8398e95318dbc05732a36. Treat H201 as exact-artifact hardware proof and H238/H240 as clean rebuildability plus DTB reproducibility, not bit-identical Image reproduction. Temporary worktree was removed and the H200 source tree stayed clean."
+  },
+  "latest_upstream_and_public_archive_refresh": {
+    "id": "A733-SDMMC-H241",
+    "status": "no_checked_upstream_prereq_drift_h215_still_absent_from_bounded_public_views",
+    "title": "Upstream prerequisite and public-inbox refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h241-upstream-prereq-and-public-inbox-refresh-20260613T0808Z.md",
+    "result": "Refreshed primary upstream refs and public archive views. Mainline master, clock clk-next, sunxi sunxi/for-next, and SoC for-next heads match H229. Raw kernel.org file checks still show no A733 CCU driver, A733 CCU Kconfig marker, A733 pinctrl file, or A733 RTC marker in checked refs. Patchew A733 CCU RFC thread page/mbox returned HTTP 200 but still lacked H215 Message-ID, subject, source-head, patch-title, or RFC/RFT markers. Bounded current public-inbox Git heads for linux-clk/0, linux-sunxi/0, linux-arm-kernel/3, and lkml/19 were checked through heads dated up to 2026-06-13T08:07:36Z and did not contain H215 markers. No checked upstream baseline currently supersedes H215 or forces a respin; H219 still blocks duplicate resend without sender-mailbox evidence, confirmed delivery failure, or maintainer request."
+  },
+  "latest_common_update_bit_prototype": {
+    "id": "A733-SDMMC-H242",
+    "status": "common_update_bit_prototype_builds_but_is_broader_than_h215",
+    "title": "Common update-bit prototype",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h242-common-update-bit-prototype-20260613T0818Z.md",
+    "result": "Prepared a temporary maintainer-directed v2 prototype that moves H215 patch 3's A733-specific NSI update-bit pulse into common sunxi-ng registration logic: after each ccu_common has base/lock assigned, iterate desc->ccu_clks and write CCU_SUNXI_UPDATE_BIT for clocks carrying CCU_FEATURE_UPDATE_BIT, then remove the A733-specific NSI write. Prototype diffstat was 21 insertions in ccu_common.c and 7 deletions in ccu-sun60i-a733.c. git diff --check passed, arm64 GCC W=1 drivers/clk/sunxi-ng subtree build passed, and arm64 sparse C=1 for ccu_common.o plus ccu-sun60i-a733.o passed with sparse 0.6.4 and no diagnostics. Existing checked update-bit definitions include 3 A523 and 4 A733 clocks, so the common helper is broader than H215 and should remain a maintainer-directed v2 option, not the default replacement for the exact hardware-proven H215 narrow A733 NSI pulse. Temporary worktree was removed and the H200 source tree stayed clean."
+  },
+  "latest_common_update_bit_a523_check": {
+    "id": "A733-SDMMC-H243",
+    "status": "common_update_bit_prototype_a523_a733_focused_checks_passed",
+    "title": "Common update-bit A523 focused check",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h243-common-update-bit-a523-focused-check-20260613T0824Z.md",
+    "result": "Recreated the H242 common update-bit prototype in a temporary Strix worktree and explicitly checked the non-A733 update-bit user. Using the recorded H201/H200 config, focused arm64 GCC W=1 object builds for ccu_common.o, ccu-sun55i-a523.o, and ccu-sun60i-a733.o all produced objects with no warning or error lines. Focused sparse C=1 CHECK=sparse for the same objects passed with sparse 0.6.4 and no warning/error/sparse diagnostic lines. This reduces mechanical risk for a maintainer-directed common-helper v2, but the semantic breadth risk remains: the common helper commits boot-programmed state for every CCU_FEATURE_UPDATE_BIT clock, not only A733 NSI. Temporary worktree was removed and the H200 source tree stayed clean."
+  },
+  "latest_common_update_bit_v2_option": {
+    "id": "A733-SDMMC-H244",
+    "status": "common_update_bit_v2_option_patch_artifact_checkpatch_apply_build_sparse_passed",
+    "title": "Common update-bit v2 option",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h244-common-update-bit-v2-option-20260613T0832Z.md",
+    "artifact_dir": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h244-common-update-bit-v2-option",
+    "result": "Created a local maintainer-style patch artifact for the H242/H243 common update-bit fallback. Artifact directory contains 0001-clk-sunxi-ng-commit-update-bit-clocks-during-registr.patch, checkpatch-strict.txt, and commit.txt. Temporary commit 087197b127e00a691e6b7aba04684916a6c0efe1 is based on exact H200 de486cb24c361a86cba26738f24332df780872b0. Patch subject is 'clk: sunxi-ng: commit update-bit clocks during registration'. Strict checkpatch passed with 0 errors, 0 warnings, and 0 checks. git am --3way from the recorded base passed, applied diffcheck passed, focused arm64 GCC W=1 builds for ccu_common.o, ccu-sun55i-a523.o, and ccu-sun60i-a733.o passed, and focused sparse C=1 checks for the same objects passed with sparse 0.6.4 and no diagnostics. This is a maintainer-directed v2 option only; H215 remains the submitted exact hardware-proven narrow A733 posture unless reviewers ask for common handling. Temporary worktrees were removed and the H200 source tree stayed clean."
+  },
+  "latest_common_update_bit_v2_series_option": {
+    "id": "A733-SDMMC-H245",
+    "status": "common_update_bit_v2_series_option_generated_checkpatch_apply_build_sparse_hygiene_passed",
+    "title": "Common update-bit v2 series option",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h245-common-update-bit-v2-series-option-20260613T0842Z.md",
+    "artifact_dir": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h245-common-update-bit-v2-series-option",
+    "result": "Generated the true maintainer-directed v2-option series from base d9aa2e15caae: H210/H215 patch 1, H210/H215 patch 2, a new common update-bit patch in ccu_common.c, then H210/H215 patch 4. Artifact directory contains cover letter, patches 1-4, checkpatch-strict.txt, and series-summary.txt. Temporary series head was fb85982739f16aed406dffec93798546bd904a9b. git diff --check passed, strict checkpatch passed for patches 1-4, git am --3way from the recorded base passed, applied-series diffcheck passed, focused arm64 GCC W=1 builds for ccu_common.o, ccu-sun55i-a523.o, and ccu-sun60i-a733.o passed, and focused sparse C=1 checks for the same objects passed with sparse 0.6.4 and no diagnostics. The artifact directory passed public hygiene after normalizing generated cover/checkpatch/summary text. H245 is more directly usable than H244 if maintainers ask for common update-bit handling, but H215 remains the current submitted exact hardware-proven narrow A733 posture unless reviewers request this broader common semantics."
+  },
+  "latest_common_update_bit_v2_image_dtb_build": {
+    "id": "A733-SDMMC-H246",
+    "status": "h245_common_update_bit_v2_image_dtb_build_passed_dtb_matches_h201",
+    "title": "H245 Image/DTB build",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h246-h245-image-dtb-build-20260613T0852Z.md",
+    "result": "Applied H245 patches 1-4 from base d9aa2e15caae in a temporary Strix worktree with git am --3way, copied the recorded H201/H200 config, ran olddefconfig, and built arm64 Image plus allwinner/sun60i-a733-cubie-a7s.dtb. Apply and diffcheck passed. Image/DTB build returned 0 with no warning or error lines. Generated Image SHA256 f1d4cf43de50353d0bf3a1941817492f12e37b9b0716c840e36e3fe263c7b38d, DTB SHA256 6edbb3790de674f7011c8accd0e02d94ea5bcafa11dc127238c8a54da71c622a, config SHA256 dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202. The H245 DTB matches the H201 exact hardware-proof DTB. This strengthens H245 as a maintainer-directed common-update-bit fallback, but H215 remains the current submitted exact-hardware-proven narrow A733 posture unless reviewers request common handling. Temporary worktree was removed and the H200 source tree stayed clean."
+  },
+  "latest_common_update_bit_v2_hardware_proof": {
+    "id": "A733-SDMMC-H247",
+    "status": "h245_common_update_bit_v2_hardware_proof_passed_cubie3_restored",
+    "title": "H245 common update-bit v2 hardware proof",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h247-h245-common-update-bit-v2-hardware-proof-20260613T0845Z.md",
+    "result": "Built a fresh H245 common update-bit v2 proof package from base d9aa2e15caae with applied head e694ae3fa8477846a5a6eaf31fed4813ff991d5b. Package hashes: Image ae7e03824e3d384ff5467fd1fa6eafa109beb620f60401eec3870f2f71c754bb, DTB 6edbb3790de674f7011c8accd0e02d94ea5bcafa11dc127238c8a54da71c622a, config dda33f2fac329a3e79d633fe200497a5d4c599a2338de3caa10ef8cd3e634202. Cubie3 direct-U-Boot proof passed: clk_disable_unused and genpd cleanup completed, sunxi-mmc initialized, SD card enumerated as mmcblk0 p1 p2 p3, root mounted read-only, and /bin/sh started. UART log SHA256 ab8df24ff27ca7ed8ef97cfe571faf640cb209934424f56a6845e23f9e38f05f. No Kernel panic, Bad Linux ARM64 Image magic, or fatal err update clk timeout markers. Cubie3 was power-cycled back to vendor kernel 5.15.147-21-a733 and the proof staging area was restored to the pre-H247 H200 payload."
+  },
+  "latest_post_h247_public_upstream_refresh": {
+    "id": "A733-SDMMC-H248",
+    "status": "no_upstream_drift_h215_still_not_visible_h219_still_controls",
+    "title": "Post-H247 public and upstream refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h248-post-h247-public-upstream-refresh-20260613T0849Z.md",
+    "result": "After H247, refreshed selected upstream refs and public archive views. Mainline master, clk-next, sunxi for-next, and SoC for-next matched H241 values. Raw selected upstream file checks still returned 404 for the A733 CCU and pinctrl prereq files. Direct public-inbox web searches for H215 markers returned HTTP 403 from this environment and are treated as blocked/inconclusive, not absence evidence. The public patch-tracker page and mbox for the original A733 CCU thread returned HTTP 200 but still had zero H215 markers. H247 strengthens the maintainer-directed H245 common update-bit v2 fallback, but it does not change the public send posture: H215 remains the submitted narrow series, and H219 still blocks duplicate resend or alternate public action without sender-mailbox evidence, confirmed delivery failure, maintainer request, or another approved trigger plus refreshed gates."
+  },
+  "latest_h245_h247_v2_fallback_bundle": {
+    "id": "A733-SDMMC-H249",
+    "status": "no_send_v2_fallback_bundle_prepared_for_maintainer_requested_common_update_bit_shape",
+    "title": "H245/H247 v2 fallback no-send bundle",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h249-h245-h247-v2-fallback-no-send-20260613T0855Z.md",
+    "artifact_dir": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h249-h245-h247-v2-fallback-no-send",
+    "result": "Prepared a no-send fallback bundle that combines the H245 common update-bit v2 series shape with the H247 Cubie A7S hardware proof result. The bundle contains a README and cover-letter draft that cite base d9aa2e15caae, H247 proof head e694ae3fa8477846a5a6eaf31fed4813ff991d5b, kernel marker 7.1.0-rc5-00181-ge694ae3fa847, Image SHA256 ae7e03824e3d384ff5467fd1fa6eafa109beb620f60401eec3870f2f71c754bb, DTB SHA256 6edbb3790de674f7011c8accd0e02d94ea5bcafa11dc127238c8a54da71c622a, and UART log SHA256 ab8df24ff27ca7ed8ef97cfe571faf640cb209934424f56a6845e23f9e38f05f. H249 is explicitly not a send approval and must not bypass H219; it is ready only as a maintainer-requested v2 fallback starting point, with full regeneration and gates required before public use."
+  },
+  "latest_common_update_bit_risk_audit": {
+    "id": "A733-SDMMC-H250",
+    "status": "common_update_bit_v2_risk_audit_recorded_no_source_change_needed",
+    "title": "Common update-bit risk audit",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h250-common-update-bit-risk-audit-20260613T0905Z.md",
+    "result": "Audited the H245 common update-bit helper after H247 proof. Placement is defensible: base and lock are assigned, the common lock is initialized, and clocks are not yet registered for consumers before the probe-time update-bit write. Scope remains the main review risk: H245 broadens A733 NSI-only handling to every CCU_FEATURE_UPDATE_BIT clock in a descriptor, including A523 mbus/iommu/dram and A733 nsi/mbus/gpu/dram. Existing gate, mux, and simple divider helper paths OR the update bit during active operations, but checked MP/NM/NKMP rate helpers write registers without a generic update-bit OR, so H245 should be framed as a one-time boot-programmed-state commit, not a complete audit of every future rate-change path. No source edit is required solely from this audit; keep H215 as the narrow posture unless maintainers ask for common handling."
+  },
+  "latest_h249_cover_caveat_refresh": {
+    "id": "A733-SDMMC-H251",
+    "status": "h250_caveat_folded_into_h249_no_send_fallback_bundle",
+    "title": "H249 cover caveat refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h251-h249-cover-caveat-refresh-20260613T0912Z.md",
+    "artifact_dir": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h249-h245-h247-v2-fallback-no-send",
+    "result": "Updated the H249 no-send fallback cover and README to incorporate the H250 review caveat: the common update-bit helper is scoped to the registration-time firmware-to-Linux handoff and does not claim to audit or fix every later set_rate() path for update-bit clocks. This makes the maintainer-directed H245/H247 fallback material safer to reuse if reviewers ask for common CCU_FEATURE_UPDATE_BIT handling, without changing the H219-controlled public send posture."
+  },
+  "latest_h247_fallback_branch_anchor": {
+    "id": "A733-SDMMC-H252",
+    "status": "h247_common_update_bit_v2_proven_head_anchored_as_strix_branch",
+    "title": "H247 fallback branch anchor",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h252-h247-fallback-branch-anchor-20260613T0920Z.md",
+    "result": "Created Strix kernel branch local-prefix/a733-common-update-bit-v2-h247-proof pointing at exact H247 hardware-proven H245 common update-bit v2 fallback head e694ae3fa8477846a5a6eaf31fed4813ff991d5b. Branch commit order is ab8070fb85ca, d9bc1f51405e, a6d0a4494155, e694ae3fa847 on base d9aa2e15caae. Diffstat versus base is ccu-sun60i-a733.c plus ccu_common.c, 36 insertions and 8 deletions. git diff --check base..branch passed and the source worktree stayed clean. This is a local source-reference anchor only; H215 remains the submitted narrow posture and H219 still gates any resend or alternate public action."
+  },
+  "latest_h252_regenerated_v2_fallback_bundle": {
+    "id": "A733-SDMMC-H253",
+    "status": "h252_regenerated_v2_fallback_no_send_bundle_gates_passed",
+    "title": "H252 regenerated v2 fallback no-send bundle",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h253-h252-regenerated-v2-fallback-no-send-20260613T0901Z.md",
+    "artifact_dir": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h253-h252-regenerated-v2-fallback-no-send",
+    "result": "Regenerated the maintainer-directed common CCU_FEATURE_UPDATE_BIT v2 fallback series from the H252 branch anchor at head e694ae3fa8477846a5a6eaf31fed4813ff991d5b on base d9aa2e15caae. The no-send bundle contains a cover letter, patches 1-4, summary, checksums, and gate logs. Public hygiene passed with files_scanned=8 and matches=0. git am --3way from base passed, git diff --check passed, source equivalence against the anchored H252 source state passed, and strict checkpatch for patches 1-4 passed with zero errors, zero warnings, and zero checks. H253 supersedes H249 as the cleaner no-send fallback bundle, but it remains only a maintainer-requested fallback and does not change H215 or bypass H219."
+  },
+  "latest_post_h253_public_upstream_refresh": {
+    "id": "A733-SDMMC-H254",
+    "status": "no_upstream_drift_h215_absent_from_reachable_bounded_views_h219_still_controls",
+    "title": "Post-H253 public and upstream refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h254-post-h253-public-upstream-refresh-20260613T0905Z.md",
+    "result": "Refreshed selected upstream refs and public/archive views after H253. Mainline master, clk-next, sunxi for-next, and SoC for-next still match H248/H241. Raw selected upstream file checks still show no A733 CCU driver, A733 CCU Kconfig marker, A733 pinctrl driver, or A733 RTC marker in checked refs. Patchew series page, patch-7 page, and patch-7 mbox returned HTTP 200 with zero H215 markers. Direct public-inbox web probes for all H215 Message-IDs returned HTTP 403 from this environment and remain inconclusive. Bounded current public-inbox Git heads for linux-clk/0, linux-sunxi/0, linux-arm-kernel/3, and lkml/19 were reachable through heads dated up to 2026-06-13T09:03:32Z and had zero H215 markers. This does not prove delivery failure; H219 still blocks duplicate resend or alternate public action without stronger evidence or maintainer request."
+  },
+  "latest_source_anchor_integrity_refresh": {
+    "id": "A733-SDMMC-H255",
+    "status": "h200_and_h253_source_anchors_verified_patch_bundle_reconstructs_fallback_source",
+    "title": "Source anchor integrity refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h255-source-anchor-integrity-refresh-20260613T0910Z.md",
+    "result": "Verified the recorded H200/H215 narrow source anchor and H253/H247 common update-bit fallback source anchor on the build host. H200 branch head is de486cb24c361a86cba26738f24332df780872b0 and clean. H253 fallback branch head is e694ae3fa8477846a5a6eaf31fed4813ff991d5b. Both anchors have merge-base d9aa2e15caae5085b51a28529fc0c35d189df543 and pass git diff --check against base. Applying the H253 patch bundle with git am --3way from base passed, applied diffcheck passed, and the resulting source matched the H253 fallback anchor for ccu-sun60i-a733.c and ccu_common.c. This confirms H253 remains mechanically reproducible from stored artifacts; it does not change H215 or bypass H219."
+  },
+  "latest_dts_final_gate_refresh": {
+    "id": "A733-DTS-H256",
+    "status": "dts_final_branch_clean_b4_final_gate_still_passes_public_export_expected_head_stale",
+    "title": "DTS final gate refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h256-dts-final-gate-refresh-20260613T0916Z.md",
+    "result": "Refreshed the broader A733/Cubie A7S DTS submission track. The final DTS branch codex/final/a733-dts-v1 is still clean at head 1d2642221795d611d607b153c119218e496856a8 on base 1626ce5bc85bd3faaa92877d1b65c924d86a9546. Rerunning scripts/kernel-b4-final-gate against the final worktree passed; b4 metadata still reports needs-editing False, needs-recipients False, has-prerequisites True, needs-auto-to-cc False, needs-checking False, needs-checking-deps False, and preflight-checks-failing False. The Mac public/export repo is clean at db53521a63f9cc6a4fc684a927b3bac78173b859, ahead of public/main by 215, making the older a733-public-expected-head.json entry for b54dade62c44 stale. The build-host public-export working copy is dirty with unrelated workflow files and should not be used as send authority. No reflect or real send was run."
+  },
+  "latest_public_export_expected_head_refresh": {
+    "id": "A733-DTS-H257",
+    "status": "public_export_expected_head_updated_to_clean_mac_export_head",
+    "title": "Public export expected-head refresh",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-public-expected-head.json",
+    "result": "Updated the public/export expected-head record to match the current clean Mac export repo: branch main, head db53521a63f9cc6a4fc684a927b3bac78173b859, status ## main...public/main [ahead 215], and rev-list left/right count 215/0 for HEAD...public/main. This resolves the H256-noted stale expected-head value b54dade62c44. No public push, b4 reflect, b4 send, or source edit was performed."
+  },
+  "latest_public_export_push_dry_run": {
+    "id": "A733-DTS-H258",
+    "status": "public_export_push_dry_run_fast_forward_shape_passed",
+    "title": "Public export push dry-run",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h258-public-export-push-dry-run-20260613T0918Z.md",
+    "result": "Fetched the configured public remote for the Mac public/export repo and ran git push --dry-run public main. The repo is clean on branch main at db53521a63f9cc6a4fc684a927b3bac78173b859, public/main is 57a1325c5a0758ec55094a71f5553ef37818868c, and HEAD...public/main is 215/0. Dry-run reported a fast-forward-shaped update 57a1325..db53521 main -> main. No public push, b4 reflect, b4 send, source edit, or hardware action was performed."
+  },
+  "latest_public_export_push_attempt": {
+    "id": "A733-DTS-H259",
+    "status": "public_export_push_blocked_by_github_workflow_scope_remote_unchanged",
+    "title": "Public export push blocked by workflow scope",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h259-public-export-push-blocked-workflow-scope-20260613T0919Z.md",
+    "result": "Attempted to push the clean Mac public/export repo main branch to the configured public GitHub remote after H258 dry-run showed a fast-forward shape. GitHub rejected the push because the OAuth credential cannot create or update .github/workflows/kernel-validation-floor.yml without workflow scope. Post-push fetch verified public/main remained 57a1325c5a0758ec55094a71f5553ef37818868c while local HEAD remains db53521a63f9cc6a4fc684a927b3bac78173b859 and HEAD...public/main remains 215/0. The ahead range includes workflow-touching commits 1f1e80a and e74e884. No remote ref changed; blocker is credential scope, not source readiness."
+  },
+  "latest_current_maintainer_response_playbook": {
+    "id": "A733-SDMMC-H260",
+    "status": "current_response_playbook_ready_for_h215_h253_dts_publication_events",
+    "title": "Current maintainer response playbook",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h260-current-maintainer-response-playbook-20260613T0920Z.md",
+    "result": "Created a current event-driven playbook after H215-H259. It separates maintainer replies to H215, maintainer requests for common update-bit handling via H253, sender-mailbox failure evidence, public appearance of H215, public-export backup retry after the workflow-scope blocker, DTS reflect review, and hardware-proof discipline. It preserves H219 for resend/alternate public actions, keeps H253 as maintainer-directed fallback rather than automatic replacement, records the H259 workflow-scope publication blocker, and does not authorize public mail, public push, source edit, service change, model routing, or hardware action by itself."
+  },
+  "latest_dts_b4_send_preview_gate": {
+    "id": "A733-DTS-H261",
+    "status": "stricter_b4_final_gate_reopened_missing_patatt_signing_key",
+    "title": "DTS b4 send-preview gate",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h261-dts-b4-send-preview-gate-20260613T0922Z.md",
+    "result": "Updated scripts/kernel-b4-final-gate so the no-send final gate also runs b4 send -o into a temporary dry-run directory. Re-running the gate on the final DTS branch still showed closed b4 metadata, but the new send-preview step failed because patatt.signingkey is not set. A separate --no-sign dry-run probe also failed because the configured path uses the web endpoint and signing was disabled. No raw messages were generated and no mail was sent. The final-send checklist gate 07 is reopened until valid signing or an intentional SMTP/no-web send path is configured and the stricter final gate passes."
+  },
+  "latest_dts_public_ready_branch": {
+    "id": "A733-DTS-H262",
+    "status": "public_ready_dts_branch_b4_final_gate_passed_send_preview_clean",
+    "title": "DTS public-ready branch send-preview pass",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h262-dts-public-ready-branch-send-preview-pass-20260613T0931Z.md",
+    "result": "Resolved the H261 signing blocker by creating a local patatt ed25519 key for the A733/Cubie A7S send path and configuring the final DTS repo with patatt.signingkey ed25519:a733-cubie-a7s and selector a733-cubie-a7s. Rebuilt the final DTS branch as a733-dts-v1-public-ready at head 0356b43f505bbb3ec6a7679a49748750b37fe099 on base 1626ce5bc85bd3faaa92877d1b65c924d86a9546, with a public-identity cover commit, clean b4 change-id, and the same final source tree as the previous final branch. The stricter scripts/kernel-b4-final-gate now also scans rendered .eml messages for local lab/provider markers and passes on the new branch. Send-preview headers use Enzo Adriano <enzo.adriano.code@gmail.com> and developer key identity enzo.adriano.code@gmail.com. No reflect copy or real send was run; gate 08 remains open."
+  },
+  "latest_dts_reflect_submit": {
+    "id": "A733-DTS-H263",
+    "status": "reflect_submitted_delivery_pending",
+    "title": "DTS b4 reflect submitted, delivery pending",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h263-dts-b4-reflect-submitted-delivery-pending-20260613T0937Z.md",
+    "result": "Authenticated the A733/Cubie A7S patatt key with the lkml b4 web endpoint and ran b4 send --reflect from Strix on branch a733-dts-v1-public-ready at head 0356b43f505bbb3ec6a7679a49748750b37fe099. b4 rendered the 5-message DTS series and reported Reflected 5 messages. b4 explicitly stated only enzo.adriano.code@gmail.com would receive actual delivery in reflect mode and public To/Cc recipients would not receive the series. Immediate Gmail searches did not yet find reflected patch copies, so mailbox delivery/review remains pending and gate 08 is not fully closed. No public list send was run."
+  },
+  "latest_dts_reflect_review": {
+    "id": "A733-DTS-H264",
+    "status": "reflect_received_reviewed_pass_public_send_ready",
+    "title": "DTS reflect received and reviewed cleanly",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h264-dts-reflect-received-reviewed-pass-20260613T0945Z.md",
+    "result": "All five b4-reflected A733/Cubie A7S DTS messages were found in Gmail using in:anywhere search. Gmail labeled them UNREAD/CATEGORY_UPDATES/SPAM, but delivery occurred. The received set contains cover plus patches 1/4 through 4/4. The cover raw MIME shows b4 relay delivery, expected To/Cc, Message-Id, X-Change-ID, X-Mailer b4 0.15.2, X-Developer-Signature, X-Developer-Key, and X-Endpoint-Received. Targeted Gmail searches for local lab/provider markers across the reflected subjects returned no matches. Gate 08 is closed and the DTS branch is public-send-ready, pending only last-moment final-gate recheck."
+  },
+  "latest_dts_public_send": {
+    "id": "A733-DTS-H265",
+    "status": "v1_public_sent_and_lore_indexed",
+    "title": "DTS v1 public send indexed on lore",
+    "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h265-dts-v1-public-sent-indexed-20260613T0950Z.md",
+    "result": "After H264 closed the reflect gate and a last-moment kernel-b4-final-gate PASS, b4 send was run without --reflect from the public-ready DTS branch. b4 sent 5 messages to the actual recipients via the lkml web endpoint, tagged sent/20260613-a733-dts-v1-public-ready-8cbb37133b64-v1, recorded v1 cover Message-ID 20260613-a733-dts-v1-public-ready-v1-0-7787c94681db@gmail.com, and rerolled the prep branch to v2. b4 am against lore fetched the public v1 thread and found 5 messages. Gmail received the public cover copy in Spam. Local b4 attestation check lacks the ed25519 public key but DKIM/kernel.org signature is present. Next action is monitor maintainer/list response and avoid accidental v2 send until a maintainer-driven revision is needed."
+  }
 }

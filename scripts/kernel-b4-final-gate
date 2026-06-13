@@ -16,6 +16,8 @@ Checks:
   - b4 dependency check runs
   - b4 check runs
   - show-info does not report obvious unresolved metadata gates
+  - b4 can render the outbound messages into a local dry-run directory
+  - rendered messages do not contain private lab/provider markers
 USAGE
 }
 
@@ -79,6 +81,25 @@ fi
 if ! "$b4_bin" prep --check >"$tmp/check.txt" 2>&1; then
   cat "$tmp/check.txt"
   echo "FAIL: b4 series check failed" >&2
+  fail=1
+fi
+
+if ! "$b4_bin" send -o "$tmp/send-preview" >"$tmp/send-preview.txt" 2>&1; then
+  cat "$tmp/send-preview.txt"
+  echo "FAIL: b4 send dry-run render failed" >&2
+  fail=1
+elif ! find "$tmp/send-preview" -maxdepth 1 -type f | grep -q .; then
+  cat "$tmp/send-preview.txt"
+  echo "FAIL: b4 send dry-run render produced no messages" >&2
+  fail=1
+fi
+
+if grep -RInE \
+  'Codex|Claude|OpenAI|ChatGPT|/srv|/Users|192\.168|100\.64|thinkcentre|strix|cubie[123]|homelab\.local|local-prefix' \
+  "$tmp/send-preview" >"$tmp/send-preview-hygiene.txt" 2>/dev/null
+then
+  cat "$tmp/send-preview-hygiene.txt"
+  echo "FAIL: b4 send dry-run render contains private lab/provider markers" >&2
   fail=1
 fi
 

@@ -54,8 +54,8 @@
     },
     {
       "route": "Hermes Desktop on Framework",
-      "artifact": "http://192.168.50.248:9120/",
-      "result": "Route recorded, but port 9120 was not reachable from the Mac during this session. Do not depend on it until API access is verified."
+      "artifact": "stale old LAN route http://192.168.50.248:9120/; current observed Framework LAN IP 192.168.50.140, Tailscale 100.64.0.5",
+      "result": "Route recorded as opportunistic only. Framework is not guaranteed always on; do not depend on it until live reachability and API access are verified."
     }
   ],
   "decision": {

@@ -145,7 +145,11 @@ scripts/cubie-runtime-proof-approval-packet --board cubie2
 
 The packet records board, UART, artifact path, exact first command, and stop
 conditions. As of 2026-06-12, Cubie runtime proof work is controlled by
-`HERMES_CUBIE_ACCESS_TIER`.
+`HERMES_CUBIE_ACCESS_TIER`. As of 2026-06-13, A733 multi-board work also uses
+the board-role envelope in
+`runbooks/kernel-a733-mainline-enablement-workflow.md`: one `burn` lane, one
+`proving` lane, and one `reference` lane. The tier is a coarse maximum; the
+board role is the per-board authority.
 
 ## Cubie Access Tiers
 
@@ -172,18 +176,78 @@ The default tier is `partial`.
 `total`:
 
 - everything in `partial`
-- use cubie1, cubie2, and cubie3 for live proof and reproduction
+- use cubie1, cubie2, and cubie3 for live proof and reproduction only after
+  each board has an explicit `burn`, `proving`, or `reference` role in
+  `inventory/hardware/cubie-a7s-lab.json`
 - run read-only checks, UART captures, and independent proof lanes concurrently
   across multiple Cubies when useful
 - use documented Cubie power helpers for recovery power cycles if a board is
   wedged
 - run documented recovery/vendor-restore steps from the homelab repo
-- still no repartitioning, formatting, `dd`/raw block writes, firmware/SPI/eMMC
-  bootloader writes, destructive cleanup, service/cron/model-routing changes,
-  pushes, or mail submission
+- allow destructive discovery only on the board assigned `burn`, only when the
+  recovery method is verified before that experiment class, and only with a
+  pristine-image reset between hypothesis families
+- firmware/SPI/eMMC bootloader writes, fuses, and unrecoverable persistent
+  changes require an explicit burn-role sub-permission and verified recovery
+  story; they are not enabled merely by setting tier `total`
+- still no service/cron/model-routing changes, pushes, or mail submission
+- `proving` runs only promoted artifacts; `reference` stays pinned to a
+  known-good baseline and is passive unless human-gated
 - serialize state-changing actions such as artifact staging, reboot,
   power-cycle, boot selection, recovery, or restore; do not change the state of
   multiple Cubies at the same time
+
+## Interchangeable Agent And Claims
+
+Run one live agent at a time for now. A single live agent may pipeline work
+across boards, including a long burn-board experiment with heartbeat while it
+runs software-only cycles. Do not enable cross-runtime concurrency until the
+central claim service is active and verified.
+
+The intended claim backend is the existing ThinkCentre Fault Ledger/FastMCP
+SQLite-WAL pattern. Agents should call a narrow claim/release/heartbeat surface;
+SQLite stays local to ThinkCentre. Do not rely on per-host local claim
+directories for cross-host coordination.
+
+Claim these contended resources before board-mutating or kernel-tree-mutating
+work:
+
+- work item ID
+- board lane
+- UART by-path
+- power outlet or power-control handle
+- kernel tree path
+- staged artifact path, when relevant
+
+Agent tier must be enforced server-side by the claim service using an
+`AGENT_ID -> AGENT_TIER` registry. If that service is not available, treat the
+agent as `local` tier and do not start destructive burn-board work.
+
+Stale claim handling:
+
+- software, proving, and reference: log before takeover
+- burn: log, mark board state `UNKNOWN`, and force recovery-to-pristine before
+  any new work trusts that board
+
+`OPERATOR_PRESENT` defaults to `false`; `APPROVAL_TIMEOUT` defaults to `120s`.
+If per-operation approval is required and no approval arrives before the
+timeout, log and stop.
+
+Recovery is a ladder, not a boolean:
+
+- `soft-fallback`: non-default extlinux kernel/DTB/bootargs experiments only
+- `sd-reimage`: removable microSD full-image recovery through SD-Mux/SDWire or
+  equivalent controller path
+- `fel-bootrom`: A733/SUN60IW2 BootROM/FEL recovery drilled with the actual
+  board, controller-reachable OTG, entry method, and `sunxi-fel` or `xfel`
+
+Only the highest drilled rung controls burn-board autonomy. A reachable but
+undrilled recovery method is not verified.
+
+RED is limited to public and commercial boundaries: public mail, `b4 send`,
+real `git send-email` delivery, list replies, GitHub comments or pull requests,
+public pushes, and additional paid/third-party API calls initiated by the
+agent. Hardware destructiveness is governed by board role, not by RED.
 
 ## Resource Flexibility
 

@@ -1,0 +1,44 @@
+head=fb85982739f16aed406dffec93798546bd904a9b
+base=d9aa2e15caae
+commits:
+d417b59851a9 clk: sunxi-ng: a733: keep the CPUS AHB bridge clock critical
+73d8f74a606e clk: sunxi-ng: a733: keep storage and NSI fabric clocks critical
+2829d0eb397c clk: sunxi-ng: commit update-bit clocks during registration
+fb85982739f1 clk: sunxi-ng: a733: keep GIC and CPU peri clocks critical
+
+patch_sha256:
+451507d7a230ebd84da8a1d2277881f9894ca6838118eb973c5990c5262c4529  0000-cover-letter.patch
+b23d7040c63f6b7b7e09841be6510363396b3efca7ccf95fbc4b68b863c8e060  0001-clk-sunxi-ng-a733-keep-the-CPUS-AHB-bridge-clock-cri.patch
+365a2a27282c2b56a4ecde2da366f05a8536d71635cd8289168d0d141dbb395f  0002-clk-sunxi-ng-a733-keep-storage-and-NSI-fabric-clocks.patch
+5169d95743a5aefa87d7e79f90a3bf4e77d7f2c2c9aaf9944fd65cac62c0077f  0003-clk-sunxi-ng-commit-update-bit-clocks-during-registr.patch
+a3b6ea6c5260506bf738b1e1fe0355c8a221e31a09872124484e13c26eb3442d  0004-clk-sunxi-ng-a733-keep-GIC-and-CPU-peri-clocks-criti.patch
+
+expected_source_delta_vs_h200:
+--- h200/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
++++ h245-common-v2/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+@@ -480,10 +480,7 @@
+ 	{ .hw = &pll_periph0_480M_clk.common.hw },
+ 	{ .hw = &pll_de_3x_clk.common.hw },
+ };
+-
+-#define SUN60I_A733_NSI_REG		0x580
+-static SUNXI_CCU_MP_DATA_WITH_MUX_GATE_FEAT(nsi_clk, "nsi", nsi_parents,
+-					    SUN60I_A733_NSI_REG,
++static SUNXI_CCU_MP_DATA_WITH_MUX_GATE_FEAT(nsi_clk, "nsi", nsi_parents, 0x580,
+ 					    0, 5,	/* M */
+ 					    0, 0,	/* no P */
+ 					    24, 3,	/* mux */
+@@ -2353,13 +2350,6 @@
+ 		writel(val, reg + pll_regs[i]);
+ 	}
+ 
+-	/*
+-	 * Boot firmware can leave the NSI mux/divider configuration pending;
+-	 * commit it before fabric consumers start probing.
+-	 */
+-	val = readl(reg + SUN60I_A733_NSI_REG);
+-	writel(val | CCU_SUNXI_UPDATE_BIT, reg + SUN60I_A733_NSI_REG);
+-
+ 	/* Enforce m1 = 0 for PLL_AUDIO0 */
+ 	val = readl(reg + SUN60I_A733_PLL_AUDIO0_REG);
+ 	val &= ~BIT(1);

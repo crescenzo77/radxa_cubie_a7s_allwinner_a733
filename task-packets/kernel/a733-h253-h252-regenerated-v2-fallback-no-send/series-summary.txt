@@ -1,0 +1,14 @@
+base=d9aa2e15caae
+branch=local-prefix/a733-common-update-bit-v2-h247-proof
+head=e694ae3fa8477846a5a6eaf31fed4813ff991d5b
+generated_utc=2026-06-13T08:58:32Z
+commits:
+ab8070fb85ca clk: sunxi-ng: a733: keep the CPUS AHB bridge clock critical
+d9bc1f51405e clk: sunxi-ng: a733: keep storage and NSI fabric clocks critical
+a6d0a4494155 clk: sunxi-ng: commit update-bit clocks during registration
+e694ae3fa847 clk: sunxi-ng: a733: keep GIC and CPU peri clocks critical
+patches:
+0001-clk-sunxi-ng-a733-keep-the-CPUS-AHB-bridge-clock-cri.patch
+0002-clk-sunxi-ng-a733-keep-storage-and-NSI-fabric-clocks.patch
+0003-clk-sunxi-ng-commit-update-bit-clocks-during-registr.patch
+0004-clk-sunxi-ng-a733-keep-GIC-and-CPU-peri-clocks-criti.patch

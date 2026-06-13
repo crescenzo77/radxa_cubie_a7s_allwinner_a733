@@ -1,0 +1,50 @@
+From c5b942c818a3c5027c7e2577404041569efb9e98 Mon Sep 17 00:00:00 2001
+From: Enzo Adriano <enzo.adriano.code@gmail.com>
+Date: Sat, 13 Jun 2026 01:45:36 -0400
+Subject: [PATCH 4/4] clk: sunxi-ng: a733: keep GIC and CPU peri clocks
+ critical
+
+Cubie A7S hardware testing narrowed the A733 boot-critical clock set down
+to the storage/NSI fabric fixes plus the GIC and CPU peripheral clocks.
+
+A candidate without both clocks stopped immediately after
+clk_disable_unused(). Keeping GIC while dropping cpu-peri failed at the
+same boundary. Keeping cpu-peri while dropping GIC progressed only to the
+power-domain disable phase before SDMMC0 initialized.
+
+The H195 shape keeps both clocks critical while dropping the earlier IOMMU
+and pll-periph0-480M trial criticals. It booted through SDMMC0 enumeration
+and mounted the root filesystem.
+
+Keep these clocks enabled until the dependency can be modeled more
+directly.
+
+Tested-on: Radxa Cubie A7S (A733 / SUN60IW2)
+Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
+---
+ drivers/clk/sunxi-ng/ccu-sun60i-a733.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+index 1d30080df4d1..cce036893750 100644
+--- a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
++++ b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+@@ -462,13 +462,13 @@ static SUNXI_CCU_M_DATA_WITH_MUX_GATE(gic_clk, "gic", gic_cpu_peri_parents, 0x56
+ 				      0, 5,	/* M */
+ 				      24, 3,	/* mux */
+ 				      BIT(31),	/* gate */
+-				      0);
++				      CLK_IS_CRITICAL);
+ 
+ static SUNXI_CCU_M_DATA_WITH_MUX_GATE(cpu_peri_clk, "cpu-peri", gic_cpu_peri_parents, 0x568,
+ 				      0, 5,	/* M */
+ 				      24, 3,	/* mux */
+ 				      BIT(31),	/* gate */
+-				      0);
++				      CLK_IS_CRITICAL);
+ 
+ static SUNXI_CCU_GATE_DATA(bus_its_pcie_clk, "bus-its-pcie", hosc, 0x574, BIT(1), 0);
+ 
+-- 
+2.53.0
+

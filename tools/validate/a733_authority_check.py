@@ -22,8 +22,17 @@ AUTHORITY_FILES = {
 EVIDENCE_INDEX = Path("task-packets/kernel/a733-current-evidence-index.md")
 REGENERATION_CHECKLIST = Path("task-packets/kernel/a733-local-regeneration-checklist.md")
 PERIPHERAL_EVIDENCE_MAP = Path("task-packets/kernel/a733-peripheral-evidence-map.md")
+SD_EMMC_EVIDENCE = Path("task-packets/kernel/a733-sd-emmc-evidence-sheet.md")
 ETHERNET_GMAC_EVIDENCE = Path("task-packets/kernel/a733-ethernet-gmac-evidence-sheet.md")
 USB_OTG_FEL_EVIDENCE = Path("task-packets/kernel/a733-usb-otg-fel-evidence-sheet.md")
+THERMAL_CPUFREQ_FAN_EVIDENCE = Path(
+    "task-packets/kernel/a733-thermal-cpufreq-fan-evidence-sheet.md"
+)
+PCIE_NVME_EVIDENCE = Path("task-packets/kernel/a733-pcie-nvme-evidence-sheet.md")
+LOW_SPEED_IO_EVIDENCE = Path("task-packets/kernel/a733-low-speed-io-evidence-sheet.md")
+WIFI_BLUETOOTH_EVIDENCE = Path(
+    "task-packets/kernel/a733-wifi-bluetooth-evidence-sheet.md"
+)
 
 REQUIRED_COMM_IDS = [f"A733-COMM-{number:03d}" for number in range(1, 17)]
 REQUIRED_BATCH_IDS = [f"A733-BATCH-{number:03d}" for number in range(0, 13)]
@@ -171,8 +180,13 @@ def check_evidence_index(root: Path, failures: list[str]) -> None:
         "local-only",
         "task-packets/kernel/a733-local-regeneration-checklist.md",
         "task-packets/kernel/a733-peripheral-evidence-map.md",
+        "task-packets/kernel/a733-sd-emmc-evidence-sheet.md",
         "task-packets/kernel/a733-ethernet-gmac-evidence-sheet.md",
         "task-packets/kernel/a733-usb-otg-fel-evidence-sheet.md",
+        "task-packets/kernel/a733-thermal-cpufreq-fan-evidence-sheet.md",
+        "task-packets/kernel/a733-pcie-nvme-evidence-sheet.md",
+        "task-packets/kernel/a733-low-speed-io-evidence-sheet.md",
+        "task-packets/kernel/a733-wifi-bluetooth-evidence-sheet.md",
     ]
     for needle in required:
         require_contains("evidence-index", text, needle, failures)
@@ -271,6 +285,37 @@ def check_ethernet_gmac_evidence(root: Path, failures: list[str]) -> None:
         require_contains("ethernet-gmac-evidence", text, needle, failures)
 
 
+def check_sd_emmc_evidence(root: Path, failures: list[str]) -> None:
+    path = root / SD_EMMC_EVIDENCE
+    if not path.exists():
+        failures.append(f"sd-emmc-evidence: missing {SD_EMMC_EVIDENCE}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("sd-emmc-evidence", text, failures)
+    required = [
+        "Status: local-only source-backed evidence sheet",
+        "Do not enable new SDMMC",
+        "Do not write storage",
+        "SDMMC0",
+        "eMMC",
+        "MMC",
+        "IDMAC",
+        "descriptor",
+        "rootfs",
+        "read-only",
+        "write",
+        "reboot",
+        "cold boot",
+        "mmc-utils",
+        "A733-BATCH-003",
+        "A733-BATCH-006",
+        "A733-COMM-006",
+        "local-only",
+    ]
+    for needle in required:
+        require_contains("sd-emmc-evidence", text, needle, failures)
+
+
 def check_usb_otg_fel_evidence(root: Path, failures: list[str]) -> None:
     path = root / USB_OTG_FEL_EVIDENCE
     if not path.exists():
@@ -303,6 +348,140 @@ def check_usb_otg_fel_evidence(root: Path, failures: list[str]) -> None:
         require_contains("usb-otg-fel-evidence", text, needle, failures)
 
 
+def check_thermal_cpufreq_fan_evidence(root: Path, failures: list[str]) -> None:
+    path = root / THERMAL_CPUFREQ_FAN_EVIDENCE
+    if not path.exists():
+        failures.append(
+            f"thermal-cpufreq-fan-evidence: missing {THERMAL_CPUFREQ_FAN_EVIDENCE}"
+        )
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("thermal-cpufreq-fan-evidence", text, failures)
+    required = [
+        "Status: local-only source-backed evidence sheet",
+        "Do not run workloads",
+        "Do not control PWM",
+        "thermal",
+        "cpufreq",
+        "fan",
+        "THS",
+        "OPP",
+        "cooling",
+        "PWM",
+        "tach",
+        "regulator",
+        "temperature",
+        "trip point",
+        "workload",
+        "stop threshold",
+        "A733-BATCH-011",
+        "local-only",
+    ]
+    for needle in required:
+        require_contains("thermal-cpufreq-fan-evidence", text, needle, failures)
+
+
+def check_pcie_nvme_evidence(root: Path, failures: list[str]) -> None:
+    path = root / PCIE_NVME_EVIDENCE
+    if not path.exists():
+        failures.append(f"pcie-nvme-evidence: missing {PCIE_NVME_EVIDENCE}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("pcie-nvme-evidence", text, failures)
+    required = [
+        "Status: local-only source-backed evidence sheet",
+        "Do not enable PCIe",
+        "Do not run `lspci`, `nvme`, `fio`",
+        "PCIe",
+        "NVMe",
+        "controller",
+        "PHY",
+        "PERST",
+        "refclk",
+        "CLKREQ",
+        "regulator",
+        "power budget",
+        "adapter",
+        "link training",
+        "lspci",
+        "fio",
+        "storage-write",
+        "A733-BATCH-008",
+        "A733-COMM-008",
+        "local-only",
+    ]
+    for needle in required:
+        require_contains("pcie-nvme-evidence", text, needle, failures)
+
+
+def check_low_speed_io_evidence(root: Path, failures: list[str]) -> None:
+    path = root / LOW_SPEED_IO_EVIDENCE
+    if not path.exists():
+        failures.append(f"low-speed-io-evidence: missing {LOW_SPEED_IO_EVIDENCE}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("low-speed-io-evidence", text, failures)
+    required = [
+        "Status: local-only source-backed evidence sheet",
+        "Do not run an I2C scan",
+        "Do not toggle GPIOs",
+        "I2C",
+        "SPI",
+        "UART",
+        "GPIO",
+        "pinctrl",
+        "pin mux",
+        "header",
+        "connector",
+        "interrupt",
+        "loopback",
+        "external device",
+        "I2C scan",
+        "SPI transfer",
+        "GPIO toggle",
+        "A733-BATCH-005",
+        "A733-COMM-004",
+        "A733-COMM-005",
+        "local-only",
+    ]
+    for needle in required:
+        require_contains("low-speed-io-evidence", text, needle, failures)
+
+
+def check_wifi_bluetooth_evidence(root: Path, failures: list[str]) -> None:
+    path = root / WIFI_BLUETOOTH_EVIDENCE
+    if not path.exists():
+        failures.append(f"wifi-bluetooth-evidence: missing {WIFI_BLUETOOTH_EVIDENCE}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("wifi-bluetooth-evidence", text, failures)
+    required = [
+        "Status: local-only source-backed evidence sheet",
+        "Do not run a Wi-Fi scan",
+        "Do not pair Bluetooth devices",
+        "Wi-Fi",
+        "Bluetooth",
+        "SDIO",
+        "UART",
+        "module",
+        "firmware",
+        "license",
+        "pwrseq",
+        "regulator",
+        "wake GPIO",
+        "shutdown GPIO",
+        "scan",
+        "association",
+        "throughput",
+        "pairing",
+        "A733-BATCH-010",
+        "A733-COMM-010",
+        "local-only",
+    ]
+    for needle in required:
+        require_contains("wifi-bluetooth-evidence", text, needle, failures)
+
+
 def run(root: Path) -> dict[str, Any]:
     failures: list[str] = []
     texts: dict[str, str] = {}
@@ -330,8 +509,13 @@ def run(root: Path) -> dict[str, Any]:
     check_evidence_index(root, failures)
     check_regeneration_checklist(root, failures)
     check_peripheral_evidence_map(root, failures)
+    check_sd_emmc_evidence(root, failures)
     check_ethernet_gmac_evidence(root, failures)
     check_usb_otg_fel_evidence(root, failures)
+    check_thermal_cpufreq_fan_evidence(root, failures)
+    check_pcie_nvme_evidence(root, failures)
+    check_low_speed_io_evidence(root, failures)
+    check_wifi_bluetooth_evidence(root, failures)
 
     status = "PASS" if not failures else "FAIL"
     return {
@@ -341,8 +525,13 @@ def run(root: Path) -> dict[str, Any]:
         "evidence_index": str(EVIDENCE_INDEX),
         "regeneration_checklist": str(REGENERATION_CHECKLIST),
         "peripheral_evidence_map": str(PERIPHERAL_EVIDENCE_MAP),
+        "sd_emmc_evidence": str(SD_EMMC_EVIDENCE),
         "ethernet_gmac_evidence": str(ETHERNET_GMAC_EVIDENCE),
         "usb_otg_fel_evidence": str(USB_OTG_FEL_EVIDENCE),
+        "thermal_cpufreq_fan_evidence": str(THERMAL_CPUFREQ_FAN_EVIDENCE),
+        "pcie_nvme_evidence": str(PCIE_NVME_EVIDENCE),
+        "low_speed_io_evidence": str(LOW_SPEED_IO_EVIDENCE),
+        "wifi_bluetooth_evidence": str(WIFI_BLUETOOTH_EVIDENCE),
         "board_count": len(inventory.get("boards", [])) if isinstance(inventory, dict) else None,
         "failures": failures,
         "failure_count": len(failures),

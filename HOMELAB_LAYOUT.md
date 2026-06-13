@@ -13,7 +13,7 @@ Current host meanings:
 
 | Host | Current meaning |
 |---|---|
-| `framework` | Framework laptop, user seat/thin client |
+| `framework` | Framework laptop, user seat/thin client; current LAN IP `192.168.50.140`, Tailscale `100.64.0.5`; do not assume always-on availability |
 | `strix` | Framework Desktop / Strix Halo host; canonical homelab repo at `/srv/projects/homelab` |
 | `thinkcentre` | Hub for model-dispatch, Open WebUI, AdGuard, dashboard, Hermes report browser, git mirrors, and kernel-cortex storage/services |
 | `amd` | Desktop with RTX 3090 + RX 7900 XT; local model host, validation host, and kernel-cortex embedding worker |

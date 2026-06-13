@@ -1,0 +1,3 @@
+total: 0 errors, 0 warnings, 0 checks, 46 lines checked
+
+0001-clk-sunxi-ng-commit-update-bit-clocks-during-registr.patch has no obvious style problems and is ready for submission.

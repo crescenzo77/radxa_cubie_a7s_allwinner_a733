@@ -1,0 +1,143 @@
+Subject: Re: [PATCH RFC 7/8] clk: sunxi-ng: a733: Add bus clock gates
+In-Reply-To: <20260310-a733-clk-v1-7-36b4e9b24457@pigmoral.tech>
+References: <20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech>
+ <20260310-a733-clk-v1-7-36b4e9b24457@pigmoral.tech>
+To: Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>,
+ Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Chen-Yu Tsai <wens@kernel.org>,
+ Jernej Skrabec <jernej.skrabec@gmail.com>,
+ Samuel Holland <samuel@sholland.org>,
+ Philipp Zabel <p.zabel@pengutronix.de>,
+ Junhui Liu <junhui.liu@pigmoral.tech>,
+ Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>,
+ Alexandre Ghiti <alex@ghiti.fr>,
+ Richard Cochran <richardcochran@gmail.com>
+Cc: linux-clk@vger.kernel.org,
+ devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ linux-sunxi@lists.linux.dev,
+ linux-kernel@vger.kernel.org,
+ linux-riscv@lists.infradead.org,
+ netdev@vger.kernel.org
+
+Hi Junhui,
+
+Thanks for the A733 CCU series. I have been testing it on a Radxa Cubie
+A7S (A733 / SUN60IW2) as part of mainline board bring-up, and I have
+some hardware results that look relevant to this patch and the A733 CCU
+driver.
+
+The short version is:
+
+- `ahb-cpus` needs to stay enabled, otherwise later R-CCU/RTC register
+  accesses can stall after clk_disable_unused().
+- The storage/NSI fabric clocks also need special handling for SDMMC0
+  normal IDMA to reach memory.
+- The NSI clock uses `CCU_FEATURE_UPDATE_BIT`; committing the
+  boot-programmed NSI mux/divider state during probe was required in my
+  tests, together with keeping the NSI fabric clocks enabled.
+
+All of this was tested with mainline plus the A733 CCU/RTC/pinctrl
+series on a Cubie A7S over UART. I have not sent patches because I would
+like maintainer guidance on the preferred modelling.
+
+1) `ahb-cpus` at 0x5c0 BIT(28)
+
+The CPU appears to reach the R-CCU and RTC register windows through the
+AHB bridge controlled by `ahb-cpus`. Since the bridge has no ordinary
+Linux device consumer, clk_disable_unused() can gate it during the
+unused-clock walk. Later R-domain register reads then stall the bus.
+
+With only this gate marked critical, the unused-clock walk completed on
+the Cubie A7S and later R-CCU/RTC register accesses remained live. This
+also disproved my earlier suspicion that `ext-osc32k-gate` itself was an
+absent register; it reads normally once the CPUS bridge remains enabled.
+The remaining RTC issue on this board is just that `ext-osc32k` has no
+DT source and therefore appears as an orphan parent.
+
+2) storage/MBUS/NSI fabric clocks
+
+After the `ahb-cpus` issue was fixed, SDMMC0 still exposed two separate
+fabric symptoms:
+
+- with the store lane disabled by the unused-clock walk, SDMMC0 hit
+  repeated `fatal err update clk timeout`;
+- with the store lane kept alive but NSI still disabled, the host could
+  initialize but normal IDMA still stopped at `Waiting for root device`.
+
+The diagnostic shape that reached root kept these clocks critical:
+
+- `ahb-store`
+- `mbus-store`
+- `mbus-msi-lite0`
+- `nsi`
+- `bus-nsi`
+
+That shape, combined with the NSI update commit described below, allowed
+SDMMC0 normal IDMA to enumerate the card, discover `mmcblk0` partitions,
+mount the root filesystem read-only, and start `/bin/sh`.
+
+I also tested a narrower comparison build that kept `ahb-store`,
+`mbus-store`, `nsi`, and `bus-nsi` enabled but left `mbus-msi-lite0`
+non-critical. That kernel started, but stopped immediately after
+`clk_disable_unused()` printed `clk: Disabling unused clocks`; it never
+reached SDMMC0 init or the later root-device wait. So in the shape I
+tested, `mbus-msi-lite0` still needs to remain in the kept-alive fabric
+bundle unless there is a better way to model this dependency.
+
+3) NSI update bit at 0x580 BIT(27)
+
+The diagnostic that first made SDMMC0 normal IDMA progress pointed at
+absolute address 0x02002580 bit 27. In the CCU driver, that maps to the
+A733 NSI clock register at offset 0x580 and `CCU_SUNXI_UPDATE_BIT`.
+The unchanged readback after writing this bit is expected, since the bit
+self-clears after committing the update.
+
+The NSI clock already has `CCU_FEATURE_UPDATE_BIT`, but in the boot path
+I tested, no consumer commits the boot-programmed NSI state before
+SDMMC0 IDMA needs the fabric. The parent/gate/div helper paths can OR in
+`CCU_SUNXI_UPDATE_BIT` when `CCU_FEATURE_UPDATE_BIT` is set, but the MP
+rate path itself does not appear to OR in the update bit, and no normal
+consumer path exercised a parent/gate transition early enough here.
+
+In my tests, pulsing the update bit once during the A733 CCU probe was
+necessary but not sufficient: the pulse alone still stopped at
+`Waiting for root device`, while the pulse plus critical `nsi` and
+`bus-nsi` clocks let SDMMC0 normal IDMA reach root.
+
+The local probe-time experiment was effectively:
+
+        val = readl(reg + SUN60I_A733_NSI_REG);
+        writel(val | CCU_SUNXI_UPDATE_BIT, reg + SUN60I_A733_NSI_REG);
+
+with `SUN60I_A733_NSI_REG` defined as 0x580.
+
+I am not sure whether you would prefer this as an A733-specific probe
+fixup or whether sunxi-ng should commit boot-programmed state for
+`CCU_FEATURE_UPDATE_BIT` MP clocks more generally during registration. I
+am also not sure whether the storage/NSI fabric dependencies should be
+represented as critical clocks or modelled with explicit consumers.
+
+If useful, I can share:
+
+- UART logs for the `ahb-cpus` hang and the fixed unused-clock walk;
+- the storage-fabric-only result that clears the SDMMC clock-update
+  timeout but still does not reach root;
+- the NSI-update-only result that still does not reach root;
+- the NSI update plus critical NSI/storage fabric result that reaches
+  `mmcblk0`, mounts root read-only, and starts `/bin/sh`;
+- the no-`mbus-msi-lite0` comparison result that stops after the
+  unused-clock walk;
+- the split local draft patches used for the tests.
+
+Tested-on: Radxa Cubie A7S (A733 / SUN60IW2), mainline plus this A733
+CCU series and the related A733 RTC and pinctrl series, UART console,
+aarch64 GCC build.
+
+Regards,
+Enzo Adriano

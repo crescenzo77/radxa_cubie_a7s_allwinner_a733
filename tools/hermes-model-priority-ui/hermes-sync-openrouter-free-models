@@ -1,0 +1,219 @@
+#!/home/enzo/.hermes/hermes-agent/venv/bin/python
+"""Sync Hermes' Open WebUI Hub allowlist, then reconcile model priority."""
+
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import time
+import urllib.request
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from typing import Any
+
+import yaml
+
+
+DEFAULT_SOURCE = "http://192.168.50.225:4011/v1/models"
+DEFAULT_CONFIG = "/home/enzo/.hermes/config.yaml"
+DEFAULT_PROVIDER = "openwebui-hub"
+DEFAULT_RECONCILE = "/home/enzo/.hermes/model-priority-ui/reconcile_priority.py"
+LOCAL_HARDWARE_PREFIXES = (
+    "3090 ",
+    "7900XT ",
+    "Strix ",
+    "amd-3090 / ",
+    "amd-7900xt / ",
+    "strix / ",
+)
+
+
+def load_json_url(url: str) -> dict[str, Any]:
+    request = urllib.request.Request(url, headers={"Accept": "application/json"})
+    with urllib.request.urlopen(request, timeout=20) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def model_context(item: dict[str, Any]) -> int | None:
+    meta = item.get("meta")
+    if not isinstance(meta, dict):
+        return None
+    value = meta.get("context")
+    if value in (None, ""):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def is_embedding_model(item: dict[str, Any]) -> bool:
+    model_id = str(item.get("id") or "")
+    meta = item.get("meta")
+    kind = str(meta.get("kind") or "") if isinstance(meta, dict) else ""
+    return kind == "embedding" or "embedding" in model_id.lower()
+
+
+def should_allow_model(item: dict[str, Any]) -> bool:
+    model_id = str(item.get("id") or "").strip()
+    if not model_id:
+        return False
+    if model_id.startswith("openrouter-free / "):
+        return True
+    if str(item.get("owned_by") or "") == "homelab-local" and not is_embedding_model(item):
+        return True
+    return False
+
+
+def entry_for_model(item: dict[str, Any]) -> dict[str, Any]:
+    model_id = str(item.get("id") or "")
+    entry: dict[str, Any] = {}
+    context = model_context(item)
+    if context:
+        entry["context_length"] = context
+    if model_id.startswith("openrouter-free / "):
+        entry["free_only"] = True
+    return entry
+
+
+def atomic_write(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with NamedTemporaryFile("w", encoding="utf-8", dir=str(path.parent), delete=False) as tmp:
+        tmp.write(text)
+        tmp_path = Path(tmp.name)
+    tmp_path.replace(path)
+
+
+def hub_base_from_models_url(source: str) -> str:
+    if source.endswith("/models"):
+        return source[: -len("/models")]
+    return source.rstrip("/")
+
+
+def run_priority_reconcile(source: str, config_path: Path, provider_name: str) -> int:
+    enabled = os.environ.get("HERMES_OPENROUTER_SYNC_RECONCILE", "1").lower()
+    if enabled in {"0", "false", "no", "off"}:
+        print("hermes-openrouter-sync: priority reconcile skipped by environment")
+        return 0
+
+    script = Path(os.environ.get("HERMES_PRIORITY_RECONCILE", DEFAULT_RECONCILE))
+    if not script.exists():
+        print(f"hermes-openrouter-sync: priority reconcile unavailable: {script}", file=sys.stderr)
+        return 0
+
+    env = os.environ.copy()
+    env["HERMES_CONFIG"] = str(config_path)
+    env["HERMES_MODEL_PROVIDER"] = provider_name
+    env["HERMES_MODEL_HUB_URL"] = hub_base_from_models_url(source)
+    env.setdefault("HERMES_RESTART_GATEWAY", "0")
+    python = os.environ.get("HERMES_PRIORITY_RECONCILE_PYTHON", sys.executable)
+
+    proc = subprocess.run(
+        [python, str(script)],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=env,
+        timeout=45,
+        check=False,
+    )
+    if proc.stdout:
+        print(proc.stdout.rstrip())
+    if proc.stderr:
+        print(proc.stderr.rstrip(), file=sys.stderr)
+    if proc.returncode:
+        print(f"hermes-openrouter-sync: priority reconcile failed rc={proc.returncode}", file=sys.stderr)
+    return proc.returncode
+
+
+def sync() -> int:
+    source = os.environ.get("HERMES_OPENROUTER_SYNC_SOURCE", DEFAULT_SOURCE)
+    config_path = Path(os.environ.get("HERMES_OPENROUTER_SYNC_CONFIG", DEFAULT_CONFIG))
+    provider_name = os.environ.get("HERMES_OPENROUTER_SYNC_PROVIDER", DEFAULT_PROVIDER)
+
+    payload = load_json_url(source)
+    advertised = payload.get("data") if isinstance(payload, dict) else None
+    if not isinstance(advertised, list):
+        raise RuntimeError(f"{source} did not return an OpenAI-compatible model list")
+
+    wanted_items = [item for item in advertised if isinstance(item, dict) and should_allow_model(item)]
+    wanted_ids = {str(item.get("id") or "") for item in wanted_items}
+    wanted_openrouter_ids = {model_id for model_id in wanted_ids if model_id.startswith("openrouter-free / ")}
+
+    original_text = config_path.read_text(encoding="utf-8")
+    config = yaml.safe_load(original_text) or {}
+    if not isinstance(config, dict):
+        raise RuntimeError(f"{config_path} is not a YAML mapping")
+
+    providers = config.setdefault("providers", {})
+    if not isinstance(providers, dict):
+        raise RuntimeError("config.providers is not a mapping")
+
+    provider = providers.setdefault(provider_name, {})
+    if not isinstance(provider, dict):
+        raise RuntimeError(f"config.providers.{provider_name} is not a mapping")
+
+    models = provider.setdefault("models", {})
+    if not isinstance(models, dict):
+        models = {str(model_id): {} for model_id in models if isinstance(model_id, str)}
+        provider["models"] = models
+
+    added: list[str] = []
+    updated: list[str] = []
+    removed: list[str] = []
+
+    for item in wanted_items:
+        model_id = str(item.get("id") or "")
+        new_entry = entry_for_model(item)
+        old_entry = models.get(model_id)
+        if not isinstance(old_entry, dict):
+            old_entry = {}
+        merged = dict(old_entry)
+        merged.update(new_entry)
+        if model_id not in models:
+            added.append(model_id)
+        elif merged != old_entry:
+            updated.append(model_id)
+        models[model_id] = merged
+
+    for model_id in list(models.keys()):
+        key = str(model_id)
+        if key.startswith("openrouter-free / ") and key not in wanted_openrouter_ids:
+            removed.append(key)
+            del models[model_id]
+            continue
+        if key.startswith(LOCAL_HARDWARE_PREFIXES) and key not in wanted_ids:
+            removed.append(key)
+            del models[model_id]
+
+    new_text = yaml.safe_dump(config, sort_keys=False, default_flow_style=False)
+    if new_text == original_text:
+        print(
+            f"hermes-openrouter-sync: no changes; allowed={len(models)} "
+            f"openrouter_free={len(wanted_openrouter_ids)} source={source}"
+        )
+        return run_priority_reconcile(source, config_path, provider_name)
+
+    stamp = time.strftime("%Y%m%d%H%M%S")
+    backup = config_path.with_name(config_path.name + f".bak.openrouter-sync.{stamp}")
+    backup.write_text(original_text, encoding="utf-8")
+    atomic_write(config_path, new_text)
+    print(
+        f"hermes-openrouter-sync: wrote {config_path}; backup={backup}; "
+        f"allowed={len(models)} added={len(added)} updated={len(updated)} "
+        f"removed={len(removed)} openrouter_free={len(wanted_openrouter_ids)}"
+    )
+    for label, values in (("added", added), ("updated", updated), ("removed", removed)):
+        for model_id in values:
+            print(f"{label}: {model_id}")
+    return run_priority_reconcile(source, config_path, provider_name)
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(sync())
+    except Exception as exc:
+        print(f"hermes-openrouter-sync: ERROR: {exc}", file=sys.stderr)
+        raise SystemExit(1)

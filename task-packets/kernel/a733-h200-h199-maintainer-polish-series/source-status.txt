@@ -1,0 +1,8 @@
+de486cb24c36 (HEAD -> codex/a733-ccu-nsi-v4-h199-maintainer-polish) clk: sunxi-ng: a733: keep GIC and CPU peri clocks critical
+7d5a873ba8ed clk: sunxi-ng: a733: commit the boot-programmed NSI clock state
+902646b270d6 clk: sunxi-ng: a733: keep storage and NSI fabric clocks critical
+6f9d6bd3a436 clk: sunxi-ng: a733: keep the CPUS AHB bridge clock critical
+d9aa2e15caae (codex/a733-cubie-review-v2, codex/a733-ccu-nsi-upstream-shape, codex/a733-ccu-nsi-split-draft, codex/a733-ccu-nsi-no-mbus-msi-lite0-draft) arm64: dts: allwinner: add Radxa Cubie A7S
+d3b5884a9c49 arm64: dts: allwinner: add Allwinner A733 SoC
+b69434747983 dt-bindings: arm: sunxi: add Radxa Cubie A7S
+c2beaa7a01f0 dt-bindings: mmc: add Allwinner A733 compatible

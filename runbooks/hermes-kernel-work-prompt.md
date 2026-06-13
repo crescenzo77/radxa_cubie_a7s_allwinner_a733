@@ -35,8 +35,26 @@ rsync -a strix:/srv/projects/cubie-a7s-armbian/sources/mainline-linux/ /srv/proj
 
 3. Else run the single most relevant read-only status/proof check.
 
+Runtime context:
+
+- State is on disk. Read the workflow, inventory, cycle ledger, hardware lane
+  queue, and communication ledger at the start of each cycle. Do not rely on
+  conversation memory.
+- Run as a single live agent. Do not assume cross-runtime concurrency is
+  enabled.
+- `OPERATOR_PRESENT` defaults to `false`. `APPROVAL_TIMEOUT` defaults to
+  `120s`. If approval is needed and no approval arrives within the timeout,
+  log and stop.
+- Agent tier is authoritative only when stamped by the ThinkCentre claim
+  service. If the claim service is unavailable, behave as `local` tier.
+- Before executing any board-mutating or kernel-tree-mutating action, hold
+  claims for the work item, board lane, UART by-path, power handle, kernel tree
+  path, and staged artifact path as applicable. If no claim service is
+  available, do not start destructive burn-board work.
+
 If a status field says `human_required` for Cubie staging or Cubie runtime
-proof, treat that as already approved when the injected tier allows the action.
+proof, it is approved only when `OPERATOR_PRESENT=true` and explicit per-op
+approval is received within `APPROVAL_TIMEOUT`.
 
 Cubie access tiers:
 
@@ -44,15 +62,46 @@ Cubie access tiers:
   log pull, dry-runs, status packets, and approval/status briefs only.
 - `partial`: strict plus workflow-identified artifact staging, live proof, and
   documented reboot actions on cubie2/cubie3 only.
-- `total`: partial plus cubie1 live proof, concurrent per-board read/capture
-  lanes, documented Cubie recovery power helpers, and documented restore steps.
+- `total`: partial plus use of cubie1/cubie2/cubie3 only through the
+  burn/proving/reference board-role envelope in
+  `runbooks/kernel-a733-mainline-enablement-workflow.md`.
+
+Board-role rules:
+
+- Read board roles from `inventory/hardware/cubie-a7s-lab.json`; never guess.
+- `burn`: destructive autonomous discovery is allowed only after recovery is
+  verified for the experiment class. Reset to a pristine image between
+  hypothesis families.
+- `proving`: run only artifacts promoted from burn-board success. No raw
+  experiments and no recovery flashing.
+- `reference`: passive baseline capture and differential checks only unless
+  human-gated.
+- Drain the promotion pipeline before starting a new burn experiment:
+  `EXPERIMENT -> CANDIDATE -> CONFIRMED -> BASELINE-VERIFIED -> PROVEN`.
+- Recovery is a rung, not a boolean. `soft-fallback` covers only non-default
+  extlinux kernel/DTB/bootargs experiments. `sd-reimage` is required for
+  rootfs/full-image corruption. `fel-bootrom` is required before firmware,
+  SPI, or eMMC-boot work, and must be drilled on the actual A733/SUN60IW2 board
+  with `sunxi-fel` or `xfel`.
+- If the recovery rung is not drilled and logged, queue the work instead of
+  running it.
 
 Rules that always apply:
 
 - Do not repartition, format, `dd`/raw-write block devices, flash SPI/eMMC boot
-  firmware, or do destructive cleanup.
+  firmware, or do destructive cleanup except when the selected board is
+  explicitly assigned `burn`, recovery is verified, and the exact experiment is
+  recorded in the hardware lane queue.
+- RED is public or commercial boundary only: do not send public mail, run
+  `b4 send`, use `git send-email` for real delivery, post GitHub comments or
+  pull requests, push public remotes, or initiate additional paid/third-party
+  API calls.
 - Do not change services, cron, model routing, Hermes gateway, Telegram setup,
-  git remotes, pushes, mail submission, or kernel source commits.
+  git remotes, or mail submission.
+- Coordination repo changes must stay inside the cycle scope and be logged as
+  committed or pending review. Kernel trees touched by the cycle must still
+  build for the relevant target or have the build failure recorded on a
+  diagnostic branch.
 - Serialize state-changing Cubie actions: do not reboot, power-cycle, stage, or
   recover more than one Cubie at the same time.
 - Use only commands that exist in the repo or standard shell commands with real

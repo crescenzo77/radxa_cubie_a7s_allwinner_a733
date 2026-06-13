@@ -518,6 +518,618 @@ roles, drilled recovery, and claim service permit it.
 
 Stop confirmation: Stop after this bounded validator/index consistency item.
 
+### A733-CYCLE-028
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create an SDMMC/eMMC source-backed evidence sheet.
+
+Selection rationale: Storage stability is central to the current A733 work:
+SDMMC0 already has hardware-proven narrow evidence and an open root-cause
+thread, while eMMC remains inventory/planning only. A focused local-only sheet
+separates non-destructive read-only evidence from write/reboot/cold-boot
+tests that need stronger board recovery.
+
+Scope contract: Create
+`task-packets/kernel/a733-sd-emmc-evidence-sheet.md`, wire it into the current
+evidence index and authority validator, and complete this ledger record. The
+sheet may summarize local authority records, read-only kernel source
+observations, required evidence, safe next local steps, and hard blockers. It
+must not infer unverified hardware facts, generate patches, edit kernel trees,
+write storage, boot/reboot boards, or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-sd-emmc-evidence-sheet.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- eMMC or SDMMC DTS enablement changes
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, storage
+  writes, filesystem writes, cold-boot tests, or SSH probe
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication, public pushes, or paid third-party calls
+
+Classification gate: Green local documentation/source-inventory work. Claim
+service is planned-not-active, all boards remain unassigned, recovery is not
+drilled for burn autonomy, and no hardware, storage, or kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: SD/eMMC evidence sheet, evidence index, authority
+validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-sd-emmc-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-sd-emmc-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-sd-emmc-evidence-sheet.md`
+  `45f8b603ac37e90af26f90a57c86aa8afdfeb5e6753bd3357cffb6932dba0925`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `247385c0eb0ce1f02aabc793314b1f112be65541ffa6c2c6788ddd3e4a1e1dfa`
+- `tools/validate/a733_authority_check.py`
+  `b1ba6f633b9ccae3395ca8cc7a584be0ee4b91886ad3a52f612cbc3c5964511f`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: SD/eMMC evidence sheet exists; evidence index points to it;
+authority validator requires it and checks SDMMC0, eMMC, MMC, IDMAC,
+descriptor, rootfs, read-only, write, reboot, cold boot, `mmc-utils`,
+A733-BATCH-003, A733-BATCH-006, A733-COMM-006, no-storage-write, no-boot, and
+local-only anchors. Validator passes, inventory JSON parses, Python compiles,
+and touched files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: SD/eMMC evidence sheet is new. Evidence index, authority
+validator, and cycle ledger are dirty after this local-only cycle. Kernel
+trees were not touched. Broader unrelated dirty/untracked files remain
+ignored.
+
+Communication ledger IDs: A733-COMM-006 as held future SDMMC root-cause or
+diagnostic-series context.
+
+Hardware lane queue IDs: A733-BATCH-003 and A733-BATCH-006 as role-gated
+future storage-proof context.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with source-only SDMMC0 or eMMC missing-facts
+checklist, or move to PCIe/NVMe evidence sheet. Hardware runtime work remains
+blocked until board roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded SDMMC/eMMC evidence-sheet item.
+
+### A733-CYCLE-029
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create a thermal/cpufreq/fan source-backed evidence sheet.
+
+Selection rationale: Thermal, CPU frequency, and fan support are listed as a
+safe local inventory candidate. They are safety-sensitive enough that future
+runtime work needs clear stop thresholds and proof lanes before any workload or
+fan control test runs.
+
+Scope contract: Create
+`task-packets/kernel/a733-thermal-cpufreq-fan-evidence-sheet.md`, wire it into
+the current evidence index and authority validator, and complete this ledger
+record. The sheet may summarize read-only source observations, evidence
+requirements, runtime proof requirements, safe local next steps, and hard
+blockers. It must not infer A733 thermal limits, generate patches, edit kernel
+trees, run workloads, read board temperatures, control PWM/fan hardware, boot
+boards, or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-thermal-cpufreq-fan-evidence-sheet.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- thermal, OPP, cpufreq, PWM, or fan DTS enablement changes
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture,
+  temperature readout, workload, fan/PWM control, or SSH probe
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication, public pushes, or paid third-party calls
+
+Classification gate: Green local documentation/source-inventory work. Claim
+service is planned-not-active, all boards remain unassigned, recovery is not
+drilled for burn autonomy, and no hardware or kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: thermal/cpufreq/fan evidence sheet, evidence index,
+authority validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `rg -n "thermal|cpufreq|opp|cooling|fan|pwm|ths|sensor|temperature" /Users/enzo/projects/linux-a733/arch/arm64/boot/dts/allwinner /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/thermal /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/opp /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/pwm`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-thermal-cpufreq-fan-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-thermal-cpufreq-fan-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-thermal-cpufreq-fan-evidence-sheet.md`
+  `50122a732262002639eebacf0dbc846d0503843ded15316595df8136b5658dab`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `4d0cd75de369152ad28bc3e42941b92289da46ce0e5d5e3ef1f3b1ef89443328`
+- `tools/validate/a733_authority_check.py`
+  `1153a5bcb8da83146fdf6fe113aa59bbc8f6a05263cc94402055002e36b0304d`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Thermal/cpufreq/fan evidence sheet exists; evidence index
+points to it; authority validator requires it and checks thermal, cpufreq, fan,
+THS, OPP, cooling, PWM, tach, regulator, temperature, trip point, workload,
+stop threshold, A733-BATCH-011, local-only, no-workload, and no-PWM-control
+anchors. Validator passes, inventory JSON parses, Python compiles, and touched
+files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: Thermal/cpufreq/fan evidence sheet is new. Evidence index,
+authority validator, and cycle ledger are dirty after this local-only cycle.
+Kernel trees were read only. Broader unrelated dirty/untracked files remain
+ignored.
+
+Communication ledger IDs: none; no thermal-specific held communication ID
+exists in the current ledger.
+
+Hardware lane queue IDs: A733-BATCH-011 as role-gated future thermal/cpufreq/fan
+runtime-proof context.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with low-speed I/O evidence sheet or
+PCIe/NVMe evidence sheet. Hardware runtime work remains blocked until board
+roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded thermal/cpufreq/fan evidence-sheet
+item.
+
+### A733-CYCLE-030
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create a PCIe/NVMe source-backed evidence sheet.
+
+Selection rationale: PCIe/NVMe is listed as inventory/planning only and is a
+safe local inventory track. It needs controller, PHY, power, adapter, link, and
+storage-write evidence before any maintainer-standard patchwork or runtime
+proof can be credible.
+
+Scope contract: Create
+`task-packets/kernel/a733-pcie-nvme-evidence-sheet.md`, wire it into the
+current evidence index and authority validator, and complete this ledger
+record. The sheet may summarize local authority records, read-only source
+observations, required evidence, runtime proof requirements, safe local next
+steps, and hard blockers. It must not infer unverified hardware facts,
+generate patches, edit kernel trees, enumerate PCIe devices, attach adapters,
+write NVMe storage, boot boards, or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-pcie-nvme-evidence-sheet.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- PCIe, PHY, regulator, or NVMe DTS enablement changes
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, PCIe
+  enumeration, adapter insertion, NVMe read/write testing, fio, or SSH probe
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication, public pushes, or paid third-party calls
+
+Classification gate: Green local documentation/source-inventory work. Claim
+service is planned-not-active, all boards remain unassigned, recovery is not
+drilled for burn autonomy, and no hardware, storage, or kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: PCIe/NVMe evidence sheet, evidence index, authority
+validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `rg -n "pcie|pci-e|pci|nvme|phy|reset|PERST|refclk|clkreq" /Users/enzo/projects/linux-a733/arch/arm64/boot/dts/allwinner /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/pci /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/phy`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-pcie-nvme-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-pcie-nvme-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-pcie-nvme-evidence-sheet.md`
+  `b49064410147a67c69644dfc99fbc4f02d432d44998661b50c45bd6f39076772`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `2fa40ca9b6352148912c969b1a454e5d32f467a84c40584b12c4f8aac7c67593`
+- `tools/validate/a733_authority_check.py`
+  `066ef1ecfa6c8728a3ccefebbf0a3b8276a9826c6246015a9b042566f1987f72`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: PCIe/NVMe evidence sheet exists; evidence index points to
+it; authority validator requires it and checks PCIe, NVMe, controller, PHY,
+PERST, refclk, CLKREQ, regulator, power budget, adapter, link training, lspci,
+fio, storage write, A733-BATCH-008, A733-COMM-008, local-only, no-enumeration,
+and no-fio anchors. Validator passes, inventory JSON parses, Python compiles,
+and touched files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: PCIe/NVMe evidence sheet is new. Evidence index, authority
+validator, and cycle ledger are dirty after this local-only cycle. Kernel
+trees were read only. Broader unrelated dirty/untracked files remain ignored.
+
+Communication ledger IDs: A733-COMM-008 as held future PCIe/NVMe support
+communication context.
+
+Hardware lane queue IDs: A733-BATCH-008 as role-gated future PCIe/NVMe
+runtime-proof context.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with low-speed I/O evidence sheet or
+Wi-Fi/Bluetooth evidence sheet. Hardware runtime work remains blocked until
+board roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded PCIe/NVMe evidence-sheet item.
+
+### A733-CYCLE-031
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create a low-speed I/O source-backed evidence sheet.
+
+Selection rationale: Low-speed I/O is listed as a safe local inventory
+candidate. I2C, SPI, UART, GPIO, and pinctrl work depends on exact pin
+ownership, mux conflicts, connector mapping, and external-device proof before
+it can become maintainer-standard patchwork.
+
+Scope contract: Create
+`task-packets/kernel/a733-low-speed-io-evidence-sheet.md`, wire it into the
+current evidence index and authority validator, and complete this ledger
+record. The sheet may summarize local authority records, read-only source
+observations, required evidence, runtime proof requirements, safe local next
+steps, and hard blockers. It must not infer unverified pin wiring, generate
+patches, edit kernel trees, attach external devices, toggle GPIOs, boot boards,
+or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-low-speed-io-evidence-sheet.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- I2C, SPI, UART, GPIO, pinctrl, interrupt, or connector DTS enablement changes
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, I2C scan,
+  SPI transfer, GPIO toggle, loopback test, external-device attachment, or SSH
+  probe
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication, public pushes, or paid third-party calls
+
+Classification gate: Green local documentation/source-inventory work. Claim
+service is planned-not-active, all boards remain unassigned, recovery is not
+drilled for burn autonomy, and no hardware or kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: low-speed I/O evidence sheet, evidence index, authority
+validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `rg -n "i2c|twi|spi|uart|gpio|pinctrl|pio|r_pio|function = \"(i2c|twi|spi|uart|gpio)|A733-BATCH-005|A733-COMM" /Users/enzo/projects/linux-a733/arch/arm64/boot/dts/allwinner /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/{i2c,spi,serial,gpio,pinctrl}`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-low-speed-io-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-low-speed-io-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-low-speed-io-evidence-sheet.md`
+  `8329094239fe4ed6ee1705a6438b6735e6ca9568269567a1a063f6f0cde66d10`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `e80398122ce8e7265c064f6774bdcd06754e62b5798e3d208c7a42c02a34e4c0`
+- `tools/validate/a733_authority_check.py`
+  `818bef8863794ccf9070c6ff1b386c1cae8507b569a36cf9040904174b927766`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Low-speed I/O evidence sheet exists; evidence index points
+to it; authority validator requires it and checks I2C, SPI, UART, GPIO,
+pinctrl, pin mux, header, connector, interrupt, loopback, external device,
+I2C scan, SPI transfer, GPIO toggle, A733-BATCH-005, A733-COMM-004,
+A733-COMM-005, local-only, no-I2C-scan, and no-GPIO-toggle anchors. Validator
+passes, inventory JSON parses, Python compiles, and touched files pass
+`git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: Low-speed I/O evidence sheet is new. Evidence index, authority
+validator, and cycle ledger are dirty after this local-only cycle. Kernel
+trees were read only. Broader unrelated dirty/untracked files remain ignored.
+
+Communication ledger IDs: A733-COMM-004 and A733-COMM-005 as held future
+pinctrl/prerequisite communication context.
+
+Hardware lane queue IDs: A733-BATCH-005 as role-gated future pinctrl/GPIO
+IRQ/bank proof context.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with Wi-Fi/Bluetooth evidence sheet or
+display/media evidence sheet. Hardware runtime work remains blocked until
+board roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded low-speed I/O evidence-sheet item.
+
+### A733-CYCLE-032
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create a Wi-Fi/Bluetooth source-backed evidence sheet.
+
+Selection rationale: Wi-Fi/Bluetooth is listed as inventory/planning only and
+is a safe local inventory track. It requires exact module identity, bus,
+firmware, power sequencing, driver availability, and runtime association or
+pairing proof before maintainer-standard patchwork.
+
+Scope contract: Create
+`task-packets/kernel/a733-wifi-bluetooth-evidence-sheet.md`, wire it into the
+current evidence index and authority validator, and complete this ledger
+record. The sheet may summarize local authority records, read-only source
+observations, required evidence, runtime proof requirements, safe local next
+steps, and hard blockers. It must not infer module identity, generate patches,
+edit kernel trees, load firmware, scan networks, pair Bluetooth devices, boot
+boards, or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-wifi-bluetooth-evidence-sheet.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- Wi-Fi, Bluetooth, SDIO, UART, regulator, pwrseq, wake GPIO, or firmware DTS
+  enablement changes
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, Wi-Fi
+  scan, AP association, throughput test, Bluetooth pairing, firmware loading,
+  or SSH probe
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication, public pushes, or paid third-party calls
+
+Classification gate: Green local documentation/source-inventory work. Claim
+service is planned-not-active, all boards remain unassigned, recovery is not
+drilled for burn autonomy, and no hardware, firmware, network, Bluetooth, or
+kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: Wi-Fi/Bluetooth evidence sheet, evidence index, authority
+validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `rg -n "wifi|wi-fi|wlan|bluetooth|bt|brcm|ap6|sdio|mmc-pwrseq|host-wakeup|device-wakeup|shutdown-gpios|firmware|hci|uart-has-rtscts" /Users/enzo/projects/linux-a733/arch/arm64/boot/dts/allwinner /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/net /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/mmc /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/serial`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-wifi-bluetooth-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-wifi-bluetooth-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-wifi-bluetooth-evidence-sheet.md`
+  `5376332589049157667e6791f1016230092f0769cda9bb1074a78d3faaa01ec1`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `974a1b468363982747f486e09b11ace6056e615a1c96daaad826b13e68930392`
+- `tools/validate/a733_authority_check.py`
+  `7ef52b776029691eb53a7da0d90117c17b729d738caa2f201d13b4b1851d08e9`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Wi-Fi/Bluetooth evidence sheet exists; evidence index points
+to it; authority validator requires it and checks Wi-Fi, Bluetooth, SDIO,
+UART, module, firmware, license, pwrseq, regulator, wake GPIO, shutdown GPIO,
+scan, association, throughput, pairing, A733-BATCH-010, A733-COMM-010,
+local-only, no-scan, and no-pairing anchors. Validator passes, inventory JSON
+parses, Python compiles, and touched files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: Wi-Fi/Bluetooth evidence sheet is new. Evidence index, authority
+validator, and cycle ledger are dirty after this local-only cycle. Kernel
+trees were read only. Broader unrelated dirty/untracked files remain ignored.
+
+Communication ledger IDs: A733-COMM-010 as held future Wi-Fi/Bluetooth
+communication context.
+
+Hardware lane queue IDs: A733-BATCH-010 as role-gated future Wi-Fi/Bluetooth
+runtime-proof context.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with display/media evidence sheet or NPU /
+RISC-V MCU boundary sheet. Hardware runtime work remains blocked until board
+roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded Wi-Fi/Bluetooth evidence-sheet item.
+
 ### A733-CYCLE-016
 
 Timestamp: 2026-06-13 local

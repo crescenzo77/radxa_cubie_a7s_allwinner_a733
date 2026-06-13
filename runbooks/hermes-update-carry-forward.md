@@ -276,6 +276,21 @@ What it does:
 - Keeps context lengths in Hermes config.
 - Marks OpenRouter entries with `free_only: true`.
 - Removes stale local hardware-prefixed and OpenRouter-free entries.
+- Calls the Hermes model priority reconcile hook after a successful sync.
+- Reconcile keeps the user's chosen primary/fallback order, prunes entries that
+  are no longer free/eligible, and restores the baseline auto-free router plus
+  Strix fallback when they are eligible.
+- Reconcile must not silently promote newly discovered free models above the
+  existing user-selected order.
+- Reconcile must fail closed and refuse to write when live model discovery has
+  errors.
+- Reconcile probes the first OpenRouter model in the active order. If the probe
+  fails, it enters degraded mode and moves eligible local models to the front.
+  When the probe later succeeds, it restores the previous preferred order after
+  pruning anything no longer eligible.
+- Automatic sync/reconcile must run with `HERMES_RESTART_GATEWAY=0` so routine
+  OpenRouter cache refreshes do not trigger Hermes gateway shutdown Telegram
+  warnings.
 
 Hardware prefixes the sync script knows about:
 
@@ -299,6 +314,42 @@ Strix ...
 ```
 
 This makes the accelerator visible before the model family.
+
+### Hermes Model Priority UI
+
+Service:
+
+```text
+hermes-model-priority-ui.service
+```
+
+URL:
+
+```text
+http://192.168.50.225:9130/
+```
+
+Source/deploy paths:
+
+```text
+/Users/enzo/projects/homelab/tools/hermes-model-priority-ui/
+/home/enzo/.hermes/model-priority-ui/app.py
+/home/enzo/.hermes/model-priority-ui/reconcile_priority.py
+/home/enzo/.local/bin/hermes-sync-openrouter-free-models
+/home/enzo/.config/systemd/user/hermes-model-priority-ui.service
+```
+
+What it does:
+
+- Reads the live model list from `http://192.168.50.225:4011/v1/models`.
+- Lists only free OpenRouter models and online local chat models with at least
+  64k context.
+- Excludes embedding models.
+- Excludes RTX 3090 models unless `HERMES_ALLOW_3090=true`, preserving the
+  ComfyUI reservation by default.
+- Writes timestamped `~/.hermes/config.yaml` backups before changing the
+  primary/fallback order.
+- Restarts `hermes-gateway.service` after applying an order.
 
 ### LAN Dashboard Engine
 

@@ -125,12 +125,27 @@ any future public action.
   material.
 - Use `task-packets/kernel/a733-peripheral-evidence-map.md` before starting
   any local-only source inventory or validation planning for peripherals.
+- Use `task-packets/kernel/a733-sd-emmc-evidence-sheet.md` before any SDMMC,
+  rootfs-stability, storage-write, cold-boot, or eMMC source inventory,
+  validation planning, or runtime-proof queue refinement.
 - Use `task-packets/kernel/a733-ethernet-gmac-evidence-sheet.md` before any
   Ethernet/GMAC source inventory, validation planning, or runtime-proof queue
   refinement.
 - Use `task-packets/kernel/a733-usb-otg-fel-evidence-sheet.md` before any
   USB, USB-C, OTG, or FEL source inventory, validation planning, or
   runtime/recovery-proof queue refinement.
+- Use `task-packets/kernel/a733-thermal-cpufreq-fan-evidence-sheet.md` before
+  any thermal, cpufreq, OPP, PWM, fan, tach, workload, stop-threshold, or
+  thermal-proof queue refinement.
+- Use `task-packets/kernel/a733-pcie-nvme-evidence-sheet.md` before any PCIe,
+  PCIe PHY, adapter, link-training, NVMe, storage-write, or fio proof queue
+  refinement.
+- Use `task-packets/kernel/a733-low-speed-io-evidence-sheet.md` before any
+  I2C, SPI, UART, GPIO, pinctrl, header, connector, interrupt, loopback, or
+  external-device proof queue refinement.
+- Use `task-packets/kernel/a733-wifi-bluetooth-evidence-sheet.md` before any
+  Wi-Fi, Bluetooth, SDIO, radio firmware, pwrseq, wake-GPIO, scan,
+  association, throughput, pairing, or reconnect proof queue refinement.
 - If patch text is regenerated locally, record the exact base, head, patch
   directory, validation commands, and source-equivalence target.
 - If a hardware item looks necessary, queue it in

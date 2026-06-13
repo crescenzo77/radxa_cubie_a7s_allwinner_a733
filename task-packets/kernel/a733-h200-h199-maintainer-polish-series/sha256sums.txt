@@ -1,0 +1,7 @@
+241d4d8c6b1c89d7804bc1e1a1265cfaeffe49b75e0af70e3da0b83358025ee9  /srv/projects/kernel-work/outgoing/a733-h200-h199-maintainer-polish-de486cb24c36-20260613T060250Z/0001-clk-sunxi-ng-a733-keep-the-CPUS-AHB-bridge-clock-cri.patch
+b24712a5cd5069954d3accbf83153c49f0c9497508df39945752bc39eea36e6c  /srv/projects/kernel-work/outgoing/a733-h200-h199-maintainer-polish-de486cb24c36-20260613T060250Z/0002-clk-sunxi-ng-a733-keep-storage-and-NSI-fabric-clocks.patch
+b016e28834173cafcfe3231d7666a87a1eeda64cce1cb260dcbe1290ea4c7b9c  /srv/projects/kernel-work/outgoing/a733-h200-h199-maintainer-polish-de486cb24c36-20260613T060250Z/0003-clk-sunxi-ng-a733-commit-the-boot-programmed-NSI-clo.patch
+a3fcbc564316c68d410af52b41db369acd7c2b55bdc68d522e9fcc3f5376a07b  /srv/projects/kernel-work/outgoing/a733-h200-h199-maintainer-polish-de486cb24c36-20260613T060250Z/0004-clk-sunxi-ng-a733-keep-GIC-and-CPU-peri-clocks-criti.patch
+ec6b8c646e4fa2fed535f0f6dc613cb6cc72475bf26066e892ce9bf93e8b5a3e  /srv/projects/kernel-work/outgoing/a733-h200-h199-maintainer-polish-de486cb24c36-20260613T060250Z/source-status.txt
+9abd0b8db7106c9264319066b4b61fb4f96446638bcfa4ea2588d4a91a558d0c  /srv/projects/kernel-work/outgoing/a733-h200-h199-maintainer-polish-de486cb24c36-20260613T060250Z/source.diff
+83a992158a5a12dbbedea03ac6740fc16eb9ed375c00f6c3acd0ad1559af21eb  /srv/projects/kernel-work/outgoing/a733-h200-h199-maintainer-polish-de486cb24c36-20260613T060250Z/source.diffstat

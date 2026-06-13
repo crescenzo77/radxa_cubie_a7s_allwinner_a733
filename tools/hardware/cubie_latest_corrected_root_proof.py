@@ -25,18 +25,26 @@ def log_for_meta(path: Path) -> Path:
     return path.with_suffix("") if path.name.endswith(".json") else path
 
 
-def find_latest(log_dir: Path, label: str) -> Path | None:
+def capture_stamp(meta_path: Path, meta: dict[str, object]) -> str:
+    stamp = str(meta.get("captured_at_utc") or "")
+    if stamp:
+        return stamp
+    head = meta_path.name.split("-", 1)[0]
+    return head if head.startswith("20") and head.endswith("Z") else ""
+
+
+def find_latest(log_dir: Path, label: str, *, prefix_ok: bool = True) -> Path | None:
     wanted = safe_label(label)
     matches: list[tuple[str, Path]] = []
     for meta_path in sorted(log_dir.glob("*.uart.log.json")):
         meta = cubie_uart_report.read_meta(meta_path)
-        if str(meta.get("label") or "") != wanted:
-            continue
+        capture_label = str(meta.get("label") or "")
         log_path = log_for_meta(meta_path)
         if not log_path.exists():
             continue
-        stamp = str(meta.get("captured_at_utc") or "")
-        matches.append((stamp, log_path))
+        stamp = capture_stamp(meta_path, meta)
+        if capture_label == wanted or (prefix_ok and capture_label.startswith(f"{wanted}-")):
+            matches.append((stamp, log_path))
     if not matches:
         return None
     return sorted(matches)[-1][1]
@@ -46,11 +54,16 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--label", default=DEFAULT_LABEL)
     parser.add_argument("--log-dir", default=str(DEFAULT_LOG_DIR))
+    parser.add_argument(
+        "--exact-label",
+        action="store_true",
+        help="Only match the exact capture label; by default board/retry suffixes are accepted.",
+    )
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--strict", action="store_true")
     args = parser.parse_args()
 
-    log_path = find_latest(Path(args.log_dir), args.label)
+    log_path = find_latest(Path(args.log_dir), args.label, prefix_ok=not args.exact_label)
     if not log_path:
         payload = {
             "status": "missing-log",

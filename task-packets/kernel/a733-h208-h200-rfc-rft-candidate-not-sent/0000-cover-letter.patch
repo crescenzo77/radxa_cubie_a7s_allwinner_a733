@@ -1,0 +1,51 @@
+From: Enzo Adriano <enzo.adriano.code@gmail.com>
+Subject: [RFC/RFT 0/4] clk: sunxi-ng: a733: keep Cubie A7S SDMMC0 path live
+
+Hi,
+
+This is the cleaned CCU/NSI stack that let Radxa Cubie A7S boot past the
+normal SDMMC0 IDMA failure path in local hardware testing. I am sending it as
+RFC/RFT material because the touched clocks are introduced by the in-flight
+A733 CCU support series.
+
+The tested commit was:
+
+    de486cb24c36 ("clk: sunxi-ng: a733: keep GIC and CPU peri clocks critical")
+
+on top of:
+
+    d9aa2e15caae
+
+The boot-tested kernel reached:
+
+  - clk_disable_unused()
+  - unused power-domain disable
+  - SDMMC0 host initialization
+  - mmcblk0 partition discovery
+  - read-only ext4 root mount
+  - /bin/sh as init
+
+The patches split the observed requirements into:
+
+  1. keeping the CPUS/R-domain AHB bridge clock enabled;
+  2. keeping the storage/NSI fabric clock bundle enabled;
+  3. committing the boot-programmed NSI mux/divider state with the existing
+     update-bit mechanism during CCU probe;
+  4. keeping the GIC and CPU peripheral clocks enabled.
+
+The narrowing tests removed ahb-iommu0-sys, ahb-iommu1-sys, and
+pll-periph0-480M from the earlier diagnostic keepalive set while preserving the
+successful boot. Removing both gic and cpu-peri, or keeping only one of them,
+failed before root mount in the local test matrix.
+
+The series is intentionally conservative. It preserves the hardware-proven
+clock set rather than guessing at a narrower model that has not booted yet.
+
+Enzo Adriano (4):
+  clk: sunxi-ng: a733: keep the CPUS AHB bridge clock critical
+  clk: sunxi-ng: a733: keep storage and NSI fabric clocks critical
+  clk: sunxi-ng: a733: commit the boot-programmed NSI clock state
+  clk: sunxi-ng: a733: keep GIC and CPU peri clocks critical
+
+ drivers/clk/sunxi-ng/ccu-sun60i-a733.c | 35 +++++++++++++++++++++++++---------
+ 1 file changed, 26 insertions(+), 9 deletions(-)

@@ -1,0 +1,60 @@
+DRAFT - DO NOT SEND WITHOUT A FRESH THREAD, RECIPIENT, HYGIENE, AND SEND GATE
+
+Subject: [RFC/RFT v2 option 0/4] clk: sunxi-ng: keep Cubie A7S SDMMC0 path live
+
+This is a v2 option for the A733 CCU/NSI series. It keeps the same
+Cubie A7S tested critical-clock set as the earlier RFC/RFT, but expresses
+the NSI update-bit fix in common sunxi-ng registration code instead of as
+an A733-specific probe-time write.
+
+The common update-bit patch is intentionally broader than the A733-specific
+form: it commits boot-programmed state once for every clock carrying
+CCU_FEATURE_UPDATE_BIT in a registered CCU descriptor. That may be preferable
+if reviewers want the feature flag to own this semantic, but it should not
+replace the narrow A733 form unless maintainers ask for common handling.
+
+This common helper is scoped to the registration-time handoff from firmware
+to Linux. It does not claim to audit every later set_rate() path for
+update-bit clocks; if reviewers want broader framework cleanup for future
+rate changes, that should be handled as a separate follow-up.
+
+Validation performed on this local option:
+
+- git am --3way from base d9aa2e15caae
+- git diff --check
+- scripts/checkpatch.pl --strict --show-types
+- focused arm64 GCC W=1 object builds for ccu_common.o,
+  ccu-sun55i-a523.o, and ccu-sun60i-a733.o
+- focused sparse C=1 checks for the same objects
+- full arm64 Image and Radxa Cubie A7S DTB build
+- Radxa Cubie A7S boot proof through:
+  - clk_disable_unused()
+  - unused power-domain cleanup
+  - SDMMC0 host initialization
+  - card enumeration as mmcblk0 with p1/p2/p3
+  - read-only ext4 root mount
+  - /bin/sh as init
+
+Proof identifiers:
+
+- base: d9aa2e15caae
+- v2-option applied head: e694ae3fa8477846a5a6eaf31fed4813ff991d5b
+- kernel marker: 7.1.0-rc5-00181-ge694ae3fa847
+- Image SHA256:
+  ae7e03824e3d384ff5467fd1fa6eafa109beb620f60401eec3870f2f71c754bb
+- DTB SHA256:
+  6edbb3790de674f7011c8accd0e02d94ea5bcafa11dc127238c8a54da71c622a
+- UART log SHA256:
+  ab8df24ff27ca7ed8ef97cfe571faf640cb209934424f56a6845e23f9e38f05f
+
+Enzo Adriano (4):
+  clk: sunxi-ng: a733: keep the CPUS AHB bridge clock critical
+  clk: sunxi-ng: a733: keep storage and NSI fabric clocks critical
+  clk: sunxi-ng: commit update-bit clocks during registration
+  clk: sunxi-ng: a733: keep GIC and CPU peri clocks critical
+
+ drivers/clk/sunxi-ng/ccu-sun60i-a733.c | 23 +++++++++++++++--------
+ drivers/clk/sunxi-ng/ccu_common.c      | 21 +++++++++++++++++++++
+ 2 files changed, 36 insertions(+), 8 deletions(-)
+
+base-commit: d9aa2e15caae5085b51a28529fc0c35d189df543

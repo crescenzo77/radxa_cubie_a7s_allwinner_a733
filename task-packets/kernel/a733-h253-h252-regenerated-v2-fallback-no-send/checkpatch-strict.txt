@@ -1,0 +1,24 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+0001-clk-sunxi-ng-a733-keep-the-CPUS-AHB-bridge-clock-cri.patch
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+total: 0 errors, 0 warnings, 0 checks, 14 lines checked
+
+0001-clk-sunxi-ng-a733-keep-the-CPUS-AHB-bridge-clock-cri.patch has no obvious style problems and is ready for submission.
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+0002-clk-sunxi-ng-a733-keep-storage-and-NSI-fabric-clocks.patch
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+total: 0 errors, 0 warnings, 0 checks, 31 lines checked
+
+0002-clk-sunxi-ng-a733-keep-storage-and-NSI-fabric-clocks.patch has no obvious style problems and is ready for submission.
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+0003-clk-sunxi-ng-commit-update-bit-clocks-during-registr.patch
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+total: 0 errors, 0 warnings, 0 checks, 33 lines checked
+
+0003-clk-sunxi-ng-commit-update-bit-clocks-during-registr.patch has no obvious style problems and is ready for submission.
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+0004-clk-sunxi-ng-a733-keep-GIC-and-CPU-peri-clocks-criti.patch
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+total: 0 errors, 0 warnings, 0 checks, 15 lines checked
+
+0004-clk-sunxi-ng-a733-keep-GIC-and-CPU-peri-clocks-criti.patch has no obvious style problems and is ready for submission.

@@ -1,0 +1,35 @@
+From 7837da282ddc513525ea97e6fd77ac066248997b Mon Sep 17 00:00:00 2001
+From: Enzo Adriano <enzo.adriano.code@gmail.com>
+Date: Sat, 13 Jun 2026 00:29:19 -0400
+Subject: [PATCH 0/3] clk: sunxi-ng: a733: keep required fabric clocks enabled
+
+This RFC series records the A733 CCU-side changes that allowed Radxa
+Cubie A7S boot testing to move past two clock and fabric failures seen
+with the A733 CCU, RTC, and pinctrl RFC dependencies.
+
+Patch 1 keeps the CPUS AHB bridge enabled so later R-domain register
+accesses remain live after clk_disable_unused(). Patch 2 keeps the
+storage and NSI fabric bundle enabled; this is the conservative
+hardware-verified shape, including mbus-msi-lite0 after a narrower
+comparison without that gate failed before SDMMC0 initialization. Patch
+3 commits the boot-programmed NSI clock state once during CCU probe using
+the existing sunxi-ng update-bit mechanism.
+
+The storage/NSI fabric and update-bit changes are split so maintainers
+can decide whether this should remain local A733 CCU handling or move
+toward a more explicit consumer/fabric model.
+
+
+Enzo Adriano (3):
+  clk: sunxi-ng: a733: keep the CPUS AHB bridge clock critical
+  clk: sunxi-ng: a733: keep storage and NSI fabric clocks critical
+  clk: sunxi-ng: a733: commit the boot-programmed NSI clock state
+
+ drivers/clk/sunxi-ng/ccu-sun60i-a733.c | 31 ++++++++++++++++++++------
+ 1 file changed, 24 insertions(+), 7 deletions(-)
+
+
+base-commit: d9aa2e15caae5085b51a28529fc0c35d189df543
+-- 
+2.53.0
+

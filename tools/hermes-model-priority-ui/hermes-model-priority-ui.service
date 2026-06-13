@@ -1,0 +1,20 @@
+[Unit]
+Description=Hermes Model Priority LAN UI
+After=network-online.target hermes-gateway.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/.hermes/model-priority-ui
+Environment=HERMES_MODEL_PRIORITY_HOST=0.0.0.0
+Environment=HERMES_MODEL_PRIORITY_PORT=9130
+Environment=HERMES_MODEL_HUB_URL=http://192.168.50.225:4011/v1
+Environment=HERMES_CONFIG=%h/.hermes/config.yaml
+Environment=HERMES_MIN_CONTEXT=64000
+Environment=HERMES_RESTART_GATEWAY=1
+Environment=HERMES_GATEWAY_SERVICE=hermes-gateway.service
+ExecStart=%h/.hermes/hermes-agent/venv/bin/python3 %h/.hermes/model-priority-ui/app.py
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

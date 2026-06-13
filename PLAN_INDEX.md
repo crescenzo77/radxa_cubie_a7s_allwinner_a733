@@ -34,6 +34,10 @@ must be archived before replacement.
 | `HOMELAB_LAYOUT.md` | Current layout entrypoint and host/repo meanings |
 | `runbooks/kernel-knowledge-cortex.md` | Kernel evidence retrieval sidecar for the patch workflow |
 | `runbooks/kernel-token-offload.md` | Local hardware token-offload workflow for kernel logs, diffs, research, and reviews |
+| `runbooks/kernel-a733-mainline-enablement-workflow.md` | Project-specific A733/Cubie A7S mainline enablement workflow while communications are paused |
+| `task-packets/kernel/a733-cycle-ledger.md` | Append-only bounded-cycle ledger for local A733 work |
+| `task-packets/kernel/a733-supervised-batch-queue.md` | Role-gated hardware lane queue for burn/proving/reference Cubie work |
+| `task-packets/kernel/a733-unsent-communications-ledger.md` | Held upstream communications ledger for messages that would normally be sent but are intentionally withheld |
 | `CURRENT_SLICE.md` | Active task and boundaries |
 | `AGENT_STATUS.md` | Latest handoff/status |
 | `DECISIONS.md` | Durable decision log |

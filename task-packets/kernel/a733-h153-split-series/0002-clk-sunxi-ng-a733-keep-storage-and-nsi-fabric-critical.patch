@@ -1,0 +1,38 @@
+diff --git a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+index b9e8ae685047..0159f7c849a4 100644
+--- a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
++++ b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+@@ -485,8 +485,10 @@ static SUNXI_CCU_MP_DATA_WITH_MUX_GATE_FEAT(nsi_clk, "nsi", nsi_parents, 0x580,
+ 					    0, 0,	/* no P */
+ 					    24, 3,	/* mux */
+ 					    BIT(31),	/* gate */
+-					    0, CCU_FEATURE_UPDATE_BIT);
+-static SUNXI_CCU_GATE_DATA(bus_nsi_clk, "bus-nsi", hosc, 0x584, BIT(0), 0);
++					    CLK_IS_CRITICAL,
++					    CCU_FEATURE_UPDATE_BIT);
++static SUNXI_CCU_GATE_DATA(bus_nsi_clk, "bus-nsi", hosc, 0x584, BIT(0),
++			   CLK_IS_CRITICAL);
+ 
+ static const struct clk_parent_data mbus_parents[] = {
+ 	{ .hw = &sys_24M_clk.hw },
+@@ -540,7 +542,7 @@ static SUNXI_CCU_GATE_HWS(ahb_usb_sys_clk, "ahb-usb-sys", ahb_hws,
+ static SUNXI_CCU_GATE_HWS(ahb_msi_lite0_clk, "ahb-msi-lite0", ahb_hws,
+ 			  0x5c0, BIT(16), 0);
+ static SUNXI_CCU_GATE_HWS(ahb_store_clk, "ahb-store", ahb_hws,
+-			  0x5c0, BIT(24), 0);
++			  0x5c0, BIT(24), CLK_IS_CRITICAL);
+ static SUNXI_CCU_GATE_HWS(ahb_cpus_clk, "ahb-cpus", ahb_hws,
+ 			  0x5c0, BIT(28), CLK_IS_CRITICAL);
+ 
+@@ -563,9 +565,9 @@ static SUNXI_CCU_GATE_HWS(mbus_vid_in_clk, "mbus-vid-in", mbus_hws,
+ static SUNXI_CCU_GATE_HWS(mbus_serdes_clk, "mbus-serdes", mbus_hws,
+ 			  0x5e0, BIT(28), 0);
+ static SUNXI_CCU_GATE_HWS(mbus_msi_lite0_clk, "mbus-msi-lite0", mbus_hws,
+-			  0x5e0, BIT(29), 0);
++			  0x5e0, BIT(29), CLK_IS_CRITICAL);
+ static SUNXI_CCU_GATE_HWS(mbus_store_clk, "mbus-store", mbus_hws,
+-			  0x5e0, BIT(30), 0);
++			  0x5e0, BIT(30), CLK_IS_CRITICAL);
+ static SUNXI_CCU_GATE_HWS(mbus_msi_lite2_clk, "mbus-msi-lite2", mbus_hws,
+ 			  0x5e0, BIT(31), 0);
+ 

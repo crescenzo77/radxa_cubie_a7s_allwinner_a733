@@ -1,0 +1,64 @@
+From 7d5a873ba8ede8e2fa88f3cb7c7a74bb7fbde44f Mon Sep 17 00:00:00 2001
+From: Enzo Adriano <enzo.adriano.code@gmail.com>
+Date: Sat, 13 Jun 2026 02:02:24 -0400
+Subject: [PATCH 3/4] clk: sunxi-ng: a733: commit the boot-programmed NSI clock
+ state
+
+The A733 NSI clock uses the common sunxi-ng update-bit mechanism. Boot
+firmware can leave the NSI mux/divider value visible to Linux before the
+corresponding self-clearing update bit has been committed from the Linux
+CCU driver point of view.
+
+Commit the boot-programmed NSI clock state once during A733 CCU probe,
+before fabric consumers start probing. The write uses the existing
+CCU_SUNXI_UPDATE_BIT mechanism and does not preserve the bit in readback,
+because the hardware clears it after accepting the update.
+
+In the tested boot path, no normal consumer committed the boot-programmed
+NSI state before SDMMC0 normal IDMA needed the fabric. Parent, gate, and
+divider helper paths can pulse the update bit for clocks with
+CCU_FEATURE_UPDATE_BIT, but the MP rate path itself does not appear to OR
+in CCU_SUNXI_UPDATE_BIT.
+
+On Radxa Cubie A7S testing, the update pulse by itself was not sufficient,
+but the pulse together with critical NSI/storage fabric clocks let SDMMC0
+normal IDMA enumerate the card and mount the root filesystem.
+
+Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
+---
+ drivers/clk/sunxi-ng/ccu-sun60i-a733.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+index 8816c5cee319..1d30080df4d1 100644
+--- a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
++++ b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+@@ -480,7 +480,10 @@ static const struct clk_parent_data nsi_parents[] = {
+ 	{ .hw = &pll_periph0_480M_clk.common.hw },
+ 	{ .hw = &pll_de_3x_clk.common.hw },
+ };
+-static SUNXI_CCU_MP_DATA_WITH_MUX_GATE_FEAT(nsi_clk, "nsi", nsi_parents, 0x580,
++
++#define SUN60I_A733_NSI_REG		0x580
++static SUNXI_CCU_MP_DATA_WITH_MUX_GATE_FEAT(nsi_clk, "nsi", nsi_parents,
++					    SUN60I_A733_NSI_REG,
+ 					    0, 5,	/* M */
+ 					    0, 0,	/* no P */
+ 					    24, 3,	/* mux */
+@@ -2350,6 +2353,13 @@ static int sun60i_a733_ccu_probe(struct platform_device *pdev)
+ 		writel(val, reg + pll_regs[i]);
+ 	}
+ 
++	/*
++	 * Boot firmware can leave the NSI mux/divider configuration pending;
++	 * commit it before fabric consumers start probing.
++	 */
++	val = readl(reg + SUN60I_A733_NSI_REG);
++	writel(val | CCU_SUNXI_UPDATE_BIT, reg + SUN60I_A733_NSI_REG);
++
+ 	/* Enforce m1 = 0 for PLL_AUDIO0 */
+ 	val = readl(reg + SUN60I_A733_PLL_AUDIO0_REG);
+ 	val &= ~BIT(1);
+-- 
+2.53.0
+

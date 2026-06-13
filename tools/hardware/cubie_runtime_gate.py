@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cubie_event_log
 import cubie_boot_staging_status
 import cubie_corrected_root_proof_gate
+import cubie_latest_corrected_root_proof
 import cubie_network_status
 import cubie_uart_map_candidates
 import cubie_uart_report
@@ -240,16 +241,46 @@ def capture_log_path(capture: dict[str, Any]) -> Path:
     return REPO_ROOT / path
 
 
-def exact_corrected_root_proof(staging: dict[str, Any], captures: list[dict[str, Any]]) -> dict[str, Any]:
+def exact_corrected_root_proof(
+    staging: dict[str, Any], captures: list[dict[str, Any]], log_dir: Path
+) -> dict[str, Any]:
     labels = installed_capture_labels(staging)
     if not labels:
-        return {"status": "not-applicable", "labels": []}
+        fallback = cubie_latest_corrected_root_proof.find_latest(
+            log_dir,
+            cubie_latest_corrected_root_proof.DEFAULT_LABEL,
+        )
+        if not fallback:
+            return {"status": "not-applicable", "labels": []}
+        proof = cubie_corrected_root_proof_gate.build_gate(fallback)
+        return {
+            "status": proof.get("status"),
+            "labels": [],
+            "label": cubie_latest_corrected_root_proof.DEFAULT_LABEL,
+            "log_path": str(fallback),
+            "reason": proof.get("reason"),
+            "match": "latest-corrected-root-prefix",
+        }
     matches = [
         item
         for item in captures
         if item.get("label") in labels and (item.get("local_bytes") or 0) > 0
     ]
     if not matches:
+        fallback = cubie_latest_corrected_root_proof.find_latest(
+            log_dir,
+            cubie_latest_corrected_root_proof.DEFAULT_LABEL,
+        )
+        if fallback:
+            proof = cubie_corrected_root_proof_gate.build_gate(fallback)
+            return {
+                "status": proof.get("status"),
+                "labels": sorted(labels),
+                "label": cubie_latest_corrected_root_proof.DEFAULT_LABEL,
+                "log_path": str(fallback),
+                "reason": proof.get("reason"),
+                "match": "fallback-latest-corrected-root-prefix",
+            }
         return {"status": "missing", "labels": sorted(labels)}
     matches.sort(key=lambda item: str(item.get("captured_at_utc") or item.get("log_path") or ""))
     latest = matches[-1]
@@ -352,7 +383,7 @@ def build_gate(args: argparse.Namespace) -> dict[str, Any]:
     mapping = mapping_summary(inventory, inventory_path, log_dir, event_log)
     network = network_summary(inventory_path, args.network_timeout, args.port, args.skip_network)
     staging = staging_summary(args)
-    corrected_root_proof = exact_corrected_root_proof(staging, captures)
+    corrected_root_proof = exact_corrected_root_proof(staging, captures, log_dir)
     if inventory.get("inventory_error") or inventory.get("inventory_missing"):
         status = "inventory-invalid"
         reason = str(inventory.get("inventory_error") or inventory.get("inventory_missing"))

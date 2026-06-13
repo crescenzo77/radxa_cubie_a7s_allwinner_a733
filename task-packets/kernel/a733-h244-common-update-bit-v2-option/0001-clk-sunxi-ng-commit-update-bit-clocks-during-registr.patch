@@ -1,0 +1,91 @@
+From 087197b127e00a691e6b7aba04684916a6c0efe1 Mon Sep 17 00:00:00 2001
+From: Enzo Adriano <enzo.adriano.code@gmail.com>
+Date: Sat, 13 Jun 2026 04:16:38 -0400
+Subject: [PATCH] clk: sunxi-ng: commit update-bit clocks during registration
+
+Some sunxi-ng clocks require CCU_SUNXI_UPDATE_BIT to commit mux or
+divider changes to hardware. The individual gate, mux, and divider
+helper paths already set the update bit when a clock carries
+CCU_FEATURE_UPDATE_BIT, but that only helps after Linux actively changes
+the clock.
+
+Boot firmware can leave update-bit clocks programmed but pending. If
+Linux does not later change one of those clocks, the boot-programmed
+state may never be committed. This matters for A733, where the NSI clock
+can be left pending and fabric consumers can probe before any Linux
+consumer changes that clock.
+
+Commit all CCU_FEATURE_UPDATE_BIT clocks once during common CCU
+registration, after each descriptor has its base pointer and lock
+assigned but before clocks are registered for consumers. This preserves
+the per-clock flag as the source of truth and avoids an A733-specific
+write in the SoC driver.
+
+Signed-off-by: Enzo Adriano <enzo.adriano.code@gmail.com>
+---
+ drivers/clk/sunxi-ng/ccu-sun60i-a733.c |  7 -------
+ drivers/clk/sunxi-ng/ccu_common.c      | 21 +++++++++++++++++++++
+ 2 files changed, 21 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+index cce036893750..402cde045a95 100644
+--- a/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
++++ b/drivers/clk/sunxi-ng/ccu-sun60i-a733.c
+@@ -2353,13 +2353,6 @@ static int sun60i_a733_ccu_probe(struct platform_device *pdev)
+ 		writel(val, reg + pll_regs[i]);
+ 	}
+ 
+-	/*
+-	 * Boot firmware can leave the NSI mux/divider configuration pending;
+-	 * commit it before fabric consumers start probing.
+-	 */
+-	val = readl(reg + SUN60I_A733_NSI_REG);
+-	writel(val | CCU_SUNXI_UPDATE_BIT, reg + SUN60I_A733_NSI_REG);
+-
+ 	/* Enforce m1 = 0 for PLL_AUDIO0 */
+ 	val = readl(reg + SUN60I_A733_PLL_AUDIO0_REG);
+ 	val &= ~BIT(1);
+diff --git a/drivers/clk/sunxi-ng/ccu_common.c b/drivers/clk/sunxi-ng/ccu_common.c
+index 1c083b4d0b7e..af286ad2d268 100644
+--- a/drivers/clk/sunxi-ng/ccu_common.c
++++ b/drivers/clk/sunxi-ng/ccu_common.c
+@@ -109,6 +109,25 @@ int ccu_pll_notifier_register(struct ccu_pll_nb *pll_nb)
+ }
+ EXPORT_SYMBOL_NS_GPL(ccu_pll_notifier_register, "SUNXI_CCU");
+ 
++static void sunxi_ccu_commit_update_bit_clks(const struct sunxi_ccu_desc *desc)
++{
++	int i;
++
++	for (i = 0; i < desc->num_ccu_clks; i++) {
++		struct ccu_common *cclk = desc->ccu_clks[i];
++		unsigned long flags;
++		u32 reg;
++
++		if (!cclk || !(cclk->features & CCU_FEATURE_UPDATE_BIT))
++			continue;
++
++		spin_lock_irqsave(cclk->lock, flags);
++		reg = readl(cclk->base + cclk->reg);
++		writel(reg | CCU_SUNXI_UPDATE_BIT, cclk->base + cclk->reg);
++		spin_unlock_irqrestore(cclk->lock, flags);
++	}
++}
++
+ static int sunxi_ccu_probe(struct sunxi_ccu *ccu, struct device *dev,
+ 			   struct device_node *node, void __iomem *reg,
+ 			   const struct sunxi_ccu_desc *desc)
+@@ -130,6 +149,8 @@ static int sunxi_ccu_probe(struct sunxi_ccu *ccu, struct device *dev,
+ 		cclk->lock = &ccu->lock;
+ 	}
+ 
++	sunxi_ccu_commit_update_bit_clks(desc);
++
+ 	for (i = 0; i < desc->hw_clks->num ; i++) {
+ 		struct clk_hw *hw = desc->hw_clks->hws[i];
+ 		const char *name;
+
+base-commit: de486cb24c361a86cba26738f24332df780872b0
+-- 
+2.53.0
+

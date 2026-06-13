@@ -1,0 +1,78 @@
+Subject: Re: [PATCH RFC 7/8] clk: sunxi-ng: a733: Add bus clock gates
+In-Reply-To: <20260310-a733-clk-v1-7-36b4e9b24457@pigmoral.tech>
+References: <20260310-a733-clk-v1-0-36b4e9b24457@pigmoral.tech>
+ <20260310-a733-clk-v1-7-36b4e9b24457@pigmoral.tech>
+To: Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>,
+ Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Chen-Yu Tsai <wens@kernel.org>,
+ Jernej Skrabec <jernej.skrabec@gmail.com>,
+ Samuel Holland <samuel@sholland.org>,
+ Philipp Zabel <p.zabel@pengutronix.de>,
+ Junhui Liu <junhui.liu@pigmoral.tech>,
+ Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>,
+ Alexandre Ghiti <alex@ghiti.fr>,
+ Richard Cochran <richardcochran@gmail.com>
+Cc: linux-clk@vger.kernel.org,
+ devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ linux-sunxi@lists.linux.dev,
+ linux-kernel@vger.kernel.org,
+ linux-riscv@lists.infradead.org,
+ netdev@vger.kernel.org
+
+Hi Junhui,
+
+Following up with a more concrete result from the Cubie A7S testing.
+
+I now have a cleaned four-patch local stack for the CCU/NSI part of the
+issue, and I boot-tested the exact cleaned commit on Radxa Cubie A7S. The
+kernel reached:
+
+- clk_disable_unused()
+- genpd unused-domain disable
+- SDMMC0 host initialization
+- mmcblk0 partition discovery
+- read-only ext4 root mount
+- /bin/sh as init
+
+The tested commit was:
+
+    de486cb24c36 ("clk: sunxi-ng: a733: keep GIC and CPU peri clocks critical")
+
+on top of the local A733 bring-up base, with the relevant CCU changes split as:
+
+1. keep `ahb-cpus` critical, because later R-CCU/RTC register accesses appear
+   to depend on the CPUS/R-domain AHB bridge remaining live;
+2. keep the storage/NSI fabric bundle critical:
+   `ahb-store`, `mbus-store`, `mbus-msi-lite0`, `nsi`, and `bus-nsi`;
+3. pulse the A733 NSI clock update bit at CCU offset 0x580 during CCU probe so
+   the boot-programmed NSI mux/divider state is committed before SDMMC0 IDMA
+   needs the fabric;
+4. keep `gic` and `cpu-peri` critical.
+
+The narrowing tests were useful:
+
+- dropping `ahb-iommu0-sys`, `ahb-iommu1-sys`, and `pll-periph0-480M` still
+  passed;
+- dropping both `gic` and `cpu-peri` failed after clk_disable_unused();
+- keeping only `gic` or only `cpu-peri` also failed before root;
+- the final shape above passed through root mount and /bin/sh.
+
+The generated patches pass checkpatch --strict, trailer hygiene, and a focused
+public-hygiene scan. I have not sent them as a standalone series because they
+modify clocks introduced by this in-flight A733 CCU RFC, and I would rather
+align with the preferred model first.
+
+Would you prefer me to send the cleaned local stack as an RFC/RFT reply against
+this CCU series, or would you prefer to fold any of this into the next revision
+of the A733 CCU support?
+
+I can also share the UART logs and exact patch text if that is useful.
+
+Regards,
+Enzo Adriano
