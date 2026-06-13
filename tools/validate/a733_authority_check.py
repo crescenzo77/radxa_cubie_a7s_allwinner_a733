@@ -33,9 +33,24 @@ LOW_SPEED_IO_EVIDENCE = Path("task-packets/kernel/a733-low-speed-io-evidence-she
 WIFI_BLUETOOTH_EVIDENCE = Path(
     "task-packets/kernel/a733-wifi-bluetooth-evidence-sheet.md"
 )
+DISPLAY_MEDIA_EVIDENCE = Path("task-packets/kernel/a733-display-media-evidence-sheet.md")
+NPU_RISCV_BOUNDARY = Path("task-packets/kernel/a733-npu-riscv-boundary-sheet.md")
+REGULATOR_POWER_DOMAIN_EVIDENCE = Path(
+    "task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md"
+)
+LOCAL_PENDING_PREP_CHECKPOINT = Path(
+    "task-packets/kernel/a733-local-pending-prep-checkpoint.md"
+)
+DTS_V2_READINESS_CHECKLIST = Path(
+    "task-packets/kernel/a733-dts-v2-local-readiness-checklist.md"
+)
+AUDIO_I2S_EVIDENCE = Path("task-packets/kernel/a733-audio-i2s-evidence-sheet.md")
+PWM_BACKLIGHT_FAN_EVIDENCE = Path(
+    "task-packets/kernel/a733-pwm-backlight-fan-evidence-sheet.md"
+)
 
 REQUIRED_COMM_IDS = [f"A733-COMM-{number:03d}" for number in range(1, 17)]
-REQUIRED_BATCH_IDS = [f"A733-BATCH-{number:03d}" for number in range(0, 13)]
+REQUIRED_BATCH_IDS = [f"A733-BATCH-{number:03d}" for number in range(0, 17)]
 EXPECTED_BOARDS = {"cubie1", "cubie2", "cubie3"}
 
 
@@ -135,6 +150,8 @@ def check_queue(text: str, failures: list[str]) -> None:
         "Current inventory-derived snapshot",
         "no board is eligible for autonomous burn, proving, or",
         "reference mutation",
+        "Display/media/GPU runtime proof",
+        "NPU / RISC-V MCU runtime proof",
         "cubie1",
         "cubie2",
         "cubie3",
@@ -187,6 +204,13 @@ def check_evidence_index(root: Path, failures: list[str]) -> None:
         "task-packets/kernel/a733-pcie-nvme-evidence-sheet.md",
         "task-packets/kernel/a733-low-speed-io-evidence-sheet.md",
         "task-packets/kernel/a733-wifi-bluetooth-evidence-sheet.md",
+        "task-packets/kernel/a733-display-media-evidence-sheet.md",
+        "task-packets/kernel/a733-npu-riscv-boundary-sheet.md",
+        "task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md",
+        "task-packets/kernel/a733-local-pending-prep-checkpoint.md",
+        "task-packets/kernel/a733-dts-v2-local-readiness-checklist.md",
+        "task-packets/kernel/a733-audio-i2s-evidence-sheet.md",
+        "task-packets/kernel/a733-pwm-backlight-fan-evidence-sheet.md",
     ]
     for needle in required:
         require_contains("evidence-index", text, needle, failures)
@@ -241,6 +265,10 @@ def check_peripheral_evidence_map(root: Path, failures: list[str]) -> None:
         "GPU",
         "NPU",
         "RISC-V",
+        "Audio",
+        "I2S",
+        "PWM",
+        "backlight",
         "thermal",
         "cpufreq",
         "fan",
@@ -251,6 +279,10 @@ def check_peripheral_evidence_map(root: Path, failures: list[str]) -> None:
         "regulators",
         "A733-BATCH-003",
         "A733-BATCH-012",
+        "A733-BATCH-013",
+        "A733-BATCH-014",
+        "A733-BATCH-015",
+        "A733-BATCH-016",
         "A733-COMM-006",
         "A733-COMM-012",
         "local-only",
@@ -482,6 +514,241 @@ def check_wifi_bluetooth_evidence(root: Path, failures: list[str]) -> None:
         require_contains("wifi-bluetooth-evidence", text, needle, failures)
 
 
+def check_display_media_evidence(root: Path, failures: list[str]) -> None:
+    path = root / DISPLAY_MEDIA_EVIDENCE
+    if not path.exists():
+        failures.append(f"display-media-evidence: missing {DISPLAY_MEDIA_EVIDENCE}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("display-media-evidence", text, failures)
+    required = [
+        "Status: local-only source-backed evidence sheet",
+        "Do not enable display",
+        "Do not run display tests",
+        "display",
+        "DP",
+        "eDP",
+        "HDMI",
+        "MIPI DSI",
+        "CSI",
+        "media",
+        "VPU",
+        "GPU",
+        "DRM",
+        "bridge",
+        "panel",
+        "connector",
+        "frame capture",
+        "decode",
+        "render",
+        "A733-BATCH-013",
+        "A733-COMM-011",
+        "local-only",
+    ]
+    for needle in required:
+        require_contains("display-media-evidence", text, needle, failures)
+
+
+def check_npu_riscv_boundary(root: Path, failures: list[str]) -> None:
+    path = root / NPU_RISCV_BOUNDARY
+    if not path.exists():
+        failures.append(f"npu-riscv-boundary: missing {NPU_RISCV_BOUNDARY}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("npu-riscv-boundary", text, failures)
+    required = [
+        "Status: local-only source-backed boundary sheet",
+        "Do not enable an NPU",
+        "Do not load firmware",
+        "NPU",
+        "RISC-V MCU",
+        "remoteproc",
+        "firmware",
+        "reserved-memory",
+        "mailbox",
+        "IOMMU",
+        "OpenAMP",
+        "RPMsg",
+        "userspace ABI",
+        "accelerator",
+        "memory map",
+        "Firmware license",
+        "crash/recovery",
+        "A733-BATCH-014",
+        "A733-COMM-012",
+        "local-only",
+    ]
+    for needle in required:
+        require_contains("npu-riscv-boundary", text, needle, failures)
+
+
+def check_regulator_power_domain_evidence(root: Path, failures: list[str]) -> None:
+    path = root / REGULATOR_POWER_DOMAIN_EVIDENCE
+    if not path.exists():
+        failures.append(
+            f"regulator-power-domain-evidence: missing {REGULATOR_POWER_DOMAIN_EVIDENCE}"
+        )
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("regulator-power-domain-evidence", text, failures)
+    required = [
+        "Status: local-only source-backed evidence sheet",
+        "Do not add, rename, remove, or change regulator nodes",
+        "Do not toggle rails",
+        "regulator",
+        "PMIC",
+        "rail",
+        "supply",
+        "power-domain",
+        "OPP",
+        "voltage",
+        "always-on",
+        "boot-on",
+        "coupled regulator",
+        "Consumer map",
+        "vcc-3v3",
+        "A733-BATCH-004",
+        "A733-BATCH-011",
+        "local-only",
+    ]
+    for needle in required:
+        require_contains("regulator-power-domain-evidence", text, needle, failures)
+
+
+def check_local_pending_prep_checkpoint(root: Path, failures: list[str]) -> None:
+    path = root / LOCAL_PENDING_PREP_CHECKPOINT
+    if not path.exists():
+        failures.append(
+            f"local-pending-prep-checkpoint: missing {LOCAL_PENDING_PREP_CHECKPOINT}"
+        )
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("local-pending-prep-checkpoint", text, failures)
+    required = [
+        "Status: local-only pending-review checkpoint",
+        "not a public communication",
+        "not permission to mutate hardware",
+        "fa27be5dc4e14fa1947f4f3e2f2119e13ca67d39",
+        "main...origin/main [ahead 1]",
+        "task-packets/kernel/a733-display-media-evidence-sheet.md",
+        "task-packets/kernel/a733-local-pending-prep-checkpoint.md",
+        "task-packets/kernel/a733-npu-riscv-boundary-sheet.md",
+        "task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md",
+        "tools/validate/a733_authority_check.py",
+        "A733-CYCLE-033",
+        "A733-CYCLE-038",
+        "self-referential hash changes",
+        "No hardware mutation",
+        "No kernel tree files were edited",
+        "No public communication or public push",
+        "local pending-review material",
+    ]
+    for needle in required:
+        require_contains("local-pending-prep-checkpoint", text, needle, failures)
+
+
+def check_dts_v2_readiness_checklist(root: Path, failures: list[str]) -> None:
+    path = root / DTS_V2_READINESS_CHECKLIST
+    if not path.exists():
+        failures.append(f"dts-v2-readiness-checklist: missing {DTS_V2_READINESS_CHECKLIST}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("dts-v2-readiness-checklist", text, failures)
+    required = [
+        "Status: local-only sendable-held checklist",
+        "Do not send DTS v2",
+        "not send approval",
+        "Do not boot",
+        "uart0_pb9_pb10_pins",
+        "sun60i-a733-cubie-a7s.dts",
+        "sun60i-a733.dtsi",
+        "UART0 console",
+        "SD-card boot",
+        "no-mmc",
+        "no-sdio",
+        "Ethernet",
+        "A733-BATCH-002",
+        "A733-BATCH-007",
+        "A733-COMM-002",
+        "A733-COMM-003",
+        "A733-COMM-016",
+        "dtbs_check",
+        "checkpatch.pl --strict",
+        "get_maintainer.pl",
+        "b4 prep",
+        "sendable-held",
+        "question-held",
+        "local DTS v2 cleanup is not complete",
+    ]
+    for needle in required:
+        require_contains("dts-v2-readiness-checklist", text, needle, failures)
+
+
+def check_audio_i2s_evidence(root: Path, failures: list[str]) -> None:
+    path = root / AUDIO_I2S_EVIDENCE
+    if not path.exists():
+        failures.append(f"audio-i2s-evidence: missing {AUDIO_I2S_EVIDENCE}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("audio-i2s-evidence", text, failures)
+    required = [
+        "Status: local-only source-backed evidence sheet",
+        "Do not enable audio",
+        "Do not run playback",
+        "audio",
+        "I2S",
+        "codec",
+        "DMIC",
+        "SPDIF",
+        "HDMI-audio",
+        "amplifier",
+        "jack",
+        "speaker",
+        "microphone",
+        "DAI",
+        "audio-routing",
+        "playback",
+        "capture",
+        "loopback",
+        "mixer",
+        "A733-BATCH-015",
+        "local-only",
+    ]
+    for needle in required:
+        require_contains("audio-i2s-evidence", text, needle, failures)
+
+
+def check_pwm_backlight_fan_evidence(root: Path, failures: list[str]) -> None:
+    path = root / PWM_BACKLIGHT_FAN_EVIDENCE
+    if not path.exists():
+        failures.append(
+            f"pwm-backlight-fan-evidence: missing {PWM_BACKLIGHT_FAN_EVIDENCE}"
+        )
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("pwm-backlight-fan-evidence", text, failures)
+    required = [
+        "Status: local-only source-backed evidence sheet",
+        "Do not enable PWM",
+        "Do not toggle PWM outputs",
+        "PWM",
+        "backlight",
+        "fan PWM",
+        "tach",
+        "buzzer",
+        "LED dimming",
+        "header PWM",
+        "duty-cycle",
+        "external-load",
+        "cooling-state",
+        "brightness",
+        "A733-BATCH-016",
+        "local-only",
+    ]
+    for needle in required:
+        require_contains("pwm-backlight-fan-evidence", text, needle, failures)
+
+
 def run(root: Path) -> dict[str, Any]:
     failures: list[str] = []
     texts: dict[str, str] = {}
@@ -516,6 +783,13 @@ def run(root: Path) -> dict[str, Any]:
     check_pcie_nvme_evidence(root, failures)
     check_low_speed_io_evidence(root, failures)
     check_wifi_bluetooth_evidence(root, failures)
+    check_display_media_evidence(root, failures)
+    check_npu_riscv_boundary(root, failures)
+    check_regulator_power_domain_evidence(root, failures)
+    check_local_pending_prep_checkpoint(root, failures)
+    check_dts_v2_readiness_checklist(root, failures)
+    check_audio_i2s_evidence(root, failures)
+    check_pwm_backlight_fan_evidence(root, failures)
 
     status = "PASS" if not failures else "FAIL"
     return {
@@ -532,6 +806,13 @@ def run(root: Path) -> dict[str, Any]:
         "pcie_nvme_evidence": str(PCIE_NVME_EVIDENCE),
         "low_speed_io_evidence": str(LOW_SPEED_IO_EVIDENCE),
         "wifi_bluetooth_evidence": str(WIFI_BLUETOOTH_EVIDENCE),
+        "display_media_evidence": str(DISPLAY_MEDIA_EVIDENCE),
+        "npu_riscv_boundary": str(NPU_RISCV_BOUNDARY),
+        "regulator_power_domain_evidence": str(REGULATOR_POWER_DOMAIN_EVIDENCE),
+        "local_pending_prep_checkpoint": str(LOCAL_PENDING_PREP_CHECKPOINT),
+        "dts_v2_readiness_checklist": str(DTS_V2_READINESS_CHECKLIST),
+        "audio_i2s_evidence": str(AUDIO_I2S_EVIDENCE),
+        "pwm_backlight_fan_evidence": str(PWM_BACKLIGHT_FAN_EVIDENCE),
         "board_count": len(inventory.get("boards", [])) if isinstance(inventory, dict) else None,
         "failures": failures,
         "failure_count": len(failures),

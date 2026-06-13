@@ -46,6 +46,8 @@ runtime proof.
 | RISC-V MCU / remoteproc | bucket C | Record firmware/remoteproc/open-amp questions | firmware ownership, memory map, mailbox/interrupts, upstream remoteproc path |
 | Thermal / cpufreq / fan | inventory/planning only | List sensors, OPP, regulator, PWM/tach evidence needs | safe thermal limits, workload proof, board role, recovery drill |
 | I2C / SPI / UART / GPIO | static inventory first | Map pins, muxes, conflicts, and external-device proof needs | safe wiring, loopback/device proof, pinctrl prerequisite state |
+| Audio / I2S | static inventory first | Map controller, codec, DAI, routing, jack, speaker, microphone, and HDMI-audio facts | source-backed audio path, safe playback/capture proof, board role |
+| PWM / backlight / fan | static inventory first | Map controller, channels, consumers, polarity, duty-cycle limits, fan/tach, and backlight facts | safe load, thermal stop threshold, visible-output or measurement proof, board role |
 | Regulators / power domains | static inventory first | Map rail names, consumers, always-on assumptions, and source evidence | board schematic/source evidence, runtime voltage/consumer proof if needed |
 
 ## Safe Local Work Items
@@ -74,6 +76,10 @@ runtime proof.
 | Wi-Fi/Bluetooth | A733-BATCH-010 |
 | Thermal/cpufreq/fan | A733-BATCH-011 |
 | FEL/BootROM recovery | A733-BATCH-012 |
+| Display/media/GPU | A733-BATCH-013 |
+| NPU/RISC-V MCU | A733-BATCH-014 |
+| Audio/I2S | A733-BATCH-015 |
+| PWM/backlight/fan | A733-BATCH-016 |
 
 No runtime proof class may run until the queue, inventory, recovery rung, role
 assignment, and claim-service state positively allow it.
@@ -117,3 +123,11 @@ Choose one track per bounded cycle:
    and stop-threshold requirements.
 5. Low-speed I/O evidence sheet: I2C/SPI/UART/GPIO pin ownership, conflicts,
    and loopback/external-device proof requirements.
+6. Display/media/GPU queue refinement only after a source-backed block map
+   and board connector/sensor facts exist.
+7. NPU/RISC-V MCU queue refinement only after firmware provenance, memory map,
+   upstream subsystem path, and crash/recovery boundaries exist.
+8. Audio/I2S queue refinement only after controller, codec, DAI, routing,
+   speaker/microphone/jack, and safe playback/capture facts exist.
+9. PWM/backlight/fan queue refinement only after controller, channel,
+   consumer, polarity, duty-cycle, load-safety, and thermal-stop facts exist.

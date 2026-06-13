@@ -81,6 +81,10 @@ autonomy.
 | A733-BATCH-010 | Wi-Fi/Bluetooth proof | `candidate` | burn -> proving | `EXPERIMENT` | `soft-fallback` | exact module and driver/firmware path known | firmware source, AP/test device, pairing/throughput recipe |
 | A733-BATCH-011 | Thermal/cpufreq/fan proof | `candidate` | burn first; proving after temperature limits are safe | `EXPERIMENT` | `soft-fallback` plus thermal stop threshold | thermal/fan/cpufreq nodes are staged | temperature limits, fan wiring, stop threshold, workload recipe |
 | A733-BATCH-012 | FEL/BootROM recovery drill | `candidate` | future burn board | n/a | `fel-bootrom` | OTG path and entry method are physically wired | test `sunxi-fel` and `xfel` on actual A733/SUN60IW2 board before enabling firmware/SPI/eMMC-boot work |
+| A733-BATCH-013 | Display/media/GPU proof | `candidate` | burn -> proving | `EXPERIMENT` | `soft-fallback` plus visible-console rollback path | display/media/GPU source model and board connector/sensor facts are staged | connector/panel/bridge/sensor inventory, thermal stop threshold, visible-output or capture recipe, rollback plan |
+| A733-BATCH-014 | NPU/RISC-V MCU proof | `candidate` | burn only until firmware and crash recovery are proven safe | `EXPERIMENT` | `fel-bootrom` for firmware/remoteproc crash work; stronger rung if persistent firmware/storage is touched | source-backed NPU or MCU model, firmware provenance, memory map, and userspace/IPC ABI story are staged | firmware source/license, memory-region and mailbox map, crash/recovery recipe, no persistent firmware writes without sub-permission |
+| A733-BATCH-015 | Audio/I2S proof | `candidate` | burn -> proving | `EXPERIMENT` | `soft-fallback` plus safe output/capture limits | source-backed audio controller, codec, DAI, routing, and board audio path are staged | volume limit, output device, capture/privacy boundary, codec/reset/regulator map, rollback plan |
+| A733-BATCH-016 | PWM/backlight/fan proof | `candidate` | burn -> proving | `EXPERIMENT` | `soft-fallback` plus thermal/output stop threshold | source-backed PWM controller, channel, consumer, polarity, and safe-load model are staged | duty-cycle limit, fan/backlight/load safety, tach or measurement path, rollback plan |
 
 ## Batch Record Template
 
@@ -167,3 +171,105 @@ Output fields to update after collection:
 - board `recovery`
 - `kernel_work_role_model.current_recovery_claim`
 - this queue entry status and follow-up drill entry
+
+### A733-BATCH-013
+
+Status: `candidate`
+
+Track: Display/media/GPU runtime proof.
+
+Purpose: hold future display, DP/eDP/HDMI/MIPI DSI, CSI, media, VPU, GPU,
+connector, panel, bridge, frame-capture, decode, or render proof until the
+source model, board wiring, rollback path, thermal stop condition, and board
+role envelope are explicit.
+
+Current blockers:
+
+- no A733 display/media/GPU source model is staged
+- no Cubie A7S connector, panel, bridge, CSI sensor, or camera module facts are
+  staged
+- no board is assigned `burn`, `proving`, or `reference`
+- no recovery rung is drilled for display/media/GPU experiments
+- claim service is planned-not-active
+
+Run ceiling until blockers clear: queue-only. Do not run display tests,
+connector probes, frame capture, decode, render, GPU workloads, board boots,
+or kernel installs from this entry.
+
+### A733-BATCH-014
+
+Status: `candidate`
+
+Track: NPU / RISC-V MCU runtime proof.
+
+Purpose: hold future NPU, RISC-V MCU, remoteproc, firmware loading,
+reserved-memory, mailbox, IOMMU, OpenAMP/RPMsg, accelerator, userspace ABI,
+workload, or crash/recovery proof until firmware provenance, memory map,
+subsystem path, crash recovery, and board-role envelope are explicit.
+
+Current blockers:
+
+- no A733 NPU source model is staged
+- no A733 RISC-V MCU / remoteproc source model is staged
+- no firmware provenance, license, load path, memory-region layout, mailbox
+  path, IOMMU path, OpenAMP/RPMsg path, or userspace ABI story is staged
+- no board is assigned `burn`, `proving`, or `reference`
+- no FEL/BootROM recovery rung is drilled for firmware or crash/recovery work
+- claim service is planned-not-active
+
+Run ceiling until blockers clear: queue-only. Do not load firmware, start or
+stop remote processors, run OpenAMP/RPMsg tests, probe accelerators, run NPU
+workloads, trigger crash/recovery tests, boot boards, or install kernels from
+this entry.
+
+### A733-BATCH-015
+
+Status: `candidate`
+
+Track: Audio / I2S runtime proof.
+
+Purpose: hold future audio, I2S, codec, DMIC, SPDIF, HDMI-audio, amplifier,
+jack, speaker, microphone, playback, capture, loopback, mixer, DAI-link, or
+audio-routing proof until the SoC controller model, board audio path, safe
+output/capture limits, and board-role envelope are explicit.
+
+Current blockers:
+
+- no A733 audio/I2S source model is staged
+- no Cubie A7S codec, amplifier, speaker, microphone, jack, HDMI-audio, DAI
+  link, or audio-routing facts are staged
+- no safe playback volume, output-device, capture/privacy, or loopback wiring
+  boundary is staged
+- no board is assigned `burn`, `proving`, or `reference`
+- no recovery rung is drilled for audio runtime experiments
+- claim service is planned-not-active
+
+Run ceiling until blockers clear: queue-only. Do not run playback, capture,
+loopback, mixer, ALSA, jack-detect, HDMI-audio, speaker, microphone, board
+boot, or kernel install work from this entry.
+
+### A733-BATCH-016
+
+Status: `candidate`
+
+Track: PWM / backlight / fan runtime proof.
+
+Purpose: hold future PWM, backlight, fan PWM, tach, buzzer, LED dimming, header
+PWM, duty-cycle, external-load, cooling-state, brightness, or measurement proof
+until the controller model, channel routing, consumer facts, safe-load limits,
+thermal stop condition, and board-role envelope are explicit.
+
+Current blockers:
+
+- no A733 PWM controller source model is staged
+- no Cubie A7S fan PWM, tach, backlight, LED dimming, buzzer, or header PWM
+  consumer facts are staged
+- no safe duty-cycle, polarity, load, brightness, thermal stop, or measurement
+  boundary is staged
+- no board is assigned `burn`, `proving`, or `reference`
+- no recovery rung is drilled for PWM runtime experiments
+- claim service is planned-not-active
+
+Run ceiling until blockers clear: queue-only. Do not toggle PWM outputs, drive
+fans, change duty cycles, probe tach lines, dim backlights, buzz outputs,
+connect external loads, boot boards, or install kernels from this entry.

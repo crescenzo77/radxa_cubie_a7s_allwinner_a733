@@ -146,6 +146,31 @@ any future public action.
 - Use `task-packets/kernel/a733-wifi-bluetooth-evidence-sheet.md` before any
   Wi-Fi, Bluetooth, SDIO, radio firmware, pwrseq, wake-GPIO, scan,
   association, throughput, pairing, or reconnect proof queue refinement.
+- Use `task-packets/kernel/a733-display-media-evidence-sheet.md` before any
+  display, DP, eDP, HDMI, MIPI DSI, CSI, media, VPU, GPU, connector, panel,
+  bridge, frame-capture, decode, or render proof queue refinement.
+- Use `task-packets/kernel/a733-npu-riscv-boundary-sheet.md` before any NPU,
+  RISC-V MCU, remoteproc, firmware, reserved-memory, mailbox, IOMMU, OpenAMP,
+  RPMsg, accelerator, userspace ABI, workload, or crash/recovery proof queue
+  refinement.
+- Use `task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md`
+  before any regulator, PMIC, rail, supply, power-domain, OPP, voltage,
+  suspend, always-on, boot-on, coupled-regulator, or consumer-map proof queue
+  refinement.
+- Use `task-packets/kernel/a733-local-pending-prep-checkpoint.md` to inspect
+  the current uncommitted local prep bundle, its file list, hashes, validation
+  state, and no-public/no-hardware boundary.
+- Use `task-packets/kernel/a733-dts-v2-local-readiness-checklist.md` before
+  any local DTS v2 cleanup, validation, proof planning, cover-letter drafting,
+  changelog drafting, reflect review, or sendable-held decision.
+- Use `task-packets/kernel/a733-audio-i2s-evidence-sheet.md` before any audio,
+  I2S, codec, DMIC, SPDIF, HDMI-audio, amplifier, jack, speaker, microphone,
+  playback, capture, loopback, mixer, DAI-link, or audio-routing proof queue
+  refinement.
+- Use `task-packets/kernel/a733-pwm-backlight-fan-evidence-sheet.md` before
+  any PWM, backlight, fan PWM, tach, buzzer, LED dimming, header PWM,
+  duty-cycle, external-load, cooling-state, or brightness proof queue
+  refinement.
 - If patch text is regenerated locally, record the exact base, head, patch
   directory, validation commands, and source-equivalence target.
 - If a hardware item looks necessary, queue it in

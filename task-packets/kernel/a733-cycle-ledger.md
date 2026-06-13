@@ -1130,6 +1130,1271 @@ roles, drilled recovery, and claim service permit it.
 
 Stop confirmation: Stop after this bounded Wi-Fi/Bluetooth evidence-sheet item.
 
+### A733-CYCLE-033
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create a display/media/GPU source-backed evidence sheet.
+
+Selection rationale: Display/media/GPU is listed as inventory/planning only
+and is a safe local evidence track. It requires exact SoC display/media/GPU
+source modeling, board connector or sensor facts, binding coverage, and
+runtime proof before maintainer-standard patchwork.
+
+Scope contract: Create
+`task-packets/kernel/a733-display-media-evidence-sheet.md`, wire it into the
+current evidence index and authority validator, and complete this ledger
+record. The sheet may summarize local authority records, read-only source
+observations, required evidence, runtime proof requirements, safe local next
+steps, and hard blockers. It must not infer connector, panel, bridge, sensor,
+or GPU capability; generate patches; edit kernel trees; run display/media/GPU
+tests; boot boards; or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-display-media-evidence-sheet.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- display, DP, eDP, HDMI, MIPI DSI, CSI, media, VPU, GPU, connector, panel,
+  bridge, camera, or render DTS enablement changes
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, display
+  test, connector probe, frame capture, decode test, GPU workload, or SSH probe
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication, public pushes, or paid third-party calls
+
+Classification gate: Green local documentation/source-inventory work. Claim
+service is planned-not-active, all boards remain unassigned, recovery is not
+drilled for burn autonomy, and no hardware, display/media runtime state, GPU
+runtime state, public state, or kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: display/media evidence sheet, evidence index, authority
+validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `rg -n "display|gpu|mali|drm|hdmi|edp|dp|dsi|mipi|tcon|de2|mixer|bridge|panel|connector|csi|camera|media|vpu|ve|cedrus|codec|isp|g2d" /Users/enzo/projects/linux-a733/arch/arm64/boot/dts/allwinner /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/display /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/gpu /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/media`
+- `rg -n "display|gpu|mali|drm|hdmi|edp|dp|dsi|mipi|tcon|de2|mixer|bridge|panel|connector|csi|camera|media|vpu|video|ve|cedrus|codec|isp|g2d" /Users/enzo/projects/linux-a733/arch/arm64/boot/dts/allwinner/sun60i-a733* /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/arm/sunxi.yaml`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-display-media-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-display-media-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-display-media-evidence-sheet.md`
+  `28be0a23d848bb145d9cadb5c9f3ca925f4b0744dd216431c68b39af6761d74a`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `b813293e81cc455ed09b6d6c1d16e5c64d12ea5e883402b74171ff96e2990173`
+- `tools/validate/a733_authority_check.py`
+  `686bb7f113fd63fefe148a7f4e69a7bf2bb92752964edf673ae105f99dec8f38`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Display/media evidence sheet exists; evidence index points
+to it; authority validator requires it and checks display, DP, eDP, HDMI, MIPI
+DSI, CSI, media, VPU, GPU, DRM, bridge, panel, connector, frame capture,
+decode, render, A733-COMM-011, local-only, no-enable, and no-display-test
+anchors. Validator passes, inventory JSON parses, Python compiles, and touched
+files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: Display/media evidence sheet is new. Evidence index, authority
+validator, and cycle ledger are dirty after this local-only cycle. Kernel
+trees were read only. Working tree is one commit ahead of local `origin` after
+the GitHub backup snapshot commit.
+
+Communication ledger IDs: A733-COMM-011 as held future display/DP/media
+communication context.
+
+Hardware lane queue IDs: none currently dedicated; future display/media/GPU
+runtime proof requires an explicit supervised queue item before action.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with NPU / RISC-V MCU boundary sheet or a
+dedicated display/media/GPU supervised queue placeholder if source-backed
+candidate work appears. Hardware runtime work remains blocked until board
+roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded display/media evidence-sheet item.
+
+### A733-CYCLE-034
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create an NPU / RISC-V MCU source-backed boundary sheet.
+
+Selection rationale: NPU and RISC-V MCU are bucket-C tracks in the peripheral
+map. They are not ready for patchwork without a credible upstream subsystem
+path, firmware/userspace ABI story, memory map, mailbox or IPC model, and
+runtime safety plan. A boundary sheet is safe local-only work and prevents
+future overclaiming.
+
+Scope contract: Create
+`task-packets/kernel/a733-npu-riscv-boundary-sheet.md`, wire it into the
+current evidence index and authority validator, and complete this ledger
+record. The sheet may summarize local authority records, read-only source
+observations, required evidence, runtime proof requirements, safe local next
+steps, and hard blockers. It must not infer NPU or MCU presence, generate
+patches, edit kernel trees, load firmware, start remote processors, run
+accelerator workloads, boot boards, or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-npu-riscv-boundary-sheet.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- NPU, RISC-V MCU, remoteproc, firmware, reserved-memory, mailbox, IOMMU,
+  OpenAMP, RPMsg, accelerator, or userspace ABI enablement changes
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, firmware
+  loading, remoteproc start/stop, OpenAMP/RPMsg test, NPU workload, accelerator
+  probe, crash/recovery test, or SSH probe
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication, public pushes, or paid third-party calls
+
+Classification gate: Green local documentation/source-inventory work. Claim
+service is planned-not-active, all boards remain unassigned, recovery is not
+drilled for burn autonomy, and no hardware, firmware, remote processor,
+accelerator runtime state, public state, or kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: NPU/RISC-V boundary sheet, evidence index, authority
+validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `rg -n "npu|neural|risc|riscv|risc-v|rv|dsp|remoteproc|rproc|mailbox|mbox|openamp|firmware|coprocessor|mcu|msgbox|iommu|reserved-memory" /Users/enzo/projects/linux-a733/arch/arm64/boot/dts/allwinner/sun60i-a733* /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/{remoteproc,mailbox,firmware,reserved-memory,iommu,misc,soc}`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-npu-riscv-boundary-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-npu-riscv-boundary-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-npu-riscv-boundary-sheet.md`
+  `3de0ed1d08058759e17e9899166d87b3b91059216e23a0bf62ae060f1a70a7df`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `a51f5496c86949c045308e70fa89eda3113af33419d5a9991d579b756d50a8ec`
+- `tools/validate/a733_authority_check.py`
+  `b6da5fdb4b3bb1fbb7beaa94372dbf2e3dd5d32a30b4ccff437558b5eef787be`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: NPU/RISC-V boundary sheet exists; evidence index points to
+it; authority validator requires it and checks NPU, RISC-V MCU, remoteproc,
+firmware, reserved-memory, mailbox, IOMMU, OpenAMP, RPMsg, userspace ABI,
+accelerator, memory map, firmware license, crash/recovery, A733-COMM-012,
+local-only, no-enable, and no-firmware-load anchors. Validator passes,
+inventory JSON parses, Python compiles, and touched files pass
+`git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully after correcting a
+case-sensitive validator anchor from `firmware license` to `Firmware license`.
+
+Promotion state: not applicable.
+
+Tree state: NPU/RISC-V boundary sheet is new. Evidence index, authority
+validator, and cycle ledger are dirty after this local-only cycle. Kernel
+trees were read only. Working tree is one commit ahead of local `origin` after
+the GitHub backup snapshot commit.
+
+Communication ledger IDs: A733-COMM-012 as held future NPU/RISC-V MCU
+communication context.
+
+Hardware lane queue IDs: none currently dedicated; future NPU/RISC-V MCU
+runtime proof requires an explicit supervised queue item before action.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with regulator/power-domain evidence sheet
+or a dedicated supervised queue placeholder for display/media/GPU and
+NPU/RISC-V runtime proof classes. Hardware runtime work remains blocked until
+board roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded NPU/RISC-V boundary-sheet item.
+
+### A733-CYCLE-035
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create a regulator / power-domain source-backed evidence sheet.
+
+Selection rationale: Regulators and power domains are listed as static
+inventory first. A dedicated evidence sheet preserves the only currently
+source-backed Cubie A7S rail (`vcc-3v3` for SDMMC0) while blocking speculative
+PMIC, rail, OPP, and power-domain work until stronger evidence exists.
+
+Scope contract: Create
+`task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md`, wire it
+into the current evidence index and authority validator, and complete this
+ledger record. The sheet may summarize local authority records, read-only
+source observations, required evidence, runtime proof requirements, safe local
+next steps, and hard blockers. It must not infer PMIC identity, add rail maps,
+generate patches, edit kernel trees, change voltages, run workloads, boot
+boards, or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- regulator, PMIC, rail, supply, power-domain, OPP, voltage, cpufreq coupling,
+  suspend, always-on, boot-on, or consumer-map DTS changes
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, voltage
+  change, rail toggle, suspend/resume test, workload, or SSH probe
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication, public pushes, or paid third-party calls
+
+Classification gate: Green local documentation/source-inventory work. Claim
+service is planned-not-active, all boards remain unassigned, recovery is not
+drilled for burn autonomy, and no hardware, voltage, power-domain, workload,
+public state, or kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: regulator/power-domain evidence sheet, evidence index,
+authority validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `rg -n "regulator|power-domain|power-domains|pd-|opp|supply|always-on|vin|vcc|vdd|dcdc|aldo|bldo|cldo|eldo|gpio-regulator|fixed-regulator|pmic|axp|r329|a733" /Users/enzo/projects/linux-a733/arch/arm64/boot/dts/allwinner/sun60i-a733* /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/{regulator,power,power-domain,opp,mfd}`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md`
+  `7924ec5ea109c98082bf5459946b94fd0a2280bab760a2de154d044543c1f3f2`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `a8b8d57160c3ff4589230206ade89933cf77e09c7a5afd403308f509bc0a57fe`
+- `tools/validate/a733_authority_check.py`
+  `c63777a68fb30266539946831f10ef61667bc6ca1310d0d9eaf2a7278324a1f4`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Regulator/power-domain evidence sheet exists; evidence index
+points to it; authority validator requires it and checks regulator, PMIC, rail,
+supply, power-domain, OPP, voltage, always-on, boot-on, coupled regulator,
+consumer map, vcc-3v3, A733-BATCH-004, A733-BATCH-011, local-only,
+no-regulator-change, and no-rail-toggle anchors. Validator passes, inventory
+JSON parses, Python compiles, and touched files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully after correcting a
+case-sensitive validator anchor from `consumer map` to `Consumer map`.
+
+Promotion state: not applicable.
+
+Tree state: Regulator/power-domain evidence sheet is new. Evidence index,
+authority validator, and cycle ledger are dirty after this local-only cycle.
+Kernel trees were read only. Working tree is one commit ahead of local
+`origin` after the GitHub backup snapshot commit.
+
+Communication ledger IDs: none dedicated; future regulator/power-domain
+questions attach to the dependent subsystem communication only after a concrete
+source-backed candidate exists.
+
+Hardware lane queue IDs: none currently dedicated; dependent references are
+A733-BATCH-004 for RTC/CCU/R-CCU/reset and A733-BATCH-011 for
+thermal/cpufreq/fan when applicable.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with supervised queue placeholders for
+display/media/GPU and NPU/RISC-V runtime proof classes, or source-backed
+inventory refresh if new local vendor/source material appears. Hardware
+runtime work remains blocked until board roles, drilled recovery, and claim
+service permit it.
+
+Stop confirmation: Stop after this bounded regulator/power-domain
+evidence-sheet item.
+
+### A733-CYCLE-036
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Add supervised queue placeholders for display/media/GPU and
+NPU/RISC-V MCU runtime proof classes.
+
+Selection rationale: The display/media/GPU and NPU/RISC-V sheets correctly
+blocked runtime work but had no dedicated queue IDs. Adding placeholders turns
+those implicit gates into durable on-disk authority without enabling hardware
+work.
+
+Scope contract: Update the hardware lane queue with A733-BATCH-013 and
+A733-BATCH-014 placeholders, update the affected evidence sheets to reference
+those queue IDs, wire the IDs into the authority validator, and complete this
+ledger record. Do not assign board roles, infer source models, edit kernel
+trees, run hardware, load firmware, start display/media/GPU/NPU/RISC-V proof,
+or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-supervised-batch-queue.md`
+- `task-packets/kernel/a733-display-media-evidence-sheet.md`
+- `task-packets/kernel/a733-npu-riscv-boundary-sheet.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, display
+  test, connector probe, frame capture, decode test, GPU workload, firmware
+  loading, remoteproc start/stop, OpenAMP/RPMsg test, NPU workload, accelerator
+  probe, crash/recovery test, or SSH probe
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication, public pushes, or paid third-party calls
+
+Classification gate: Green local documentation/queue-gating work. Claim
+service is planned-not-active, all boards remain unassigned, recovery is not
+drilled for burn autonomy, and no hardware, firmware, accelerator, display,
+media, GPU, public state, or kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: hardware queue, display/media evidence sheet,
+NPU/RISC-V boundary sheet, authority validator, and cycle ledger documentation
+files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-supervised-batch-queue.md task-packets/kernel/a733-display-media-evidence-sheet.md task-packets/kernel/a733-npu-riscv-boundary-sheet.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-supervised-batch-queue.md task-packets/kernel/a733-display-media-evidence-sheet.md task-packets/kernel/a733-npu-riscv-boundary-sheet.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-supervised-batch-queue.md`
+  `adcb1e93bd97356835e44ee876ff46ef6ff61b485ba557e8f5546ada833c8bc8`
+- `task-packets/kernel/a733-display-media-evidence-sheet.md`
+  `eb5864cd571955e2ede7e1384ce329dff10c60f411d40742c9302e91367f0d22`
+- `task-packets/kernel/a733-npu-riscv-boundary-sheet.md`
+  `ecf593ab18ee25258aa24ded406a11fc50267284d7528e2d2fef85ad71f629ad`
+- `tools/validate/a733_authority_check.py`
+  `02291df191f867889a2d10b3aa0dfff76f8b9590293c10b7210a26b6b0692569`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Hardware queue contains A733-BATCH-013 and A733-BATCH-014
+with queue-only ceilings; display/media and NPU/RISC-V evidence sheets point
+to those queue IDs; authority validator requires A733-BATCH-000 through
+A733-BATCH-014 and checks the new sheet anchors. Validator passes, inventory
+JSON parses, Python compiles, and touched files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: Hardware queue, display/media evidence sheet, NPU/RISC-V boundary
+sheet, authority validator, and cycle ledger are dirty after this local-only
+cycle. Kernel trees were not touched. Working tree is one commit ahead of
+local `origin` after the GitHub backup snapshot commit.
+
+Communication ledger IDs: A733-COMM-011 and A733-COMM-012 remain held future
+communication hooks only.
+
+Hardware lane queue IDs: A733-BATCH-013 and A733-BATCH-014 created as
+candidate queue placeholders.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with source-backed inventory refresh or local
+proof-plan refinement only if it remains Green. Hardware runtime work remains
+blocked until board roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded queue-placeholder item.
+
+### A733-CYCLE-037
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create a local pending-prep checkpoint for the uncommitted A733
+coordination bundle.
+
+Selection rationale: The coordination repo has a coherent uncommitted local
+prep bundle spanning evidence sheets, queue gates, validator coverage, and
+cycle records. A checkpoint makes the dirty-tree state durable and reviewable
+without committing, pushing, or relying on conversation memory.
+
+Scope contract: Create
+`task-packets/kernel/a733-local-pending-prep-checkpoint.md`, wire it into the
+current evidence index and authority validator, and complete this ledger
+record. The checkpoint may record branch, HEAD, dirty files, bundle purpose,
+hashes, validation state, and local-only/no-hardware/no-public boundaries. It
+must not stage or commit files, push remotes, edit kernel trees, run hardware,
+or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, or SSH
+  probe
+- git staging, commit, push, pull request, or public backup
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication or paid third-party calls
+
+Classification gate: Green local documentation/checkpoint work. Claim service
+is planned-not-active, all boards remain unassigned, recovery is not drilled
+for burn autonomy, and no hardware, public state, git remote, or kernel tree is
+mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: local pending-prep checkpoint, evidence index, authority
+validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `git status --short --branch`
+- `git diff --stat -- task-packets/kernel/a733-current-evidence-index.md task-packets/kernel/a733-cycle-ledger.md task-packets/kernel/a733-supervised-batch-queue.md tools/validate/a733_authority_check.py task-packets/kernel/a733-display-media-evidence-sheet.md task-packets/kernel/a733-npu-riscv-boundary-sheet.md task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md`
+- `shasum -a 256 task-packets/kernel/a733-current-evidence-index.md task-packets/kernel/a733-cycle-ledger.md task-packets/kernel/a733-supervised-batch-queue.md tools/validate/a733_authority_check.py task-packets/kernel/a733-display-media-evidence-sheet.md task-packets/kernel/a733-npu-riscv-boundary-sheet.md task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md`
+- `git log --oneline -3`
+- `git rev-parse HEAD`
+- `git rev-parse --abbrev-ref HEAD`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-local-pending-prep-checkpoint.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-local-pending-prep-checkpoint.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+  `b6047ce5f4727ee060c82a56346e16a719b89650dca26bddfe4de6fcdb5bb657`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `3bd510e60cb9fbedad664f5ad8ac3d6871a24cd78aa750166528cee29628c5f4`
+- `tools/validate/a733_authority_check.py`
+  `97304c86e2f535774d55fb04c3ea220039e53f9b0f52343d8269877bb9ad42aa`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Local pending-prep checkpoint exists; evidence index points
+to it; authority validator requires it and checks branch/HEAD, pending file
+list, A733-CYCLE-033 through A733-CYCLE-036 coverage, no-hardware,
+no-kernel-tree, no-public, and local pending-review anchors. Validator passes,
+inventory JSON parses, Python compiles, and touched files pass
+`git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: Local pending-prep checkpoint is new. Evidence index, authority
+validator, and cycle ledger are dirty after this local-only cycle. The
+checkpoint records the broader pending bundle. Kernel trees were not touched.
+No git staging, commit, or push was performed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with Green local source inventory or
+validation refinement only. Hardware runtime work remains blocked until board
+roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded pending-prep checkpoint item.
+
+### A733-CYCLE-038
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Align the peripheral evidence map with the new display/media
+and NPU/RISC-V hardware queue gates.
+
+Selection rationale: A733-BATCH-013 and A733-BATCH-014 now exist in the
+hardware queue, but the peripheral evidence map still listed runtime proof
+classes only through A733-BATCH-012. Aligning the map prevents future workers
+from missing those queue gates.
+
+Scope contract: Update the peripheral evidence map to include A733-BATCH-013
+and A733-BATCH-014, update validator coverage for those map anchors, refresh
+the local pending-prep checkpoint file list/purpose text, and complete this
+ledger record. Do not edit kernel trees, run hardware, assign board roles,
+stage or commit files, push remotes, or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-peripheral-evidence-map.md`
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, or SSH
+  probe
+- git staging, commit, push, pull request, or public backup
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication or paid third-party calls
+
+Classification gate: Green local documentation/authority-consistency work.
+Claim service is planned-not-active, all boards remain unassigned, recovery is
+not drilled for burn autonomy, and no hardware, public state, git remote, or
+kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: peripheral evidence map, local pending-prep checkpoint,
+authority validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-peripheral-evidence-map.md task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-peripheral-evidence-map.md task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-peripheral-evidence-map.md`
+  `432187aa362240a3d3967545bd9f0499f6f0f7996d21d9fd6683b41da3507be3`
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+  `ac000b27d84fc17388ee0362fe9f976bc18ed025e5e4c291b3d2efb34cb324ac`
+- `tools/validate/a733_authority_check.py`
+  `9465f6218c408d3803e589f852646b442cd2331e082d2b4216211544be9dd4c1`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Peripheral evidence map includes A733-BATCH-013 and
+A733-BATCH-014 in the runtime proof table and next-candidate guidance;
+authority validator requires those map anchors; local pending-prep checkpoint
+mentions the map in the pending bundle. Validator passes, inventory JSON
+parses, Python compiles, and touched files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: Peripheral evidence map, local pending-prep checkpoint, authority
+validator, and cycle ledger are dirty after this local-only cycle. Kernel
+trees were not touched. No git staging, commit, or push was performed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: A733-BATCH-013 and A733-BATCH-014 referenced, not
+executed.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with Green local source inventory or
+validation refinement only. Hardware runtime work remains blocked until board
+roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded evidence-map consistency item.
+
+### A733-CYCLE-039
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Refresh the local pending-prep checkpoint after the evidence-map
+consistency cycle.
+
+Selection rationale: The pending-prep checkpoint was created before
+A733-CYCLE-038 and contained stale hashes, an incomplete dirty-file list, and a
+cycle range ending at A733-CYCLE-036. Refreshing it preserves the current
+local-only bundle without committing, pushing, or relying on conversation
+memory.
+
+Scope contract: Update
+`task-packets/kernel/a733-local-pending-prep-checkpoint.md` to include the
+checkpoint file itself, current pending-file coverage, current hashes for
+non-self files, and cycle coverage through A733-CYCLE-038. Update validator
+anchors for the refreshed checkpoint and complete this ledger record. Do not
+edit kernel trees, run hardware, assign board roles, stage or commit files,
+push remotes, or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, or SSH
+  probe
+- git staging, commit, push, pull request, or public backup
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication or paid third-party calls
+
+Classification gate: Green local documentation/checkpoint consistency work.
+Claim service is planned-not-active, all boards remain unassigned, recovery is
+not drilled for burn autonomy, and no hardware, public state, git remote, or
+kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: local pending-prep checkpoint, authority validator, and
+cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle; no board action.
+
+Commands run:
+
+- `git status --short --branch`
+- `python3 tools/validate/a733_authority_check.py`
+- `shasum -a 256 task-packets/kernel/a733-current-evidence-index.md task-packets/kernel/a733-cycle-ledger.md task-packets/kernel/a733-supervised-batch-queue.md task-packets/kernel/a733-peripheral-evidence-map.md tools/validate/a733_authority_check.py task-packets/kernel/a733-display-media-evidence-sheet.md task-packets/kernel/a733-local-pending-prep-checkpoint.md task-packets/kernel/a733-npu-riscv-boundary-sheet.md task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+  `70bec2f537bdf41a60ffb3d3c5ee6ff6407a38a2952c0ad37f52082a1763d025`
+- `tools/validate/a733_authority_check.py`
+  `f1503ffdc85812bc4e2d77f1fe29bd04e320f8b603031d924e38b3d82f9ae5e6`
+- `task-packets/kernel/a733-cycle-ledger.md`
+  `59cfbec838f318506f964dfc21d33baa1be001fae65c9f2b7a628b75a48f65a0`
+
+Proof definition: Local pending-prep checkpoint lists itself in the untracked
+bundle, records A733-CYCLE-033 through A733-CYCLE-038 coverage, includes the
+peripheral evidence map hash, explains why self-referential checkpoint hashes
+are omitted from its own hash block, and validator anchors cover that state.
+Validator passes, inventory JSON parses, Python compiles, and touched files
+pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: Local pending-prep checkpoint, authority validator, and cycle
+ledger are dirty after this local-only cycle. Kernel trees were not touched.
+No git staging, commit, or push was performed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with Green local source inventory,
+checkpointing, or validation refinement only. Hardware runtime work remains
+blocked until board roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded checkpoint refresh item.
+
+### A733-CYCLE-040
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create a local DTS v2 readiness checklist.
+
+Selection rationale: The workflow and communications ledger hold DTS v2 behind
+maintainer feedback, prerequisite state, and concrete correction, but the repo
+did not have a compact local gate describing what "sendable-held" requires
+after the v1 feedback. A checklist is durable Green prep and avoids confusing
+the post-v1 b4 revision with a sendable branch.
+
+Scope contract: Create
+`task-packets/kernel/a733-dts-v2-local-readiness-checklist.md`, wire it into
+the evidence index and authority validator, and complete this ledger record.
+The checklist may record trigger conditions, minimal scope, required cleanup,
+static proof, runtime proof gates, held communication mapping, and current
+source observation. It must not edit kernel trees, generate patches, run
+hardware, send mail, push remotes, or mark DTS v2 sendable.
+
+Files in scope:
+
+- `task-packets/kernel/a733-dts-v2-local-readiness-checklist.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, or SSH
+  probe
+- git staging, commit, push, pull request, or public backup
+- public archive refresh
+- recipient refresh against live public state
+- b4 send, git send-email, Gmail, list reply, reflect review, or public
+  communication
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+
+Classification gate: Green local documentation/readiness-gate work. Claim
+service is planned-not-active, all boards remain unassigned, recovery is not
+drilled for burn autonomy, and no hardware, public state, git remote, or
+kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: DTS v2 readiness checklist, evidence index, authority
+validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle; no board action.
+
+Commands run:
+
+- `sed -n '620,735p' runbooks/kernel-a733-mainline-enablement-workflow.md`
+- `sed -n '900,965p' runbooks/kernel-a733-mainline-enablement-workflow.md`
+- `sed -n '1,180p' task-packets/kernel/a733-h260-current-maintainer-response-playbook-20260613T0920Z.md`
+- `sed -n '1,140p' task-packets/kernel/a733-h265-dts-v1-public-sent-indexed-20260613T0950Z.md`
+- `sed -n '1,90p' /Users/enzo/projects/linux-a733/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts`
+- `sed -n '1,230p' /Users/enzo/projects/linux-a733/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-dts-v2-local-readiness-checklist.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-dts-v2-local-readiness-checklist.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-dts-v2-local-readiness-checklist.md`
+  `973ba8ff0d2cee3c090304d0be547453a14d9a99b5240ab8bd97c00ce11101ff`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `0d85b79802619358a3ec63fcc8a617c101aab71ec3b2773f36ade4c4907c0b0f`
+- `tools/validate/a733_authority_check.py`
+  `1b656042099d592583e8beab9997e6eb7a6e7c50d32e82b4f6f6a9603517d1e9`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: DTS v2 readiness checklist exists; evidence index points to
+it; authority validator requires it and checks no-send, no-boot, UART0 pin
+group movement, minimal UART0/SD-card scope, no-mmc/no-sdio, A733-BATCH-002,
+A733-BATCH-007, A733-COMM-002, A733-COMM-003, A733-COMM-016, dtbs_check,
+checkpatch, get_maintainer, b4 prep, sendable-held/question-held, and current
+incomplete-cleanup anchors. Validator passes, inventory JSON parses, Python
+compiles, and touched files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: DTS v2 readiness checklist is new. Evidence index, authority
+validator, and cycle ledger are dirty after this local-only cycle. Kernel trees
+were read only. No git staging, commit, or push was performed.
+
+Communication ledger IDs: A733-COMM-002 and A733-COMM-003 held future DTS v2
+communication hooks; A733-COMM-016 historical v1 no-resend record.
+
+Hardware lane queue IDs: A733-BATCH-002 referenced as future runtime proof
+gate; A733-BATCH-007 referenced as Ethernet exclusion gate.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with Green local source inventory,
+readiness-gate, or validation refinement only. Hardware runtime work remains
+blocked until board roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded DTS v2 readiness-checklist item.
+
+### A733-CYCLE-041
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create an audio / I2S source-backed evidence sheet and runtime
+queue placeholder.
+
+Selection rationale: The workflow lists I2S/audio under low-speed/audio/fan/
+thermal/power work, but the coordination repo did not have a dedicated audio
+evidence sheet or hardware queue gate. Adding both makes future audio work
+bounded and prevents speculative codec/routing claims.
+
+Scope contract: Create
+`task-packets/kernel/a733-audio-i2s-evidence-sheet.md`, add A733-BATCH-015 as
+the future audio/I2S runtime-proof placeholder, update the peripheral evidence
+map, evidence index, and authority validator, and complete this ledger record.
+Do not edit kernel trees, infer codec or audio route facts, run playback or
+capture, boot hardware, stage/commit files, push remotes, or communicate
+publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-audio-i2s-evidence-sheet.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `task-packets/kernel/a733-peripheral-evidence-map.md`
+- `task-packets/kernel/a733-supervised-batch-queue.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- audio, I2S, codec, DMIC, SPDIF, HDMI-audio, amplifier, jack, speaker,
+  microphone, DAI-link, or audio-routing DTS changes
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, playback,
+  capture, loopback, mixer, ALSA, jack-detect, speaker, microphone, or SSH
+  probe
+- git staging, commit, push, pull request, or public backup
+- public archive refresh
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication or paid third-party calls
+
+Classification gate: Green local documentation/source-inventory and
+queue-gating work. Claim service is planned-not-active, all boards remain
+unassigned, recovery is not drilled for burn autonomy, and no hardware, audio
+runtime state, public state, git remote, or kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: audio/I2S evidence sheet, hardware queue, peripheral
+evidence map, evidence index, authority validator, and cycle ledger
+documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `rg -n "audio|i2s|i2c|codec|sound|dai|dmic|spdif|hdmi-audio|jack|mic|speaker|amplifier|simple-audio-card|allwinner.*codec|sun.*i2s" /Users/enzo/projects/linux-a733/arch/arm64/boot/dts/allwinner/sun60i-a733* /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/{sound,display}`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-audio-i2s-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md task-packets/kernel/a733-peripheral-evidence-map.md task-packets/kernel/a733-supervised-batch-queue.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-audio-i2s-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md task-packets/kernel/a733-peripheral-evidence-map.md task-packets/kernel/a733-supervised-batch-queue.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-audio-i2s-evidence-sheet.md`
+  `65859fe637dd399b4cf74e5e486f33b041e3ad307719764f1b895ebd2b1e9225`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `78a1e4208731a5ed735203e85cbce5933f7a70148865e313ad2b036d2cc031c4`
+- `task-packets/kernel/a733-peripheral-evidence-map.md`
+  `9cf34e957f8a913d42f90ea20487c80d9bf96d7f1e0d84f7b3fd368d70c07618`
+- `task-packets/kernel/a733-supervised-batch-queue.md`
+  `5b46d5f90ef78865673e3e1fef91ab671bce7002ac46cfee0e6a97fbddabd531`
+- `tools/validate/a733_authority_check.py`
+  `445a4775da58690e11e1d79595744b627d8baaeef15d6a14cdcd9853d08bb958`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Audio/I2S evidence sheet exists; evidence index points to it;
+hardware queue contains A733-BATCH-015 with queue-only ceiling; peripheral map
+lists Audio/I2S and A733-BATCH-015; authority validator requires all anchors
+and batch IDs through A733-BATCH-015. Validator passes, inventory JSON parses,
+Python compiles, and touched files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: Audio/I2S evidence sheet is new. Evidence index, peripheral
+evidence map, hardware queue, authority validator, and cycle ledger are dirty
+after this local-only cycle. Kernel trees were read only. No git staging,
+commit, or push was performed.
+
+Communication ledger IDs: none dedicated.
+
+Hardware lane queue IDs: A733-BATCH-015 created as candidate queue placeholder.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with Green local source inventory,
+readiness-gate, or validation refinement only. Hardware runtime work remains
+blocked until board roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded audio/I2S evidence-sheet item.
+
+### A733-CYCLE-042
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create a PWM / backlight / fan source-backed evidence sheet and
+runtime queue placeholder.
+
+Selection rationale: PWM, fan, tach, backlight, buzzer, LED dimming, and header
+PWM work can damage attached loads or create misleading DTS claims if it starts
+from guesses. A local evidence sheet and queue-only placeholder make this track
+explicitly blocked until source-backed controller, channel, consumer, polarity,
+duty-cycle, load-safety, and recovery facts exist.
+
+Scope contract: Create
+`task-packets/kernel/a733-pwm-backlight-fan-evidence-sheet.md`, add
+A733-BATCH-016 as the future PWM/backlight/fan runtime-proof placeholder,
+update the peripheral evidence map, evidence index, and authority validator,
+and complete this ledger record. Do not edit kernel trees, infer PWM routing,
+toggle outputs, run backlight/fan/tach tests, connect external loads, boot
+hardware, stage/commit files, push remotes, or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-pwm-backlight-fan-evidence-sheet.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `task-packets/kernel/a733-peripheral-evidence-map.md`
+- `task-packets/kernel/a733-supervised-batch-queue.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- PWM, backlight, fan PWM, tach, buzzer, LED dimming, header PWM, duty-cycle,
+  cooling-state, or brightness DTS changes
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, PWM
+  toggling, fan driving, tach probing, backlight dimming, buzzer output,
+  external-load connection, or SSH probe
+- git staging, commit, push, pull request, or public backup during the local
+  work item
+- recipient refresh against live public state
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+- public communication or paid third-party calls
+
+Classification gate: Green local documentation/source-inventory and
+queue-gating work. Claim service is planned-not-active, all boards remain
+unassigned, recovery is not drilled for burn autonomy, and no hardware, PWM
+runtime state, public state, git remote, or kernel tree is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: PWM/backlight/fan evidence sheet, hardware queue,
+peripheral evidence map, evidence index, authority validator, and cycle ledger
+documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `rg -n "PWM|pwm|fan|tach|backlight|buzzer|header|servo|pin mux|pinmux" /Users/enzo/projects/linux-a733/arch/arm64/boot/dts/allwinner/sun60i-a733* /Users/enzo/projects/linux-a733/Documentation/devicetree/bindings/{pwm,hwmon,thermal,leds,display}`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-pwm-backlight-fan-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md task-packets/kernel/a733-peripheral-evidence-map.md task-packets/kernel/a733-supervised-batch-queue.md tools/validate/a733_authority_check.py`
+- `shasum -a 256 task-packets/kernel/a733-pwm-backlight-fan-evidence-sheet.md task-packets/kernel/a733-current-evidence-index.md task-packets/kernel/a733-peripheral-evidence-map.md task-packets/kernel/a733-supervised-batch-queue.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-pwm-backlight-fan-evidence-sheet.md`
+  `b1cdf0ac3f4b9d3e10e5f3b0a05ee99ec7f46e6d5c314feb17a9506ce1e7f8d3`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `a508336eef34680bcf9364307c552520e5ba7b62710db08b65afbafbd50182b7`
+- `task-packets/kernel/a733-peripheral-evidence-map.md`
+  `002bb423ec7a7f225830cb58587f10b869071b5cfb0937831e9f8c75c016911d`
+- `task-packets/kernel/a733-supervised-batch-queue.md`
+  `cab28074eebba7a7177bd101d6ea3fd69f9de1a89a7a5d59bb04835f0f4d748d`
+- `tools/validate/a733_authority_check.py`
+  `01a3bea2159bebdb99b352053f63263a05f74e281d724df82da09a2f7d50fe1b`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: PWM/backlight/fan evidence sheet exists; evidence index
+points to it; hardware queue contains A733-BATCH-016 with queue-only ceiling;
+peripheral map lists PWM/backlight/fan and A733-BATCH-016; authority validator
+requires all anchors and batch IDs through A733-BATCH-016. Validator passes,
+inventory JSON parses, Python compiles, and touched files pass
+`git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: PWM/backlight/fan evidence sheet is new. Evidence index, peripheral
+evidence map, hardware queue, authority validator, and cycle ledger are dirty
+after this local-only cycle. Kernel trees were read only. No git staging,
+commit, or push was performed inside the local work item.
+
+Communication ledger IDs: none dedicated.
+
+Hardware lane queue IDs: A733-BATCH-016 created as candidate queue placeholder.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue with Green local source inventory,
+readiness-gate, or validation refinement only. Hardware runtime work remains
+blocked until board roles, drilled recovery, and claim service permit it.
+
+Stop confirmation: Stop after this bounded PWM/backlight/fan evidence-sheet
+item.
+
 ### A733-CYCLE-016
 
 Timestamp: 2026-06-13 local
