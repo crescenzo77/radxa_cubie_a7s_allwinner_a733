@@ -5,7 +5,50 @@
       "ip": "192.168.50.65",
       "model": "Radxa Cubie A7S",
       "power_switch": null,
+      "physical_wiring": {
+        "boot_media": "unknown",
+        "usb_otg_to_controller": {
+          "present": "unknown",
+          "controller_host": null,
+          "device_path": null,
+          "fel_entry_method": "unknown"
+        },
+        "sd_mux": {
+          "present": false,
+          "controller_host": null,
+          "device_path": null
+        },
+        "power_control": {
+          "present": false,
+          "controller": null,
+          "outlet": null,
+          "verified": false
+        }
+      },
       "kernel_work_status": "excluded",
+      "kernel_work_role": {
+        "role": "unassigned",
+        "assignment_status": "pending-human-choice",
+        "notes": "Existing inventory marks cubie1 excluded for camera/object-detection work; do not promote it to burn/proving/reference until that conflict is explicitly resolved."
+      },
+      "recovery": {
+        "rung": "soft-fallback",
+        "method": "non-default extlinux entry with known-good default fallback",
+        "automation_status": "not_drilled_for_burn_autonomy",
+        "autonomous": false,
+        "last_drill": null,
+        "pristine_image": null,
+        "experiment_ceiling": "kernel-level non-default boot experiments only after role assignment and drill; no rootfs-corrupting, bootloader, SPI, eMMC-boot, firmware, or fuse work",
+        "sd_mux": {
+          "present": false,
+          "verified": false
+        },
+        "fel_bootrom": {
+          "present": "unknown",
+          "verified": false,
+          "tools_tested": []
+        }
+      },
       "uart": {
         "host": "192.168.50.11",
         "device": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1.3:1.0-port0",
@@ -19,6 +62,49 @@
       "ip": "192.168.50.85",
       "model": "Radxa Cubie A7S",
       "power_switch": null,
+      "physical_wiring": {
+        "boot_media": "unknown",
+        "usb_otg_to_controller": {
+          "present": "unknown",
+          "controller_host": null,
+          "device_path": null,
+          "fel_entry_method": "unknown"
+        },
+        "sd_mux": {
+          "present": false,
+          "controller_host": null,
+          "device_path": null
+        },
+        "power_control": {
+          "present": false,
+          "controller": null,
+          "outlet": null,
+          "verified": false
+        }
+      },
+      "kernel_work_role": {
+        "role": "unassigned",
+        "assignment_status": "pending-human-choice",
+        "notes": "Candidate for burn, proving, or reference role only after role and recovery metadata are confirmed."
+      },
+      "recovery": {
+        "rung": "soft-fallback",
+        "method": "non-default extlinux entry with known-good default fallback",
+        "automation_status": "not_drilled_for_burn_autonomy",
+        "autonomous": false,
+        "last_drill": null,
+        "pristine_image": null,
+        "experiment_ceiling": "kernel-level non-default boot experiments only after role assignment and drill; no rootfs-corrupting, bootloader, SPI, eMMC-boot, firmware, or fuse work",
+        "sd_mux": {
+          "present": false,
+          "verified": false
+        },
+        "fel_bootrom": {
+          "present": "unknown",
+          "verified": false,
+          "tools_tested": []
+        }
+      },
       "uart": {
         "host": "192.168.50.11",
         "device": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1.2:1.0-port0",
@@ -32,6 +118,49 @@
       "ip": "192.168.50.95",
       "model": "Radxa Cubie A7S",
       "power_switch": null,
+      "physical_wiring": {
+        "boot_media": "unknown",
+        "usb_otg_to_controller": {
+          "present": "unknown",
+          "controller_host": null,
+          "device_path": null,
+          "fel_entry_method": "unknown"
+        },
+        "sd_mux": {
+          "present": false,
+          "controller_host": null,
+          "device_path": null
+        },
+        "power_control": {
+          "present": false,
+          "controller": null,
+          "outlet": null,
+          "verified": false
+        }
+      },
+      "kernel_work_role": {
+        "role": "unassigned",
+        "assignment_status": "pending-human-choice",
+        "notes": "Candidate for burn, proving, or reference role only after role and recovery metadata are confirmed."
+      },
+      "recovery": {
+        "rung": "soft-fallback",
+        "method": "non-default extlinux entry with known-good default fallback",
+        "automation_status": "not_drilled_for_burn_autonomy",
+        "autonomous": false,
+        "last_drill": null,
+        "pristine_image": null,
+        "experiment_ceiling": "kernel-level non-default boot experiments only after role assignment and drill; no rootfs-corrupting, bootloader, SPI, eMMC-boot, firmware, or fuse work",
+        "sd_mux": {
+          "present": false,
+          "verified": false
+        },
+        "fel_bootrom": {
+          "present": "unknown",
+          "verified": false,
+          "tools_tested": []
+        }
+      },
       "uart": {
         "host": "192.168.50.11",
         "device": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1.1:1.0-port0",
@@ -41,6 +170,82 @@
       }
     }
   ],
+    "kernel_work_role_model": {
+        "status": "planned-unassigned",
+        "updated": "2026-06-13",
+        "roles": {
+            "burn": "full autonomous discovery lane; destructive experiments allowed only after recovery is verified",
+            "proving": "controlled confirmation lane; promoted artifacts only",
+            "reference": "protected baseline lane; passive read-only and differential checks only unless human-gated"
+        },
+        "recovery_ladder": {
+            "none": "no autonomous state-changing hardware work",
+            "soft-fallback": "non-default extlinux experiments with known-good default fallback; kernel/DTB/bootargs only",
+            "sd-reimage": "controller can reimage removable microSD while the board is down, such as SD-Mux/SDWire/sd-mux-ctrl",
+            "fel-bootrom": "A733/SUN60IW2 BootROM/FEL recovery drilled with actual board, OTG path, entry method, and sunxi-fel or xfel"
+        },
+        "burn_subpermissions": {
+            "boot_reboot_power_cycle": "allowed after burn role and recovery are verified",
+            "boot_artifact_install": "allowed after burn role and recovery are verified",
+            "destructive_storage_tests": "requires explicit burn role, verified recovery, and pristine-image reset",
+            "firmware_spi_emmc_bootloader_writes": "not enabled until explicitly added for the burn board",
+            "fuses_or_unrecoverable_state": "not enabled"
+        },
+        "current_recovery_claim": {
+            "highest_rung": "soft-fallback",
+            "verification_status": "not_drilled_for_burn_autonomy",
+            "autonomous_experiment_ceiling": "blocked until role assignment, recovery drill, and claim service activation; once drilled, soft-fallback only covers kernel/DTB/bootargs experiments",
+            "sd_reimage": "not present",
+            "fel_bootrom": "unknown and untested on A733/SUN60IW2"
+        },
+        "promotion_state_machine": [
+            "EXPERIMENT",
+            "CANDIDATE",
+            "CONFIRMED",
+            "BASELINE-VERIFIED",
+            "PROVEN"
+        ],
+        "activation_requirements": [
+            "assign exactly one board to each role",
+            "record UART by-path mapping for each board",
+            "record boot media per board: removable microSD, eMMC, or both",
+            "record whether each board has controller-reachable USB-OTG for FEL",
+            "record whether each board has SD-Mux/SDWire/sd-mux-ctrl or equivalent",
+            "record recovery method for each board",
+            "verify burn-board recovery before destructive autonomous work",
+            "record pristine image or known-good baseline before promotion work",
+            "activate central claim service before destructive burn-board autonomy"
+        ],
+        "role_assignment_inputs_needed": [
+            "which board has the strongest recovery wiring",
+            "which board is cleanest and least experimented on",
+            "which boards boot removable microSD versus soldered eMMC",
+            "which board USB-OTG ports are cabled to a controller host",
+            "whether an SD-Mux/SDWire/sd-mux-ctrl path exists or will be added",
+            "whether A733/SUN60IW2 FEL has been tested with sunxi-fel or xfel"
+        ]
+    },
+    "agent_coordination": {
+        "updated": "2026-06-13",
+        "mode": "single-live-agent-with-board-pipelining",
+        "cross_runtime_concurrency": "disabled",
+        "claim_service": {
+            "status": "planned-not-active",
+            "host": "thinkcentre",
+            "backend": "Fault Ledger/FastMCP SQLite-WAL pattern",
+            "interface": "SSH-exec or existing FastMCP surface",
+            "required_for": [
+                "destructive burn-board autonomy",
+                "cross-runtime concurrency",
+                "stale burn-claim recovery enforcement",
+                "server-side agent tier enforcement"
+            ]
+        },
+        "claim_ttl": "30m",
+        "approval_timeout_default": "120s",
+        "agent_tier_authority": "claim-service AGENT_ID to AGENT_TIER registry",
+        "stale_burn_claim_rule": "mark board state UNKNOWN and recover to pristine before trusting it"
+    },
     "excluded_kernel_work_ips": [
         {
             "ip": "192.168.50.65",
