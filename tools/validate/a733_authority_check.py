@@ -60,6 +60,9 @@ DTS_V2_STATIC_PROOF_PREFLIGHT = Path(
 DTS_V2_STATIC_PROOF_ISOLATED_COPY = Path(
     "task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md"
 )
+CLAIM_SERVICE_ACTIVATION_CHECKLIST = Path(
+    "task-packets/kernel/a733-claim-service-activation-checklist.md"
+)
 DTS_V2_UART_PINCTRL_PREVIEW = Path(
     "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch"
 )
@@ -249,6 +252,7 @@ def check_evidence_index(root: Path, failures: list[str]) -> None:
         "task-packets/kernel/a733-dts-v2-static-proof-command-packet.md",
         "task-packets/kernel/a733-dts-v2-static-proof-preflight.md",
         "task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md",
+        "task-packets/kernel/a733-claim-service-activation-checklist.md",
         "Strix's observed A733 DTS/DTSI prerequisite files were",
         "committed prerequisite branch",
         "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch",
@@ -969,6 +973,47 @@ def check_dts_v2_static_proof_isolated_copy(root: Path, failures: list[str]) -> 
         require_contains("dts-v2-static-proof-isolated-copy", text, needle, failures)
 
 
+def check_claim_service_activation_checklist(root: Path, failures: list[str]) -> None:
+    path = root / CLAIM_SERVICE_ACTIVATION_CHECKLIST
+    if not path.exists():
+        failures.append(
+            f"claim-service-activation-checklist: missing {CLAIM_SERVICE_ACTIVATION_CHECKLIST}"
+        )
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("claim-service-activation-checklist", text, failures)
+    required = [
+        "Status: local-only checklist; no-run; no-service-change",
+        "not an implementation",
+        "not approval to start services",
+        "not approval to change Hermes",
+        "not permission to mutate kernel trees or hardware",
+        "planned-not-active",
+        "ThinkCentre",
+        "Fault Ledger/FastMCP",
+        "SQLite-WAL",
+        "AGENT_ID -> AGENT_TIER",
+        "server-stamped tier",
+        "atomic claim, release, heartbeat, and list operations",
+        "Resource IDs cover at least",
+        "Non-stale claim denial",
+        "Stale burn-board claim handling marks the board `UNKNOWN`",
+        "dummy resources first",
+        "A733-CLAIM-DRILL-001",
+        "DTS v2 isolated-copy static proof",
+        "Strix source kernel tree path",
+        "isolated proof tree path",
+        "Hardware runtime remains blocked",
+        "claim-service activation alone never enables",
+        "inventory/hardware/cubie-a7s-lab.json",
+        "Until then, the correct status remains `planned-not-active`",
+        "Stop and log instead of activating",
+        "activation would require changing Hermes, cron, services, model routing, or",
+    ]
+    for needle in required:
+        require_contains("claim-service-activation-checklist", text, needle, failures)
+
+
 def check_dts_v2_static_proof_preflight(root: Path, failures: list[str]) -> None:
     path = root / DTS_V2_STATIC_PROOF_PREFLIGHT
     if not path.exists():
@@ -1235,6 +1280,7 @@ def run(root: Path) -> dict[str, Any]:
     check_dts_v2_static_validation_hosts(root, failures)
     check_dts_v2_static_proof_command_packet(root, failures)
     check_dts_v2_static_proof_isolated_copy(root, failures)
+    check_claim_service_activation_checklist(root, failures)
     check_dts_v2_static_proof_preflight(root, failures)
     check_dts_v2_uart_pinctrl_preview(root, failures)
     check_dts_v2_held_cover_changelog_draft(root, failures)
@@ -1268,6 +1314,7 @@ def run(root: Path) -> dict[str, Any]:
         "dts_v2_static_validation_hosts": str(DTS_V2_STATIC_VALIDATION_HOSTS),
         "dts_v2_static_proof_command_packet": str(DTS_V2_STATIC_PROOF_COMMAND_PACKET),
         "dts_v2_static_proof_isolated_copy": str(DTS_V2_STATIC_PROOF_ISOLATED_COPY),
+        "claim_service_activation_checklist": str(CLAIM_SERVICE_ACTIVATION_CHECKLIST),
         "dts_v2_static_proof_preflight": str(DTS_V2_STATIC_PROOF_PREFLIGHT),
         "dts_v2_uart_pinctrl_preview": str(DTS_V2_UART_PINCTRL_PREVIEW),
         "dts_v2_held_cover_changelog_draft": str(DTS_V2_HELD_COVER_CHANGELOG_DRAFT),

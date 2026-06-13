@@ -188,6 +188,10 @@ any future public action.
   only as a no-run recipe for a future isolated-copy static proof when Strix
   prerequisite files remain untracked. It is not a build log, not proof, and
   not permission to copy kernel trees during the current cycle.
+- Use `task-packets/kernel/a733-claim-service-activation-checklist.md` before
+  treating the ThinkCentre Fault Ledger/FastMCP claim service as active. It is
+  a no-run checklist, not service-change approval, and not permission to claim
+  Strix kernel trees, proof trees, Cubies, UARTs, power handles, or artifacts.
 - Use `task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch` only
   as a no-send local preview of the UART0 pinctrl move. It may be checked with
   `git apply --check` against the clean sparse tree, but it is not DTB proof,

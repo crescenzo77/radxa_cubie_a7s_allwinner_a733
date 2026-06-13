@@ -397,6 +397,141 @@ validation passes and authority files reveal another clear inconsistency.
 Stop confirmation: Continue to validation, then next safe item if disk state
 permits.
 
+### A733-CYCLE-064
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Add a local-only claim-service activation checklist for A733
+work.
+
+Selection rationale: The current workflow repeatedly blocks static proof,
+kernel-tree copying, runtime proof, and multi-agent work on the same missing
+claim-service authority. A durable checklist makes the unblock explicit without
+implementing services, mutating hardware, touching kernel trees, or changing
+Hermes behavior.
+
+Scope contract: Create a local-only checklist packet that records the required
+preconditions, non-goals, proof contract, resource schema, stale-claim behavior,
+and activation gates for the ThinkCentre Fault Ledger/FastMCP claim surface.
+Link it from the evidence index and teach the authority validator to require
+the anchor. Do not implement the claim service, SSH to ThinkCentre or Strix,
+copy kernel trees, start services, change cron, edit Hermes scripts, assign
+board roles, or send public communications.
+
+Files in scope:
+
+- `task-packets/kernel/a733-claim-service-activation-checklist.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- claim-service implementation
+- FastMCP, SQLite, service, cron, Hermes, or Telegram changes
+- ThinkCentre, Strix, Cubie, UART, power, or kernel-tree commands
+- board role assignment or recovery drill
+- static-proof execution
+- b4 send, git send-email, Gmail replies, list replies, GitHub issue, PR, or
+  comment
+
+Classification gate: Green coordination documentation and validation coverage.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+is touched.
+
+Claimed resources: coordination documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `pwd && git status --short --branch && git log -5 --oneline && git ls-remote github-backup refs/heads/homelab-backup-main | sed -n '1p'`
+- `sed -n '1,260p' runbooks/kernel-a733-mainline-enablement-workflow.md`
+- `sed -n '1,280p' inventory/hardware/cubie-a7s-lab.json`
+- `tail -n 360 task-packets/kernel/a733-cycle-ledger.md`
+- `sed -n '1,260p' task-packets/kernel/a733-supervised-batch-queue.md`
+- `sed -n '1,260p' task-packets/kernel/a733-unsent-communications-ledger.md`
+- `python3 tools/validate/a733_authority_check.py`
+- `rg -n "TODO|TBD|draft-needed|blocked|Next-selection|Next Safe|claim service|static proof|role-gated|frontier queue|question-held|Current blockers|Run ceiling|future" task-packets/kernel runbooks inventory tools/validate | sed -n '1,240p'`
+- `rg --files task-packets/kernel runbooks inventory | rg 'a733|kernel|claim|hermes|workflow' | sort | sed -n '1,240p'`
+- `sed -n '260,760p' runbooks/kernel-a733-mainline-enablement-workflow.md`
+- `sed -n '150,240p' runbooks/kernel-workflow-controls.md`
+- `sed -n '1,130p' runbooks/hermes-kernel-work-prompt.md`
+- `sed -n '160,230p' inventory/hardware/cubie-a7s-lab.json`
+- `tail -n 40 task-packets/kernel/a733-cycle-ledger.md`
+- `sed -n '117,225p' task-packets/kernel/a733-current-evidence-index.md`
+- `sed -n '1,130p' task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md`
+- `rg -n "check_evidence_index|current-evidence|dts-v2-static-proof-isolated-copy|local-pending-prep-checkpoint|REQUIRED_BATCH_IDS" tools/validate/a733_authority_check.py`
+- `sed -n '920,1015p' tools/validate/a733_authority_check.py && sed -n '1190,1235p' tools/validate/a733_authority_check.py`
+- `python3 tools/validate/a733_authority_check.py`
+- `sed -n '1218,1285p' tools/validate/a733_authority_check.py && sed -n '1,125p' task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `python3 tools/validate/a733_authority_check.py && python3 -m py_compile tools/validate/a733_authority_check.py && python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null && python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null && git diff --check -- task-packets/kernel/a733-claim-service-activation-checklist.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `git diff -- task-packets/kernel/a733-claim-service-activation-checklist.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md | sed -n '1,320p'`
+- `shasum -a 256 task-packets/kernel/a733-claim-service-activation-checklist.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `sed -n '1,240p' task-packets/kernel/a733-claim-service-activation-checklist.md`
+
+Artifacts and hashes:
+
+```text
+1d3f50a30adb9d460a39cfd7da338c87f9fafeb05ec6fb5e569b668d4494c3c0  task-packets/kernel/a733-claim-service-activation-checklist.md
+15ff6c8a84d698f17bee942389929d971924dc10f471763c714f63933fd6e188  task-packets/kernel/a733-current-evidence-index.md
+491c1204aa1a78d65a7123c3289de42e3e08ed70f29d2518841efb3ea1a89b6e  tools/validate/a733_authority_check.py
+```
+
+Proof definition: Authority validation passes; Markdown fences are balanced;
+the evidence index points to the new checklist; the validator requires the new
+anchor; the checklist preserves the no-implementation/no-hardware/no-public
+boundary.
+
+Proof result: Passed. The checklist exists, is marked local-only/no-run/no
+service-change, and records dummy-resource activation proof before any live
+resource claim. The evidence index links it, and the authority validator now
+requires it. `python3 tools/validate/a733_authority_check.py`, validator
+bytecode compile, inventory JSON parse, workflow-path JSON parse, and
+`git diff --check` passed before commit.
+
+Promotion state: not applicable.
+
+Tree state: Coordination files are dirty until this cycle is committed and
+backed up. No kernel tree, hardware, service, Hermes, Telegram, runtime board,
+or public communication state was changed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none for this documentation cycle. The operational
+claim service remains `planned-not-active`; this checklist records the future
+activation proof but does not activate it.
+
+Release result: not applicable; no central claim exists.
+
+Next-selection pointer: Future work may either run a separate approved dummy
+claim-service drill using this checklist, or continue safe local-only
+source/evidence planning. DTS v2 static proof execution remains held until the
+claim/permission story is positive for the Strix source tree and proof tree.
+
+Stop confirmation: Stop this cycle after final validation, GitHub backup, and
+summary.
+
 ### A733-CYCLE-063
 
 Timestamp: 2026-06-13 local
