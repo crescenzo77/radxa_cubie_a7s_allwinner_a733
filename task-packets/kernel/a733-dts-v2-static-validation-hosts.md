@@ -87,6 +87,9 @@ it has a complete Linux source tree, cross compiler, `make`, `dtc`,
 `checkpatch.pl`, and `get_maintainer.pl`. It must not be used in-place for a
 proof pass until the proof is isolated in a temporary clean worktree or another
 intentionally isolated tree, because the observed mainline tree is dirty and detached.
+The observed A733 DTS prerequisite files were untracked, so a detached worktree
+from the observed commit is not enough unless a future preflight proves those
+files are committed or otherwise present in the isolated proof tree.
 
 ## ThinkCentre
 
@@ -129,6 +132,9 @@ proof pass.
 ## Future Static Proof Selection
 
 Preferred next host: Strix, but only through an isolated proof workspace.
+
+A no-run command packet for that future isolated proof is recorded in
+`task-packets/kernel/a733-dts-v2-static-proof-command-packet.md`.
 
 A future proof cycle should:
 

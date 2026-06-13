@@ -47,11 +47,22 @@ Host suitability for a future static proof is recorded in:
 task-packets/kernel/a733-dts-v2-static-validation-hosts.md
 ```
 
+A no-run command packet for a future isolated Strix proof is recorded in:
+
+```text
+task-packets/kernel/a733-dts-v2-static-proof-command-packet.md
+```
+
 Current conclusion: Strix is the best observed future static-validation host
 because it has a complete Linux source tree, `aarch64-linux-gnu-gcc`, `make`,
 `dtc`, `scripts/checkpatch.pl`, and `scripts/get_maintainer.pl`. It must still
 use a temporary clean worktree or another intentionally isolated tree because
 the observed Strix mainline tree is dirty and detached.
+
+Known prerequisite caveat: the observed Strix tree had A733 DTS prerequisite
+files as untracked files. A detached worktree at the observed commit is not
+sufficient unless a future preflight proves those files are committed or
+otherwise present in the isolated proof tree.
 
 Use a temporary full kernel worktree or a verified remote build tree for static
 proof. Do not write build outputs into the source tree. Prefer an out-of-tree
@@ -68,10 +79,12 @@ can be recorded as pass:
 - `scripts/checkpatch.pl` available
 - `scripts/get_maintainer.pl` available
 - clean or intentionally isolated worktree state
+- A733 prerequisite DTS/DTSI files present in the isolated tree
 - exact base commit and branch recorded
 - DTS v2 UART0 pinctrl delta applied
 - generated patch path recorded
 - no public communication, public push, or hardware mutation
+- future proof command packet reviewed against current authority files
 
 ## Static Commands
 

@@ -175,6 +175,12 @@ any future public action.
   choosing where to run a future DTS v2 static proof. It records that Strix is
   the best observed proof host only after an isolated clean worktree is created,
   while Mac mini and ThinkCentre currently have tool/tree gaps.
+- Use `task-packets/kernel/a733-dts-v2-static-proof-command-packet.md` only as
+  a no-run recipe for a future isolated Strix static proof. It is not a build
+  log, not proof, and not permission to mutate kernel trees or hardware. It
+  records that Strix's observed A733 DTS/DTSI prerequisite files were
+  untracked, so a future proof must preserve those files in the isolated tree
+  or use a committed prerequisite branch before recording a pass.
 - Use `task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch` only
   as a no-send local preview of the UART0 pinctrl move. It may be checked with
   `git apply --check` against the clean sparse tree, but it is not DTB proof,
