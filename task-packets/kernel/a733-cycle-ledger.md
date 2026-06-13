@@ -397,6 +397,125 @@ validation passes and authority files reveal another clear inconsistency.
 Stop confirmation: Continue to validation, then next safe item if disk state
 permits.
 
+### A733-CYCLE-063
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Classify DTS v2 isolated-copy static proof execution eligibility.
+
+Selection rationale: After the checkpoint refresh and GitHub backup, the next
+obvious local candidate is DTS v2 static proof. The authority files point to an
+isolated-copy packet, but the packet is explicitly `no-run`, Strix/source-tree
+access would touch a kernel tree path, and the claim service is
+planned-not-active. The durable next action is to record the gate instead of
+executing around it.
+
+Scope contract: Read the workflow, inventory, evidence index, static-proof
+packets, hardware queue, communication ledger, and git backup state. Record
+whether the static proof may run now. Do not copy kernel trees, create proof
+trees, SSH to Strix, run builds, apply patches, mutate hardware, or send/push
+public kernel communications.
+
+Files in scope:
+
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- executing `task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md`
+- creating, copying, or deleting kernel worktrees
+- Strix SSH, rsync, build, checkpatch, get-maintainer, or patch apply
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime proof
+- b4 send, git send-email, Gmail replies, list replies, GitHub issue, PR, or
+  comment
+
+Classification gate: Blocked/held Green candidate. Local-only static proof is
+durable in principle, but execution is not positively allowed in the current
+read state because the executable packet is `no-run`, kernel-tree path claims
+would be required, and the claim service is `planned-not-active`.
+
+Permission envelope: Green logging only.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: cycle ledger documentation file only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `sed -n '1,260p' runbooks/kernel-a733-mainline-enablement-workflow.md`
+- `sed -n '1,220p' inventory/hardware/cubie-a7s-lab.json`
+- `tail -n 260 task-packets/kernel/a733-cycle-ledger.md`
+- `sed -n '1,260p' task-packets/kernel/a733-supervised-batch-queue.md`
+- `sed -n '1,260p' task-packets/kernel/a733-unsent-communications-ledger.md`
+- `sed -n '1,220p' task-packets/kernel/a733-current-evidence-index.md`
+- `git status --short --branch && git log -3 --oneline && git ls-remote github-backup refs/heads/homelab-backup-main | sed -n '1p'`
+- `python3 tools/validate/a733_authority_check.py && git status --short --branch && git ls-remote github-backup refs/heads/homelab-backup-main | sed -n '1p'`
+- `rg -n "static proof|isolated-copy|claim service|planned-not-active|single-live|claim" runbooks/kernel-a733-mainline-enablement-workflow.md task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md task-packets/kernel/a733-dts-v2-static-proof-command-packet.md task-packets/kernel/a733-dts-v2-static-proof-plan.md task-packets/kernel/a733-current-evidence-index.md inventory/hardware/cubie-a7s-lab.json`
+- `rg -o "A733-CYCLE-[0-9]{3}" task-packets/kernel/a733-cycle-ledger.md | sort -u | tail -n 10`
+- `sed -n '430,520p' runbooks/kernel-a733-mainline-enablement-workflow.md`
+- `sed -n '620,660p' runbooks/kernel-a733-mainline-enablement-workflow.md`
+- `sed -n '1,170p' task-packets/kernel/a733-dts-v2-static-proof-isolated-copy-packet.md`
+- cycle-ID inspection Python command
+- `tail -n 80 task-packets/kernel/a733-cycle-ledger.md`
+
+Artifacts and hashes: This ledger entry only. No kernel, boot, UART, board, or
+static-proof artifacts were produced.
+
+Proof definition: Authority validation passes; git backup branch remains at the
+post-checkpoint backup commit; the cycle records the reason DTS v2 static proof
+execution was not allowed.
+
+Proof result: Passed. Authority validation passed before this record. GitHub
+backup branch `homelab-backup-main` was observed at
+`57be8564761e67c4f002add7c465f76b5e809972`. The static-proof execution gate is
+now explicit: do not run the isolated-copy packet until a fresh future contract
+also has a positive claim/permission story for the Strix source tree and proof
+tree.
+
+Promotion state: not applicable.
+
+Tree state: Cycle ledger is dirty until committed and backed up. No kernel
+tree, hardware, service, runtime board, or public communication state was
+changed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: Static proof execution is held by current authority
+state: packet is no-run, claim service is planned-not-active, and Strix kernel
+tree/proof-tree resources cannot be claimed.
+
+Release result: not applicable; no central claim exists.
+
+Next-selection pointer: Resolve the claim/permission story for a local
+isolated-copy static proof, or continue with purely documentary/source-backed
+planning that does not touch kernel trees, hardware, services, or public
+communications.
+
+Stop confirmation: Stop this cycle after validation, commit, GitHub backup, and
+summary.
+
 ### A733-CYCLE-027
 
 Timestamp: 2026-06-13 local
