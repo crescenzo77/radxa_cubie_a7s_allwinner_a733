@@ -1,6 +1,31 @@
 # Current Status
 
-Last updated: 2026-06-09.
+Last updated: 2026-06-13.
+
+## Public DTS v1 Submission
+
+The initial A733/Cubie A7S DTS series has been submitted upstream as v1:
+
+```text
+https://patch.msgid.link/20260613-a733-dts-v1-public-ready-v1-0-7787c94681db@gmail.com
+```
+
+The public series contains 5 messages: a cover letter plus four patches for
+the Radxa Cubie A7S board binding, A733 MMC compatible, A733 SoC DTSI, and
+Radxa Cubie A7S board DTS.
+
+Submission and first verification status:
+
+- b4 public send reported `Sent 5 messages`
+- lore can fetch the v1 thread by cover Message-ID
+- local b4 verification passes for the ed25519 developer signature after the
+  public key is installed in the verifier keyring
+- DKIM/kernel.org verification passes
+- the post-send b4 prep branch has moved to v2 bookkeeping state only
+
+Do not send a v2 unless maintainer review or a concrete correction requires
+one. The next public-facing work is monitoring maintainer/list feedback and the
+status of the A733 RTC, CCU/PRCM, and pinctrl prerequisite series.
 
 ## Maintainer-Shape Review Export
 

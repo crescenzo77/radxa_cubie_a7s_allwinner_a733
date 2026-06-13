@@ -1,8 +1,8 @@
 # Patch Directory
 
 This directory contains exported patch files for review preparation only. The
-authoritative code lives in the Linux fork branches named from the repository
-root README.
+authoritative submitted v1 series is the public b4/lore thread linked from the
+repository root README.
 
 Current review export:
 
@@ -20,20 +20,23 @@ Patch order:
 3. `arm64: dts: allwinner: add Allwinner A733 SoC`
 4. `arm64: dts: allwinner: add Radxa Cubie A7S`
 
-These files are not a mailed submission series. They are a maintainer-shape
-review export that intentionally drops the local CCU and pinctrl driver work
-from the earlier 9-patch draft. The cover letter carries explicit `Depends-on:`
-references for the active A733 RTC, CCU/PRCM, and pinctrl RFCs.
+These files are a maintainer-shape review export that intentionally drops the
+local CCU and pinctrl driver work from the earlier 9-patch draft. They are no
+longer the send authority for v1; use the public archive thread for the exact
+submitted messages.
+
+Current snapshot status: historical promoted review snapshot. The upstream v1
+DTS series was sent with `b4` and is visible at:
+
+```text
+https://patch.msgid.link/20260613-a733-dts-v1-public-ready-v1-0-7787c94681db@gmail.com
+```
 
 The files include the human DCO sign-off authorized for this public review
 export. They intentionally do not include nonstandard metadata trailers; any
 final trailer decision must be made by the human submitter using current kernel
 documentation and subsystem expectations.
 
-Before any upstream submission, regenerate the patches again from the final
-clean kernel candidate branch so the source branch, cover letter, diffstats,
-and validation proofs all describe the same code.
-
-Before any version is sent upstream, regenerate the series from a clean kernel
-tree, run the checks in `docs/mainline-cleanup-workflow.md`, and record the
-exact results in `docs/status.md`.
+Before any future upstream revision, regenerate the series from a clean kernel
+tree, run the checks in `docs/mainline-cleanup-workflow.md`, reflect the b4
+send before any real send, and record the exact results in `docs/status.md`.

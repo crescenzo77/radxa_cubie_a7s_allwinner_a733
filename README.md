@@ -13,12 +13,25 @@ answer three questions:
 Local lab automation, raw model output, generated kernels, DTBs, UART captures,
 and private machine details do not belong on this branch.
 
-## Current Review Export
+## Current Upstream Submission
 
-The current public artifact is a 4-patch maintainer-shape review export in
-[patches/](patches/). It is not mailed, and it still needs final regeneration
-from the exact clean kernel branch plus full human review before any upstream
-send.
+The initial 4-patch A733/Cubie A7S DTS series has been submitted upstream as
+v1 and is visible on the public kernel archives:
+
+```text
+https://patch.msgid.link/20260613-a733-dts-v1-public-ready-v1-0-7787c94681db@gmail.com
+```
+
+The public v1 covers:
+
+- Radxa Cubie A7S board compatible
+- A733 MMC compatible binding coverage
+- initial A733 SoC DTSI with CPUs, timer, GICv3, RTC oscillator provider,
+  CCU/R-CCU, pinctrl, UART0, and SDMMC0
+- Cubie A7S DTS with UART0 console and SD card boot storage
+
+The [patches/](patches/) directory remains a public review snapshot. The
+authoritative submitted series is the b4/lore thread above.
 
 The previous full validation branch remains in the Linux fork:
 
@@ -26,14 +39,6 @@ The previous full validation branch remains in the Linux fork:
 https://github.com/crescenzo77/linux.git
 candidate/a733-platform-clean-v4
 ```
-
-The current review export covers:
-
-- A733 MMC compatible binding coverage
-- Radxa Cubie A7S board compatible
-- initial A733 SoC DTSI with CPUs, timer, GICv3, RTC oscillator provider,
-  CCU/R-CCU, pinctrl, UART0, and SDMMC0
-- Cubie A7S DTS with UART0 console and MMC0 storage
 
 Ethernet is not enabled and no Ethernet support is claimed.
 
@@ -43,12 +48,11 @@ patches from the earlier 9-patch draft are not part of the current review
 export. The focused MMC binding patch is now included because the DTS uses
 `allwinner,sun60i-a733-mmc`.
 
-The current export has been reconciled with the active A733 RTC/CCU clock-input
-API and with the A733 pinctrl RFC binding shape. Runtime proof for the exact v4
-kernel and DTB has been captured in the private workflow; raw logs remain out
-of public git. Before mailing, re-check the prerequisite RFC status, regenerate
-from the final branch, and rerun maintainer, bisectability, and full validation
-checks.
+The submitted v1 was prepared with `b4`, reflected to the sender before the
+public send, checked for public hygiene, sent through the kernel.org b4 relay,
+and fetched back from lore as a 5-message thread. Runtime proof for the exact
+v4 kernel and DTB has been captured privately; raw logs remain out of public
+git.
 
 ## Submission Discipline
 
