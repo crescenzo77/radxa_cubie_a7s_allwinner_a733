@@ -397,6 +397,115 @@ validation passes and authority files reveal another clear inconsistency.
 Stop confirmation: Continue to validation, then next safe item if disk state
 permits.
 
+### A733-CYCLE-066
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Back up the private homelab repo to its configured local origin
+mirror.
+
+Selection rationale: After A733-CYCLE-065, `scripts/kernel-workflow-status
+--workflow-backup-status` correctly reports the GitHub backup as current but
+still reports `private_origin_backed=no`. The configured `origin` is the local
+mirror `/Users/enzo/git-mirrors/homelab.git`, not a public kernel remote.
+Pushing it improves stopping-point durability without touching hardware,
+kernel trees, services, or public communications.
+
+Scope contract: Validate authority, commit this ledger record, push local
+`main` to configured `origin`, then push the same commit to `github-backup`
+branch `homelab-backup-main`. Do not add or change remotes, push public kernel
+branches, touch hardware, edit kernel trees, change services, or send public
+communications.
+
+Files in scope:
+
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- git remote changes
+- public kernel repository pushes
+- public communication
+- service, cron, model routing, Hermes, or Telegram changes
+- board role assignment, recovery drill, UART, power, boot, or runtime proof
+- kernel tree edits or static-proof execution
+
+Classification gate: Green backup/status record. Local mirror backup is not
+public communication and is requested by the workflow status surface.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no hardware or kernel
+tree resource is touched.
+
+Claimed resources: coordination repo cycle ledger and git backup remotes only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `scripts/kernel-workflow-status --workflow-backup-status`
+- `python3 tools/validate/a733_authority_check.py`
+- `git status --short --branch`
+- `git add task-packets/kernel/a733-cycle-ledger.md`
+- `git commit -m "a733: record private origin mirror backup"`
+- `git push origin main`
+- `git push github-backup main:homelab-backup-main`
+- `scripts/kernel-workflow-status --workflow-backup-status`
+- `git rev-parse HEAD`
+- `git ls-remote origin refs/heads/main | sed -n '1p'`
+- `git ls-remote github-backup refs/heads/homelab-backup-main | sed -n '1p'`
+- `python3 tools/validate/a733_authority_check.py`
+- `git status --short --branch`
+
+Artifacts and hashes: This ledger record only. The final cycle-ledger hash is
+self-referential and is therefore not recorded inside this entry.
+
+Proof definition: authority validation passes; local `origin/main` and
+`github-backup/homelab-backup-main` both resolve to the committed cycle-066
+HEAD; workflow backup status no longer reports private origin as behind.
+
+Proof result: Pass criteria are local mirror and GitHub backup head equality
+with the committed cycle HEAD after push. The post-commit verification commands
+listed above are the proof for this cycle.
+
+Promotion state: not applicable.
+
+Tree state: Coordination repo is dirty until this cycle record is committed.
+No kernel tree, hardware, service, Hermes, Telegram, runtime board, or public
+communication state was changed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim exists.
+
+Next-selection pointer: After local origin and GitHub backup are current,
+continue with safe local-only evidence/planning work. Public kernel GitHub
+backup remains a separate public-repo concern and must not be performed from
+this cycle.
+
+Stop confirmation: Stop this cycle after final validation, local origin backup,
+GitHub backup, and summary.
+
 ### A733-CYCLE-065
 
 Timestamp: 2026-06-13 local
