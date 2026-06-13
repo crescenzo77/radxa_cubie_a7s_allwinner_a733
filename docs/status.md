@@ -23,9 +23,20 @@ Submission and first verification status:
 - DKIM/kernel.org verification passes
 - the post-send b4 prep branch has moved to v2 bookkeeping state only
 
-Do not send a v2 unless maintainer review or a concrete correction requires
-one. The next public-facing work is monitoring maintainer/list feedback and the
-status of the A733 RTC, CCU/PRCM, and pinctrl prerequisite series.
+Evidence for the public submission is recorded in:
+
+```text
+submissions/a733-cubie-a7s-dts-v1/
+```
+
+Maintainer feedback received on 2026-06-13 says the UART0 pin definition
+should move into the main A733 DTSI, following the style used by other
+Allwinner SoCs. The same feedback also says the DT submission is early until at
+least the relevant A733 clock support lands.
+
+Do not send a v2 just to churn the thread. The next public-facing work is
+tracking maintainer/list feedback, resolving the UART pin placement issue, and
+coordinating with the A733 RTC, CCU/PRCM, and pinctrl prerequisite series.
 
 ## Maintainer-Shape Review Export
 

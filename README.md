@@ -31,7 +31,9 @@ The public v1 covers:
 - Cubie A7S DTS with UART0 console and SD card boot storage
 
 The [patches/](patches/) directory remains a public review snapshot. The
-authoritative submitted series is the b4/lore thread above.
+authoritative submitted series is the b4/lore thread above. Public evidence
+for the submitted v1 is recorded in
+[submissions/a733-cubie-a7s-dts-v1/](submissions/a733-cubie-a7s-dts-v1/).
 
 The previous full validation branch remains in the Linux fork:
 
@@ -50,9 +52,13 @@ export. The focused MMC binding patch is now included because the DTS uses
 
 The submitted v1 was prepared with `b4`, reflected to the sender before the
 public send, checked for public hygiene, sent through the kernel.org b4 relay,
-and fetched back from lore as a 5-message thread. Runtime proof for the exact
-v4 kernel and DTB has been captured privately; raw logs remain out of public
-git.
+and fetched back from lore. Runtime proof for the exact v4 kernel and DTB has
+been captured privately; raw logs remain out of public git.
+
+Maintainer feedback received after v1 says the UART0 pin definition should move
+into the main A733 DTSI and that DT submission is early until at least the
+relevant A733 clock support lands. That feedback makes v1 a useful public
+checkpoint, not an acceptance-ready final form.
 
 ## Submission Discipline
 

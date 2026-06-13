@@ -1,0 +1,46 @@
+{
+  "series": "arm64: dts: allwinner: add A733/Cubie A7S DTS support",
+  "version": 1,
+  "status": "public_sent_indexed_verified_with_maintainer_feedback",
+  "cover_message_id": "20260613-a733-dts-v1-public-ready-v1-0-7787c94681db@gmail.com",
+  "patch_msgid_link": "https://patch.msgid.link/20260613-a733-dts-v1-public-ready-v1-0-7787c94681db@gmail.com",
+  "submitted_utc": "2026-06-13T09:42:16Z",
+  "evidence_generated_date": "2026-06-13",
+  "original_messages_sent": 5,
+  "current_thread_messages_analyzed_by_b4": 8,
+  "patch_count": 4,
+  "verification": {
+    "public_archive_fetch": true,
+    "b4_attestation_check": true,
+    "ed25519_signature_verified": true,
+    "signed_identity": "enzo.adriano.code@gmail.com"
+  },
+  "files": [
+    {
+      "path": "b4-am-verify.txt",
+      "sha256": "1915b7516d0e376cdbbaf37fafc30886330e75149988ea69d0ec869fcca95024"
+    },
+    {
+      "path": "cover-letter.txt",
+      "sha256": "339e0107d392080d2f9ca09b1c618a33f32ae8ccf65a69de9926429feddebc9a"
+    },
+    {
+      "path": "series.mbx",
+      "sha256": "bac44490e5563adab484547856e0b9ed7029ed6a4a78646b9ff6e06919a172a0"
+    }
+  ],
+  "known_review_feedback": [
+    "UART0 pin definition should move into the main A733 DTSI, following other Allwinner SoCs.",
+    "The DT series is early until at least the relevant A733 clock support lands."
+  ],
+  "scope_exclusions": [
+    "ethernet",
+    "vpu_cedrus",
+    "display",
+    "wifi",
+    "bluetooth",
+    "usb_c",
+    "pcie",
+    "raw_private_lab_logs"
+  ]
+}

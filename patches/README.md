@@ -40,3 +40,6 @@ documentation and subsystem expectations.
 Before any future upstream revision, regenerate the series from a clean kernel
 tree, run the checks in `docs/mainline-cleanup-workflow.md`, reflect the b4
 send before any real send, and record the exact results in `docs/status.md`.
+The next revision must also address maintainer feedback from v1: UART0 pin
+definitions should live in the main A733 DTSI, and the DT timing must be
+rechecked against the state of the A733 clock prerequisites.

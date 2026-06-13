@@ -1,0 +1,19 @@
+Looking up https://lore.kernel.org/all/20260613-a733-dts-v1-public-ready-v1-0-7787c94681db@gmail.com/
+Grabbing thread from lore.kernel.org/all/20260613-a733-dts-v1-public-ready-v1-0-7787c94681db@gmail.com/t.mbox.gz
+Analyzing 8 messages in the thread
+Looking for additional code-review trailers on lore.kernel.org
+Analyzing 0 code-review messages
+Checking attestation on all messages, may take a moment...
+---
+  ✓ [PATCH 1/4] dt-bindings: arm: sunxi: add Radxa Cubie A7S
+  ✓ [PATCH 2/4] dt-bindings: mmc: add Allwinner A733 compatible
+  ✓ [PATCH 3/4] arm64: dts: allwinner: add Allwinner A733 SoC
+  ✓ [PATCH 4/4] arm64: dts: allwinner: add Radxa Cubie A7S
+  ---
+  ✓ Signed: ed25519/enzo.adriano.code@gmail.com
+---
+Total patches: 4
+---
+Cover: <output-dir>/20260613_enzo_adriano_code_arm64_dts_allwinner_add_a733_cubie_a7s_dts_support.cover
+ Link: https://patch.msgid.link/20260613-a733-dts-v1-public-ready-v1-0-7787c94681db@gmail.com
+       git am <output-dir>/20260613_enzo_adriano_code_arm64_dts_allwinner_add_a733_cubie_a7s_dts_support.mbx
