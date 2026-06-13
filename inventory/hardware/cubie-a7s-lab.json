@@ -24,7 +24,7 @@
         "device": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1.2:1.0-port0",
         "resolved_device": "/dev/ttyUSB1",
         "baud": 115200,
-        "mapping_status": "inferred-a733-boot-menu-by-elimination"
+        "mapping_status": "confirmed-login-prompt"
       }
     },
     {
@@ -69,7 +69,7 @@
             "vendor": "Silicon_Labs",
             "serial": "0001",
             "baud": 115200,
-            "mapping_status": "inferred-cubie2-a733-boot-menu-by-elimination",
+            "mapping_status": "confirmed-cubie2-login-prompt",
             "mapped_board": "cubie2",
             "stable_name_preference": "by-path"
         },
@@ -105,6 +105,21 @@
     }
   ],
   "observations": [
+    {
+      "observed_at_utc": "2026-06-13T01:21:00Z",
+      "type": "cubie2-uart-identity-confirmation",
+      "host": "192.168.50.11",
+      "method": "vendor Debian boot over the 1.1.2 adapter showed 'cubie-2 login:'; corrected-root proof boot on the same adapter passed scripts/cubie-corrected-root-proof-gate",
+      "results": [
+        {
+          "device": "/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1.2:1.0-port0",
+          "resolved_device": "/dev/ttyUSB1",
+          "baud": 115200,
+          "observed_text": "cubie-2 login:",
+          "mapping_status": "confirmed-cubie2-login-prompt"
+        }
+      ]
+    },
     {
       "observed_at_utc": "2026-06-12T15:34:28Z",
       "type": "three-uart-hub-identity-probe",
