@@ -2787,7 +2787,7 @@
   ],
   "model_routes": [
     "ThinkCentre Hermes Agent: http://192.168.50.225:9120, task t_f3666e9c created for A733 SDMMC0 roadblock triage.",
-    "Framework Hermes Desktop: http://192.168.50.248:9120 is available for future speculative work if reachable; do not depend on it without API verification.",
+    "Framework Hermes Desktop: old LAN route http://192.168.50.248:9120 is stale; current observed Framework LAN IP is 192.168.50.140 and Tailscale IP is 100.64.0.5, but Framework is not guaranteed always on. Do not depend on it without live reachability and API verification.",
     "RTX 3090 route remains disabled until the user explicitly re-enables it."
   ]
 }
