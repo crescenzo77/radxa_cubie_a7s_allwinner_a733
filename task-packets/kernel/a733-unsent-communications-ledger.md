@@ -27,8 +27,8 @@ feedback, and operator approval before it can leave the local workspace.
 | ID | Date | Type | Target | Status | Draft | Send blocker |
 |---|---:|---|---|---|---|---|
 | A733-COMM-001 | 2026-06-13 | review acknowledgement | Jernej's v1 DTS patch 4/4 feedback | `sent-before-blackout` | Gmail reply in lore | Historical sent item; retain only as history and do not resend |
-| A733-COMM-002 | 2026-06-13 | v2 cover letter | A733/Cubie A7S DTS v2 | `draft-needed` | TBD | Do not send v2 until local DTS cleanup, clock prerequisite status, validation, and operator approval are refreshed |
-| A733-COMM-003 | 2026-06-13 | changelog note | A733/Cubie A7S DTS v2 | `draft-needed` | TBD | Same blocker as A733-COMM-002 |
+| A733-COMM-002 | 2026-06-13 | v2 cover letter | A733/Cubie A7S DTS v2 | `drafted-not-reviewed` | `task-packets/kernel/a733-dts-v2-held-cover-changelog-draft.md` | Do not send v2 until local DTS cleanup, clock prerequisite status, static validation, runtime proof, recipient refresh, and operator approval are refreshed |
+| A733-COMM-003 | 2026-06-13 | changelog note | A733/Cubie A7S DTS v2 | `drafted-not-reviewed` | `task-packets/kernel/a733-dts-v2-held-cover-changelog-draft.md` | Same blocker as A733-COMM-002 |
 | A733-COMM-004 | 2026-06-13 | prerequisite status note | A733 RTC, CCU/PRCM, and pinctrl prerequisite threads | `draft-needed` | TBD | No communication while blackout is active; also requires fresh public-thread recheck |
 | A733-COMM-005 | 2026-06-13 | potential Tested-by | prerequisite RTC/CCU/pinctrl series | `draft-needed` | TBD | Only valid after exact source, exact hardware, and exact proof are recorded |
 | A733-COMM-006 | 2026-06-13 | potential RFC/RFT cover | SDMMC0 IDMAC root-cause or diagnostic series | `draft-needed` | TBD | Requires source-backed root cause, maintainer-shaped patch, reproducible proof, and approval |

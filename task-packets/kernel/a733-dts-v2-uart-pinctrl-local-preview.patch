@@ -1,0 +1,56 @@
+Local-only no-send DTS v2 preview.
+
+Do not send this patch as-is. It is a coordination artifact for the A733 /
+Radxa Cubie A7S local-work-only workflow. It exists to preview the narrow
+UART0 pinctrl source movement requested by maintainer feedback and to support
+future static validation. It is not runtime proof, not b4 metadata, not a
+public branch, and not approval to mutate hardware.
+
+Expected local checks before any future use:
+
+- `git apply --check` against the selected clean source tree
+- `git diff --check` after applying in a temporary full tree
+- targeted DTB build
+- `CHECK_DTBS=y` targeted DTB build
+- `scripts/checkpatch.pl --strict`
+- `scripts/get_maintainer.pl`
+
+Runtime proof remains queued-only under A733-BATCH-002. Communications remain
+held under A733-COMM-002 and A733-COMM-003.
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts b/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts
+index 5ea8ec4..1edb06e 100644
+--- a/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts
++++ b/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts
+@@ -34,14 +34,6 @@
+ 	status = "okay";
+ };
+ 
+-&pio {
+-	uart0_pb9_pb10_pins: uart0-pb9-pb10-pins {
+-		pins = "PB9", "PB10";
+-		allwinner,pinmux = <2>;
+-		function = "uart0";
+-	};
+-};
+-
+ &uart0 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&uart0_pb9_pb10_pins>;
+diff --git a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
+index 6c89153..19d5cbf 100644
+--- a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
+@@ -148,6 +148,12 @@
+ 				drive-strength = <30>;
+ 				bias-pull-up;
+ 			};
++
++			uart0_pb9_pb10_pins: uart0-pb9-pb10-pins {
++				pins = "PB9", "PB10";
++				allwinner,pinmux = <2>;
++				function = "uart0";
++			};
+ 		};
+ 
+ 		ccu: clock-controller@2002000 {

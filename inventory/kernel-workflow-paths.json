@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-06-12",
+  "updated": "2026-06-13",
   "purpose": "Host-aware paths for the A733 kernel patch workflow. These paths prevent Hermes and Codex from using Mac-only defaults on remote hosts.",
   "hosts": {
     "mac-mini": {
@@ -17,6 +17,11 @@
       "kernel_tree_candidates": [
         "/Users/enzo/projects/linux-a733",
         "/Users/enzo/projects/linux-a733-sparse"
+      ],
+      "notes": [
+        "/Users/enzo/projects/linux-a733 is the full local checkout but currently has known non-A733 dirty files recorded in inventory/kernel-checkout-quarantine-20260606.md.",
+        "Use /Users/enzo/projects/linux-a733-sparse for clean validation, review, and local documentation while that quarantine remains active.",
+        "Do not stage, stash, reset, or clean the quarantined linux-a733 dirty files as part of A733 work."
       ],
       "rfc_recheck_dir": "/Users/enzo/projects/homelab/task-packets/kernel/research",
       "hermes_work_dir": "/Users/enzo/projects/homelab/task-packets/kernel/hermes-work",

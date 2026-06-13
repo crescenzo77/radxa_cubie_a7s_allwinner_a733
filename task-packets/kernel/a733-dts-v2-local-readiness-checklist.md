@@ -54,6 +54,8 @@ Disallowed in minimal DTS v2:
 
 ## Required Local Cleanup
 
+- Before editing a kernel tree, read
+  `task-packets/kernel/a733-dts-v2-local-delta-plan.md`.
 - Move `uart0_pb9_pb10_pins` from
   `sun60i-a733-cubie-a7s.dts` into `sun60i-a733.dtsi`.
 - Keep Cubie A7S board DTS referencing the SoC-level UART0 pin group.
@@ -103,10 +105,17 @@ recipient, b4, and operator-approval gates are refreshed.
 
 ## Current Local Finding
 
-Read-only source inspection of `/Users/enzo/projects/linux-a733` still shows
-`uart0_pb9_pb10_pins` inside `sun60i-a733-cubie-a7s.dts`, not in
-`sun60i-a733.dtsi`. That is consistent with the known v1 feedback and means
-local DTS v2 cleanup is not complete.
+Read-only source inspection of the clean sparse checkout
+`/Users/enzo/projects/linux-a733-sparse` at
+`candidate/a733-platform-clean-v4` / `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
+still shows `uart0_pb9_pb10_pins` inside
+`sun60i-a733-cubie-a7s.dts`, not in `sun60i-a733.dtsi`. The quarantined full
+checkout `/Users/enzo/projects/linux-a733` at
+`candidate/a733-platform-clean-v6` / `b1f20d455a600d33999cf893fdf0df8fb2ace538`
+shows the same pattern by read-only inspection, but must not be used for patch
+export while its non-A733 dirty-file quarantine remains active. It must not be used for patch export.
+This is consistent with the known v1 feedback and means local DTS v2 cleanup
+is not complete. The local DTS v2 cleanup is not complete.
 
 ## Stop Condition
 

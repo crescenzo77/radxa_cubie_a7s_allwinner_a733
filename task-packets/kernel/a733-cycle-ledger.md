@@ -2395,6 +2395,1408 @@ blocked until board roles, drilled recovery, and claim service permit it.
 Stop confirmation: Stop after this bounded PWM/backlight/fan evidence-sheet
 item.
 
+### A733-CYCLE-043
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Refresh the local prep checkpoint after the operator-requested
+GitHub backup.
+
+Selection rationale: After commit `88a6aa6` was pushed to GitHub
+`homelab-backup-main`, the checkpoint still described an older uncommitted
+pending bundle at `fa27be5` and said no public push occurred. Updating the
+checkpoint prevents future agents from inheriting false repository state while
+preserving the distinction between the backup branch and GitHub `main`.
+
+Scope contract: Update
+`task-packets/kernel/a733-local-pending-prep-checkpoint.md` and validator
+anchors so the authority check reflects the post-backup repository state.
+Record the backup branch, GitHub main divergence, current HEAD, local-origin
+relationship, included evidence bundle, and boundaries. Do not edit kernel
+trees, mutate hardware, merge GitHub `main`, overwrite GitHub `main`, send
+kernel communication, open PRs, change services, or start runtime proof.
+
+Files in scope:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits or patch generation
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime peripheral proof
+- GitHub `main` overwrite or merge
+- public kernel communication, b4 send, mailing-list reply, GitHub issue, PR,
+  comment, or paid third-party call
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+
+Classification gate: Green local coordination cleanup following explicit
+operator-requested backup. No hardware, kernel tree, claim service, public
+kernel communication, or GitHub `main` state was mutated in this cycle.
+
+Permission envelope: Green for local docs/validator refresh.
+
+Claim IDs: none; claim service is planned-not-active and no contended resource
+was touched.
+
+Claimed resources: local prep checkpoint, authority validator, and cycle
+ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `git status --short --branch`
+- `git rev-parse HEAD`
+- `git rev-parse github-backup/homelab-backup-main`
+- `git rev-parse github-backup/main`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+  `914b0affaf1416cdf040039e4f2ee7308fda5f19c2e081204371422edb94cc9b`
+- `tools/validate/a733_authority_check.py`
+  `bbded91aac45878c244108376f082debe1a7d5d0751974c55f88b93490dfab43`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Checkpoint records HEAD `88a6aa6`, local-origin relation
+`main...origin/main [ahead 2]`, GitHub backup branch `homelab-backup-main` at
+`88a6aa6`, GitHub public-evidence `main` at `dac2a6f`, and the explicit
+boundary that GitHub `main` was not overwritten. Validator anchors match the
+new checkpoint state. Validator passes, inventory JSON parses, Python compiles,
+and touched files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, and diff whitespace check completed successfully after the checkpoint
+refresh.
+
+Promotion state: not applicable.
+
+Tree state: Local prep checkpoint, authority validator, and cycle ledger are
+dirty after this local-only refresh. Kernel trees were not edited. GitHub
+backup branch already points at the previous commit `88a6aa6`; this cycle is
+not yet committed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: If the operator wants the checkpoint refresh backed up
+too, commit this small follow-up and push `main:homelab-backup-main`. Otherwise
+continue with Green local source inventory only.
+
+Stop confirmation: Stop after this bounded checkpoint refresh item.
+
+### A733-CYCLE-044
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Refresh Mac-mini kernel checkout quarantine and clean-tree
+selection rules.
+
+Selection rationale: The existing checkout quarantine still described
+`/Users/enzo/projects/linux-a733` as `candidate/a733-platform-clean-v3`, but
+read-only inspection now shows it at `candidate/a733-platform-clean-v6` with
+the same non-A733 dirty-file scope. The sparse checkout is clean at
+`candidate/a733-platform-clean-v4`. Recording that prevents future agents from
+cleaning unrelated files or exporting patches from the wrong tree.
+
+Scope contract: Update the kernel checkout quarantine, host workflow path
+inventory, A733 evidence index pointer, validator coverage, and this ledger
+record. Do not edit either kernel checkout, stage/stash/reset/clean dirty
+kernel files, generate patches, mutate hardware, send communication, push
+public branches, or change services.
+
+Files in scope:
+
+- `inventory/kernel-checkout-quarantine-20260606.md`
+- `inventory/kernel-workflow-paths.json`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits, patch generation, export, validation from quarantined
+  dirty tree, or kernel commits
+- staging, stashing, resetting, cleaning, or otherwise modifying
+  `/Users/enzo/projects/linux-a733`
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime peripheral proof
+- GitHub `main` overwrite or public push
+- public kernel communication, b4 send, mailing-list reply, GitHub issue, PR,
+  comment, or paid third-party call
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+
+Classification gate: Green local inventory and validation hygiene. The work
+records read-only git state from local kernel checkouts and updates coordination
+docs only. No kernel tree, hardware, claim service, public communication, or
+remote state is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource was touched.
+
+Claimed resources: checkout quarantine note, workflow path inventory, evidence
+index, authority validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `rg -n "kernel tree state|tree state snapshot|linux-a733|linux-a733-sparse|workspace state|branch state" task-packets/kernel runbooks inventory tools`
+- `ls -la /Users/enzo/projects/linux-a733 /Users/enzo/projects/linux-a733-sparse`
+- `git -C /Users/enzo/projects/linux-a733 status --short --branch`
+- `git -C /Users/enzo/projects/linux-a733 log --oneline --decorate -5`
+- `git -C /Users/enzo/projects/linux-a733 remote -v`
+- `git -C /Users/enzo/projects/linux-a733 rev-parse HEAD`
+- `git -C /Users/enzo/projects/linux-a733 branch --show-current`
+- `git -C /Users/enzo/projects/linux-a733 status --porcelain=v1`
+- `git -C /Users/enzo/projects/linux-a733 worktree list --porcelain`
+- `git -C /Users/enzo/projects/linux-a733-sparse status --short --branch`
+- `git -C /Users/enzo/projects/linux-a733-sparse log --oneline --decorate -5`
+- `git -C /Users/enzo/projects/linux-a733-sparse remote -v`
+- `git -C /Users/enzo/projects/linux-a733-sparse rev-parse HEAD`
+- `git -C /Users/enzo/projects/linux-a733-sparse branch --show-current`
+- `git -C /Users/enzo/projects/linux-a733-sparse status --porcelain=v1`
+- `git -C /Users/enzo/projects/linux-a733-sparse worktree list --porcelain`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- inventory/kernel-checkout-quarantine-20260606.md inventory/kernel-workflow-paths.json task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 inventory/kernel-checkout-quarantine-20260606.md inventory/kernel-workflow-paths.json task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `inventory/kernel-checkout-quarantine-20260606.md`
+  `8b7cc232fcadf2a20d455c5c6945c3c1f7b4eb98a1a768be78a2867d6b5a18e5`
+- `inventory/kernel-workflow-paths.json`
+  `793374bdab656ff0a063ae912946af2d714b28fcac50395614af6016e32d5d37`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `795a88d637a0b286984fef91ff493e2b47651b49aed91b8bb9ef4e0f1708ce4c`
+- `tools/validate/a733_authority_check.py`
+  `572b0d5d9a3636e54668bc5ab9eca51f2f75e5745d9fbe65d710fc2d0d51865a`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Quarantine note records the current full checkout branch
+`candidate/a733-platform-clean-v6`, current full checkout HEAD
+`b1f20d455a600d33999cf893fdf0df8fb2ace538`, known dirty non-A733 file scope,
+clean sparse checkout branch `candidate/a733-platform-clean-v4`, clean sparse
+checkout HEAD `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`, and the instruction
+not to stage, stash, reset, or clean the quarantined files. Workflow paths and
+evidence index point to that rule. Validator enforces the new anchors.
+Validator passes, JSON parses, Python compiles, and touched files pass
+`git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, workflow-path JSON parse, and diff whitespace check all completed
+successfully.
+
+Promotion state: not applicable.
+
+Tree state: This cycle leaves its coordination files dirty for operator review.
+Pre-existing dirty files from A733-CYCLE-043 also remain:
+`task-packets/kernel/a733-local-pending-prep-checkpoint.md` and
+`tools/validate/a733_authority_check.py` overlap with this cycle's validator
+change. Kernel trees were read only. No git staging, commit, or push was
+performed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue only with Green local source inventory,
+validation hygiene, or precise held-question drafting. Hardware runtime work
+remains blocked until board roles, drilled recovery, and claim service permit
+it. Public communication and public pushes remain closed.
+
+Stop confirmation: Stop after this bounded checkout-quarantine refresh item.
+
+### A733-CYCLE-045
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Refresh the local post-backup checkpoint after checkout
+quarantine Cycle 044.
+
+Selection rationale: The checkpoint still described coverage through
+A733-CYCLE-042 and omitted the Cycle 044 kernel checkout quarantine refresh.
+Updating it keeps the workspace resumption record aligned with current
+authority state and prevents future agents from missing the clean-tree rule.
+
+Scope contract: Update
+`task-packets/kernel/a733-local-pending-prep-checkpoint.md`, validator anchors,
+and this ledger record. Do not edit kernel trees, stage/stash/reset/clean
+kernel checkout files, mutate hardware, send communication, push remotes,
+merge GitHub `main`, or change services.
+
+Files in scope:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits, patch generation, export, validation from quarantined
+  dirty tree, or kernel commits
+- staging, stashing, resetting, cleaning, or otherwise modifying
+  `/Users/enzo/projects/linux-a733`
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime peripheral proof
+- GitHub `main` overwrite, public push, or backup push
+- public kernel communication, b4 send, mailing-list reply, GitHub issue, PR,
+  comment, or paid third-party call
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+
+Classification gate: Green local coordination cleanup. The work updates local
+checkpoint and validator text only. No kernel tree, hardware, claim service,
+public communication, or remote state is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource was touched.
+
+Claimed resources: local prep checkpoint, authority validator, and cycle
+ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `sed -n '1,220p' task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `sed -n '620,675p' tools/validate/a733_authority_check.py`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+  `1d6b8b2cba2220a2e660e16984e9c4f1fc116d46317289757be1f6bbb9716572`
+- `tools/validate/a733_authority_check.py`
+  `0105398b16757e6ff988f0c4a37383723f4ab88d350fa6e3e1be0245e971fba0`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Checkpoint records A733-CYCLE-044 coverage, the Mac-mini
+kernel checkout quarantine refresh, the checkout quarantine/workflow path
+files, and validator coverage for those anchors. Validator passes, Python
+compiles, JSON parses, and touched files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, workflow-path JSON parse, and diff whitespace check all completed
+successfully.
+
+Promotion state: not applicable.
+
+Tree state: This cycle leaves its coordination files dirty for operator review.
+Kernel trees were not edited. No git staging, commit, or push was performed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue only with Green local source inventory,
+validation hygiene, or precise held-question drafting. Hardware runtime work
+remains blocked until board roles, drilled recovery, and claim service permit
+it. Public communication and public pushes remain closed.
+
+Stop confirmation: Stop after this bounded checkpoint refresh item.
+
+### A733-CYCLE-046
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Align DTS v2 readiness finding with the clean Mac-mini sparse
+checkout.
+
+Selection rationale: The DTS v2 checklist's current local finding referenced
+the quarantined full `/Users/enzo/projects/linux-a733` checkout. After Cycle
+044, clean validation/review should prefer
+`/Users/enzo/projects/linux-a733-sparse`, so the DTS checklist needed a
+read-only clean-tree-backed finding to prevent future patch prep from using the
+quarantined tree as the export basis.
+
+Scope contract: Inspect the relevant A733 DTS files read-only in the clean
+sparse checkout and quarantined full checkout; update the DTS v2 readiness
+checklist and validator anchors with the current tree, branch, head, and
+finding. Do not edit kernel trees, generate patches, run hardware, stage,
+commit, push, or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-dts-v2-local-readiness-checklist.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits, patch generation, export, validation from quarantined
+  dirty tree, or kernel commits
+- staging, stashing, resetting, cleaning, or otherwise modifying
+  `/Users/enzo/projects/linux-a733`
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime DTS proof
+- GitHub `main` overwrite, public push, or backup push
+- public kernel communication, b4 send, mailing-list reply, GitHub issue, PR,
+  comment, or paid third-party call
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+
+Classification gate: Green local source inspection and documentation hygiene.
+The work records existing read-only source state and updates coordination docs
+only. No kernel tree, hardware, claim service, public communication, or remote
+state is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource was touched.
+
+Claimed resources: DTS v2 readiness checklist, authority validator, and cycle
+ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `rg -n "uart0_pb9_pb10_pins|&uart0|uart0-pb9-pb10|PB9|PB10" /Users/enzo/projects/linux-a733-sparse/arch/arm64/boot/dts/allwinner/sun60i-a733*`
+- `rg -n "uart0_pb9_pb10_pins|&uart0|uart0-pb9-pb10|PB9|PB10" /Users/enzo/projects/linux-a733/arch/arm64/boot/dts/allwinner/sun60i-a733*`
+- `find /Users/enzo/projects/linux-a733-sparse/arch/arm64/boot/dts/allwinner -maxdepth 1 -type f -name 'sun60i-a733*' -print`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-dts-v2-local-readiness-checklist.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-dts-v2-local-readiness-checklist.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-dts-v2-local-readiness-checklist.md`
+  `a38eca1a5355a93ea7269f6b548c3252698041ec658af81d0489314f051f5e8d`
+- `tools/validate/a733_authority_check.py`
+  `1c6ecdcabc28a90cc3949fc02da50923b85d6a88f903c38c612ed970ca9576bf`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: DTS v2 checklist records that the clean sparse checkout
+`/Users/enzo/projects/linux-a733-sparse` on
+`candidate/a733-platform-clean-v4` / `abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e`
+still has `uart0_pb9_pb10_pins` in `sun60i-a733-cubie-a7s.dts`, not
+`sun60i-a733.dtsi`. It also records that the quarantined full checkout on
+`candidate/a733-platform-clean-v6` /
+`b1f20d455a600d33999cf893fdf0df8fb2ace538` shows the same pattern but must not
+be used for patch export while quarantine remains active. Validator enforces
+those anchors and passes.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, workflow-path JSON parse, and diff whitespace check all completed
+successfully.
+
+Promotion state: not applicable.
+
+Tree state: This cycle leaves its coordination files dirty for operator review.
+Kernel trees were read only and not edited. No git staging, commit, or push was
+performed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue only with Green local source inventory,
+validation hygiene, or precise held-question drafting. Hardware runtime work
+remains blocked until board roles, drilled recovery, and claim service permit
+it. Public communication and public pushes remain closed.
+
+Stop confirmation: Stop after this bounded DTS readiness alignment item.
+
+### A733-CYCLE-047
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create a local DTS v2 delta plan for the UART0 pinctrl feedback.
+
+Selection rationale: The DTS v2 readiness checklist identified a concrete,
+maintainer-standard local correction: move `uart0_pb9_pb10_pins` from the
+Cubie board DTS into the A733 SoC DTSI. Recording the exact intended source
+movement, validation commands, and stop conditions advances patch readiness
+without mutating kernel trees or reopening communication.
+
+Scope contract: Read the clean sparse A733 DTS files and create a local-only
+DTS v2 delta plan. Link it from the evidence index and DTS v2 readiness
+checklist, add validator coverage, and record this ledger entry. Do not edit
+kernel trees, generate patches, run builds, run hardware, stage, commit, push,
+or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-dts-v2-local-delta-plan.md`
+- `task-packets/kernel/a733-dts-v2-local-readiness-checklist.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits, patch generation, export, validation from quarantined
+  dirty tree, or kernel commits
+- staging, stashing, resetting, cleaning, or otherwise modifying
+  `/Users/enzo/projects/linux-a733`
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime DTS proof
+- GitHub `main` overwrite, public push, or backup push
+- public kernel communication, b4 send, mailing-list reply, GitHub issue, PR,
+  comment, or paid third-party call
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+
+Classification gate: Green local patch-prep documentation. The plan records a
+specific source movement and proof gate but does not mutate kernel trees,
+hardware, claim service, public communication, or remote state.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource was touched.
+
+Claimed resources: DTS v2 local delta plan, DTS v2 readiness checklist,
+evidence index, authority validator, and cycle ledger documentation files
+only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `sed -n '1,140p' /Users/enzo/projects/linux-a733-sparse/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts`
+- `sed -n '1,260p' /Users/enzo/projects/linux-a733-sparse/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi`
+- `rg -n "pinctrl|pio|uart0|uart[0-9].*_pins|PB9|PB10|mmc0_pins" /Users/enzo/projects/linux-a733-sparse/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi /Users/enzo/projects/linux-a733-sparse/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-dts-v2-local-delta-plan.md task-packets/kernel/a733-dts-v2-local-readiness-checklist.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-dts-v2-local-delta-plan.md task-packets/kernel/a733-dts-v2-local-readiness-checklist.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-dts-v2-local-delta-plan.md`
+  `dc46e72546571de68c078e061b96b66d6f624fa50aaa07c146603378f5785a78`
+- `task-packets/kernel/a733-dts-v2-local-readiness-checklist.md`
+  `7e0ee23d02885c4179b4dd7cd619ade6ac9edca54dd729f3112ad6a5777e0e32`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `97ec3c1cc67d94b753db75548fed1675fe11a425f38ea7c6e8c851844afac79d`
+- `tools/validate/a733_authority_check.py`
+  `537b4c1c985e01faa566d5514f1e959ff941bd3c1a8123a3f0beab019a836299`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: DTS v2 local delta plan exists; it records the clean sparse
+tree, branch, head, exact `uart0_pb9_pb10_pins` movement from
+`sun60i-a733-cubie-a7s.dts` into `sun60i-a733.dtsi`, unchanged board DTS
+consumer reference, static proof commands, A733-BATCH-002 runtime gate, and
+A733-COMM-002/A733-COMM-003 communication hold. Evidence index and readiness
+checklist point to the plan. Validator enforces all anchors and passes.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, workflow-path JSON parse, and diff whitespace check all completed
+successfully.
+
+Promotion state: not applicable.
+
+Tree state: This cycle leaves its coordination files dirty for operator review.
+Kernel trees were read only and not edited. No git staging, commit, or push was
+performed.
+
+Communication ledger IDs: A733-COMM-002 and A733-COMM-003 remain held.
+
+Hardware lane queue IDs: A733-BATCH-002 remains queue-only.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: If local kernel-tree mutation is later explicitly
+opened, apply only the delta plan in the clean sparse tree or a temporary
+worktree and run the static proof commands. Hardware runtime work remains
+blocked until board roles, drilled recovery, and claim service permit it.
+Public communication and public pushes remain closed.
+
+Stop confirmation: Stop after this bounded DTS v2 local delta plan item.
+
+### A733-CYCLE-048
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Refresh the local post-backup checkpoint after DTS delta plan
+Cycle 047.
+
+Selection rationale: The checkpoint still described coverage through
+A733-CYCLE-044 and omitted the new DTS v2 local delta plan. Updating it keeps
+the workspace resumption record aligned with current authority state and makes
+the held DTS v2 edit plan discoverable from the checkpoint.
+
+Scope contract: Update
+`task-packets/kernel/a733-local-pending-prep-checkpoint.md`, validator anchors,
+and this ledger record. Do not edit kernel trees, mutate hardware, send
+communication, push remotes, merge GitHub `main`, or change services.
+
+Files in scope:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits, patch generation, export, validation from quarantined
+  dirty tree, or kernel commits
+- staging, stashing, resetting, cleaning, or otherwise modifying
+  `/Users/enzo/projects/linux-a733`
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime peripheral proof
+- GitHub `main` overwrite, public push, or backup push
+- public kernel communication, b4 send, mailing-list reply, GitHub issue, PR,
+  comment, or paid third-party call
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+
+Classification gate: Green local coordination cleanup. The work updates local
+checkpoint and validator text only. No kernel tree, hardware, claim service,
+public communication, or remote state is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource was touched.
+
+Claimed resources: local prep checkpoint, authority validator, and cycle
+ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `sed -n '1,180p' task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `sed -n '620,675p' tools/validate/a733_authority_check.py`
+- `rg -n "A733-CYCLE-047|a733-dts-v2-local-delta-plan|Cycle-ledger records|Included Prep Bundle|Artifact Hashes" task-packets/kernel/a733-local-pending-prep-checkpoint.md task-packets/kernel/a733-cycle-ledger.md tools/validate/a733_authority_check.py`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+  `32e4d9fede829e699e0e543fba4d58ab813d7c055f56a1fc5c55c01ebd789389`
+- `tools/validate/a733_authority_check.py`
+  `1ec95d40a596e2ff3cfb9ce3c38453b5afce79c2ca10a7539696099953235b49`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Checkpoint records A733-CYCLE-047 coverage, the DTS v2 local
+delta plan, the plan path, and validator coverage for DTS v2 local delta,
+kernel checkout quarantine, and workflow-path anchors. Validator passes,
+Python compiles, JSON parses, and touched files pass `git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, workflow-path JSON parse, and diff whitespace check all completed
+successfully.
+
+Promotion state: not applicable.
+
+Tree state: This cycle leaves its coordination files dirty for operator review.
+Kernel trees were not edited. No git staging, commit, or push was performed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue only with Green local source inventory,
+validation hygiene, or precise held-question drafting. Hardware runtime work
+remains blocked until board roles, drilled recovery, and claim service permit
+it. Public communication and public pushes remain closed.
+
+Stop confirmation: Stop after this bounded checkpoint refresh item.
+
+### A733-CYCLE-049
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create a local DTS v2 static proof plan.
+
+Selection rationale: The DTS v2 local delta plan now records the intended UART0
+pinctrl movement, but the clean sparse checkout cannot itself run the required
+kernel build/checkpatch/get-maintainer commands. Recording the static proof
+strategy and current host/tool gaps prevents a future worker from treating an
+unavailable validation command as a pass.
+
+Scope contract: Inspect local tool availability and sparse checkout build
+surface read-only; create a DTS v2 static proof plan; link it from the DTS
+delta plan and evidence index; add validator coverage; and record this ledger
+entry. Do not edit kernel trees, generate patches, run builds, run hardware,
+stage, commit, push, or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-dts-v2-static-proof-plan.md`
+- `task-packets/kernel/a733-dts-v2-local-delta-plan.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits, patch generation, export, validation from quarantined
+  dirty tree, or kernel commits
+- staging, stashing, resetting, cleaning, or otherwise modifying
+  `/Users/enzo/projects/linux-a733`
+- build output generation in either kernel source tree
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime DTS proof
+- GitHub `main` overwrite, public push, or backup push
+- public kernel communication, b4 send, mailing-list reply, GitHub issue, PR,
+  comment, or paid third-party call
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+
+Classification gate: Green local validation planning. The work records current
+host/tool limits and future static validation commands but does not mutate
+kernel trees, hardware, claim service, public communication, or remote state.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource was touched.
+
+Claimed resources: DTS v2 static proof plan, DTS v2 local delta plan, evidence
+index, authority validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `ls -la /Users/enzo/projects/linux-a733-sparse`
+- `find /Users/enzo/projects/linux-a733-sparse -maxdepth 2 -type f \\( -name 'Makefile' -o -name 'Kconfig' -o -name '.config' \\) -print`
+- `command -v aarch64-linux-gnu-gcc`
+- `command -v dtc`
+- `command -v make`
+- `command -v b4`
+- `command -v python3`
+- `find /Users/enzo/projects/linux-a733-sparse -maxdepth 3 -type f \\( -path '*/scripts/checkpatch.pl' -o -path '*/scripts/get_maintainer.pl' -o -path '*/scripts/dtc/dtc' \\) -print`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-dts-v2-static-proof-plan.md task-packets/kernel/a733-dts-v2-local-delta-plan.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-dts-v2-static-proof-plan.md task-packets/kernel/a733-dts-v2-local-delta-plan.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-dts-v2-static-proof-plan.md`
+  `adb0a3b5938b9060b03bac2c7afefff0a83c162532860591901396bb97e69be1`
+- `task-packets/kernel/a733-dts-v2-local-delta-plan.md`
+  `d97511329c0bac341c62960e00cbdaa7f16d5f6cc4ea0e499d8e4be5bea3f60e`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `121615391d5c52259b7dae934bc7988934aa6c6f0509060b257487401f0d03cf`
+- `tools/validate/a733_authority_check.py`
+  `2b9f51d278668ff2e2ea0eb0050d9416e202c3b52a5606985957b31015fe0405`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: DTS v2 static proof plan exists; it records that the clean
+sparse checkout lacks the full build/checkpatch/get-maintainer surface, that
+the full Mac-mini tree remains quarantined for patch export, that this host
+lacks `aarch64-linux-gnu-gcc` on PATH, and that future proof must use a
+temporary full tree or verified remote build tree with `O=/tmp/a733-dts-v2-static-proof`.
+Evidence index and DTS delta plan point to the static proof plan. Validator
+enforces those anchors and passes.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, workflow-path JSON parse, and diff whitespace check all completed
+successfully.
+
+Promotion state: not applicable.
+
+Tree state: This cycle leaves its coordination files dirty for operator review.
+Kernel trees were read only and not edited. No build output, git staging,
+commit, or push was performed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: If local kernel-tree mutation is later explicitly
+opened, first create or select a full clean validation tree and satisfy this
+static proof plan. Hardware runtime work remains blocked until board roles,
+drilled recovery, and claim service permit it. Public communication and public
+pushes remain closed.
+
+Stop confirmation: Stop after this bounded DTS v2 static proof plan item.
+
+### A733-CYCLE-050
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Refresh the local post-backup checkpoint after DTS static proof
+Cycle 049.
+
+Selection rationale: The checkpoint included the DTS v2 delta plan but did not
+yet include the DTS v2 static proof plan or A733-CYCLE-049 coverage. Updating
+it keeps the resumption checkpoint aligned with the authority state and makes
+the build/checkpatch/get-maintainer validation route discoverable.
+
+Scope contract: Update
+`task-packets/kernel/a733-local-pending-prep-checkpoint.md`, validator anchors,
+and this ledger record. Do not edit kernel trees, run builds, mutate hardware,
+send communication, push remotes, merge GitHub `main`, or change services.
+
+Files in scope:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits, patch generation, export, validation from quarantined
+  dirty tree, or kernel commits
+- staging, stashing, resetting, cleaning, or otherwise modifying
+  `/Users/enzo/projects/linux-a733`
+- build output generation in either kernel source tree
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime peripheral proof
+- GitHub `main` overwrite, public push, or backup push
+- public kernel communication, b4 send, mailing-list reply, GitHub issue, PR,
+  comment, or paid third-party call
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+
+Classification gate: Green local coordination cleanup. The work updates local
+checkpoint and validator text only. No kernel tree, hardware, claim service,
+public communication, or remote state is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource was touched.
+
+Claimed resources: local prep checkpoint, authority validator, and cycle
+ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `rg -n "A733-CYCLE-049|a733-dts-v2-static-proof-plan|Cycle-ledger records|Included Prep Bundle|Artifact Hashes|static proof" task-packets/kernel/a733-local-pending-prep-checkpoint.md task-packets/kernel/a733-cycle-ledger.md tools/validate/a733_authority_check.py task-packets/kernel/a733-current-evidence-index.md`
+- `sed -n '20,85p' task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `sed -n '620,670p' tools/validate/a733_authority_check.py`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+  `23c6369c9edc3824963f1c4e1679ef022342d895d565670fa10720fea0817147`
+- `tools/validate/a733_authority_check.py`
+  `a69453faa82447480150f9776615d449756ff06745426e5618ecd51015c89048`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Checkpoint records A733-CYCLE-049 coverage, the DTS v2
+static proof plan, its path, and validator coverage for DTS v2 local delta,
+DTS v2 static proof, kernel checkout quarantine, and workflow-path anchors.
+Validator passes, Python compiles, JSON parses, and touched files pass
+`git diff --check`.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, workflow-path JSON parse, and diff whitespace check all completed
+successfully.
+
+Promotion state: not applicable.
+
+Tree state: This cycle leaves its coordination files dirty for operator review.
+Kernel trees were not edited. No build output, git staging, commit, or push was
+performed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue only with Green local source inventory,
+validation hygiene, or precise held-question drafting. Hardware runtime work
+remains blocked until board roles, drilled recovery, and claim service permit
+it. Public communication and public pushes remain closed.
+
+Stop confirmation: Stop after this bounded checkpoint refresh item.
+
+### A733-CYCLE-051
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Prevent checkpoint self-refresh churn.
+
+Selection rationale: The local checkpoint was being refreshed after
+checkpoint-only cycles, which made the checkpoint immediately appear stale
+again. Changing the checkpoint semantics to track substantive prep artifacts
+through A733-CYCLE-049 prevents future refresh-only cycles from creating more
+checkpoint churn while preserving the ledger as the full chronological record.
+
+Scope contract: Update
+`task-packets/kernel/a733-local-pending-prep-checkpoint.md`, validator anchors,
+and this ledger record. Do not edit kernel trees, run builds, mutate hardware,
+send communication, push remotes, merge GitHub `main`, or change services.
+
+Files in scope:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits, patch generation, export, validation from quarantined
+  dirty tree, or kernel commits
+- staging, stashing, resetting, cleaning, or otherwise modifying
+  `/Users/enzo/projects/linux-a733`
+- build output generation in either kernel source tree
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime peripheral proof
+- GitHub `main` overwrite, public push, or backup push
+- public kernel communication, b4 send, mailing-list reply, GitHub issue, PR,
+  comment, or paid third-party call
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+
+Classification gate: Green local coordination hygiene. The work changes the
+checkpoint policy and validator anchors only. No kernel tree, hardware, claim
+service, public communication, or remote state is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource was touched.
+
+Claimed resources: local prep checkpoint, authority validator, and cycle
+ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `rg -n "checkpoint refresh|Cycle-ledger records|self-referential|A733-CYCLE-050|A733-CYCLE-049|local-pending-prep-checkpoint" task-packets/kernel/a733-cycle-ledger.md task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-local-pending-prep-checkpoint.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-local-pending-prep-checkpoint.md`
+  `a0f4619f257c2c923f6b6d0134384b4dd2dba37dce70f04672f20a6b7bca9cc1`
+- `tools/validate/a733_authority_check.py`
+  `92e93bf8489938a25539acf4dbcd34c76348fe891d305f0402877eeb0077dcb1`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Checkpoint records substantive prep cycle coverage through
+A733-CYCLE-049, starting at A733-CYCLE-033. It also records that
+checkpoint-only refresh cycles after A733-CYCLE-049 remain in the ledger but
+do not roll checkpoint coverage forward unless they add or change a substantive
+prep artifact. Validator enforces those anchors and passes.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, workflow-path JSON parse, and diff whitespace check all completed
+successfully.
+
+Promotion state: not applicable.
+
+Tree state: This cycle leaves its coordination files dirty for operator review.
+Kernel trees were not edited. No build output, git staging, commit, or push was
+performed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Continue only with Green local source inventory,
+validation hygiene, or precise held-question drafting. Do not perform another
+checkpoint-only refresh unless a substantive prep artifact changes. Hardware
+runtime work remains blocked until board roles, drilled recovery, and claim
+service permit it. Public communication and public pushes remain closed.
+
+Stop confirmation: Stop after this bounded checkpoint churn-control item.
+
+### A733-CYCLE-052
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Create a no-send DTS v2 UART0 pinctrl preview patch.
+
+Selection rationale: The local DTS v2 delta and static proof plans describe
+the intended UART0 pinctrl movement, but a future worker still needed exact
+patch text to apply-check before any full static validation. A local no-send
+preview patch advances patch readiness while keeping kernel trees untouched
+and communication closed.
+
+Scope contract: Create
+`task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch`, verify it
+with `git apply --check` against the clean sparse tree, link it from the DTS
+delta plan, DTS static proof plan, and evidence index, add validator coverage,
+and record this ledger entry. Do not edit kernel trees, run builds, mutate
+hardware, stage, commit, push, or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch`
+- `task-packets/kernel/a733-dts-v2-local-delta-plan.md`
+- `task-packets/kernel/a733-dts-v2-static-proof-plan.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits, patch generation in a kernel tree, export, validation
+  from quarantined dirty tree, or kernel commits
+- staging, stashing, resetting, cleaning, or otherwise modifying
+  `/Users/enzo/projects/linux-a733`
+- build output generation in either kernel source tree
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime DTS proof
+- GitHub `main` overwrite, public push, or backup push
+- public kernel communication, b4 send, mailing-list reply, GitHub issue, PR,
+  comment, or paid third-party call
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+
+Classification gate: Green local patch-prep artifact. The preview patch is a
+local no-send artifact and was checked with `git apply --check` only. No kernel
+tree, hardware, claim service, public communication, or remote state is
+mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource was touched.
+
+Claimed resources: DTS v2 no-send preview patch, DTS delta plan, DTS static
+proof plan, evidence index, authority validator, and cycle ledger
+documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `nl -ba /Users/enzo/projects/linux-a733-sparse/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi`
+- `nl -ba /Users/enzo/projects/linux-a733-sparse/arch/arm64/boot/dts/allwinner/sun60i-a733-cubie-a7s.dts`
+- generated a temporary normalized diff under `/tmp/a733-dts-preview.*`
+- `git -C /Users/enzo/projects/linux-a733-sparse apply --check /Users/enzo/projects/homelab/task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch`
+- `git -C /Users/enzo/projects/linux-a733-sparse status --short --branch`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch task-packets/kernel/a733-dts-v2-local-delta-plan.md task-packets/kernel/a733-dts-v2-static-proof-plan.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch task-packets/kernel/a733-dts-v2-local-delta-plan.md task-packets/kernel/a733-dts-v2-static-proof-plan.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch`
+  `b465265ce061a303d05d0612cd08ae27a89372622176b82ea871f713e1cdafd2`
+- `task-packets/kernel/a733-dts-v2-local-delta-plan.md`
+  `f6fd399d8d9c75559aa745318cfe5241ee94f637a75c849588a2db0e278ed4d1`
+- `task-packets/kernel/a733-dts-v2-static-proof-plan.md`
+  `380f3b633fed3ebab85fb980340247a7ef30a5de2e8bda1a8eabd5bb3326aa04`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `9e08f86ec303cd86667ebe061babd597a11e327ec46eded9caab64be7869e5c4`
+- `tools/validate/a733_authority_check.py`
+  `5d1137f9c7cb112a5365d24b16f22bbc3e6fe890d5987c5fe0d3f8e944a374e9`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Preview patch exists; it removes the board-local
+`&pio`/`uart0_pb9_pb10_pins` block from `sun60i-a733-cubie-a7s.dts`, adds the
+same label under the SoC `pio` node in `sun60i-a733.dtsi`, preserves the board
+`&uart0` consumer reference, states no-send/no-runtime/no-hardware boundaries,
+and passes `git apply --check` against the clean sparse checkout without
+dirtying it. Evidence index, DTS delta plan, DTS static proof plan, and
+validator all point to the preview.
+
+Proof result: Passed. Authority validator, sparse-tree apply-check, Python
+compile check, inventory JSON parse, workflow-path JSON parse, and diff
+whitespace check all completed successfully.
+
+Promotion state: not applicable.
+
+Tree state: This cycle leaves its coordination files dirty for operator review.
+Kernel trees were read only and not edited. No build output, git staging,
+commit, or push was performed.
+
+Communication ledger IDs: A733-COMM-002 and A733-COMM-003 remain held.
+
+Hardware lane queue IDs: A733-BATCH-002 remains queue-only.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Future DTS v2 work should use the preview only as an
+input to a full clean-tree static proof cycle. Hardware runtime work remains
+blocked until board roles, drilled recovery, and claim service permit it.
+Public communication and public pushes remain closed.
+
+Stop confirmation: Stop after this bounded no-send DTS preview item.
+
+### A733-CYCLE-053
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Draft held DTS v2 cover and changelog notes.
+
+Selection rationale: A733-COMM-002 and A733-COMM-003 were still
+`draft-needed` even though the local DTS v2 delta, static proof plan, and
+no-send preview patch now describe the intended v2 change. Drafting held local
+cover/changelog notes advances communication readiness without reopening the
+send gate.
+
+Scope contract: Create
+`task-packets/kernel/a733-dts-v2-held-cover-changelog-draft.md`, update the
+communications ledger entries for A733-COMM-002 and A733-COMM-003 to
+`drafted-not-reviewed`, link the draft from the evidence index, add validator
+coverage, and record this ledger entry. Do not send mail, run b4 send, refresh
+public recipients, edit kernel trees, run builds, mutate hardware, stage,
+commit, push, or communicate publicly.
+
+Files in scope:
+
+- `task-packets/kernel/a733-dts-v2-held-cover-changelog-draft.md`
+- `task-packets/kernel/a733-unsent-communications-ledger.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits, patch generation in a kernel tree, export, validation
+  from quarantined dirty tree, or kernel commits
+- build output generation in either kernel source tree
+- board role assignment
+- board boot, reboot, power, install, recovery, probe, UART capture, SSH probe,
+  or runtime DTS proof
+- b4 send, git send-email, Gmail replies, list replies, GitHub issue, PR,
+  comment, public push, or paid third-party call
+- public recipient refresh or current-thread refresh
+- claim-service implementation
+- Hermes service, cron, or model-routing changes
+
+Classification gate: Green local held communication drafting. The draft is
+explicitly no-send and remains blocked on cleanup, static proof, runtime proof,
+recipient refresh, and operator approval. No public communication, hardware,
+kernel tree, claim service, or remote state is mutated.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no contended hardware
+or kernel tree resource was touched.
+
+Claimed resources: held DTS v2 draft, communications ledger, evidence index,
+authority validator, and cycle ledger documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `sed -n '1,180p' task-packets/kernel/a733-unsent-communications-ledger.md`
+- `sed -n '1,180p' task-packets/kernel/a733-dts-v2-local-delta-plan.md`
+- `sed -n '1,180p' task-packets/kernel/a733-dts-v2-static-proof-plan.md`
+- `sed -n '1,120p' task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch`
+- `python3 tools/validate/a733_authority_check.py`
+- `python3 -m py_compile tools/validate/a733_authority_check.py`
+- `python3 -m json.tool inventory/hardware/cubie-a7s-lab.json >/dev/null`
+- `python3 -m json.tool inventory/kernel-workflow-paths.json >/dev/null`
+- `git diff --check -- task-packets/kernel/a733-dts-v2-held-cover-changelog-draft.md task-packets/kernel/a733-unsent-communications-ledger.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py task-packets/kernel/a733-cycle-ledger.md`
+- `shasum -a 256 task-packets/kernel/a733-dts-v2-held-cover-changelog-draft.md task-packets/kernel/a733-unsent-communications-ledger.md task-packets/kernel/a733-current-evidence-index.md tools/validate/a733_authority_check.py`
+
+Artifacts and hashes:
+
+- `task-packets/kernel/a733-dts-v2-held-cover-changelog-draft.md`
+  `8e67b31f56a3f309657cc7797a9b18e148560b7e3107cc591f6d9751b66bb163`
+- `task-packets/kernel/a733-unsent-communications-ledger.md`
+  `e89c25b089fe8fc89cf1d5147ff6e64c98145be1f6f5de16a2d71e1bfbaf5f38`
+- `task-packets/kernel/a733-current-evidence-index.md`
+  `8df1cde604647f6c5a5f1654f92f56975faf5c31945ea86fc49d36d2037cbec2`
+- `tools/validate/a733_authority_check.py`
+  `b86bf17ffbe108380e6ca2f67fbfd93afafa19f52b45f44902f84cd6a1d494d8`
+- `task-packets/kernel/a733-cycle-ledger.md` updated with this completed
+  proof record
+
+Proof definition: Held draft exists and is marked drafted-not-reviewed,
+local-only, and no-send. It contains A733-COMM-002 cover notes,
+A733-COMM-003 changelog notes, explicit send blockers, source inputs, and
+revalidation commands. Communications ledger points A733-COMM-002 and
+A733-COMM-003 to the draft while preserving send blockers. Evidence index and
+validator point to the draft. Validator passes.
+
+Proof result: Passed. Authority validator, Python compile check, inventory JSON
+parse, workflow-path JSON parse, and diff whitespace check all completed
+successfully.
+
+Promotion state: not applicable.
+
+Tree state: This cycle leaves its coordination files dirty for operator review.
+Kernel trees were not edited. No build output, git staging, commit, or push was
+performed.
+
+Communication ledger IDs: A733-COMM-002 and A733-COMM-003 changed from
+`draft-needed` to `drafted-not-reviewed`; both remain no-send.
+
+Hardware lane queue IDs: A733-BATCH-002 remains queue-only.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: Future DTS v2 work should complete kernel-tree static
+proof before promoting the draft beyond drafted-not-reviewed. Hardware runtime
+work remains blocked until board roles, drilled recovery, and claim service
+permit it. Public communication and public pushes remain closed.
+
+Stop confirmation: Stop after this bounded held DTS v2 draft item.
+
 ### A733-CYCLE-016
 
 Timestamp: 2026-06-13 local

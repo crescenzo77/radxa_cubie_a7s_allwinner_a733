@@ -111,7 +111,7 @@ any future public action.
 | A733-COMM-014 | H204 follow-up reply | Historical sent item; no resend |
 | A733-COMM-015 | H215 RFC/RFT CCU/SDMMC0 series | Historical sent item; no resend |
 | A733-COMM-016 | H265 DTS v1 b4 series | Historical sent item; no resend |
-| A733-COMM-002 / A733-COMM-003 | DTS v2 cover/changelog | Draft-needed; hold |
+| A733-COMM-002 / A733-COMM-003 | DTS v2 cover/changelog | Drafted-not-reviewed in `task-packets/kernel/a733-dts-v2-held-cover-changelog-draft.md`; hold |
 | A733-COMM-004 through A733-COMM-012 | Future prerequisite/peripheral communications | Draft-needed; hold |
 
 ## Next Safe Local Uses
@@ -163,6 +163,22 @@ any future public action.
 - Use `task-packets/kernel/a733-dts-v2-local-readiness-checklist.md` before
   any local DTS v2 cleanup, validation, proof planning, cover-letter drafting,
   changelog drafting, reflect review, or sendable-held decision.
+- Use `task-packets/kernel/a733-dts-v2-local-delta-plan.md` before any local
+  DTS v2 kernel-tree edit. It records the minimal held source movement for
+  `uart0_pb9_pb10_pins` from the Cubie board DTS into `sun60i-a733.dtsi`,
+  plus the static and runtime gates that still block sending.
+- Use `task-packets/kernel/a733-dts-v2-static-proof-plan.md` before any DTS v2
+  static validation. It records that the clean sparse tree is not a complete
+  build/checkpatch tree, the full Mac-mini tree remains quarantined for patch
+  export, and this host currently lacks `aarch64-linux-gnu-gcc` on PATH.
+- Use `task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch` only
+  as a no-send local preview of the UART0 pinctrl move. It may be checked with
+  `git apply --check` against the clean sparse tree, but it is not DTB proof,
+  not checkpatch proof, not maintainer routing proof, and not runtime proof.
+- Use `task-packets/kernel/a733-dts-v2-held-cover-changelog-draft.md` only as
+  a held local draft for A733-COMM-002 and A733-COMM-003. It is
+  drafted-not-reviewed and blocked on cleanup, static proof, runtime proof,
+  recipient refresh, and operator approval.
 - Use `task-packets/kernel/a733-audio-i2s-evidence-sheet.md` before any audio,
   I2S, codec, DMIC, SPDIF, HDMI-audio, amplifier, jack, speaker, microphone,
   playback, capture, loopback, mixer, DAI-link, or audio-routing proof queue
@@ -171,6 +187,12 @@ any future public action.
   any PWM, backlight, fan PWM, tach, buzzer, LED dimming, header PWM,
   duty-cycle, external-load, cooling-state, or brightness proof queue
   refinement.
+- Use `inventory/kernel-checkout-quarantine-20260606.md` and
+  `inventory/kernel-workflow-paths.json` before choosing a Mac-mini kernel
+  tree for patch export, validation, or source inspection. The full
+  `/Users/enzo/projects/linux-a733` checkout has known non-A733 dirty files;
+  prefer `/Users/enzo/projects/linux-a733-sparse` for clean validation/review
+  while that quarantine remains active.
 - If patch text is regenerated locally, record the exact base, head, patch
   directory, validation commands, and source-equivalence target.
 - If a hardware item looks necessary, queue it in

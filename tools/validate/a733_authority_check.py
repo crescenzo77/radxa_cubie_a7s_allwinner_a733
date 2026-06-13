@@ -44,10 +44,22 @@ LOCAL_PENDING_PREP_CHECKPOINT = Path(
 DTS_V2_READINESS_CHECKLIST = Path(
     "task-packets/kernel/a733-dts-v2-local-readiness-checklist.md"
 )
+DTS_V2_LOCAL_DELTA_PLAN = Path("task-packets/kernel/a733-dts-v2-local-delta-plan.md")
+DTS_V2_STATIC_PROOF_PLAN = Path(
+    "task-packets/kernel/a733-dts-v2-static-proof-plan.md"
+)
+DTS_V2_UART_PINCTRL_PREVIEW = Path(
+    "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch"
+)
+DTS_V2_HELD_COVER_CHANGELOG_DRAFT = Path(
+    "task-packets/kernel/a733-dts-v2-held-cover-changelog-draft.md"
+)
 AUDIO_I2S_EVIDENCE = Path("task-packets/kernel/a733-audio-i2s-evidence-sheet.md")
 PWM_BACKLIGHT_FAN_EVIDENCE = Path(
     "task-packets/kernel/a733-pwm-backlight-fan-evidence-sheet.md"
 )
+KERNEL_CHECKOUT_QUARANTINE = Path("inventory/kernel-checkout-quarantine-20260606.md")
+KERNEL_WORKFLOW_PATHS = Path("inventory/kernel-workflow-paths.json")
 
 REQUIRED_COMM_IDS = [f"A733-COMM-{number:03d}" for number in range(1, 17)]
 REQUIRED_BATCH_IDS = [f"A733-BATCH-{number:03d}" for number in range(0, 17)]
@@ -139,6 +151,16 @@ def check_inventory(raw: str, failures: list[str]) -> dict[str, Any] | None:
 def check_comms(text: str, failures: list[str]) -> None:
     require_contains("comms", text, "sent-before-blackout", failures)
     require_contains("comms", text, "## Historical Sent Items", failures)
+    require_contains("comms", text, "drafted-not-reviewed", failures)
+    require_contains(
+        "comms",
+        text,
+        "task-packets/kernel/a733-dts-v2-held-cover-changelog-draft.md",
+        failures,
+    )
+    require_contains("comms", text, "static validation", failures)
+    require_contains("comms", text, "runtime proof", failures)
+    require_contains("comms", text, "recipient refresh", failures)
     for comm_id in REQUIRED_COMM_IDS:
         require_contains("comms", text, comm_id, failures)
 
@@ -209,8 +231,14 @@ def check_evidence_index(root: Path, failures: list[str]) -> None:
         "task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md",
         "task-packets/kernel/a733-local-pending-prep-checkpoint.md",
         "task-packets/kernel/a733-dts-v2-local-readiness-checklist.md",
+        "task-packets/kernel/a733-dts-v2-local-delta-plan.md",
+        "task-packets/kernel/a733-dts-v2-static-proof-plan.md",
+        "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch",
+        "task-packets/kernel/a733-dts-v2-held-cover-changelog-draft.md",
         "task-packets/kernel/a733-audio-i2s-evidence-sheet.md",
         "task-packets/kernel/a733-pwm-backlight-fan-evidence-sheet.md",
+        "inventory/kernel-checkout-quarantine-20260606.md",
+        "inventory/kernel-workflow-paths.json",
     ]
     for needle in required:
         require_contains("evidence-index", text, needle, failures)
@@ -625,23 +653,44 @@ def check_local_pending_prep_checkpoint(root: Path, failures: list[str]) -> None
     text = path.read_text(encoding="utf-8")
     check_markdown_fences("local-pending-prep-checkpoint", text, failures)
     required = [
-        "Status: local-only pending-review checkpoint",
+        "Status: local-only post-backup checkpoint",
         "not a public communication",
         "not permission to mutate hardware",
-        "fa27be5dc4e14fa1947f4f3e2f2119e13ca67d39",
-        "main...origin/main [ahead 1]",
+        "88a6aa62301f9fe438fc3376b3884b4e3d763dcc",
+        "main...origin/main [ahead 2]",
+        "GitHub backup branch: `homelab-backup-main`",
+        "GitHub public-evidence branch: `main`",
+        "dac2a6f83894d1de6b6177da8d83461fef62d6c0",
         "task-packets/kernel/a733-display-media-evidence-sheet.md",
         "task-packets/kernel/a733-local-pending-prep-checkpoint.md",
         "task-packets/kernel/a733-npu-riscv-boundary-sheet.md",
         "task-packets/kernel/a733-regulator-power-domain-evidence-sheet.md",
+        "task-packets/kernel/a733-audio-i2s-evidence-sheet.md",
+        "task-packets/kernel/a733-pwm-backlight-fan-evidence-sheet.md",
+        "task-packets/kernel/a733-dts-v2-local-delta-plan.md",
+        "task-packets/kernel/a733-dts-v2-static-proof-plan.md",
+        "inventory/kernel-checkout-quarantine-20260606.md",
+        "inventory/kernel-workflow-paths.json",
         "tools/validate/a733_authority_check.py",
         "A733-CYCLE-033",
-        "A733-CYCLE-038",
+        "Substantive prep cycle-ledger records through A733-CYCLE-049",
+        "A733-CYCLE-049",
+        "Checkpoint-only refresh cycles after A733-CYCLE-049",
+        "does not roll its coverage forward for refresh-only cycles",
+        "prevents self-referential checkpoint churn",
+        "DTS v2 local delta plan",
+        "DTS v2 static proof plan",
+        "Mac-mini kernel checkout quarantine refresh",
+        "DTS v2 local delta, DTS v2 static proof",
+        "DTS v2 local delta, kernel checkout quarantine",
+        "kernel checkout quarantine and workflow-path anchors",
         "self-referential hash changes",
         "No hardware mutation",
         "No kernel tree files were edited",
-        "No public communication or public push",
-        "local pending-review material",
+        "No public kernel communication",
+        "operator explicitly",
+        "GitHub `main` was not overwritten",
+        "Hardware runtime work remains blocked",
     ]
     for needle in required:
         require_contains("local-pending-prep-checkpoint", text, needle, failures)
@@ -676,12 +725,165 @@ def check_dts_v2_readiness_checklist(root: Path, failures: list[str]) -> None:
         "checkpatch.pl --strict",
         "get_maintainer.pl",
         "b4 prep",
+        "/Users/enzo/projects/linux-a733-sparse",
+        "candidate/a733-platform-clean-v4",
+        "abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e",
+        "/Users/enzo/projects/linux-a733",
+        "candidate/a733-platform-clean-v6",
+        "b1f20d455a600d33999cf893fdf0df8fb2ace538",
+        "must not be used for patch export",
         "sendable-held",
         "question-held",
         "local DTS v2 cleanup is not complete",
+        "task-packets/kernel/a733-dts-v2-local-delta-plan.md",
     ]
     for needle in required:
         require_contains("dts-v2-readiness-checklist", text, needle, failures)
+
+
+def check_dts_v2_local_delta_plan(root: Path, failures: list[str]) -> None:
+    path = root / DTS_V2_LOCAL_DELTA_PLAN
+    if not path.exists():
+        failures.append(f"dts-v2-local-delta-plan: missing {DTS_V2_LOCAL_DELTA_PLAN}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("dts-v2-local-delta-plan", text, failures)
+    required = [
+        "Status: local-only patch-prep plan",
+        "not a patch",
+        "not send approval",
+        "not runtime proof",
+        "/Users/enzo/projects/linux-a733-sparse",
+        "candidate/a733-platform-clean-v4",
+        "abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e",
+        "sun60i-a733-cubie-a7s.dts",
+        "sun60i-a733.dtsi",
+        "uart0_pb9_pb10_pins",
+        "Move only the pin group definition",
+        "A733-BATCH-002",
+        "A733-COMM-002",
+        "A733-COMM-003",
+        "git diff --check",
+        "CHECK_DTBS=y",
+        "scripts/checkpatch.pl --strict",
+        "scripts/get_maintainer.pl",
+        "Do not send",
+        "This local delta plan does not authorize booting",
+        "task-packets/kernel/a733-dts-v2-static-proof-plan.md",
+        "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch",
+        "git apply --check",
+        "aarch64-linux-gnu-gcc",
+        "local-only mode remains active",
+    ]
+    for needle in required:
+        require_contains("dts-v2-local-delta-plan", text, needle, failures)
+
+
+def check_dts_v2_static_proof_plan(root: Path, failures: list[str]) -> None:
+    path = root / DTS_V2_STATIC_PROOF_PLAN
+    if not path.exists():
+        failures.append(f"dts-v2-static-proof-plan: missing {DTS_V2_STATIC_PROOF_PLAN}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("dts-v2-static-proof-plan", text, failures)
+    required = [
+        "Status: local-only validation plan",
+        "not a patch",
+        "not proof that the edit has already been made",
+        "not send approval",
+        "not permission to mutate hardware",
+        "/Users/enzo/projects/linux-a733-sparse",
+        "candidate/a733-platform-clean-v4",
+        "abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e",
+        "no top-level `Makefile`",
+        "no `scripts/checkpatch.pl`",
+        "no `scripts/get_maintainer.pl`",
+        "/Users/enzo/projects/linux-a733",
+        "candidate/a733-platform-clean-v6",
+        "b1f20d455a600d33999cf893fdf0df8fb2ace538",
+        "aarch64-linux-gnu-gcc",
+        "O=/tmp/a733-dts-v2-static-proof",
+        "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch",
+        "git apply --check",
+        "make O=\"$O\" ARCH=arm64",
+        "CHECK_DTBS=y",
+        "scripts/checkpatch.pl --strict",
+        "scripts/get_maintainer.pl",
+        "mark the static proof blocked",
+        "no boot, no install, no UART capture, no power action",
+        "local-only mode remains active",
+    ]
+    for needle in required:
+        require_contains("dts-v2-static-proof-plan", text, needle, failures)
+
+
+def check_dts_v2_uart_pinctrl_preview(root: Path, failures: list[str]) -> None:
+    path = root / DTS_V2_UART_PINCTRL_PREVIEW
+    if not path.exists():
+        failures.append(
+            f"dts-v2-uart-pinctrl-preview: missing {DTS_V2_UART_PINCTRL_PREVIEW}"
+        )
+        return
+    text = path.read_text(encoding="utf-8")
+    required = [
+        "Local-only no-send DTS v2 preview",
+        "Do not send this patch as-is",
+        "not runtime proof",
+        "not b4 metadata",
+        "not approval to mutate hardware",
+        "git apply --check",
+        "CHECK_DTBS=y",
+        "scripts/checkpatch.pl --strict",
+        "scripts/get_maintainer.pl",
+        "A733-BATCH-002",
+        "A733-COMM-002",
+        "A733-COMM-003",
+        "sun60i-a733-cubie-a7s.dts",
+        "sun60i-a733.dtsi",
+        "uart0_pb9_pb10_pins",
+        "uart0-pb9-pb10-pins",
+        "pins = \"PB9\", \"PB10\"",
+        "function = \"uart0\"",
+    ]
+    for needle in required:
+        require_contains("dts-v2-uart-pinctrl-preview", text, needle, failures)
+
+
+def check_dts_v2_held_cover_changelog_draft(root: Path, failures: list[str]) -> None:
+    path = root / DTS_V2_HELD_COVER_CHANGELOG_DRAFT
+    if not path.exists():
+        failures.append(
+            f"dts-v2-held-cover-changelog-draft: missing {DTS_V2_HELD_COVER_CHANGELOG_DRAFT}"
+        )
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("dts-v2-held-cover-changelog-draft", text, failures)
+    required = [
+        "Status: drafted-not-reviewed; local-only; no-send",
+        "A733-COMM-002",
+        "A733-COMM-003",
+        "not a sent message",
+        "not b4 metadata",
+        "not maintainer-approved",
+        "not validation proof",
+        "not permission to mutate hardware",
+        "Communication blackout remains active",
+        "Operator approval is not open",
+        "Static proof is not complete",
+        "Runtime proof remains queued-only under A733-BATCH-002",
+        "task-packets/kernel/a733-dts-v2-local-delta-plan.md",
+        "task-packets/kernel/a733-dts-v2-static-proof-plan.md",
+        "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch",
+        "Subject: [PATCH v2 0/1]",
+        "Move the UART0 PB9/PB10 pin group",
+        "sun60i-a733-cubie-a7s.dts",
+        "sun60i-a733.dtsi",
+        "Do not convert unavailable tooling into a pass",
+        "Public communication: closed",
+        "Hardware mutation: closed",
+    ]
+    for needle in required:
+        require_contains("dts-v2-held-cover-changelog-draft", text, needle, failures)
 
 
 def check_audio_i2s_evidence(root: Path, failures: list[str]) -> None:
@@ -749,6 +951,57 @@ def check_pwm_backlight_fan_evidence(root: Path, failures: list[str]) -> None:
         require_contains("pwm-backlight-fan-evidence", text, needle, failures)
 
 
+def check_kernel_checkout_quarantine(root: Path, failures: list[str]) -> None:
+    path = root / KERNEL_CHECKOUT_QUARANTINE
+    if not path.exists():
+        failures.append(f"kernel-checkout-quarantine: missing {KERNEL_CHECKOUT_QUARANTINE}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("kernel-checkout-quarantine", text, failures)
+    required = [
+        "Last refreshed: 2026-06-13",
+        "/Users/enzo/projects/linux-a733",
+        "candidate/a733-platform-clean-v6",
+        "b1f20d455a600d33999cf893fdf0df8fb2ace538",
+        "known local checkout noise",
+        "Do not stage, stash, reset, or clean",
+        "/Users/enzo/projects/linux-a733-sparse",
+        "candidate/a733-platform-clean-v4",
+        "abc8d07b0a63255e11ee8dd864dcdaa83cf8d38e",
+        "Current status: clean",
+        "clean validation, review, and local documentation",
+        "Read-only source searches",
+    ]
+    for needle in required:
+        require_contains("kernel-checkout-quarantine", text, needle, failures)
+
+
+def check_kernel_workflow_paths(root: Path, failures: list[str]) -> None:
+    path = root / KERNEL_WORKFLOW_PATHS
+    if not path.exists():
+        failures.append(f"kernel-workflow-paths: missing {KERNEL_WORKFLOW_PATHS}")
+        return
+    raw = path.read_text(encoding="utf-8")
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        failures.append(f"kernel-workflow-paths: invalid JSON: {exc}")
+        return
+    mac = data.get("hosts", {}).get("mac-mini", {})
+    notes = " ".join(mac.get("notes", [])) if isinstance(mac.get("notes"), list) else ""
+    required = [
+        "/Users/enzo/projects/linux-a733",
+        "/Users/enzo/projects/linux-a733-sparse",
+        "inventory/kernel-checkout-quarantine-20260606.md",
+        "known non-A733 dirty files",
+        "clean validation",
+        "Do not stage, stash, reset, or clean",
+    ]
+    for needle in required:
+        if needle not in raw and needle not in notes:
+            failures.append(f"kernel-workflow-paths: missing required text: {needle}")
+
+
 def run(root: Path) -> dict[str, Any]:
     failures: list[str] = []
     texts: dict[str, str] = {}
@@ -788,8 +1041,14 @@ def run(root: Path) -> dict[str, Any]:
     check_regulator_power_domain_evidence(root, failures)
     check_local_pending_prep_checkpoint(root, failures)
     check_dts_v2_readiness_checklist(root, failures)
+    check_dts_v2_local_delta_plan(root, failures)
+    check_dts_v2_static_proof_plan(root, failures)
+    check_dts_v2_uart_pinctrl_preview(root, failures)
+    check_dts_v2_held_cover_changelog_draft(root, failures)
     check_audio_i2s_evidence(root, failures)
     check_pwm_backlight_fan_evidence(root, failures)
+    check_kernel_checkout_quarantine(root, failures)
+    check_kernel_workflow_paths(root, failures)
 
     status = "PASS" if not failures else "FAIL"
     return {
@@ -811,8 +1070,14 @@ def run(root: Path) -> dict[str, Any]:
         "regulator_power_domain_evidence": str(REGULATOR_POWER_DOMAIN_EVIDENCE),
         "local_pending_prep_checkpoint": str(LOCAL_PENDING_PREP_CHECKPOINT),
         "dts_v2_readiness_checklist": str(DTS_V2_READINESS_CHECKLIST),
+        "dts_v2_local_delta_plan": str(DTS_V2_LOCAL_DELTA_PLAN),
+        "dts_v2_static_proof_plan": str(DTS_V2_STATIC_PROOF_PLAN),
+        "dts_v2_uart_pinctrl_preview": str(DTS_V2_UART_PINCTRL_PREVIEW),
+        "dts_v2_held_cover_changelog_draft": str(DTS_V2_HELD_COVER_CHANGELOG_DRAFT),
         "audio_i2s_evidence": str(AUDIO_I2S_EVIDENCE),
         "pwm_backlight_fan_evidence": str(PWM_BACKLIGHT_FAN_EVIDENCE),
+        "kernel_checkout_quarantine": str(KERNEL_CHECKOUT_QUARANTINE),
+        "kernel_workflow_paths": str(KERNEL_WORKFLOW_PATHS),
         "board_count": len(inventory.get("boards", [])) if isinstance(inventory, dict) else None,
         "failures": failures,
         "failure_count": len(failures),
