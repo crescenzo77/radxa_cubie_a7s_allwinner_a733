@@ -397,6 +397,114 @@ validation passes and authority files reveal another clear inconsistency.
 Stop confirmation: Continue to validation, then next safe item if disk state
 permits.
 
+### A733-CYCLE-068
+
+Timestamp: 2026-06-13 local
+
+Agent ID: codex-desktop
+
+Server-stamped agent tier: unavailable; claim service not active, treated as
+local/single-live-agent
+
+Operator present: false
+
+Approval timeout: 120s
+
+Selected item: Refresh A733 CCU/pinctrl/RTC public RFC overlap evidence.
+
+Selection rationale: Workflow status reports the latest RFC overlap recheck as
+stale from 2026-06-12. The existing `scripts/a733-rfc-recheck-packet` performs
+public read-only dependency checks and writes the packet expected by workflow
+status. This is durable local evidence and does not send mail, post comments,
+push public branches, mutate hardware, or edit kernel trees.
+
+Scope contract: Run the existing RFC dependency recheck packet script, record
+the generated markdown/JSON paths and status, validate authority files, and
+back up the homelab repo. Do not send public communication, change public repo
+state, touch hardware, edit kernel trees, change services, or alter Hermes
+behavior.
+
+Files in scope:
+
+- `task-packets/kernel/results/a733-rfc-dependency-recheck-latest.json`
+- `task-packets/kernel/research/a733-rfc-recheck-*.md`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- b4 send, git send-email, Gmail replies, list replies, GitHub issue, PR, or
+  comment
+- public kernel repository push
+- kernel tree edits, builds, patch application, or static-proof execution
+- board role assignment, recovery drill, UART, power, boot, or runtime proof
+- service, cron, model routing, Hermes, or Telegram changes
+
+Classification gate: Green public-read/local-evidence refresh.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service is planned-not-active and no hardware or kernel
+tree resource is touched.
+
+Claimed resources: coordination repo evidence files and cycle ledger only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable for this cycle.
+
+Commands run:
+
+- `scripts/a733-rfc-recheck-packet`
+- `scripts/kernel-workflow-status --json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(json.dumps(d["a733_rfc_recheck"], indent=2)); print(json.dumps(d["maintainer_ready"], indent=2)); print(json.dumps(d["goal_completion_audit"], indent=2))'`
+- `sed -n '1,220p' task-packets/kernel/research/a733-rfc-recheck-20260613T235500Z.md`
+- `python3 -m json.tool task-packets/kernel/results/a733-rfc-dependency-recheck-latest.json >/dev/null`
+- `python3 tools/validate/a733_authority_check.py`
+- `git diff --check -- task-packets/kernel/a733-cycle-ledger.md task-packets/kernel/research/a733-rfc-recheck-20260613T235500Z.md task-packets/kernel/results/a733-rfc-dependency-recheck-latest.json`
+- `shasum -a 256 task-packets/kernel/research/a733-rfc-recheck-20260613T235500Z.md task-packets/kernel/results/a733-rfc-dependency-recheck-latest.json task-packets/kernel/a733-cycle-ledger.md`
+
+Artifacts and hashes:
+
+```text
+4d0f65748057ae4b40bae9b7d5399e765da14538186e6813341a0dd6c84a3099  task-packets/kernel/research/a733-rfc-recheck-20260613T235500Z.md
+fc0306c42954096e354460706e38439d4ec3f67561cee96cbb8c895afea24ceb  task-packets/kernel/results/a733-rfc-dependency-recheck-latest.json
+```
+
+Proof definition: workflow status reports the RFC recheck date as 2026-06-13;
+the generated packet states it is freshness evidence only; authority validation
+and diff checks pass.
+
+Proof result: Passed. The generated packet dated 2026-06-13 records A733 RTC,
+A733 CCU/PRCM, and A733 pinctrl dependencies as reachable and unchanged from
+the previously visible public series. Workflow status reports
+`fresh_today=true`, `ok=true`, and the goal audit now passes the RFC overlap
+freshness requirement. Authority validation, JSON parse, and `git diff --check`
+passed.
+
+Promotion state: not applicable.
+
+Tree state: Coordination files are dirty until this cycle is committed and
+backed up. No kernel tree, hardware, service, Hermes, Telegram, runtime board,
+or public communication state was changed.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none for this evidence-refresh cycle.
+
+Release result: not applicable; no central claim exists.
+
+Next-selection pointer: Continue with the clean prerequisite-stack blocker.
+Public kernel GitHub backup and public hygiene remain public-repo concerns and
+must not be forced through the local-work-only gate.
+
+Stop confirmation: Stop this cycle after final validation, local origin backup,
+GitHub backup, and summary.
+
 ### A733-CYCLE-067
 
 Timestamp: 2026-06-13 local
