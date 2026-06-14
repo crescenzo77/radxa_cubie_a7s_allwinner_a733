@@ -9225,3 +9225,97 @@ Next-selection pointer: Continue only safe local work. The public-push and
 kernel-tree mutation gates remain closed unless explicitly reopened.
 
 Stop confirmation: Continue to execute this contracted handoff update.
+### A733-CYCLE-078
+
+Date: 2026-06-14
+
+Agent: Codex Desktop / ChatGPT
+
+Mode: LOCAL-WORK-ONLY, current-slice alignment
+
+Selected item: Align `CURRENT_SLICE.md` with the active A733 gated-transition
+prep state so future agents do not follow the stale token-offload slice.
+
+Scope contract: Update only the current-slice entrypoint, handoff status, and
+cycle ledger. Preserve prior slice history in the file. Do not push the public
+kernel repo to GitHub, mutate kernel trees, create worktrees, copy kernel
+trees, send mail, run b4, mutate hardware, add remotes, or change services.
+
+Files in scope:
+
+- `CURRENT_SLICE.md`
+- `AGENT_STATUS.md`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- public GitHub push
+- public communication or b4 send/reflect
+- kernel tree mutation
+- hardware or service changes
+- model/offload service changes
+
+Classification gate: Green local context/status alignment.
+
+Permission envelope: Green.
+
+Claim IDs: none; single live Codex Desktop worker and no active claim service.
+
+Claimed resources: local context/status documentation and cycle ledger only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable; no board action.
+
+Recovery drill: not applicable; no board action.
+
+Experiment ceiling: not applicable.
+
+Commands run: initial repo/status/authority checks; read-only inspection of
+`CURRENT_SLICE.md`, `PLAN_INDEX.md`, `AGENT_STATUS.md`, and context files;
+local slice/status/ledger edits; `python3
+tools/validate/a733_authority_check.py`;
+`scripts/a733-gated-transition-approval-brief`;
+`scripts/kernel-workflow-status --maintainer-ready-blockers`;
+`scripts/kernel-workflow-status --workflow-backup-status`; `git diff --check`
+over touched files; SHA-256 artifact hashing.
+
+Artifacts and hashes:
+
+```text
+6a0846d1862965da5bd4f725a5d6ded6b9cd257fe8e412a381e11a95268fce06  CURRENT_SLICE.md
+0541f8da5dc3e99812e52ae3779cfa39e70bca969d9ecfddba91e79d2474ec10  AGENT_STATUS.md
+be95c8ac313020b3947d80a4a8cbda6b3e656d92a2b99a412ffa3cb177f3a92b  task-packets/kernel/a733-cycle-ledger.md
+```
+
+Proof definition: `CURRENT_SLICE.md` names the active A733 gated-transition
+prep state, records hard boundaries and checks, and preserves prior slice
+history; authority validator passes; touched files pass `git diff --check`;
+homelab backup push succeeds.
+
+Proof result: Passed. `CURRENT_SLICE.md` now names active A733
+gated-transition preparation, records hard boundaries, safe local work, and
+checks to preserve, while retaining the older token-offload slice as prior
+state. `AGENT_STATUS.md` records the same handoff. Authority validator reports
+`status=PASS` with `failures=0`; approval helper runs; workflow status reports
+the expected unresolved gates; `git diff --check` over touched files returns
+clean. The status tools reported `private workflow repo is dirty` only because
+this contracted slice update was uncommitted at proof time.
+
+Promotion state: not applicable.
+
+Tree state: Homelab coordination repo dirty only for contracted current-slice,
+agent-status, and cycle-ledger edits before commit.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable.
+
+Next-selection pointer: Continue only safe local work. The public-push and
+kernel-tree mutation gates remain closed unless explicitly reopened.
+
+Stop confirmation: Continue to execute this contracted context alignment.

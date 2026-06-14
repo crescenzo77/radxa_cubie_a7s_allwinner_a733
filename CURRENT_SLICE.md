@@ -1,5 +1,66 @@
 # Current Slice
 
+## Active: A733 gated-transition preparation
+
+## Current State
+
+The active kernel slice is local-only A733 / Radxa Cubie A7S advance-prep.
+The project is paused at two explicit gates:
+
+- public kernel repo GitHub backup is not done because public pushes remain
+  gated during local-work-only mode
+- the selected A733 prerequisite stack is not cleanly audited, so DTS
+  regeneration must wait for explicit kernel-tree mutation approval
+
+Current read-only status command:
+
+```sh
+scripts/a733-gated-transition-approval-brief
+```
+
+That helper prints the exact approval questions for:
+
+1. pushing `/Users/enzo/projects/Home Lab/cubie-a7s-armbian` branch `main` to
+   the public GitHub remote named `public`
+2. creating or updating an isolated A733 prerequisite preparation tree solely
+   to produce a clean prerequisite-stack audit before DTS regeneration
+
+Hard boundaries:
+
+- do not send mail, b4 submissions, list replies, GitHub issues, pull
+  requests, comments, or public artifacts
+- do not push the public kernel repo to GitHub unless the operator explicitly
+  reopens that public-push gate
+- do not mutate kernel trees, create worktrees, copy kernel trees, regenerate
+  DTS exports, or build from a new prerequisite tree unless the operator
+  explicitly reopens that kernel-tree gate
+- do not boot, reboot, power-cycle, SSH probe, UART capture, install kernels,
+  write `/boot`, or mutate Cubie hardware
+- do not change model routing, OpenRouter, Open WebUI, model-dispatch,
+  systemd, cron, Hermes services, or live service config
+
+Current safe local work:
+
+- status/index/validator corrections
+- approval-brief maintenance
+- evidence indexing
+- held-question drafting
+- local documentation that makes the gated next actions clearer without
+  crossing them
+
+Checks to preserve before commit:
+
+```sh
+python3 tools/validate/a733_authority_check.py
+scripts/a733-gated-transition-approval-brief
+scripts/kernel-workflow-status --maintainer-ready-blockers
+scripts/kernel-workflow-status --workflow-backup-status
+git diff --check
+git status --short --branch
+```
+
+## Prior Current State
+
 ## Active: Implement local token-offload workflow
 
 ## Current State

@@ -1,5 +1,19 @@
 # Agent Status
 
+## 2026-06-14 A733 current slice alignment
+
+- Updated `CURRENT_SLICE.md` so the active slice now matches the current A733
+  gated-transition state instead of the older token-offload implementation
+  slice.
+- The current slice points agents to
+  `scripts/a733-gated-transition-approval-brief` for the exact read-only
+  approval view.
+- Hard boundaries remain unchanged: no public GitHub push, no kernel-tree
+  mutation, no hardware mutation, no public communication, and no service/model
+  routing changes without explicit operator approval.
+- The two active blockers remain public kernel GitHub backup and clean A733
+  prerequisite-stack construction.
+
 ## 2026-06-14 A733 gated transition approval helper
 
 - Added `scripts/a733-gated-transition-approval-brief` as a read-only operator
