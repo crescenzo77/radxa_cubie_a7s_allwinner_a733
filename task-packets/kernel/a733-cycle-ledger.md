@@ -9138,3 +9138,90 @@ Next-selection pointer: Continue only safe local work. The public-push and
 kernel-tree mutation gates remain closed unless explicitly reopened.
 
 Stop confirmation: Continue to execute this contracted helper addition.
+### A733-CYCLE-077
+
+Date: 2026-06-14
+
+Agent: Codex Desktop / ChatGPT
+
+Mode: LOCAL-WORK-ONLY, handoff status update
+
+Selected item: Update `AGENT_STATUS.md` with the current A733 gated-transition
+state and the new approval-brief helper.
+
+Scope contract: Add a concise current handoff entry to the canonical agent
+status file. Do not push the public kernel repo to GitHub, mutate kernel
+trees, create worktrees, copy kernel trees, send mail, run b4, mutate
+hardware, add remotes, or change services.
+
+Files in scope:
+
+- `AGENT_STATUS.md`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- public GitHub push
+- public communication or b4 send/reflect
+- kernel tree mutation
+- hardware or service changes
+
+Classification gate: Green local handoff/status update.
+
+Permission envelope: Green.
+
+Claim IDs: none; single live Codex Desktop worker and no active claim service.
+
+Claimed resources: local status documentation and cycle ledger only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable; no board action.
+
+Recovery drill: not applicable; no board action.
+
+Experiment ceiling: not applicable.
+
+Commands run: initial repo/status/authority checks; approval helper run;
+read-only inspection of AGENTS/CODEX/CURRENT_SLICE/PROJECT_PLAN/AGENT_STATUS;
+local status/ledger edits; `python3 tools/validate/a733_authority_check.py`;
+`scripts/a733-gated-transition-approval-brief`; `git diff --check` over
+touched files; SHA-256 artifact hashing.
+
+Artifacts and hashes:
+
+```text
+0a6b0be74c1ce56522905333160b5cee76461f74e851d8dd22317254b6596f9e  AGENT_STATUS.md
+6f3723ce127b894e609e328827b7831852f8e3b13b17330bdd28813f604870d4  task-packets/kernel/a733-cycle-ledger.md
+```
+
+Proof definition: `AGENT_STATUS.md` names the helper, current blockers,
+validation checks, and approval-needed state; authority validator passes;
+touched files pass `git diff --check`; homelab backup push succeeds.
+
+Proof result: Passed. `AGENT_STATUS.md` now names
+`scripts/a733-gated-transition-approval-brief`, records the current safe
+state, names the two remaining blockers, and states that approval is required
+before public GitHub push or isolated prerequisite-stack construction.
+Authority validator reports `status=PASS` with `failures=0`; approval helper
+runs; `git diff --check` over touched files returns clean. The helper reported
+`private workflow repo is dirty` only because this contracted status update was
+uncommitted at proof time.
+
+Promotion state: not applicable.
+
+Tree state: Homelab coordination repo dirty only for contracted
+`AGENT_STATUS.md` and cycle-ledger edits before commit.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable.
+
+Next-selection pointer: Continue only safe local work. The public-push and
+kernel-tree mutation gates remain closed unless explicitly reopened.
+
+Stop confirmation: Continue to execute this contracted handoff update.

@@ -1,5 +1,25 @@
 # Agent Status
 
+## 2026-06-14 A733 gated transition approval helper
+
+- Added `scripts/a733-gated-transition-approval-brief` as a read-only operator
+  view for the current A733 gated-transition state.
+- The helper prints current workflow blockers, backup posture, public repo
+  hygiene state, and the two approval questions for:
+  public kernel GitHub backup and clean A733 prerequisite-stack construction.
+- Current safe state: homelab authority validation passes; private homelab
+  origin and GitHub backup are current; the public-facing repo is hygiene-clean
+  and backed to the private ThinkCentre mirror.
+- Current blockers: public kernel repo is not backed up to public GitHub, and
+  `/Users/enzo/projects/linux-a733-sparse` still fails the A733 prerequisite
+  stack audit.
+- Approval needed: do not push the public GitHub remote or create/update an
+  isolated prerequisite preparation tree unless the operator explicitly
+  reopens that gate. Use
+  `scripts/a733-gated-transition-approval-brief` for the exact approval text.
+- No board state, `/boot` files, kernel trees, services, public GitHub state,
+  mail, or b4 state were changed.
+
 ## 2026-06-09 corrected-root review markers
 
 - Updated `scripts/cubie-corrected-root-proof-gate` to surface non-fatal
