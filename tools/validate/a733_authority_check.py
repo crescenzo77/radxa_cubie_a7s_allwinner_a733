@@ -88,6 +88,7 @@ FINAL_SEND_CHECKLIST = Path("task-packets/kernel/a733-final-send-checklist.json"
 GATED_TRANSITION_APPROVAL_BRIEF = Path("scripts/a733-gated-transition-approval-brief")
 CURRENT_SLICE = Path("CURRENT_SLICE.md")
 KERNEL_WORKFLOW_STATUS = Path("tools/inventory/kernel_workflow_status.py")
+AGENT_STATUS = Path("AGENT_STATUS.md")
 
 REQUIRED_COMM_IDS = [f"A733-COMM-{number:03d}" for number in range(1, 17)]
 REQUIRED_BATCH_IDS = [f"A733-BATCH-{number:03d}" for number in range(0, 17)]
@@ -359,6 +360,25 @@ def check_kernel_workflow_status(root: Path, failures: list[str]) -> None:
             failures.append(
                 f"kernel-workflow-status: stale public-push wording remains: {phrase}"
             )
+
+
+def check_agent_status(root: Path, failures: list[str]) -> None:
+    path = root / AGENT_STATUS
+    if not path.exists():
+        failures.append(f"agent-status: missing {AGENT_STATUS}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("agent-status", text, failures)
+    required = [
+        "## 2026-06-14 A733 gate route hardening",
+        "both remaining A733 gates route",
+        "scripts/a733-gated-transition-approval-brief",
+        "Public kernel GitHub backup status now says explicit operator approval",
+        "Clean prerequisite-stack construction status now says explicit operator",
+        "No public remotes, kernel trees,",
+    ]
+    for needle in required:
+        require_contains("agent-status", text, needle, failures)
 
 
 def check_clean_prereq_stack_construction_plan(root: Path, failures: list[str]) -> None:
@@ -1506,6 +1526,7 @@ def run(root: Path) -> dict[str, Any]:
     check_final_send_checklist(root, failures)
     check_current_slice(root, failures)
     check_kernel_workflow_status(root, failures)
+    check_agent_status(root, failures)
 
     status = "PASS" if not failures else "FAIL"
     return {
@@ -1547,6 +1568,7 @@ def run(root: Path) -> dict[str, Any]:
         "final_send_checklist": str(FINAL_SEND_CHECKLIST),
         "current_slice": str(CURRENT_SLICE),
         "kernel_workflow_status": str(KERNEL_WORKFLOW_STATUS),
+        "agent_status": str(AGENT_STATUS),
         "board_count": len(inventory.get("boards", [])) if isinstance(inventory, dict) else None,
         "failures": failures,
         "failure_count": len(failures),

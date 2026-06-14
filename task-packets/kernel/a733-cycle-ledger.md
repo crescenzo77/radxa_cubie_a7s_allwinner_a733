@@ -9775,3 +9775,90 @@ Blocked/aborted reason: none.
 Release result: not applicable.
 
 Stop confirmation: Continue to execute this contracted handoff status refresh.
+
+## 2026-06-14T00:00:00Z - A733-CYCLE-085 - handoff validator guard
+
+Agent: Codex Desktop local worker.
+
+Server tier: unavailable; no claim service used.
+
+Mode: LOCAL-WORK-ONLY.
+
+Selection source: authority validation pass and observation that AGENT_STATUS
+now carries the current gate-route handoff but the authority validator did not
+yet check it.
+
+Scope contract: Add local authority-validator coverage for the current
+AGENT_STATUS gate-route handoff. Do not change the handoff text, kernel trees,
+hardware, public remotes, mail, services, or model routing.
+
+Files in scope:
+
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- public GitHub push
+- public communication or b4 send/reflect
+- kernel tree mutation, worktree creation, copy, build, or DTS regeneration
+- hardware or service changes
+- model/offload service changes
+
+Classification gate: Green local validation hardening.
+
+Permission envelope: Green.
+
+Claim IDs: none; single live Codex Desktop worker and no active claim service.
+
+Claimed resources: local authority validator and cycle ledger only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable; no board action.
+
+Recovery drill: not applicable; no board action.
+
+Experiment ceiling: not applicable.
+
+Proof definition: authority validator fails if AGENT_STATUS no longer contains
+the current A733 gate-route hardening handoff; current validator passes;
+touched Python compiles; touched files pass `git diff --check`; homelab backup
+push succeeds.
+
+Commands run: initial repo/status/authority checks; status grep for AGENT_STATUS
+and gate-route wording; local validator and cycle-ledger edits; `python3
+tools/validate/a733_authority_check.py`; `python3 -m py_compile
+tools/validate/a733_authority_check.py`; `git diff --check` over touched files;
+`scripts/kernel-workflow-status --maintainer-ready-blockers`;
+`scripts/kernel-workflow-status --dispatcher-waiting-actions`; SHA-256 artifact
+hashing.
+
+Artifacts and hashes:
+
+```text
+bc953e4716e3e1c89001992ad99bb6174efe7ac128fd1b96a14117c671d0b962  tools/validate/a733_authority_check.py
+task-packets/kernel/a733-cycle-ledger.md hash omitted from this self-referential
+record; use the committed blob hash for exact ledger identity.
+```
+
+Proof result: Passed. Authority validator reports `status=PASS` with
+`failures=0`; touched Python compiles; `git diff --check` over touched files
+returns clean. The validator now requires AGENT_STATUS to keep the current
+A733 gate-route hardening handoff that names both approval-gated blockers and
+the `scripts/a733-gated-transition-approval-brief` route.
+
+Promotion state: not applicable.
+
+Tree state: Homelab coordination repo dirty only for contracted validator and
+cycle-ledger edits before commit.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable.
+
+Stop confirmation: Continue to execute this contracted handoff validator guard.
