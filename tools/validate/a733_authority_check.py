@@ -69,6 +69,9 @@ PREREQ_STACK_SELECTION_NOTE = Path(
 CLEAN_PREREQ_STACK_CONSTRUCTION_PLAN = Path(
     "task-packets/kernel/a733-clean-prereq-stack-construction-plan.md"
 )
+GATED_TRANSITION_APPROVAL_PACKET = Path(
+    "task-packets/kernel/a733-gated-transition-approval-packet.md"
+)
 DTS_V2_UART_PINCTRL_PREVIEW = Path(
     "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch"
 )
@@ -269,6 +272,7 @@ def check_evidence_index(root: Path, failures: list[str]) -> None:
         "inventory/kernel-workflow-paths.json",
         "task-packets/kernel/a733-prereq-stack-selection-note.md",
         "task-packets/kernel/a733-clean-prereq-stack-construction-plan.md",
+        "task-packets/kernel/a733-gated-transition-approval-packet.md",
     ]
     for needle in required:
         require_contains("evidence-index", text, needle, failures)
@@ -301,6 +305,32 @@ def check_clean_prereq_stack_construction_plan(root: Path, failures: list[str]) 
     ]
     for needle in required:
         require_contains("clean-prereq-stack-construction-plan", text, needle, failures)
+
+
+def check_gated_transition_approval_packet(root: Path, failures: list[str]) -> None:
+    path = root / GATED_TRANSITION_APPROVAL_PACKET
+    if not path.exists():
+        failures.append(
+            f"gated-transition-approval-packet: missing {GATED_TRANSITION_APPROVAL_PACKET}"
+        )
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("gated-transition-approval-packet", text, failures)
+    required = [
+        "Status: local-only approval packet",
+        "not permission to mutate kernel trees",
+        "Public GitHub Backup",
+        "public-push gate",
+        "public hygiene: PASS",
+        "git -C \"/Users/enzo/projects/Home Lab/cubie-a7s-armbian\" push public main",
+        "Clean A733 Prerequisite Stack",
+        "A733 prerequisite stack audit is not clean",
+        "/Users/enzo/projects/linux-a733-sparse",
+        "/srv/projects/a733-prereq-stack-current",
+        "Do not quietly convert this packet into permission",
+    ]
+    for needle in required:
+        require_contains("gated-transition-approval-packet", text, needle, failures)
 
 
 def check_regeneration_checklist(root: Path, failures: list[str]) -> None:
@@ -1361,6 +1391,7 @@ def run(root: Path) -> dict[str, Any]:
     check_claim_service_activation_checklist(root, failures)
     check_prereq_stack_selection_note(root, failures)
     check_clean_prereq_stack_construction_plan(root, failures)
+    check_gated_transition_approval_packet(root, failures)
     check_dts_v2_static_proof_preflight(root, failures)
     check_dts_v2_uart_pinctrl_preview(root, failures)
     check_dts_v2_held_cover_changelog_draft(root, failures)
@@ -1397,6 +1428,7 @@ def run(root: Path) -> dict[str, Any]:
         "claim_service_activation_checklist": str(CLAIM_SERVICE_ACTIVATION_CHECKLIST),
         "prereq_stack_selection_note": str(PREREQ_STACK_SELECTION_NOTE),
         "clean_prereq_stack_construction_plan": str(CLEAN_PREREQ_STACK_CONSTRUCTION_PLAN),
+        "gated_transition_approval_packet": str(GATED_TRANSITION_APPROVAL_PACKET),
         "dts_v2_static_proof_preflight": str(DTS_V2_STATIC_PROOF_PREFLIGHT),
         "dts_v2_uart_pinctrl_preview": str(DTS_V2_UART_PINCTRL_PREVIEW),
         "dts_v2_held_cover_changelog_draft": str(DTS_V2_HELD_COVER_CHANGELOG_DRAFT),

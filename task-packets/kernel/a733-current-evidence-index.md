@@ -223,6 +223,11 @@ any future public action.
   prerequisite stack. It is a no-run plan that records the known passing Strix
   stack shape, the current Mac-mini audit blocker, stop conditions, and proof
   gates before any candidate DTS export regeneration.
+- Use `task-packets/kernel/a733-gated-transition-approval-packet.md` before
+  asking for or acting on approval to cross the two remaining major gates:
+  public kernel GitHub backup and clean prerequisite-stack construction. It is
+  not approval, not a public communication, and not permission to mutate kernel
+  trees.
 - If patch text is regenerated locally, record the exact base, head, patch
   directory, validation commands, and source-equivalence target.
 - If a hardware item looks necessary, queue it in

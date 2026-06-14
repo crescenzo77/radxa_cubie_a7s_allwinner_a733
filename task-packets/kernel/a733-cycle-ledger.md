@@ -8849,3 +8849,100 @@ remains gated; clean prerequisite-stack construction remains kernel-tree
 mutation gated.
 
 Stop confirmation: Continue to execute this contracted report correction.
+### A733-CYCLE-074
+
+Date: 2026-06-13
+
+Agent: Codex Desktop / ChatGPT
+
+Mode: LOCAL-WORK-ONLY, gated transition packet
+
+Selected item: Add a local approval/transition packet for the two remaining
+major gates: public kernel GitHub backup and clean A733 prerequisite-stack
+construction.
+
+Scope contract: Create a local-only packet that names exact current state,
+approval questions, allowed commands after approval, proof requirements, and
+stop conditions for the remaining public-push and kernel-tree-mutation gates.
+Link it from the evidence index and validator. Do not push the public kernel
+repo to GitHub, mutate kernel trees, create worktrees, copy kernel trees, send
+mail, mutate hardware, add remotes, or change services.
+
+Files in scope:
+
+- `task-packets/kernel/a733-gated-transition-approval-packet.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- public GitHub push
+- kernel tree mutation
+- public communication
+- hardware or service changes
+- remote creation or deletion
+
+Classification gate: Green local coordination packet. The work captures gates
+and proof criteria only; it performs no public, kernel-tree, or hardware
+action.
+
+Permission envelope: Green.
+
+Claim IDs: none; single live Codex Desktop worker and no active claim service.
+
+Claimed resources: local coordination docs and validator only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable; no board action.
+
+Recovery drill: not applicable; no board action.
+
+Experiment ceiling: not applicable.
+
+Commands run: initial repo/status/authority checks; dispatcher waiting-action
+and backup/prerequisite status checks; read-only inspection of current evidence
+index and validator; local packet/index/validator edits; `python3
+tools/validate/a733_authority_check.py`; `python3 -m py_compile
+tools/validate/a733_authority_check.py`; `git diff --check` over touched
+files; `scripts/kernel-workflow-status --maintainer-ready-blockers`;
+`scripts/kernel-workflow-status --workflow-backup-status`; SHA-256 artifact
+hashing.
+
+Artifacts and hashes:
+
+```text
+e54fadccffbfc855fd7f2ac16aec0ddfb67f5fbf631055181606982323a39fc6  task-packets/kernel/a733-gated-transition-approval-packet.md
+d0dae25f77ece45e049fb6580747b5721bd1c6a0261952625417608421238ba8  task-packets/kernel/a733-current-evidence-index.md
+4b8c1f01a1430860713e0caa46ce493befc276044a8ea23659f9de1352455a52  tools/validate/a733_authority_check.py
+```
+
+Proof definition: Authority validator passes; touched Python compiles; touched
+files pass `git diff --check`; packet is linked from the evidence index and
+covered by the validator; workflow status still reports public GitHub backup
+and clean prerequisite stack as gated/unresolved.
+
+Proof result: Passed. Authority validator reported `status=PASS` with
+`failures=0`; touched Python compiled; `git diff --check` over touched files
+returned clean; packet is linked from the evidence index and enforced by the
+authority validator. Workflow status still reports the intended unresolved
+gates: `public_github_backed=no` and A733 prerequisite stack audit `FAIL`.
+
+Promotion state: not applicable.
+
+Tree state: Homelab coordination repo dirty only for contracted packet, index,
+validator, and ledger edits before commit.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable.
+
+Next-selection pointer: After proof and backup, continue only safe local work
+unless the human explicitly reopens public-push or kernel-tree mutation gates.
+
+Stop confirmation: Continue to execute this contracted packet addition.
