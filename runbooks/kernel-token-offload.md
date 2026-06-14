@@ -83,6 +83,13 @@ USB-C, or PCIe.
 
 ## Live Lanes
 
+Current A733 mode note: `inventory/kernel-workflow-paths.json` can mark local
+model/offload lanes as advisory instead of required for goal completion. In
+`codex-desktop-only` mode, lane outages must still be reported by
+`scripts/kernel-workflow-status`, but they do not block local-only A733
+preparation work. Do not infer permission to start local models, use
+OpenRouter, or change services from this note.
+
 Primary local lanes:
 
 - AMD RTX 3090 on `192.168.50.252`, endpoint `http://127.0.0.1:8001/v1`

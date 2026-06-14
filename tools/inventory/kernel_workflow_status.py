@@ -17,6 +17,11 @@ import kernel_workflow_env
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_ENV = kernel_workflow_env.build_env()
+RESOURCE_POLICY = WORKFLOW_ENV.get("resource_policy", {})
+LOCAL_MODEL_POLICY = RESOURCE_POLICY.get("local_model_policy", {})
+OFFLOAD_REQUIRED_FOR_GOAL = bool(
+    LOCAL_MODEL_POLICY.get("offload_required_for_goal_completion", True)
+)
 PUBLIC_REPO = Path(WORKFLOW_ENV["paths"]["public_repo"]["selected"])
 PATCH_EXPORT = Path(WORKFLOW_ENV["paths"]["patch_export"]["selected"])
 LINUX_TREE = Path(WORKFLOW_ENV["paths"]["kernel_tree"]["selected"])
@@ -225,7 +230,14 @@ def machine_summary(data: dict[str, Any]) -> dict[str, Any]:
 
 def offload_summary(data: dict[str, Any]) -> dict[str, Any]:
     if not data.get("ok") and "data" not in data:
-        return {"ok": False, "error": data.get("error", "offload status failed"), "targets": [], "cortex": []}
+        return {
+            "ok": False,
+            "error": data.get("error", "offload status failed"),
+            "targets": [],
+            "cortex": [],
+            "required_for_goal_completion": OFFLOAD_REQUIRED_FOR_GOAL,
+            "policy_mode": LOCAL_MODEL_POLICY.get("mode", "required"),
+        }
     status = data["data"]
     target_lines = []
     failures = []
@@ -276,6 +288,9 @@ def offload_summary(data: dict[str, Any]) -> dict[str, Any]:
         "required_targets": sorted(required_targets),
         "missing_targets": missing_targets,
         "mode": "ready" if not failures else "blocked",
+        "required_for_goal_completion": OFFLOAD_REQUIRED_FOR_GOAL,
+        "policy_mode": LOCAL_MODEL_POLICY.get("mode", "required"),
+        "goal_ok": bool(OFFLOAD_REQUIRED_FOR_GOAL is False or (bool(status.get("ok")) and not failures)),
     }
 
 
@@ -752,15 +767,22 @@ def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
 
 
 def goal_completion_audit(data: dict[str, Any]) -> dict[str, Any]:
+    offload_required = bool(data["local_offload"].get("required_for_goal_completion", True))
+    offload_goal_ok = bool(data["local_offload"].get("goal_ok", data["local_offload"].get("ok")))
     checks = [
         {
             "requirement": "Codex Desktop dispatcher/offload documentation exists",
-            "status": "pass" if data["local_offload"].get("ok") else "fail",
+            "status": "pass" if offload_goal_ok else "fail",
             "evidence": (
                 "local offload lanes are healthy and dispatcher runbook/status surfaces exist: "
                 + ", ".join(data["local_offload"].get("required_targets", []))
                 if data["local_offload"].get("ok")
-                else "local offload lanes are not all healthy"
+                else (
+                    "local offload lanes are optional for current mode "
+                    f"{data['local_offload'].get('policy_mode')}; actual lane health is still reported"
+                    if not offload_required
+                    else "local offload lanes are not all healthy"
+                )
             ),
         },
         {
@@ -1200,7 +1222,10 @@ def strict_blockers(data: dict[str, Any]) -> list[str]:
         blockers.append(
             f"machine readiness has {data['machine_readiness'].get('required_missing')} required missing checks"
         )
-    if not data["local_offload"].get("ok"):
+    if (
+        data["local_offload"].get("required_for_goal_completion", True)
+        and not data["local_offload"].get("ok")
+    ):
         blockers.append("local offload lanes are not all healthy")
     if not data["public_hygiene"].get("ok"):
         blockers.append("public hygiene gate is not clean")

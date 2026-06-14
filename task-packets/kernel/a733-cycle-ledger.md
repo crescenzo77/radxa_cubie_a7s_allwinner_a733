@@ -8461,3 +8461,100 @@ prerequisite stack only after explicit kernel-tree mutation authority and
 resource coordination.
 
 Stop confirmation: Continue to execute this contracted documentation item.
+### A733-CYCLE-070
+
+Date: 2026-06-13
+
+Agent: Codex Desktop / ChatGPT
+
+Mode: LOCAL-WORK-ONLY, coordination-repo edit
+
+Selected item: Make local offload-lane completion gating mode-aware for the
+current Codex Desktop / ChatGPT-only operating mode.
+
+Scope contract: Update the workflow path registry and status tooling so local
+model/offload lane outages remain visible but are not treated as goal-completion
+blockers while the registry explicitly says offload is optional. Do not enable
+or disable model services, change cron/systemd, call OpenRouter, run paid
+third-party APIs, mutate hardware, edit kernel trees, or communicate publicly.
+
+Files in scope:
+
+- `inventory/kernel-workflow-paths.json`
+- `tools/inventory/kernel_workflow_status.py`
+- `tools/validate/a733_authority_check.py`
+- `runbooks/kernel-token-offload.md`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- model runtime/service/cron changes
+- OpenRouter synchronization or API calls
+- kernel source edits
+- hardware mutation or board access
+- public communication or public pushes
+
+Classification gate: Green workflow-status correction. The work changes local
+coordination semantics only and preserves reporting of actual offload lane
+health.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service remains planned-not-active.
+
+Claimed resources: homelab coordination documentation and status tooling only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable.
+
+Commands run: read-only grep/sed inspection of offload/status docs and tools;
+local registry/status/validator/runbook edits; `python3
+tools/validate/a733_authority_check.py`; `python3 -m py_compile
+tools/inventory/kernel_workflow_status.py
+tools/validate/a733_authority_check.py`; `git diff --check` over touched
+files; `scripts/kernel-workflow-status --maintainer-ready-blockers`;
+`scripts/kernel-workflow-status --json` local-offload excerpt; SHA-256 artifact
+hashing.
+
+Artifacts and hashes:
+
+```text
+ed0ff52dfbb6b9d139cbf871478ceae3d1db2fe36a360acf5b00794db89d11ee  inventory/kernel-workflow-paths.json
+9589db4bdebe1864f31d8efff2b771ae3e94a274245318cf96da5a56df0c1543  tools/inventory/kernel_workflow_status.py
+2d47d4048228a551a8615f9571ffd4a2f135c7a9558aa4692b366d3c8f208db3  tools/validate/a733_authority_check.py
+b0b1486845d6bea41754e0fe7e4e2e9641b4d3ef458213e9774deb7ba0f1bbd0  runbooks/kernel-token-offload.md
+```
+
+Proof definition: Authority validator passes; status JSON reports offload as
+optional for completion while preserving actual lane health; maintainer-ready
+blockers no longer include local offload lane health; Python files compile;
+touched files pass `git diff --check`.
+
+Proof result: Passed. Authority validator reported `status=PASS` with
+`failures=0`; both touched Python files compiled; `git diff --check` over
+touched files returned clean; maintainer-ready blockers no longer include local
+offload lane health; status JSON reports `policy_mode=codex-desktop-only`,
+`required_for_goal_completion=false`, and `goal_ok=true` while preserving the
+actual AMD fast lane failure.
+
+Promotion state: not applicable.
+
+Tree state: Homelab coordination repo dirty only for the contracted local
+status-mode edits before commit.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable.
+
+Next-selection pointer: After proof and backup, continue safe Green local work.
+
+Stop confirmation: Continue to execute this contracted status correction.

@@ -1306,6 +1306,8 @@ def check_kernel_workflow_paths(root: Path, failures: list[str]) -> None:
         "known non-A733 dirty files",
         "clean validation",
         "Do not stage, stash, reset, or clean",
+        "codex-desktop-only",
+        "offload_required_for_goal_completion",
     ]
     for needle in required:
         if needle not in raw and needle not in notes:

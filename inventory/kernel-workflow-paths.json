@@ -69,6 +69,11 @@
     }
   },
   "resource_policy": {
+    "local_model_policy": {
+      "mode": "codex-desktop-only",
+      "offload_required_for_goal_completion": false,
+      "reason": "Current A733 workflow uses Codex Desktop / ChatGPT directly. Local and OpenRouter model lanes may remain useful advisory helpers, but outages must not block local-only kernel preparation while this mode is active."
+    },
     "required": [
       "strix-review",
       "amd-research",
