@@ -8660,3 +8660,94 @@ Next-selection pointer: After proof, public GitHub backup remains blocked by
 the communication blackout/public-push gate unless explicitly reopened.
 
 Stop confirmation: Continue to execute this contracted hygiene cleanup.
+### A733-CYCLE-072
+
+Date: 2026-06-13
+
+Agent: Codex Desktop / ChatGPT
+
+Mode: LOCAL-WORK-ONLY, private mirror backup
+
+Selected item: Back up the local public-facing Cubie A7S repo to its private
+ThinkCentre mirror after public-hygiene cleanup.
+
+Scope contract: Push `/Users/enzo/projects/Home Lab/cubie-a7s-armbian` branch
+`main` only to its private SSH `origin` mirror on ThinkCentre. Do not push to
+the public GitHub remote, create public GitHub objects, send mail, mutate
+hardware, edit kernel trees, or change services. Record the result in the
+cycle ledger and back up the homelab coordination repo afterward.
+
+Files in scope:
+
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- public GitHub push
+- public communication
+- kernel source edits
+- hardware or service changes
+- any remote other than the private public-repo mirror `origin`
+
+Classification gate: Green private backup. The destination is the configured
+private ThinkCentre mirror, not the public GitHub remote.
+
+Permission envelope: Green for private mirror backup; Red for public GitHub.
+
+Claim IDs: none; single live Codex Desktop worker and no active claim service.
+
+Claimed resources: private mirror push lane and cycle ledger only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable; no board action.
+
+Recovery drill: not applicable; no board action.
+
+Experiment ceiling: not applicable.
+
+Commands run: public repo `git push origin main`; public hygiene gate on the
+public-facing repo; public repo status and `ls-remote` checks for private
+`origin` and public `public`; `scripts/kernel-workflow-status
+--workflow-backup-status`; homelab authority validator.
+
+Artifacts and hashes:
+
+```text
+public repo local HEAD: 0181a3250b079975f72eada0e01b963e87a5bed2
+public repo private origin/main: 0181a3250b079975f72eada0e01b963e87a5bed2
+public repo public/main: dac2a6f83894d1de6b6177da8d83461fef62d6c0
+```
+
+Proof definition: Public repo remains hygiene-clean; push to private `origin`
+mirror succeeds; `scripts/kernel-workflow-status --workflow-backup-status`
+reports `public_mirror_backed=yes`; public GitHub remains unpushed and gated;
+homelab authority validator passes.
+
+Proof result: Passed. Private mirror push succeeded:
+`db53521..0181a32 main -> main`. Public hygiene remains `PASS` with
+`match_count=0`. Public repo local HEAD and private `origin/main` both resolve
+to `0181a3250b079975f72eada0e01b963e87a5bed2`. Public GitHub `public/main`
+remains `dac2a6f83894d1de6b6177da8d83461fef62d6c0`; no public GitHub push was
+performed. Workflow backup status reports `public_mirror_backed=yes` and
+`public_github_backed=no`. Homelab authority validator reports `status=PASS`
+with `failures=0`.
+
+Promotion state: private public-repo mirror matches local main; public GitHub
+backup remains gated/unperformed.
+
+Tree state: Public-facing repo clean and backed to private origin. Homelab
+coordination repo dirty only for this cycle ledger record before commit.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable.
+
+Next-selection pointer: After proof, only public GitHub backup and clean
+prerequisite-stack construction should remain as major gated blockers.
+
+Stop confirmation: Continue to execute this private mirror backup only.
