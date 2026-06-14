@@ -8558,3 +8558,105 @@ Release result: not applicable.
 Next-selection pointer: After proof and backup, continue safe Green local work.
 
 Stop confirmation: Continue to execute this contracted status correction.
+### A733-CYCLE-071
+
+Date: 2026-06-13
+
+Agent: Codex Desktop / ChatGPT
+
+Mode: LOCAL-WORK-ONLY, public-facing local repo hygiene cleanup
+
+Selected item: Remove private lab and AI metadata from the local
+public-facing Cubie A7S repo so the public hygiene gate can pass before any
+future backup or patch-prep action.
+
+Scope contract: Edit only public-facing documentation files that are flagged
+by the hygiene gate, plus this cycle ledger. Replace private lab status detail
+with a public-safe status summary. Do not edit kernel source, patch files,
+boot artifacts, services, hardware, remotes, or public state. Do not push the
+public repo to GitHub. Commit local-only public repo hygiene changes if
+validation passes, then back up the homelab coordination ledger to its private
+mirrors.
+
+Files in scope:
+
+- `/Users/enzo/projects/Home Lab/cubie-a7s-armbian/docs/status.md`
+- `/Users/enzo/projects/Home Lab/cubie-a7s-armbian/docs/mainline-cleanup-workflow.md`
+- `/Users/enzo/projects/Home Lab/cubie-a7s-armbian/patches/README.md`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- public GitHub push
+- public GitHub issue, PR, comment, or gist creation
+- kernel source edits
+- patch snapshot edits
+- boot artifact edits
+- hardware or service changes
+
+Classification gate: Green local hygiene cleanup. The work removes private
+metadata from the local public-facing repository and does not publish it.
+
+Permission envelope: Green for local file cleanup; public push remains Red.
+
+Claim IDs: none; single live Codex Desktop worker and no active claim service.
+
+Claimed resources: local public-facing documentation files and coordination
+ledger only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable; no board action.
+
+Recovery drill: not applicable; no board action.
+
+Experiment ceiling: not applicable.
+
+Commands run: public repo status/log inspection; targeted public hygiene scan;
+public-facing docs/status replacement and two single-line redactions;
+`scripts/kernel-public-hygiene-gate --json` on the public-facing repo;
+public repo `git diff --check`; homelab authority validator; homelab
+`git diff --check`; public repo local commit; workflow status recheck;
+SHA-256 artifact hashing.
+
+Artifacts and hashes:
+
+```text
+c0c925e0cdc1e97f213dc66950ed7162f91246e85e4c2762d65a476d82b58247  /Users/enzo/projects/Home Lab/cubie-a7s-armbian/docs/status.md
+83ac905884d246ef7c22719239bfaa26f6d6e07c3ba4cd7dcc5e67646f3baea1  /Users/enzo/projects/Home Lab/cubie-a7s-armbian/docs/mainline-cleanup-workflow.md
+7a084f9388fbdc98bbe519f389c7d321ed1498588c87d6aa020cc7e3d9b0273f  /Users/enzo/projects/Home Lab/cubie-a7s-armbian/patches/README.md
+```
+
+Proof definition: `scripts/kernel-public-hygiene-gate` passes on the local
+public-facing repo; public repo `git diff --check` passes on touched files;
+homelab authority validator passes; homelab touched file passes
+`git diff --check`; public repo receives a local commit only; no public push is
+performed.
+
+Proof result: Passed. Public hygiene gate on
+`/Users/enzo/projects/Home Lab/cubie-a7s-armbian` reported `status=PASS`,
+`files_scanned=11`, and `match_count=0`. Public repo `git diff --check`
+passed before commit. Homelab authority validator reported `status=PASS` with
+`failures=0`. The public repo received local commit `0181a32 docs: scrub
+public status metadata`. No public push was performed.
+
+Promotion state: public hygiene local pass achieved; public GitHub backup and
+ThinkCentre public mirror backup remain gated/unperformed after the new local
+public-repo commit.
+
+Tree state: Public-facing repo clean after local commit, branch `main` ahead of
+`public/main` by 216 and behind by 2. Homelab coordination repo dirty only for
+this cycle ledger record before commit.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable.
+
+Next-selection pointer: After proof, public GitHub backup remains blocked by
+the communication blackout/public-push gate unless explicitly reopened.
+
+Stop confirmation: Continue to execute this contracted hygiene cleanup.
