@@ -932,7 +932,10 @@ def stopping_point_audit(data: dict[str, Any]) -> dict[str, Any]:
             "detail": (
                 f"public remote `{public_repo.get('remote_url')}` matches HEAD"
                 if workflow_backup.get("public_github_backed")
-                else "push public kernel repo to its GitHub remote before public handoff"
+                else (
+                    "public kernel repo GitHub backup requires explicit operator "
+                    f"approval; run {GATED_TRANSITION_APPROVAL_BRIEF}"
+                )
             ),
         },
         {

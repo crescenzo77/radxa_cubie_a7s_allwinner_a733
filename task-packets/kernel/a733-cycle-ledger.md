@@ -9496,3 +9496,102 @@ Blocked/aborted reason: none.
 Release result: not applicable.
 
 Stop confirmation: Continue to execute this contracted local wording hardening.
+
+## 2026-06-14T00:00:00Z - A733-CYCLE-082 - public backup wording validator
+
+Agent: Codex Desktop local worker.
+
+Server tier: unavailable; no claim service used.
+
+Mode: LOCAL-WORK-ONLY.
+
+Selection source: authority check pass plus search for remaining public backup
+next-action wording.
+
+Scope contract: Remove remaining raw public-kernel GitHub push wording from
+local readiness/status summaries and add an authority validator guard so future
+workflow-status edits preserve the gated-transition approval route.
+
+Files in scope:
+
+- `tools/inventory/kernel_workflow_status.py`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- public GitHub push
+- public communication or b4 send/reflect
+- kernel tree mutation
+- hardware or service changes
+- model/offload service changes
+
+Classification gate: Green local validation/status hardening.
+
+Permission envelope: Green.
+
+Claim IDs: none; single live Codex Desktop worker and no active claim service.
+
+Claimed resources: local status helper, authority validator, and cycle ledger
+only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable; no board action.
+
+Recovery drill: not applicable; no board action.
+
+Experiment ceiling: not applicable.
+
+Proof definition: authority validator fails if `kernel_workflow_status.py`
+does not route public GitHub backup gaps through
+`scripts/a733-gated-transition-approval-brief` or still contains the stale raw
+public-push phrase; current validator passes; touched Python compiles; touched
+files pass `git diff --check`; homelab backup push succeeds.
+
+Commands run: initial repo/status/authority checks; current slice, agent
+status, and cycle-ledger reads; search for raw public-backup next-action
+wording; local status-helper, validator, and cycle-ledger edits; `python3
+tools/validate/a733_authority_check.py`; `python3 -m py_compile
+tools/inventory/kernel_workflow_status.py tools/validate/a733_authority_check.py`;
+`git diff --check` over touched files; `scripts/kernel-workflow-status
+--workflow-backup-next-action`; `scripts/kernel-workflow-status
+--dispatcher-waiting-actions`; supported `scripts/kernel-workflow-status
+--json` inspection; SHA-256 artifact hashing.
+
+Non-proof command note: one attempted `scripts/kernel-workflow-status
+--maintainer-readiness-json` inspection failed because that flag does not
+exist; the supported `--json` inspection was used instead.
+
+Artifacts and hashes:
+
+```text
+0d55e347d419a339fbcc546fb0b854333f45d2820bb1ea4d64e50cfaaeaa0ef3  tools/inventory/kernel_workflow_status.py
+11522e389a9852941e794bb3fe6f4dff143b2defab7553b36984c3da347172c8  tools/validate/a733_authority_check.py
+task-packets/kernel/a733-cycle-ledger.md hash omitted from this self-referential
+record; use the committed blob hash for exact ledger identity.
+```
+
+Proof result: Passed. Authority validator reports `status=PASS` with
+`failures=0`; touched Python compiles; `git diff --check` over touched files
+returns clean. Workflow backup next action and dispatcher waiting actions route
+the public GitHub backup gap through
+`scripts/a733-gated-transition-approval-brief`. The validator now checks that
+`kernel_workflow_status.py` contains the gated-transition route and does not
+contain stale raw public-kernel GitHub push wording.
+
+Promotion state: not applicable.
+
+Tree state: Homelab coordination repo dirty only for contracted status-helper,
+validator, and cycle-ledger edits before commit.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable.
+
+Stop confirmation: Continue to execute this contracted local validator/status
+hardening.

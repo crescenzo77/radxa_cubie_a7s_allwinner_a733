@@ -87,6 +87,7 @@ KERNEL_WORKFLOW_PATHS = Path("inventory/kernel-workflow-paths.json")
 FINAL_SEND_CHECKLIST = Path("task-packets/kernel/a733-final-send-checklist.json")
 GATED_TRANSITION_APPROVAL_BRIEF = Path("scripts/a733-gated-transition-approval-brief")
 CURRENT_SLICE = Path("CURRENT_SLICE.md")
+KERNEL_WORKFLOW_STATUS = Path("tools/inventory/kernel_workflow_status.py")
 
 REQUIRED_COMM_IDS = [f"A733-COMM-{number:03d}" for number in range(1, 17)]
 REQUIRED_BATCH_IDS = [f"A733-BATCH-{number:03d}" for number in range(0, 17)]
@@ -331,6 +332,30 @@ def check_current_slice(root: Path, failures: list[str]) -> None:
     ]
     for needle in required:
         require_contains("current-slice", text, needle, failures)
+
+
+def check_kernel_workflow_status(root: Path, failures: list[str]) -> None:
+    path = root / KERNEL_WORKFLOW_STATUS
+    if not path.exists():
+        failures.append(f"kernel-workflow-status: missing {KERNEL_WORKFLOW_STATUS}")
+        return
+    text = path.read_text(encoding="utf-8")
+    required = [
+        "GATED_TRANSITION_APPROVAL_BRIEF",
+        "public kernel repo GitHub backup requires explicit operator approval",
+        "read gated-transition approval brief before any public push",
+    ]
+    for needle in required:
+        require_contains("kernel-workflow-status", text, needle, failures)
+    stale_phrases = [
+        "push public kernel repo to its GitHub remote",
+        "push public kernel repo to its GitHub remote before public handoff",
+    ]
+    for phrase in stale_phrases:
+        if phrase in text:
+            failures.append(
+                f"kernel-workflow-status: stale public-push wording remains: {phrase}"
+            )
 
 
 def check_clean_prereq_stack_construction_plan(root: Path, failures: list[str]) -> None:
@@ -1477,6 +1502,7 @@ def run(root: Path) -> dict[str, Any]:
     check_kernel_workflow_paths(root, failures)
     check_final_send_checklist(root, failures)
     check_current_slice(root, failures)
+    check_kernel_workflow_status(root, failures)
 
     status = "PASS" if not failures else "FAIL"
     return {
@@ -1517,6 +1543,7 @@ def run(root: Path) -> dict[str, Any]:
         "kernel_workflow_paths": str(KERNEL_WORKFLOW_PATHS),
         "final_send_checklist": str(FINAL_SEND_CHECKLIST),
         "current_slice": str(CURRENT_SLICE),
+        "kernel_workflow_status": str(KERNEL_WORKFLOW_STATUS),
         "board_count": len(inventory.get("boards", [])) if isinstance(inventory, dict) else None,
         "failures": failures,
         "failure_count": len(failures),
