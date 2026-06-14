@@ -44,6 +44,7 @@ PRIVATE_GITHUB_REMOTE = os.environ.get("KERNEL_PRIVATE_GITHUB_REMOTE", "github")
 OPERATOR_BRIEF = "scripts/cubie-corrected-root-operator-brief"
 PATCH_PREP_CHECKLIST = "scripts/a733-patch-prep-checklist"
 BACKUP_APPROVAL_BRIEF = "scripts/kernel-backup-approval-brief"
+GATED_TRANSITION_APPROVAL_BRIEF = "scripts/a733-gated-transition-approval-brief"
 PROOF_GATE_SELFTEST = "scripts/cubie-corrected-root-proof-gate-selftest"
 RFC_RECHECK_GLOB = "a733-rfc-recheck-*.md"
 RFC_RECHECK_DIR = Path(WORKFLOW_ENV["paths"]["rfc_recheck_dir"]["selected"])
@@ -667,7 +668,10 @@ def workflow_backup_summary(data: dict[str, Any]) -> dict[str, Any]:
             "human approval is required before adding a private GitHub remote"
         )
     elif not (public_repo.get("remote_matches") and public_repo.get("remote_is_github")):
-        next_action = "push public kernel repo to its GitHub remote"
+        next_action = (
+            "public kernel repo GitHub backup requires explicit operator approval; "
+            f"run {GATED_TRANSITION_APPROVAL_BRIEF}"
+        )
     elif not public_mirror.get("remote_matches"):
         next_action = "push public kernel repo to the ThinkCentre mirror"
     return {
@@ -735,6 +739,11 @@ def dispatcher_waiting_actions(data: dict[str, Any]) -> list[str]:
             "read backup approval brief before changing remotes: "
             f"cd {shlex.quote(str(REPO_ROOT))} && {BACKUP_APPROVAL_BRIEF}"
         )
+        if not data.get("workflow_backup", {}).get("public_github_backed"):
+            actions.append(
+                "read gated-transition approval brief before any public push: "
+                f"cd {shlex.quote(str(REPO_ROOT))} && {GATED_TRANSITION_APPROVAL_BRIEF}"
+            )
     if data["local_offload"].get("ok") and idle_candidates not in ("0", 0):
         actions.append(
             "optional advisory review only: "
