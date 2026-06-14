@@ -228,6 +228,9 @@ any future public action.
   public kernel GitHub backup and clean prerequisite-stack construction. It is
   not approval, not a public communication, and not permission to mutate kernel
   trees.
+- Use `scripts/a733-gated-transition-approval-brief` when a concise operator
+  view of those two approval questions is needed. The helper is read-only and
+  does not grant permission.
 - Use `task-packets/kernel/a733-final-send-checklist.json` and
   `scripts/kernel-final-send-status` only as historical DTS v1 send/index
   status plus current blocker visibility. DTS v1 is already sent; this

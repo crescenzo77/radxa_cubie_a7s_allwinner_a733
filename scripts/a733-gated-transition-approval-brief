@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+public_repo="${KERNEL_PUBLIC_REPO:-/Users/enzo/projects/Home Lab/cubie-a7s-armbian}"
+packet="${repo_root}/task-packets/kernel/a733-gated-transition-approval-packet.md"
+
+echo "# A733 Gated Transition Approval Brief"
+echo
+echo "This is read-only. It does not approve or perform any public push,"
+echo "kernel-tree mutation, hardware action, mail send, or service change."
+echo
+echo "## Current Workflow Blockers"
+echo
+echo '```text'
+"${repo_root}/scripts/kernel-workflow-status" --maintainer-ready-blockers
+echo '```'
+echo
+echo "## Backup State"
+echo
+echo '```text'
+"${repo_root}/scripts/kernel-workflow-status" --workflow-backup-status
+echo '```'
+echo
+echo "## Public Repo State"
+echo
+echo '```text'
+git -C "${public_repo}" status --short --branch
+"${repo_root}/scripts/kernel-public-hygiene-gate" --json "${public_repo}" \
+  | python3 -c 'import json,sys; d=json.load(sys.stdin); print("public_hygiene={} matches={}".format(d["status"], d["match_count"]))'
+echo '```'
+echo
+echo "## Approval Questions"
+echo
+echo "1. Public GitHub backup:"
+echo
+echo '```text'
+echo "May Codex push ${public_repo} branch main to the public GitHub remote named public, despite the active local-work-only public-push restriction?"
+echo '```'
+echo
+echo "2. Clean prerequisite stack:"
+echo
+echo '```text'
+echo "May Codex create or update an isolated A733 prerequisite preparation tree, using the local no-run construction plan, for the sole purpose of producing a clean prerequisite-stack audit before any DTS regeneration?"
+echo '```'
+echo
+echo "Full packet:"
+echo
+echo '```text'
+echo "${packet}"
+echo '```'
+echo
+echo "If approval is not explicit, continue local-only planning/status work."

@@ -9042,3 +9042,99 @@ Next-selection pointer: Continue only safe local work. The public-push and
 kernel-tree mutation gates remain closed.
 
 Stop confirmation: Continue to execute this contracted status correction.
+### A733-CYCLE-076
+
+Date: 2026-06-14
+
+Agent: Codex Desktop / ChatGPT
+
+Mode: LOCAL-WORK-ONLY, approval brief helper
+
+Selected item: Add a concise local approval-brief helper for the current A733
+gated transition state.
+
+Scope contract: Create a read-only script that prints the current approval
+questions, gate status, and safe next action from existing status surfaces.
+Link it from the evidence index and validator. Do not push the public kernel
+repo to GitHub, mutate kernel trees, create worktrees, copy kernel trees, send
+mail, run b4, mutate hardware, add remotes, or change services.
+
+Files in scope:
+
+- `scripts/a733-gated-transition-approval-brief`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- public GitHub push
+- public communication or b4 send/reflect
+- kernel tree mutation
+- hardware or service changes
+
+Classification gate: Green local helper/reporting. The work prints approval
+context only and performs no state-changing action beyond local coordination
+repo edits.
+
+Permission envelope: Green.
+
+Claim IDs: none; single live Codex Desktop worker and no active claim service.
+
+Claimed resources: local coordination helper/docs/validator only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable; no board action.
+
+Recovery drill: not applicable; no board action.
+
+Experiment ceiling: not applicable.
+
+Commands run: initial repo/status/authority checks; public repo hygiene/status
+check; read-only searches for existing approval helpers; local helper/index/
+validator edits; `chmod +x scripts/a733-gated-transition-approval-brief`;
+first helper run exposing a quoting bug; helper fix; successful helper run;
+`python3 tools/validate/a733_authority_check.py`; `python3 -m py_compile
+tools/validate/a733_authority_check.py`; `bash -n
+scripts/a733-gated-transition-approval-brief`; `git diff --check` over touched
+files; SHA-256 artifact hashing.
+
+Artifacts and hashes:
+
+```text
+7d1e3af2e1d735be288b6aa67e1ce040a49e14c6544f5bdb87ff162f4b362010  scripts/a733-gated-transition-approval-brief
+c72282f3ae52688d5435a03a38c0174f3213444428bda7b2c61b0ff08c8873d9  task-packets/kernel/a733-current-evidence-index.md
+d39ea97e74e1c02c146376a5b15b3973c157d621b75ed0378b46d663164847ce  tools/validate/a733_authority_check.py
+```
+
+Proof definition: helper runs and prints the two approval questions plus
+current blocker status; authority validator passes; helper shell syntax passes;
+touched Python compiles; touched files pass `git diff --check`; homelab backup
+push succeeds.
+
+Proof result: Passed. The helper runs and prints current workflow blockers,
+backup state, public repo state with `public_hygiene=PASS matches=0`, both
+approval questions, and the full packet path. Authority validator reports
+`status=PASS` with `failures=0`; touched Python compiles; shell syntax passes;
+`git diff --check` over touched files returns clean. The helper is read-only
+and performed no public push, kernel-tree mutation, hardware action, mail send,
+or service change.
+
+Promotion state: not applicable.
+
+Tree state: Homelab coordination repo dirty only for contracted helper, index,
+validator, and ledger edits before commit.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable.
+
+Next-selection pointer: Continue only safe local work. The public-push and
+kernel-tree mutation gates remain closed unless explicitly reopened.
+
+Stop confirmation: Continue to execute this contracted helper addition.

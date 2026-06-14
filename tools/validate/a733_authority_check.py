@@ -85,6 +85,7 @@ PWM_BACKLIGHT_FAN_EVIDENCE = Path(
 KERNEL_CHECKOUT_QUARANTINE = Path("inventory/kernel-checkout-quarantine-20260606.md")
 KERNEL_WORKFLOW_PATHS = Path("inventory/kernel-workflow-paths.json")
 FINAL_SEND_CHECKLIST = Path("task-packets/kernel/a733-final-send-checklist.json")
+GATED_TRANSITION_APPROVAL_BRIEF = Path("scripts/a733-gated-transition-approval-brief")
 
 REQUIRED_COMM_IDS = [f"A733-COMM-{number:03d}" for number in range(1, 17)]
 REQUIRED_BATCH_IDS = [f"A733-BATCH-{number:03d}" for number in range(0, 17)]
@@ -274,6 +275,7 @@ def check_evidence_index(root: Path, failures: list[str]) -> None:
         "task-packets/kernel/a733-prereq-stack-selection-note.md",
         "task-packets/kernel/a733-clean-prereq-stack-construction-plan.md",
         "task-packets/kernel/a733-gated-transition-approval-packet.md",
+        "scripts/a733-gated-transition-approval-brief",
         "task-packets/kernel/a733-final-send-checklist.json",
         "scripts/kernel-final-send-status",
     ]
@@ -361,6 +363,26 @@ def check_gated_transition_approval_packet(root: Path, failures: list[str]) -> N
     ]
     for needle in required:
         require_contains("gated-transition-approval-packet", text, needle, failures)
+
+
+def check_gated_transition_approval_brief(root: Path, failures: list[str]) -> None:
+    path = root / GATED_TRANSITION_APPROVAL_BRIEF
+    if not path.exists():
+        failures.append(
+            f"gated-transition-approval-brief: missing {GATED_TRANSITION_APPROVAL_BRIEF}"
+        )
+        return
+    text = path.read_text(encoding="utf-8")
+    required = [
+        "This is read-only",
+        "kernel-workflow-status",
+        "kernel-public-hygiene-gate",
+        "May Codex push",
+        "May Codex create or update an isolated A733 prerequisite preparation tree",
+        "If approval is not explicit",
+    ]
+    for needle in required:
+        require_contains("gated-transition-approval-brief", text, needle, failures)
 
 
 def check_regeneration_checklist(root: Path, failures: list[str]) -> None:
@@ -1422,6 +1444,7 @@ def run(root: Path) -> dict[str, Any]:
     check_prereq_stack_selection_note(root, failures)
     check_clean_prereq_stack_construction_plan(root, failures)
     check_gated_transition_approval_packet(root, failures)
+    check_gated_transition_approval_brief(root, failures)
     check_dts_v2_static_proof_preflight(root, failures)
     check_dts_v2_uart_pinctrl_preview(root, failures)
     check_dts_v2_held_cover_changelog_draft(root, failures)
@@ -1460,6 +1483,7 @@ def run(root: Path) -> dict[str, Any]:
         "prereq_stack_selection_note": str(PREREQ_STACK_SELECTION_NOTE),
         "clean_prereq_stack_construction_plan": str(CLEAN_PREREQ_STACK_CONSTRUCTION_PLAN),
         "gated_transition_approval_packet": str(GATED_TRANSITION_APPROVAL_PACKET),
+        "gated_transition_approval_brief": str(GATED_TRANSITION_APPROVAL_BRIEF),
         "dts_v2_static_proof_preflight": str(DTS_V2_STATIC_PROOF_PREFLIGHT),
         "dts_v2_uart_pinctrl_preview": str(DTS_V2_UART_PINCTRL_PREVIEW),
         "dts_v2_held_cover_changelog_draft": str(DTS_V2_HELD_COVER_CHANGELOG_DRAFT),
