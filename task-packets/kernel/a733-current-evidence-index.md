@@ -218,6 +218,11 @@ any future public action.
   interpreting Mac-mini prerequisite-stack status. It records that the sparse
   checkout is clean and selected for local read-only work, but still fails the
   prerequisite-stack audit for missing RTC/R-CCU/losc-fanout pieces.
+- Use `task-packets/kernel/a733-clean-prereq-stack-construction-plan.md`
+  before building, syncing, copying, or reconstructing a clean A733
+  prerequisite stack. It is a no-run plan that records the known passing Strix
+  stack shape, the current Mac-mini audit blocker, stop conditions, and proof
+  gates before any candidate DTS export regeneration.
 - If patch text is regenerated locally, record the exact base, head, patch
   directory, validation commands, and source-equivalence target.
 - If a hardware item looks necessary, queue it in

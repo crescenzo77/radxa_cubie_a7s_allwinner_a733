@@ -8366,3 +8366,98 @@ role assignment, recovery drill, and claim-service activation are resolved.
 
 Stop confirmation: Continue to validation, then next safe item if disk state
 permits.
+### A733-CYCLE-069
+
+Date: 2026-06-13
+
+Agent: Codex Desktop / ChatGPT
+
+Mode: LOCAL-WORK-ONLY, coordination-repo edit
+
+Selected item: Add a no-run clean prerequisite-stack construction plan for the
+current A733 audit blocker.
+
+Scope contract: Update only local coordination documentation and validation so
+future workers know how to choose, reconstruct, or sync a clean A733
+prerequisite stack before regenerating DTS exports. Do not edit kernel trees,
+claim Strix/ThinkCentre resources, probe boards, run hardware tests, send mail,
+create public GitHub issues/PRs/comments, or push public kernel material.
+
+Files in scope:
+
+- `task-packets/kernel/a733-clean-prereq-stack-construction-plan.md`
+- `task-packets/kernel/a733-current-evidence-index.md`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- kernel source edits
+- kernel tree branch creation, reset, fetch, rebase, am, commit, or push
+- board boot, reboot, power, UART capture, SSH probe, recovery, or storage
+  mutation
+- claim-service activation or resource claims
+- public communication or public pushes
+
+Classification gate: Green documentation/status cleanup. The work records a
+future construction plan from already-known local evidence and does not mutate
+kernel trees, hardware, services, or public state.
+
+Permission envelope: Green.
+
+Claim IDs: none; claim service remains planned-not-active and no contended
+kernel tree or hardware resource was touched.
+
+Claimed resources: homelab coordination documentation files only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable for this cycle; no board action.
+
+Recovery drill: not applicable for this cycle; no board action.
+
+Experiment ceiling: not applicable. The current hardware and kernel-tree
+mutation gates remain closed.
+
+Commands run: initial git status/log, authority validator, workflow status
+blocker commands, read-only file inspection, local documentation edits,
+`python3 tools/validate/a733_authority_check.py`, `python3 -m py_compile
+tools/validate/a733_authority_check.py`, `git diff --check` over the touched
+files, and SHA-256 artifact hashing.
+
+Artifacts and hashes:
+
+```text
+8794dc23daf1ef5e55c568a7a00a10eb24b0b29fbce89e1b1545122e29a9f034  task-packets/kernel/a733-clean-prereq-stack-construction-plan.md
+7e632bf109177d3d52fc624825fdc551d3ffd6a2d4652dfbe95ab0ae4b182790  task-packets/kernel/a733-current-evidence-index.md
+e423408a00b4c1edc78195067d37fcb52a09c036b6c56366691b0a791d88a495  tools/validate/a733_authority_check.py
+```
+
+Proof definition: Authority validator passes; touched Python compiles; touched
+files pass `git diff --check`; new plan is linked from the evidence index and
+validator.
+
+Proof result: Passed. Authority validator reported `status=PASS` with
+`failures=0`; Python validator compiled; `git diff --check` over the touched
+files returned clean; the new plan is linked from the evidence index and
+covered by the validator.
+
+Promotion state: not applicable.
+
+Tree state: Homelab coordination repo dirty only for the contracted local
+documentation/validator edits before commit.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable; no central claim existed.
+
+Next-selection pointer: After proof and backup, continue with safe Green work
+only. The next kernel-facing step remains gated: build or sync a clean
+prerequisite stack only after explicit kernel-tree mutation authority and
+resource coordination.
+
+Stop confirmation: Continue to execute this contracted documentation item.

@@ -66,6 +66,9 @@ CLAIM_SERVICE_ACTIVATION_CHECKLIST = Path(
 PREREQ_STACK_SELECTION_NOTE = Path(
     "task-packets/kernel/a733-prereq-stack-selection-note.md"
 )
+CLEAN_PREREQ_STACK_CONSTRUCTION_PLAN = Path(
+    "task-packets/kernel/a733-clean-prereq-stack-construction-plan.md"
+)
 DTS_V2_UART_PINCTRL_PREVIEW = Path(
     "task-packets/kernel/a733-dts-v2-uart-pinctrl-local-preview.patch"
 )
@@ -265,9 +268,39 @@ def check_evidence_index(root: Path, failures: list[str]) -> None:
         "inventory/kernel-checkout-quarantine-20260606.md",
         "inventory/kernel-workflow-paths.json",
         "task-packets/kernel/a733-prereq-stack-selection-note.md",
+        "task-packets/kernel/a733-clean-prereq-stack-construction-plan.md",
     ]
     for needle in required:
         require_contains("evidence-index", text, needle, failures)
+
+
+def check_clean_prereq_stack_construction_plan(root: Path, failures: list[str]) -> None:
+    path = root / CLEAN_PREREQ_STACK_CONSTRUCTION_PLAN
+    if not path.exists():
+        failures.append(
+            "clean-prereq-stack-construction-plan: missing "
+            f"{CLEAN_PREREQ_STACK_CONSTRUCTION_PLAN}"
+        )
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("clean-prereq-stack-construction-plan", text, failures)
+    required = [
+        "Status: local-only no-run construction plan",
+        "not permission to edit kernel trees",
+        "/Users/enzo/projects/linux-a733-sparse",
+        "/srv/projects/a733-prereq-stack-current",
+        "a1f5f546f116",
+        "8fde5d1d47f6",
+        "scripts/a733-prereq-stack-audit",
+        "rtc-binding-missing",
+        "r-ccu-driver-missing",
+        "dtsi-ccu-clock-names-missing-losc-fanout",
+        "Do not use the dirty full Mac-mini checkout",
+        "dt_binding_check",
+        "choose or build a clean A733 prerequisite stack",
+    ]
+    for needle in required:
+        require_contains("clean-prereq-stack-construction-plan", text, needle, failures)
 
 
 def check_regeneration_checklist(root: Path, failures: list[str]) -> None:
@@ -1325,6 +1358,7 @@ def run(root: Path) -> dict[str, Any]:
     check_dts_v2_static_proof_isolated_copy(root, failures)
     check_claim_service_activation_checklist(root, failures)
     check_prereq_stack_selection_note(root, failures)
+    check_clean_prereq_stack_construction_plan(root, failures)
     check_dts_v2_static_proof_preflight(root, failures)
     check_dts_v2_uart_pinctrl_preview(root, failures)
     check_dts_v2_held_cover_changelog_draft(root, failures)
@@ -1360,6 +1394,7 @@ def run(root: Path) -> dict[str, Any]:
         "dts_v2_static_proof_isolated_copy": str(DTS_V2_STATIC_PROOF_ISOLATED_COPY),
         "claim_service_activation_checklist": str(CLAIM_SERVICE_ACTIVATION_CHECKLIST),
         "prereq_stack_selection_note": str(PREREQ_STACK_SELECTION_NOTE),
+        "clean_prereq_stack_construction_plan": str(CLEAN_PREREQ_STACK_CONSTRUCTION_PLAN),
         "dts_v2_static_proof_preflight": str(DTS_V2_STATIC_PROOF_PREFLIGHT),
         "dts_v2_uart_pinctrl_preview": str(DTS_V2_UART_PINCTRL_PREVIEW),
         "dts_v2_held_cover_changelog_draft": str(DTS_V2_HELD_COVER_CHANGELOG_DRAFT),
