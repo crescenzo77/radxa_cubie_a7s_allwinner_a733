@@ -141,7 +141,7 @@
   "current_known_blockers": [
     "historical DTS v1 is already sent and indexed; do not resend during local-work-only mode",
     "public kernel repo is not backed up to its public GitHub remote; this remains a public-push gate",
-    "selected A733 prerequisite stack is not cleanly audited on /Users/enzo/projects/linux-a733-sparse",
+    "selected A733 prerequisite stack now audits clean at /Users/enzo/projects/a733-prereq-stack-clean/linux, but DTS v2 regeneration and hardware install remain separate approval gates",
     "DTS v2 work remains held behind maintainer feedback, prerequisite landing or correction, static proof, runtime proof, recipient refresh, and operator approval"
   ],
   "current_gate_packet": "task-packets/kernel/a733-gated-transition-approval-packet.md",

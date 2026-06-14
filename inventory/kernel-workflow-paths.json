@@ -13,14 +13,16 @@
       "homelab_repo": "/Users/enzo/projects/homelab",
       "public_repo": "/Users/enzo/projects/Home Lab/cubie-a7s-armbian",
       "patch_export": "/Users/enzo/projects/Home Lab/cubie-a7s-armbian/patches",
-      "kernel_tree": "/Users/enzo/projects/linux-a733-sparse",
+      "kernel_tree": "/Users/enzo/projects/a733-prereq-stack-clean/linux",
       "kernel_tree_candidates": [
-        "/Users/enzo/projects/linux-a733",
-        "/Users/enzo/projects/linux-a733-sparse"
+        "/Users/enzo/projects/a733-prereq-stack-clean/linux",
+        "/Users/enzo/projects/linux-a733-sparse",
+        "/Users/enzo/projects/linux-a733"
       ],
       "notes": [
+        "/Users/enzo/projects/a733-prereq-stack-clean/linux is the selected clean A733 prerequisite tree for clean validation, review, and local documentation as of 2026-06-14. It lives inside case-sensitive APFS sparse image /Users/enzo/projects/a733-prereq-stack-clean.sparseimage mounted at /Users/enzo/projects/a733-prereq-stack-clean; remount the image after reboot before using this path.",
         "/Users/enzo/projects/linux-a733 is the full local checkout but currently has known non-A733 dirty files recorded in inventory/kernel-checkout-quarantine-20260606.md.",
-        "Use /Users/enzo/projects/linux-a733-sparse for clean validation, review, and local documentation while that quarantine remains active.",
+        "/Users/enzo/projects/linux-a733-sparse is retained as a historical sparse reference but fails the A733 prerequisite-stack audit.",
         "Do not stage, stash, reset, or clean the quarantined linux-a733 dirty files as part of A733 work."
       ],
       "rfc_recheck_dir": "/Users/enzo/projects/homelab/task-packets/kernel/research",

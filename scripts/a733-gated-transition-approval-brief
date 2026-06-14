@@ -39,12 +39,6 @@ echo '```text'
 echo "May Codex push ${public_repo} branch main to the public GitHub remote named public, despite the active local-work-only public-push restriction?"
 echo '```'
 echo
-echo "2. Clean prerequisite stack:"
-echo
-echo '```text'
-echo "May Codex create or update an isolated A733 prerequisite preparation tree, using the local no-run construction plan, for the sole purpose of producing a clean prerequisite-stack audit before any DTS regeneration?"
-echo '```'
-echo
 echo "Full packet:"
 echo
 echo '```text'

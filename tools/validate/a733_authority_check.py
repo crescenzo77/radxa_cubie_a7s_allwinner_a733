@@ -303,7 +303,7 @@ def check_final_send_checklist(root: Path, failures: list[str]) -> None:
         failures.append("final-send-checklist: current_known_blockers is incomplete")
     required = [
         "public GitHub remote",
-        "/Users/enzo/projects/linux-a733-sparse",
+        "/Users/enzo/projects/a733-prereq-stack-clean/linux",
         "DTS v2 work remains held",
     ]
     blocker_text = "\n".join(str(item) for item in blockers or [])
@@ -324,9 +324,10 @@ def check_current_slice(root: Path, failures: list[str]) -> None:
         "## Active: A733 gated-transition preparation",
         "scripts/a733-gated-transition-approval-brief",
         "public kernel repo GitHub backup is not done",
-        "selected A733 prerequisite stack is not cleanly audited",
+        "/Users/enzo/projects/a733-prereq-stack-clean/linux",
+        "/srv/projects/kernel-work/outgoing/a733-clean-feature-20260614",
         "do not push the public kernel repo to GitHub",
-        "do not mutate kernel trees",
+        "do not regenerate DTS exports",
         "do not boot, reboot, power-cycle, SSH probe, UART capture",
         "## Prior Current State",
         "## Active: Implement local token-offload workflow",
@@ -375,7 +376,10 @@ def check_agent_status(root: Path, failures: list[str]) -> None:
         "scripts/a733-gated-transition-approval-brief",
         "Public kernel GitHub backup status now says explicit operator approval",
         "Clean prerequisite-stack construction status now says explicit operator",
-        "No public remotes, kernel trees,",
+        "No public remotes, hardware,",
+        "## 2026-06-14 A733 clean feature kernel",
+        "/Users/enzo/projects/a733-prereq-stack-clean/linux",
+        "/srv/projects/kernel-work/outgoing/a733-clean-feature-20260614",
     ]
     for needle in required:
         require_contains("agent-status", text, needle, failures)
@@ -392,8 +396,14 @@ def check_clean_prereq_stack_construction_plan(root: Path, failures: list[str]) 
     text = path.read_text(encoding="utf-8")
     check_markdown_fences("clean-prereq-stack-construction-plan", text, failures)
     required = [
-        "Status: local-only no-run construction plan",
-        "not permission to edit kernel trees",
+        "Status: materialized locally; build artifacts staged, not installed",
+        "not permission to send or push public kernel material",
+        "/Users/enzo/projects/a733-prereq-stack-clean/linux",
+        "/Users/enzo/projects/a733-prereq-stack-clean.sparseimage",
+        "/srv/projects/kernel-work/outgoing/a733-clean-feature-20260614",
+        "64d2cd3c28ff2ef4a3c3086b9d5a52a867e84a481161e374dbb8ae31f3b00152",
+        "6edbb3790de674f7011c8accd0e02d94ea5bcafa11dc127238c8a54da71c622a",
+        "a08a82ddfc83d5860420899797ef0baf3376addcae802939dc978190e4c5eb08",
         "/Users/enzo/projects/linux-a733-sparse",
         "/srv/projects/a733-prereq-stack-current",
         "a1f5f546f116",
@@ -427,9 +437,9 @@ def check_gated_transition_approval_packet(root: Path, failures: list[str]) -> N
         "public hygiene: PASS",
         "git -C \"/Users/enzo/projects/Home Lab/cubie-a7s-armbian\" push public main",
         "Clean A733 Prerequisite Stack",
-        "A733 prerequisite stack audit is not clean",
-        "/Users/enzo/projects/linux-a733-sparse",
-        "/srv/projects/a733-prereq-stack-current",
+        "completed locally; no hardware install or DTS regeneration performed",
+        "/Users/enzo/projects/a733-prereq-stack-clean/linux",
+        "/srv/projects/kernel-work/outgoing/a733-clean-feature-20260614",
         "Do not quietly convert this packet into permission",
     ]
     for needle in required:
@@ -449,7 +459,6 @@ def check_gated_transition_approval_brief(root: Path, failures: list[str]) -> No
         "kernel-workflow-status",
         "kernel-public-hygiene-gate",
         "May Codex push",
-        "May Codex create or update an isolated A733 prerequisite preparation tree",
         "If approval is not explicit",
     ]
     for needle in required:

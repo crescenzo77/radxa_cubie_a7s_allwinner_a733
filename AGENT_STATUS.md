@@ -1,5 +1,23 @@
 # Agent Status
 
+## 2026-06-14 A733 clean feature kernel
+
+- Materialized the clean A733 prerequisite stack into an isolated Mac-mini
+  checkout at `/Users/enzo/projects/a733-prereq-stack-clean/linux`.
+- The selected checkout lives inside case-sensitive APFS sparse image
+  `/Users/enzo/projects/a733-prereq-stack-clean.sparseimage`, mounted at
+  `/Users/enzo/projects/a733-prereq-stack-clean`, to avoid macOS
+  case-insensitive kernel-header collisions.
+- Built a broad arm64 defconfig-style A733 feature kernel on Strix from an
+  isolated source worktree:
+  `/srv/projects/kernel-work/src/a733-clean-feature-src-20260614`.
+- Build artifacts are staged at
+  `/srv/projects/kernel-work/outgoing/a733-clean-feature-20260614`: `Image`,
+  `sun60i-a733-cubie-a7s.dtb`, `config`, `modules-root`, `SHA256SUMS`, and
+  `manifest.txt`.
+- No Cubie `/boot`, UART, power, services, public GitHub state, mail, or b4
+  state were changed. This is a local build artifact, not an installed kernel.
+
 ## 2026-06-14 A733 gate route hardening
 
 - Updated the local workflow status surfaces so both remaining A733 gates route
@@ -12,9 +30,10 @@
 - Added authority-validator coverage so future edits cannot silently restore
   raw public-push wording or imply autonomous prerequisite-stack construction
   during local-work-only mode.
-- Current blockers remain unchanged: public kernel repo GitHub backup and a
-  clean A733 prerequisite-stack audit. No public remotes, kernel trees,
-  hardware, services, mail, b4 state, or model routing were changed.
+- This entry is superseded for the clean prerequisite-stack gate by the
+  2026-06-14 clean feature kernel entry above. Public kernel repo GitHub
+  backup remains gated. No public remotes, hardware, services, mail, b4 state,
+  or model routing were changed.
 
 ## 2026-06-14 A733 current slice alignment
 
@@ -27,25 +46,24 @@
 - Hard boundaries remain unchanged: no public GitHub push, no kernel-tree
   mutation, no hardware mutation, no public communication, and no service/model
   routing changes without explicit operator approval.
-- The two active blockers remain public kernel GitHub backup and clean A733
-  prerequisite-stack construction.
+- This entry is superseded for the clean prerequisite-stack gate by the
+  2026-06-14 clean feature kernel entry above. Public kernel repo GitHub backup
+  remains gated.
 
 ## 2026-06-14 A733 gated transition approval helper
 
 - Added `scripts/a733-gated-transition-approval-brief` as a read-only operator
   view for the current A733 gated-transition state.
 - The helper prints current workflow blockers, backup posture, public repo
-  hygiene state, and the two approval questions for:
-  public kernel GitHub backup and clean A733 prerequisite-stack construction.
+  hygiene state, and the approval question for public kernel GitHub backup.
 - Current safe state: homelab authority validation passes; private homelab
   origin and GitHub backup are current; the public-facing repo is hygiene-clean
   and backed to the private ThinkCentre mirror.
-- Current blockers: public kernel repo is not backed up to public GitHub, and
-  `/Users/enzo/projects/linux-a733-sparse` still fails the A733 prerequisite
-  stack audit.
-- Approval needed: do not push the public GitHub remote or create/update an
-  isolated prerequisite preparation tree unless the operator explicitly
-  reopens that gate. Use
+- Current blocker now superseded for the clean prerequisite stack by the
+  2026-06-14 clean feature kernel entry above. Public kernel repo GitHub backup
+  remains gated.
+- Approval needed: do not push the public GitHub remote unless the operator
+  explicitly reopens that gate. Use
   `scripts/a733-gated-transition-approval-brief` for the exact approval text.
 - No board state, `/boot` files, kernel trees, services, public GitHub state,
   mail, or b4 state were changed.

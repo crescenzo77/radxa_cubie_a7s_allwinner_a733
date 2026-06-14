@@ -9862,3 +9862,157 @@ Blocked/aborted reason: none.
 Release result: not applicable.
 
 Stop confirmation: Continue to execute this contracted handoff validator guard.
+
+## 2026-06-14T00:00:00Z - A733-CYCLE-086 - clean prerequisite tree materialization
+
+Agent: Codex Desktop local worker.
+
+Server tier: unavailable; no claim service used.
+
+Mode: LOCAL-WORK-ONLY with explicit operator approval for the clean
+prerequisite-tree gate only.
+
+Operator approval basis: user said "Well I guess we're making a clean kernel".
+This is interpreted narrowly as approval to create/update an isolated A733
+prerequisite preparation tree under the existing gated-transition packet. It is
+not approval for public push, public communication, hardware mutation, DTS
+regeneration, service changes, or model routing changes.
+
+Selection source: `task-packets/kernel/a733-gated-transition-approval-packet.md`
+Gate 2 and `task-packets/kernel/a733-clean-prereq-stack-construction-plan.md`.
+
+Scope contract: Verify Strix's A733 prerequisite source tree read-only, copy it
+to an isolated Mac-mini destination if it is clean and auditable, run the local
+prerequisite-stack audit against the copied tree, and update local coordination
+records only after proof passes.
+
+Destination tree:
+
+```text
+/Users/enzo/projects/a733-prereq-stack-clean/linux
+```
+
+Source tree:
+
+```text
+strix:/srv/projects/a733-prereq-stack-current
+```
+
+Files in scope:
+
+- `/Users/enzo/projects/a733-prereq-stack-clean/linux`
+- `/Users/enzo/projects/a733-prereq-stack-clean.sparseimage`
+- `inventory/kernel-workflow-paths.json`
+- `AGENT_STATUS.md`
+- `CURRENT_SLICE.md`
+- `task-packets/kernel/a733-clean-prereq-stack-construction-plan.md`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- public GitHub push
+- public communication or b4 send/reflect
+- `/Users/enzo/projects/linux-a733`
+- `/Users/enzo/projects/linux-a733-sparse`
+- DTS regeneration
+- hardware, `/boot`, UART, SSH-to-Cubie, reboot, or power changes
+- service, cron, Hermes, model, or OpenRouter/OpenWebUI changes
+
+Classification gate: approved local kernel-tree preparation, Green after
+source and destination checks.
+
+Permission envelope: Isolated clean prerequisite tree creation/update only.
+
+Claim IDs: none; single live Codex Desktop worker and no active claim service.
+
+Claimed resources: destination tree path, source tree read-only identity, path
+registry, and cycle ledger.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable; no board action.
+
+Recovery drill: not applicable; no board action.
+
+Experiment ceiling: local source-tree preparation only.
+
+Proof definition: source tree is reachable, clean, and passes
+`scripts/a733-prereq-stack-audit`; destination tree is isolated and clean;
+destination audit passes; `git diff --check <base>..HEAD` passes; local status
+tool reports the destination as the selected clean prerequisite tree after
+registry update; authority validator passes; homelab backup push succeeds.
+
+Commands run: read authority files; verified Strix source tree with
+`git status`, `git rev-parse`, and `scripts/a733-prereq-stack-audit`; rejected
+direct Mac rsync because the copied `.git` file pointed to a Strix absolute
+worktree gitdir; rejected direct Strix clone because the source is a
+partial/promisor checkout that could not satisfy all objects; exported 28
+patches from Strix with `git format-patch 8fde5d1d47f6..HEAD`; rejected a
+normal Mac worktree because the case-insensitive filesystem produced kernel
+filename collisions; created case-sensitive sparse image
+`/Users/enzo/projects/a733-prereq-stack-clean.sparseimage`; created branch
+`local/a733-prereq-stack-clean-20260614` from base `8fde5d1d47f6`; applied the
+28 patches with `git am --3way`; ran `scripts/a733-prereq-stack-audit`; ran
+`git diff --check 8fde5d1d47f6..HEAD`; created isolated Strix source worktree
+`/srv/projects/kernel-work/src/a733-clean-feature-src-20260614`; built
+`Image`, `allwinner/sun60i-a733-cubie-a7s.dtb`, and modules with
+`ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-`; installed modules into a staged
+artifact root only; copied `Image`, DTB, and config into outgoing artifacts;
+computed `SHA256SUMS`.
+
+Failed routes recorded: the old Mac sparse tree still failed the prerequisite
+audit; the direct rsync copy was not a valid independent Git checkout; the
+Strix direct clone failed against promisor state; the first normal Mac worktree
+was dirty due case-insensitive Linux filename collisions; the initial build
+attempt against the shared Strix source stopped because the source tree needed
+`mrproper`, so no cleanup was run there and a separate isolated Strix source
+worktree was used instead.
+
+Artifacts and hashes:
+
+```text
+mac_clean_tree=/Users/enzo/projects/a733-prereq-stack-clean/linux
+mac_clean_image=/Users/enzo/projects/a733-prereq-stack-clean.sparseimage
+mac_clean_mount=/Users/enzo/projects/a733-prereq-stack-clean
+mac_clean_branch=local/a733-prereq-stack-clean-20260614
+mac_clean_head=5ea091fd44b3
+mac_clean_audit=PASS
+mac_clean_dirty=no
+
+strix_source_tree=/srv/projects/kernel-work/src/a733-clean-feature-src-20260614
+strix_source_branch=local/a733-clean-feature-src-20260614
+strix_source_head=68d5a36e1dc5
+strix_source_audit=PASS
+strix_source_dirty=no
+
+strix_artifacts=/srv/projects/kernel-work/outgoing/a733-clean-feature-20260614
+64d2cd3c28ff2ef4a3c3086b9d5a52a867e84a481161e374dbb8ae31f3b00152  Image
+6edbb3790de674f7011c8accd0e02d94ea5bcafa11dc127238c8a54da71c622a  sun60i-a733-cubie-a7s.dtb
+a08a82ddfc83d5860420899797ef0baf3376addcae802939dc978190e4c5eb08  config
+modules_installed=1583
+```
+
+Proof result: Passed. The clean Mac tree audit passes, `git diff --check`
+passes from base `8fde5d1d47f6`, the isolated Strix source audit passes, and
+the broad arm64 feature kernel build produced staged artifacts without touching
+Cubie hardware.
+
+Promotion state: local preparation promoted to selected clean prerequisite
+tree in `inventory/kernel-workflow-paths.json`. Runtime promotion is not
+attempted; no board has booted or installed this kernel.
+
+Tree state: Homelab coordination repo dirty for the contracted registry,
+status, plan, and cycle-ledger edits before commit. Kernel source trees used
+for proof are clean.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none for local preparation. Public kernel GitHub
+backup remains gated, and RFC freshness remains a separate follow-up.
+
+Release result: not applicable; no claim service available.
+
+Stop confirmation: Continue to execute this contracted clean prerequisite-tree
+materialization.

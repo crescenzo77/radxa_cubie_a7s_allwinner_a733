@@ -5,12 +5,29 @@
 ## Current State
 
 The active kernel slice is local-only A733 / Radxa Cubie A7S advance-prep.
-The project is paused at two explicit gates:
+The clean prerequisite-tree gate has been reopened by operator approval and
+completed locally.
+
+Current selected clean tree:
+
+```text
+/Users/enzo/projects/a733-prereq-stack-clean/linux
+```
+
+That path lives inside the case-sensitive APFS sparse image
+`/Users/enzo/projects/a733-prereq-stack-clean.sparseimage` mounted at
+`/Users/enzo/projects/a733-prereq-stack-clean`.
+
+Strix build artifacts for the broad clean feature kernel are staged at:
+
+```text
+/srv/projects/kernel-work/outgoing/a733-clean-feature-20260614
+```
+
+The remaining explicit gate is:
 
 - public kernel repo GitHub backup is not done because public pushes remain
   gated during local-work-only mode
-- the selected A733 prerequisite stack is not cleanly audited, so DTS
-  regeneration must wait for explicit kernel-tree mutation approval
 
 Current read-only status command:
 
@@ -18,12 +35,10 @@ Current read-only status command:
 scripts/a733-gated-transition-approval-brief
 ```
 
-That helper prints the exact approval questions for:
+That helper prints the exact approval question for:
 
 1. pushing `/Users/enzo/projects/Home Lab/cubie-a7s-armbian` branch `main` to
    the public GitHub remote named `public`
-2. creating or updating an isolated A733 prerequisite preparation tree solely
-   to produce a clean prerequisite-stack audit before DTS regeneration
 
 Hard boundaries:
 
@@ -31,9 +46,8 @@ Hard boundaries:
   requests, comments, or public artifacts
 - do not push the public kernel repo to GitHub unless the operator explicitly
   reopens that public-push gate
-- do not mutate kernel trees, create worktrees, copy kernel trees, regenerate
-  DTS exports, or build from a new prerequisite tree unless the operator
-  explicitly reopens that kernel-tree gate
+- do not regenerate DTS exports, install kernel artifacts, or create new
+  prerequisite variants unless the operator explicitly reopens that next gate
 - do not boot, reboot, power-cycle, SSH probe, UART capture, install kernels,
   write `/boot`, or mutate Cubie hardware
 - do not change model routing, OpenRouter, Open WebUI, model-dispatch,

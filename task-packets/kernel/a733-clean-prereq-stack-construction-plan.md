@@ -1,15 +1,59 @@
 # A733 Clean Prerequisite Stack Construction Plan
 
-Status: local-only no-run construction plan
-Updated: 2026-06-13
+Status: materialized locally; build artifacts staged, not installed
+Updated: 2026-06-14
 
-This packet records how to get from the current Mac-mini prerequisite-stack
-blocker to a clean, auditable A733 kernel preparation tree. It is not a kernel
-patch, not a build log, not proof that the current tree is ready, not permission
-to edit kernel trees, and not permission to send or push public kernel
-material.
+This packet records how the Mac-mini prerequisite-stack blocker was cleared by
+creating a clean, auditable A733 kernel preparation tree. It is not permission to send or push public kernel material and it is not proof that any kernel was
+installed on hardware.
 
-Short rule: this packet is not permission to edit kernel trees.
+Short rule: this packet is proof of local preparation only.
+
+## 2026-06-14 Materialized Path
+
+The selected Mac-mini clean tree is now:
+
+```text
+path: /Users/enzo/projects/a733-prereq-stack-clean/linux
+branch: local/a733-prereq-stack-clean-20260614
+head: 5ea091fd44b3
+dirty: no
+audit: PASS
+```
+
+The tree lives inside a case-sensitive APFS sparse image:
+
+```text
+image: /Users/enzo/projects/a733-prereq-stack-clean.sparseimage
+mount: /Users/enzo/projects/a733-prereq-stack-clean
+```
+
+The case-sensitive image is required because a normal macOS case-insensitive
+checkout produced dirty Linux header collisions such as uppercase/lowercase
+netfilter filenames.
+
+The broad Strix feature build was produced from an isolated source worktree:
+
+```text
+source: /srv/projects/kernel-work/src/a733-clean-feature-src-20260614
+branch: local/a733-clean-feature-src-20260614
+head: 68d5a36e1dc5
+dirty: no
+audit: PASS
+artifacts: /srv/projects/kernel-work/outgoing/a733-clean-feature-20260614
+```
+
+Artifact hashes:
+
+```text
+64d2cd3c28ff2ef4a3c3086b9d5a52a867e84a481161e374dbb8ae31f3b00152  Image
+6edbb3790de674f7011c8accd0e02d94ea5bcafa11dc127238c8a54da71c622a  sun60i-a733-cubie-a7s.dtb
+a08a82ddfc83d5860420899797ef0baf3376addcae802939dc978190e4c5eb08  config
+```
+
+The build installed 1583 modules under `modules-root`. No `/boot` files,
+Cubie hardware, UART lanes, power state, services, public GitHub state, mail,
+or b4 state were changed.
 
 ## Current Blocker
 

@@ -1,10 +1,10 @@
 # A733 Gated Transition Approval Packet
 
 Status: local-only approval packet
-Updated: 2026-06-13
+Updated: 2026-06-14
 
-This packet records the two remaining high-value gates that cannot be crossed
-under the current local-work-only mode without explicit human approval. It is
+This packet records high-value gates that cannot be crossed under the current
+local-work-only mode without explicit human approval. It is
 not approval to act, not a public communication, not a kernel patch plan, not a
 build log, and not permission to mutate kernel trees, hardware, remotes, or
 services.
@@ -32,25 +32,17 @@ local/public divergence: ahead of public/main and behind public/main
 Selected Mac-mini A733 prerequisite tree:
 
 ```text
-path: /Users/enzo/projects/linux-a733-sparse
-branch: candidate/a733-platform-clean-v4
-head: abc8d07b0a63
+path: /Users/enzo/projects/a733-prereq-stack-clean/linux
+branch: local/a733-prereq-stack-clean-20260614
+head: 5ea091fd44b3
 dirty: no
-audit: FAIL
+audit: PASS
 ```
 
-Audit findings:
+Build artifact staging:
 
 ```text
-rtc-binding-missing
-rtc-clock-header-missing
-rtc-ccu-driver-missing
-ccu-binding-clock-inputs-mismatch
-r-ccu-clock-header-missing
-r-ccu-reset-header-missing
-r-ccu-driver-missing
-dtsi-ccu-clock-names-missing-losc-fanout
-dtsi-ccu-clock-input-count
+/srv/projects/kernel-work/outgoing/a733-clean-feature-20260614
 ```
 
 ## Gate 1: Public GitHub Backup
@@ -110,17 +102,18 @@ git -C "/Users/enzo/projects/Home Lab/cubie-a7s-armbian" ls-remote public refs/h
 
 ## Gate 2: Clean A733 Prerequisite Stack
 
-Current blocker:
+Status:
 
 ```text
-A733 prerequisite stack audit is not clean
+completed locally; no hardware install or DTS regeneration performed
 ```
 
-This is a kernel-tree mutation/resource gate because the next real engineering
-step is to choose, sync, copy, or construct a clean preparation tree before DTS
-regeneration.
+This gate was reopened by operator approval and completed locally. The selected
+tree now passes the prerequisite-stack audit. This completion does not approve
+DTS regeneration, kernel installation, board boot tests, public pushes, or
+maintainer communication.
 
-Approval question:
+Historical approval question, now consumed:
 
 ```text
 May Codex create or update an isolated A733 prerequisite preparation tree,
@@ -177,6 +170,6 @@ scripts/kernel-workflow-status --maintainer-ready-blockers
 
 ## Current Safe Next Action Without Approval
 
-If neither gate is explicitly reopened, the safe next action is only local
-planning, evidence indexing, validation-tool correction, or held-question
-drafting. Do not quietly convert this packet into permission.
+If the public GitHub backup gate is not explicitly reopened, the safe next
+action is only local planning, evidence indexing, validation-tool correction,
+or held-question drafting. Do not quietly convert this packet into permission.
