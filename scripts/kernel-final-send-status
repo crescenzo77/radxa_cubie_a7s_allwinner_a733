@@ -22,6 +22,8 @@ print(f"status={data.get('status', '')}")
 print(f"checklist={path}")
 print(f"gates_total={len(gates)}")
 print(f"gates_open={len(open_gates)}")
+if data.get("current_gate_packet"):
+    print(f"current_gate_packet={data.get('current_gate_packet')}")
 
 if open_gates:
     print("open_gates:")
@@ -34,5 +36,6 @@ if blockers:
     for blocker in blockers:
         print(f"- {blocker}")
 
-sys.exit(1 if open_gates or data.get("status") != "send_ready" else 0)
+terminal_ok = data.get("status") in {"v1_public_sent_indexed"}
+sys.exit(1 if open_gates or (data.get("status") != "send_ready" and not terminal_ok) else 0)
 PY

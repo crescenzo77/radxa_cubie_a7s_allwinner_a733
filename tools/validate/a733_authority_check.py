@@ -84,6 +84,7 @@ PWM_BACKLIGHT_FAN_EVIDENCE = Path(
 )
 KERNEL_CHECKOUT_QUARANTINE = Path("inventory/kernel-checkout-quarantine-20260606.md")
 KERNEL_WORKFLOW_PATHS = Path("inventory/kernel-workflow-paths.json")
+FINAL_SEND_CHECKLIST = Path("task-packets/kernel/a733-final-send-checklist.json")
 
 REQUIRED_COMM_IDS = [f"A733-COMM-{number:03d}" for number in range(1, 17)]
 REQUIRED_BATCH_IDS = [f"A733-BATCH-{number:03d}" for number in range(0, 17)]
@@ -273,9 +274,38 @@ def check_evidence_index(root: Path, failures: list[str]) -> None:
         "task-packets/kernel/a733-prereq-stack-selection-note.md",
         "task-packets/kernel/a733-clean-prereq-stack-construction-plan.md",
         "task-packets/kernel/a733-gated-transition-approval-packet.md",
+        "task-packets/kernel/a733-final-send-checklist.json",
+        "scripts/kernel-final-send-status",
     ]
     for needle in required:
         require_contains("evidence-index", text, needle, failures)
+
+
+def check_final_send_checklist(root: Path, failures: list[str]) -> None:
+    path = root / FINAL_SEND_CHECKLIST
+    if not path.exists():
+        failures.append(f"final-send-checklist: missing {FINAL_SEND_CHECKLIST}")
+        return
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        failures.append(f"final-send-checklist: invalid JSON: {exc}")
+        return
+    if data.get("status") != "v1_public_sent_indexed":
+        failures.append("final-send-checklist: status is not v1_public_sent_indexed")
+    blockers = data.get("current_known_blockers")
+    if not isinstance(blockers, list) or len(blockers) < 2:
+        failures.append("final-send-checklist: current_known_blockers is incomplete")
+    required = [
+        "public GitHub remote",
+        "/Users/enzo/projects/linux-a733-sparse",
+        "DTS v2 work remains held",
+    ]
+    blocker_text = "\n".join(str(item) for item in blockers or [])
+    for needle in required:
+        require_contains("final-send-checklist", blocker_text, needle, failures)
+    if data.get("current_gate_packet") != str(GATED_TRANSITION_APPROVAL_PACKET):
+        failures.append("final-send-checklist: current_gate_packet is not the gated approval packet")
 
 
 def check_clean_prereq_stack_construction_plan(root: Path, failures: list[str]) -> None:
@@ -1399,6 +1429,7 @@ def run(root: Path) -> dict[str, Any]:
     check_pwm_backlight_fan_evidence(root, failures)
     check_kernel_checkout_quarantine(root, failures)
     check_kernel_workflow_paths(root, failures)
+    check_final_send_checklist(root, failures)
 
     status = "PASS" if not failures else "FAIL"
     return {
@@ -1436,6 +1467,7 @@ def run(root: Path) -> dict[str, Any]:
         "pwm_backlight_fan_evidence": str(PWM_BACKLIGHT_FAN_EVIDENCE),
         "kernel_checkout_quarantine": str(KERNEL_CHECKOUT_QUARANTINE),
         "kernel_workflow_paths": str(KERNEL_WORKFLOW_PATHS),
+        "final_send_checklist": str(FINAL_SEND_CHECKLIST),
         "board_count": len(inventory.get("boards", [])) if isinstance(inventory, dict) else None,
         "failures": failures,
         "failure_count": len(failures),

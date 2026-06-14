@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_utc": "2026-06-13T09:50:00Z",
+  "updated_utc": "2026-06-13T23:59:00Z",
   "project": "radxa-cubie-a7s-allwinner-a733",
   "status": "v1_public_sent_indexed",
   "purpose": "Executable checklist for turning the A733/Cubie A7S review snapshot into a human-approved b4 reflect candidate.",
@@ -138,7 +138,13 @@
       }
     }
   ],
-  "current_known_blockers": [],
+  "current_known_blockers": [
+    "historical DTS v1 is already sent and indexed; do not resend during local-work-only mode",
+    "public kernel repo is not backed up to its public GitHub remote; this remains a public-push gate",
+    "selected A733 prerequisite stack is not cleanly audited on /Users/enzo/projects/linux-a733-sparse",
+    "DTS v2 work remains held behind maintainer feedback, prerequisite landing or correction, static proof, runtime proof, recipient refresh, and operator approval"
+  ],
+  "current_gate_packet": "task-packets/kernel/a733-gated-transition-approval-packet.md",
   "public_send": {
     "status": "sent_and_lore_indexed",
     "result_file": "/Users/enzo/projects/homelab/task-packets/kernel/a733-h265-dts-v1-public-sent-indexed-20260613T0950Z.md",

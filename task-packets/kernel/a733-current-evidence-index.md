@@ -228,6 +228,10 @@ any future public action.
   public kernel GitHub backup and clean prerequisite-stack construction. It is
   not approval, not a public communication, and not permission to mutate kernel
   trees.
+- Use `task-packets/kernel/a733-final-send-checklist.json` and
+  `scripts/kernel-final-send-status` only as historical DTS v1 send/index
+  status plus current blocker visibility. DTS v1 is already sent; this
+  checklist is not permission to send v2 or resend v1.
 - If patch text is regenerated locally, record the exact base, head, patch
   directory, validation commands, and source-equivalence target.
 - If a hardware item looks necessary, queue it in
