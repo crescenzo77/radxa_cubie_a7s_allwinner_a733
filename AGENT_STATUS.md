@@ -1,5 +1,21 @@
 # Agent Status
 
+## 2026-06-14 A733 gate route hardening
+
+- Updated the local workflow status surfaces so both remaining A733 gates route
+  through `scripts/a733-gated-transition-approval-brief`.
+- Public kernel GitHub backup status now says explicit operator approval is
+  required before any public push.
+- Clean prerequisite-stack construction status now says explicit operator
+  approval is required before choosing or building an isolated preparation
+  tree for DTS regeneration.
+- Added authority-validator coverage so future edits cannot silently restore
+  raw public-push wording or imply autonomous prerequisite-stack construction
+  during local-work-only mode.
+- Current blockers remain unchanged: public kernel repo GitHub backup and a
+  clean A733 prerequisite-stack audit. No public remotes, kernel trees,
+  hardware, services, mail, b4 state, or model routing were changed.
+
 ## 2026-06-14 A733 current slice alignment
 
 - Updated `CURRENT_SLICE.md` so the active slice now matches the current A733
