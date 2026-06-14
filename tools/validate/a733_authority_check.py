@@ -342,7 +342,10 @@ def check_kernel_workflow_status(root: Path, failures: list[str]) -> None:
     text = path.read_text(encoding="utf-8")
     required = [
         "GATED_TRANSITION_APPROVAL_BRIEF",
+        "gated_transition_approval_route",
         "public kernel repo GitHub backup requires explicit operator approval",
+        "choose or build a clean A733 prerequisite stack before regenerating",
+        "requires explicit operator approval via",
         "read gated-transition approval brief before any public push",
     ]
     for needle in required:

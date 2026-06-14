@@ -9595,3 +9595,98 @@ Release result: not applicable.
 
 Stop confirmation: Continue to execute this contracted local validator/status
 hardening.
+
+## 2026-06-14T00:00:00Z - A733-CYCLE-083 - prerequisite gate wording hardening
+
+Agent: Codex Desktop local worker.
+
+Server tier: unavailable; no claim service used.
+
+Mode: LOCAL-WORK-ONLY.
+
+Selection source: goal-completion and stopping-point audits after authority
+validation passed.
+
+Scope contract: Make the A733 prerequisite-stack next-action wording explicitly
+route through the gated-transition approval brief when the selected stack is
+not cleanly audited, and add validator coverage so future status changes do
+not imply autonomous kernel-tree construction is allowed.
+
+Files in scope:
+
+- `tools/inventory/kernel_workflow_status.py`
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- public GitHub push
+- public communication or b4 send/reflect
+- kernel tree mutation, worktree creation, copy, build, or DTS regeneration
+- hardware or service changes
+- model/offload service changes
+
+Classification gate: Green local validation/status hardening.
+
+Permission envelope: Green.
+
+Claim IDs: none; single live Codex Desktop worker and no active claim service.
+
+Claimed resources: local status helper, authority validator, and cycle ledger
+only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable; no board action.
+
+Recovery drill: not applicable; no board action.
+
+Experiment ceiling: not applicable.
+
+Proof definition: status outputs for the failing A733 prerequisite stack route
+through `scripts/a733-gated-transition-approval-brief`; authority validator
+checks the route; current validator passes; touched Python compiles; touched
+files pass `git diff --check`; homelab backup push succeeds.
+
+Commands run: initial repo/status/authority checks; broad safe-work search;
+goal-completion and stopping-point audits; local status-helper, validator, and
+cycle-ledger edits; `python3 tools/validate/a733_authority_check.py`;
+`python3 -m py_compile tools/inventory/kernel_workflow_status.py
+tools/validate/a733_authority_check.py`; `git diff --check` over touched files;
+`scripts/kernel-workflow-status --a733-prereq-stack-status`;
+`scripts/kernel-workflow-status --maintainer-next-action`;
+`scripts/kernel-workflow-status --goal-completion-audit`;
+`scripts/kernel-workflow-status --stopping-point-audit`; SHA-256 artifact
+hashing.
+
+Artifacts and hashes:
+
+```text
+899b333233497d7ddef323878eec39f13f874743cd305da279cbb5834b07cc5d  tools/inventory/kernel_workflow_status.py
+f44c6231a519b35d3601f7e1c408c6c20e551ea1c0893a069b47c379548b5375  tools/validate/a733_authority_check.py
+task-packets/kernel/a733-cycle-ledger.md hash omitted from this self-referential
+record; use the committed blob hash for exact ledger identity.
+```
+
+Proof result: Passed. Authority validator reports `status=PASS` with
+`failures=0`; touched Python compiles; `git diff --check` over touched files
+returns clean. The prerequisite-stack status, maintainer next action,
+goal-completion audit, and stopping-point audit all state that choosing or
+building a clean A733 prerequisite stack requires explicit operator approval
+via `scripts/a733-gated-transition-approval-brief`.
+
+Promotion state: not applicable.
+
+Tree state: Homelab coordination repo dirty only for contracted status-helper,
+validator, and cycle-ledger edits before commit.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable.
+
+Stop confirmation: Continue to execute this contracted prerequisite-gate
+wording hardening.

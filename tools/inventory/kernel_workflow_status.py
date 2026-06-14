@@ -50,6 +50,10 @@ RFC_RECHECK_GLOB = "a733-rfc-recheck-*.md"
 RFC_RECHECK_DIR = Path(WORKFLOW_ENV["paths"]["rfc_recheck_dir"]["selected"])
 
 
+def gated_transition_approval_route(action: str) -> str:
+    return f"{action}; requires explicit operator approval via {GATED_TRANSITION_APPROVAL_BRIEF}"
+
+
 def run(
     argv: list[str],
     cwd: Path | None = None,
@@ -511,7 +515,7 @@ def a733_prereq_stack_summary(data: dict[str, Any]) -> dict[str, Any]:
     if gate.get("status") == "PASS":
         next_action = "chosen A733 prerequisite stack satisfies the checked RTC/CCU/pinctrl/MMC API surface"
     else:
-        next_action = (
+        next_action = gated_transition_approval_route(
             "choose or build a clean A733 prerequisite stack before regenerating "
             "the candidate DTS export"
         )
@@ -619,7 +623,7 @@ def maintainer_ready_summary(data: dict[str, Any]) -> dict[str, Any]:
             "series before patch-prep validation"
         )
     elif not data["a733_prereq_stack"].get("ok"):
-        next_action = (
+        next_action = gated_transition_approval_route(
             "choose or build a clean A733 prerequisite stack before regenerating "
             "the candidate DTS export"
         )
