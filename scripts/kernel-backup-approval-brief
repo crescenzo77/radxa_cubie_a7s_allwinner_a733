@@ -30,11 +30,21 @@ echo '```text'
 git -C "${public_repo}" remote -v || true
 echo '```'
 echo
-cat <<'BRIEF'
-The private workflow repo is currently backed up to its configured local origin.
-It is not GitHub-backed because no GitHub remote is configured for this private
-repo. Do not add a GitHub remote or push private workflow material to GitHub
-without explicit human approval of the destination URL and expected visibility.
+private_github_backed="$("${repo_root}/scripts/kernel-workflow-status" --workflow-backup-status | awk -F= '/^private_github_backed=/{print $2}')"
+public_github_backed="$("${repo_root}/scripts/kernel-workflow-status" --workflow-backup-status | awk -F= '/^public_github_backed=/{print $2}')"
+
+if [[ "${private_github_backed}" == "yes" ]]; then
+  cat <<'BRIEF'
+The private workflow repo is backed up to both its configured local origin and
+its configured private GitHub backup remote. Do not add another private GitHub
+remote unless the human operator explicitly changes the destination.
+BRIEF
+else
+  cat <<'BRIEF'
+The private workflow repo is currently backed up to its configured local origin,
+but not to a matching GitHub backup remote. Do not add a GitHub remote or push
+private workflow material to GitHub without explicit human approval of the
+destination URL and expected visibility.
 
 Approval needed before Codex can make the private workflow backup fully match
 the standing stopping-point goal:
@@ -49,7 +59,18 @@ After that approval, the intended shape is:
 git remote add github APPROVED_GITHUB_URL
 git push github main
 ```
-
-Public kernel-facing material is already tracked separately by the public repo's
-GitHub remote and ThinkCentre mirror.
 BRIEF
+fi
+
+echo
+if [[ "${public_github_backed}" == "yes" ]]; then
+  cat <<'BRIEF'
+The public kernel-facing repo is also backed up to its public GitHub remote.
+BRIEF
+else
+  cat <<'BRIEF'
+The public kernel-facing repo is not backed up to its public GitHub remote.
+During A733 local-work-only mode, this is a public-push gate: do not push it
+unless the human operator explicitly reopens that public backup action.
+BRIEF
+fi

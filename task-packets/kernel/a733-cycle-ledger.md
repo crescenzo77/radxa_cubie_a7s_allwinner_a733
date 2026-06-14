@@ -8751,3 +8751,101 @@ Next-selection pointer: After proof, only public GitHub backup and clean
 prerequisite-stack construction should remain as major gated blockers.
 
 Stop confirmation: Continue to execute this private mirror backup only.
+### A733-CYCLE-073
+
+Date: 2026-06-13
+
+Agent: Codex Desktop / ChatGPT
+
+Mode: LOCAL-WORK-ONLY, backup-report correction
+
+Selected item: Correct stale backup-approval wording now that the private
+homelab GitHub backup remote is configured and current.
+
+Scope contract: Update only backup-status wording/tooling and the cycle ledger
+so future workers understand that private homelab backup is complete and the
+remaining GitHub backup gate is the public kernel-facing repo. Do not push the
+public repo to GitHub, add remotes, send mail, mutate hardware, edit kernel
+trees, or change services.
+
+Files in scope:
+
+- `scripts/kernel-backup-approval-brief`
+- `tools/inventory/kernel_workflow_status.py`
+- `runbooks/kernel-token-offload.md`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- public GitHub push
+- remote creation or deletion
+- public communication
+- kernel source edits
+- hardware or service changes
+
+Classification gate: Green local tooling/report hygiene. The work changes
+local reporting only and preserves the public-push gate.
+
+Permission envelope: Green.
+
+Claim IDs: none; single live Codex Desktop worker and no active claim service.
+
+Claimed resources: local backup report tooling/docs and cycle ledger only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable; no board action.
+
+Recovery drill: not applicable; no board action.
+
+Experiment ceiling: not applicable.
+
+Commands run: read-only inspection of backup brief/status helper/runbook;
+local edits to backup brief, workflow status note, token-offload runbook, and
+cycle ledger; `scripts/kernel-backup-approval-brief`; `python3
+tools/validate/a733_authority_check.py`; `python3 -m py_compile
+tools/inventory/kernel_workflow_status.py`; `bash -n
+scripts/kernel-backup-approval-brief`; `git diff --check` over touched files;
+`scripts/kernel-workflow-status --workflow-backup-status`; SHA-256 artifact
+hashing.
+
+Artifacts and hashes:
+
+```text
+5901974545f1a1331a5a7bdbed8d45a8b095792d747c7d3e1d62d0abaf462927  scripts/kernel-backup-approval-brief
+c4cb886434a57fcd74d83d6f26c299fe146712a0aae62d57acd4d0c0eaeeee9c  tools/inventory/kernel_workflow_status.py
+ed021900e6f05e16a5aa84bfa873a3b3ccc153d0f5955950598c445822ea2768  runbooks/kernel-token-offload.md
+```
+
+Proof definition: backup approval brief no longer claims the private repo lacks
+a GitHub remote when `private_github_backed=yes`; workflow backup status still
+reports `public_github_backed=no`; authority validator passes; touched scripts
+pass syntax/diff checks; homelab backup is pushed.
+
+Proof result: Passed. Backup approval brief now says the private workflow repo
+is backed up to both local origin and configured private GitHub backup remote,
+and that the public kernel-facing GitHub backup remains a public-push gate
+during local-work-only mode. Workflow backup status reports
+`private_github_backed=yes`, `public_github_backed=no`, and
+`public_mirror_backed=yes` with the public-gate note. Authority validator
+reports `status=PASS` with `failures=0`; touched Python compiles; shell syntax
+passes; `git diff --check` over touched files returns clean.
+
+Promotion state: not applicable.
+
+Tree state: Homelab coordination repo dirty only for contracted report
+correction files before commit.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable.
+
+Next-selection pointer: Continue only safe local work. Public GitHub backup
+remains gated; clean prerequisite-stack construction remains kernel-tree
+mutation gated.
+
+Stop confirmation: Continue to execute this contracted report correction.

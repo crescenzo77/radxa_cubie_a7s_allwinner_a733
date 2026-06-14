@@ -36,13 +36,13 @@ At a stopping point, check backup posture with:
 scripts/kernel-workflow-status --workflow-backup-status
 ```
 
-This distinguishes a private workflow repo that is backed up only to a local
-mirror from public kernel-facing material that is backed up to GitHub and the
-ThinkCentre mirror. Do not invent or add a GitHub remote without explicit human
-approval.
+This distinguishes the private workflow repo backup posture from public
+kernel-facing material. The private workflow repo may already have a dedicated
+private GitHub backup remote; the public kernel-facing repo has its own public
+GitHub remote and ThinkCentre mirror. Do not invent or add GitHub remotes
+without explicit human approval.
 
-To review the current remote layout before approving any private GitHub backup
-change:
+To review the current remote layout before approving any GitHub backup change:
 
 ```sh
 scripts/kernel-backup-approval-brief

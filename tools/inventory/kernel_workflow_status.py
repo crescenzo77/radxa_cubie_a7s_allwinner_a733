@@ -692,6 +692,10 @@ def workflow_backup_summary(data: dict[str, Any]) -> dict[str, Any]:
             "private workflow repo is backed up only to its configured origin; "
             "no GitHub remote is configured"
             if homelab.get("remote_matches") and not private_github_backed
+            else "public kernel-facing repo is not backed up to its public GitHub remote"
+            if private_github_backed
+            and public_mirror.get("remote_matches")
+            and not (public_repo.get("remote_matches") and public_repo.get("remote_is_github"))
             else ""
         ),
     }
