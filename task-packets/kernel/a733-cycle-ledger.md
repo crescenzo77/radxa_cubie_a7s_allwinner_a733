@@ -9319,3 +9319,92 @@ Next-selection pointer: Continue only safe local work. The public-push and
 kernel-tree mutation gates remain closed unless explicitly reopened.
 
 Stop confirmation: Continue to execute this contracted context alignment.
+### A733-CYCLE-079
+
+Date: 2026-06-14
+
+Agent: Codex Desktop / ChatGPT
+
+Mode: LOCAL-WORK-ONLY, current-slice validator guard
+
+Selected item: Add authority-validator coverage for the active A733
+gated-transition current slice.
+
+Scope contract: Update only local validation and the cycle ledger so drift in
+`CURRENT_SLICE.md` is caught by the A733 authority check. Do not push the
+public kernel repo to GitHub, mutate kernel trees, create worktrees, copy
+kernel trees, send mail, run b4, mutate hardware, add remotes, or change
+services.
+
+Files in scope:
+
+- `tools/validate/a733_authority_check.py`
+- `task-packets/kernel/a733-cycle-ledger.md`
+
+Explicitly out of scope:
+
+- public GitHub push
+- public communication or b4 send/reflect
+- kernel tree mutation
+- hardware or service changes
+- model/offload service changes
+
+Classification gate: Green local validation hardening.
+
+Permission envelope: Green.
+
+Claim IDs: none; single live Codex Desktop worker and no active claim service.
+
+Claimed resources: local validator and cycle ledger only.
+
+Claim heartbeat: not applicable.
+
+Recovery rung: not applicable; no board action.
+
+Recovery drill: not applicable; no board action.
+
+Experiment ceiling: not applicable.
+
+Commands run: initial repo/status/authority checks; current-slice/status grep;
+local validator and cycle-ledger edits; `python3
+tools/validate/a733_authority_check.py`; `python3 -m py_compile
+tools/validate/a733_authority_check.py`; `git diff --check` over touched
+files; SHA-256 artifact hashing.
+
+Artifacts and hashes:
+
+```text
+74cbaa6aca4fd4b5f97b5a5fac14996405606bef13120e1ea227938f1761363d  tools/validate/a733_authority_check.py
+c597e68366f5419770f028d4c29e93072f3b28132726f706c294f8f908e7ce0d  task-packets/kernel/a733-cycle-ledger.md
+```
+
+Proof definition: authority validator fails if `CURRENT_SLICE.md` no longer
+names A733 gated-transition preparation, the approval helper, the public GitHub
+gate, and the clean prerequisite-stack gate; validator passes on current state;
+touched Python compiles; touched files pass `git diff --check`; homelab backup
+push succeeds.
+
+Proof result: Passed. Authority validator reports `status=PASS` with
+`failures=0`; touched Python compiles; `git diff --check` over touched files
+returns clean. The validator now requires `CURRENT_SLICE.md` to name A733
+gated-transition preparation, the approval helper, the public GitHub gate, the
+clean prerequisite-stack gate, the no-public/no-kernel/no-hardware boundaries,
+and the preserved prior token-offload slice.
+
+Promotion state: not applicable.
+
+Tree state: Homelab coordination repo dirty only for contracted validator and
+cycle-ledger edits before commit.
+
+Communication ledger IDs: none.
+
+Hardware lane queue IDs: none.
+
+Blocked/aborted reason: none.
+
+Release result: not applicable.
+
+Next-selection pointer: Continue only safe local work. The public-push and
+kernel-tree mutation gates remain closed unless explicitly reopened.
+
+Stop confirmation: Continue to execute this contracted validation guard.

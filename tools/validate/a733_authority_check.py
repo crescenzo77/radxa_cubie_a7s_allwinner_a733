@@ -86,6 +86,7 @@ KERNEL_CHECKOUT_QUARANTINE = Path("inventory/kernel-checkout-quarantine-20260606
 KERNEL_WORKFLOW_PATHS = Path("inventory/kernel-workflow-paths.json")
 FINAL_SEND_CHECKLIST = Path("task-packets/kernel/a733-final-send-checklist.json")
 GATED_TRANSITION_APPROVAL_BRIEF = Path("scripts/a733-gated-transition-approval-brief")
+CURRENT_SLICE = Path("CURRENT_SLICE.md")
 
 REQUIRED_COMM_IDS = [f"A733-COMM-{number:03d}" for number in range(1, 17)]
 REQUIRED_BATCH_IDS = [f"A733-BATCH-{number:03d}" for number in range(0, 17)]
@@ -308,6 +309,28 @@ def check_final_send_checklist(root: Path, failures: list[str]) -> None:
         require_contains("final-send-checklist", blocker_text, needle, failures)
     if data.get("current_gate_packet") != str(GATED_TRANSITION_APPROVAL_PACKET):
         failures.append("final-send-checklist: current_gate_packet is not the gated approval packet")
+
+
+def check_current_slice(root: Path, failures: list[str]) -> None:
+    path = root / CURRENT_SLICE
+    if not path.exists():
+        failures.append(f"current-slice: missing {CURRENT_SLICE}")
+        return
+    text = path.read_text(encoding="utf-8")
+    check_markdown_fences("current-slice", text, failures)
+    required = [
+        "## Active: A733 gated-transition preparation",
+        "scripts/a733-gated-transition-approval-brief",
+        "public kernel repo GitHub backup is not done",
+        "selected A733 prerequisite stack is not cleanly audited",
+        "do not push the public kernel repo to GitHub",
+        "do not mutate kernel trees",
+        "do not boot, reboot, power-cycle, SSH probe, UART capture",
+        "## Prior Current State",
+        "## Active: Implement local token-offload workflow",
+    ]
+    for needle in required:
+        require_contains("current-slice", text, needle, failures)
 
 
 def check_clean_prereq_stack_construction_plan(root: Path, failures: list[str]) -> None:
@@ -1453,6 +1476,7 @@ def run(root: Path) -> dict[str, Any]:
     check_kernel_checkout_quarantine(root, failures)
     check_kernel_workflow_paths(root, failures)
     check_final_send_checklist(root, failures)
+    check_current_slice(root, failures)
 
     status = "PASS" if not failures else "FAIL"
     return {
@@ -1492,6 +1516,7 @@ def run(root: Path) -> dict[str, Any]:
         "kernel_checkout_quarantine": str(KERNEL_CHECKOUT_QUARANTINE),
         "kernel_workflow_paths": str(KERNEL_WORKFLOW_PATHS),
         "final_send_checklist": str(FINAL_SEND_CHECKLIST),
+        "current_slice": str(CURRENT_SLICE),
         "board_count": len(inventory.get("boards", [])) if isinstance(inventory, dict) else None,
         "failures": failures,
         "failure_count": len(failures),
