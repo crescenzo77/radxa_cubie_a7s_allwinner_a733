@@ -10016,3 +10016,70 @@ Release result: not applicable; no claim service available.
 
 Stop confirmation: Continue to execute this contracted clean prerequisite-tree
 materialization.
+
+## 2026-06-14T04:44:33Z - A733-CYCLE-087 - clean feature kernel Cubie3 boot proof
+
+Agent: Codex Desktop local worker.
+
+Server tier: unavailable; no claim service used.
+
+Mode: hardware-mutating local proof with Cubie3 only. Cubie1 remained excluded.
+
+Scope contract: Stage the already-built clean feature kernel on Cubie3, install
+it as a non-default/direct-load artifact, boot it once with UART capture, prove
+userspace reachability or record failure, and restore the board to the vendor
+default path afterward.
+
+Claimed resources: Cubie3, Cubie3 UART
+`/dev/serial/by-path/pci-0000:c3:00.4-usb-0:1.1.1:1.0-port0`, Cubie3 power
+handle `/home/enzo/.local/bin/cubie3-power`, Cubie3 `/boot` clean-feature
+artifact directory, Cubie3 matching `/lib/modules` directory, and Strix UART
+log path.
+
+Artifacts:
+
+```text
+/boot/mainline-a733-clean-feature-20260614/Image
+/boot/mainline-a733-clean-feature-20260614/sun60i-a733-cubie-a7s.dtb
+/lib/modules/7.1.0-rc5-a733-clean-feature-00177-g68d5a36e1dc5
+```
+
+Proof result: Passed for direct U-Boot `booti` only. The clean feature kernel
+booted on Cubie3, mounted the SD-card root filesystem by PARTUUID, reached
+Debian userspace, and showed a serial login prompt.
+
+Proof log:
+
+```text
+/srv/projects/cubie-uart/logs/20260614T043552Z-a733-clean-feature-20260614-partuuid-rw-ttyUSB0.uart.log
+sha256=2c3653dc14be90348b6efdf347bb43d47a69448b0b96cab21c2acb5daa54b004
+```
+
+Negative findings:
+
+```text
+root=UUID=6f750720-329a-45f0-a4b5-abc5797b040a failed with unknown-block(0,0).
+Extlinux item selection failed in U-Boot FDT handling before Linux start.
+```
+
+Negative logs:
+
+```text
+/srv/projects/cubie-uart/logs/20260614T043227Z-a733-clean-feature-20260614-direct-ttyUSB0.uart.log
+sha256=7693d053afcbe96deb65593dbf17d816b55519f153cdb8439bc8cf5be061884a
+
+/srv/projects/cubie-uart/logs/20260614T044124Z-a733-clean-feature-20260614-extlinux-item4-ttyUSB0.uart.log
+sha256=4b1313452ac4fab79673f7a85b898d3e7a23ea29167e64a7f96165ebf20c896b
+```
+
+Recovery result: Passed. Cubie3 was power-cycled back to the vendor default
+and SSH returned with `uname -r` reporting `5.15.147-21-a733`. The unsafe
+clean-feature extlinux label was removed. Installed clean-feature files and
+modules remain for direct-load testing only.
+
+Promotion state: CANDIDATE direct-load proof only. Do not promote to default
+boot or claim network/peripheral support from this proof.
+
+Next pointer: Continue Cubie3-only feature-enablement work in Codex Desktop.
+Cubie2 is reserved for the separate Claude Code lane and should not be touched
+by Codex while that split is active.
